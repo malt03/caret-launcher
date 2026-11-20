@@ -133,7 +133,10 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
                 MeasureSpec.makeMeasureSpec(lp.height, MeasureSpec.EXACTLY),
             )
         }
-        setMeasuredDimension(width, max(rows * cellHeight + paddingTop + paddingBottom, viewportHeight))
+        // Only as tall as the items need, but at least the visible area: the grid scrolls only when
+        // items are placed below it. The last cell row may still be partly visible for dropping.
+        val contentRows = usedRows() + headroomRows
+        setMeasuredDimension(width, max(contentRows * cellHeight + paddingTop + paddingBottom, viewportHeight))
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
