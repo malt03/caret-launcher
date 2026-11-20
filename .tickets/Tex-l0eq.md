@@ -30,3 +30,7 @@ LauncherApps.getActivityList で個人用プロファイルのアプリを取得
 **2026-11-20T11:49:02Z**
 
 data/AppEntry.kt と data/AppRepository.kt を実装。画面がないため動作は未確認
+
+**2026-11-20T12:06:10Z**
+
+アプリ一覧の取得はエミュレータで確認。インストール・アンインストールの反映は未確認

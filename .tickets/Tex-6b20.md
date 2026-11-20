@@ -1,6 +1,6 @@
 ---
 id: Tex-6b20
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-20T11:16:26Z
@@ -24,3 +24,9 @@ tags: [infra]
 - [ ] ホームボタンでこのアプリの画面が出る
 - [ ] ホーム画面でホームボタンを押しても Activity が増えない（onNewIntent が呼ばれる）
 
+
+## Notes
+
+**2026-11-20T12:06:10Z**
+
+ui/LauncherActivity をホームに設定できることをエミュレータ（Android 17）で確認

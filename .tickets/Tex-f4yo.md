@@ -1,6 +1,6 @@
 ---
 id: Tex-f4yo
-status: open
+status: in_progress
 deps: [Tex-l0eq, Tex-rq0b, Tex-maoz]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -33,3 +33,9 @@ tags: [search]
 - [ ] 日本語入力の変換中に Enter → 確定されるだけで起動しない
 - [ ] 同じ入力で別のアプリを何度か起動 → そのアプリが上位に来る
 
+
+## Notes
+
+**2026-11-20T12:06:10Z**
+
+下寄せ表示、1位の強調、Enter で起動、変換中の Enter で起動しないことを確認。学習による並び替えは実機での確認がまだ。切り替えアニメーションも未実装

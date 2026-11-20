@@ -1,0 +1,123 @@
+package com.malt03.textlauncher.ui
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.view.View
+import android.view.ViewTreeObserver
+import android.view.WindowInsets
+import android.widget.FrameLayout
+import com.android.launcher3.anim.KeyboardInsetAnimationCallback
+import com.malt03.textlauncher.R
+
+/**
+ * Lays out the home area / search results above the search field, and keeps the field right
+ * above the keyboard (docs/spec.md 1.3).
+ *
+ * The field follows the keyboard animation with Launcher3's KeyboardInsetAnimationCallback,
+ * which animates translationY. The content area above it is re-laid out every frame so that its
+ * bottom stays at the field's top.
+ */
+@SuppressLint("ViewConstructor")
+class LauncherRootLayout(context: Context) : FrameLayout(context) {
+    /** Holds the home layout or the search results. */
+    val contentArea = FrameLayout(context)
+    val searchBar = SearchBarView(context)
+
+    /** Called when the keyboard went from visible to hidden. */
+    var onKeyboardHidden: (() -> Unit)? = null
+
+    private val barContainer = FrameLayout(context)
+    private val barHeight = resources.getDimensionPixelSize(R.dimen.search_bar_height)
+    private val barMarginH = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
+    private val barMarginV = resources.getDimensionPixelSize(R.dimen.search_bar_margin_vertical)
+
+    private val keyboardCallback = KeyboardInsetAnimationCallback(barContainer)
+    private var targetBarTranslation = 0f
+    private var statusBarTop = 0
+    private var navBottom = 0
+    var isKeyboardVisible = false
+        private set
+
+    init {
+        clipChildren = false
+        addView(contentArea)
+        barContainer.addView(searchBar)
+        addView(barContainer)
+        barContainer.setWindowInsetsAnimationCallback(keyboardCallback)
+        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+            override fun onPreDraw(): Boolean {
+                // When no keyboard animation is driving the field, make sure it sits at the
+                // position the latest insets ask for. An animation can be cut short (for example
+                // while the activity is coming back to the front) and leave it behind.
+                if (keyboardCallback.keyboardTranslationState ==
+                    KeyboardInsetAnimationCallback.KeyboardTranslationState.SYSTEM
+                ) {
+                    barContainer.translationY = targetBarTranslation
+                }
+                layoutContentArea()
+                return true
+            }
+        })
+    }
+
+    override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
+        statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
+        navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+        val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
+        // KeyboardInsetAnimationCallback animates from the old to this value.
+        targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()
+        barContainer.translationY = targetBarTranslation
+
+        val visible = insets.isVisible(WindowInsets.Type.ime())
+        val wasVisible = isKeyboardVisible
+        isKeyboardVisible = visible
+        if (wasVisible && !visible) post { onKeyboardHidden?.invoke() }
+        requestLayout()
+        return WindowInsets.CONSUMED
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val height = MeasureSpec.getSize(heightMeasureSpec)
+        setMeasuredDimension(width, height)
+        barContainer.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(barHeight + barMarginV * 2, MeasureSpec.EXACTLY),
+        )
+        searchBar.measure(
+            MeasureSpec.makeMeasureSpec(width - barMarginH * 2, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(barHeight, MeasureSpec.EXACTLY),
+        )
+        measureContentArea(width, contentBottom() - statusBarTop)
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        val width = right - left
+        val height = bottom - top
+        val barTop = height - navBottom - barContainer.measuredHeight
+        barContainer.layout(0, barTop, width, barTop + barContainer.measuredHeight)
+        searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
+        layoutContentArea(force = true)
+    }
+
+    /** The visual top of the search field container, including keyboard translation. */
+    private fun contentBottom(): Int = (barContainer.top + barContainer.translationY).toInt()
+
+    private fun measureContentArea(width: Int, height: Int) {
+        contentArea.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(height.coerceAtLeast(0), MeasureSpec.EXACTLY),
+        )
+    }
+
+    private fun layoutContentArea(force: Boolean = false) {
+        if (barContainer.height == 0) return
+        val bottom = contentBottom()
+        val unchanged = contentArea.top == statusBarTop && contentArea.bottom == bottom && contentArea.width == width
+        if (unchanged && !force && !contentArea.isLayoutRequested) return
+        measureContentArea(width, bottom - statusBarTop)
+        contentArea.layout(0, statusBarTop, width, bottom)
+    }
+
+    fun isInsideSearchBar(view: View): Boolean = view === searchBar || view.parent === searchBar
+}

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Text Launcher</string>
+    <string name="search_hint">アプリを検索</string>
 </resources>
