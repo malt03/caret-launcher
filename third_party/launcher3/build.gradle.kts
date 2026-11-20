@@ -15,6 +15,8 @@ android {
         named("main") {
             java.setSrcDirs(listOf("src"))
             kotlin.setSrcDirs(listOf("src"))
+            // Resources the copied code needs, picked out of Launcher3 res/ (see UPSTREAM.md).
+            res.setSrcDirs(listOf("res-textlauncher"))
             manifest.srcFile("TextLauncherManifest.xml")
         }
     }

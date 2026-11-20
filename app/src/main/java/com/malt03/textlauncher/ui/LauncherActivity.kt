@@ -35,6 +35,7 @@ class LauncherActivity : AppCompatActivity() {
 
     private var apps: List<AppEntry> = emptyList()
     private val appsListener: (List<AppEntry>) -> Unit = { apps = it; refreshResults() }
+    private val iconsListener: () -> Unit = { resultsAdapter.notifyItemRangeChanged(0, resultsAdapter.itemCount) }
 
     /** True between launching an app and coming back; keyboard changes are expected then. */
     private var isLaunching = false
@@ -81,10 +82,12 @@ class LauncherActivity : AppCompatActivity() {
         })
 
         app.appRepository.addListener(appsListener)
+        app.iconLoader.addChangeListener(iconsListener)
     }
 
     override fun onDestroy() {
         app.appRepository.removeListener(appsListener)
+        app.iconLoader.removeChangeListener(iconsListener)
         super.onDestroy()
     }
 

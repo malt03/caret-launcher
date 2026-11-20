@@ -29,3 +29,7 @@ tags: [icons, spike]
 **2026-11-20T11:49:01Z**
 
 android-17.0.0_r1 の Launcher3（graphics/LauncherCustomizationProvider.kt、graphics/GridCustomizationsProxy.java、shapes/ShapesProvider.kt）と ThemePicker（res/values/strings.xml）で取り決めを確認した。内容は docs/spec.md の付録に反映済み。残りは最小の Provider での実機確認。
+
+**2026-11-20T12:11:12Z**
+
+エミュレータ（Android 17 google_apis_playstore）の Google 製「壁紙とスタイル」で、テーマアイコンと形状の項目が出て動くことを確認。実機の Pixel での確認は未実施

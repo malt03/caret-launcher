@@ -42,7 +42,20 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <!-- docs/spec.md 7.3: lets "Wallpaper & style" find CustomizationProvider. -->
+            <meta-data
+                android:name="com.android.launcher3.grid.control"
+                android:value="${applicationId}.grid_control" />
+            <meta-data
+                android:name="com.android.launcher3.themedicon.option"
+                android:value="${applicationId}.grid_control" />
         </activity>
+
+        <!-- Callers must hold BIND_WALLPAPER; checked in code like Launcher3. -->
+        <provider
+            android:name=".provider.CustomizationProvider"
+            android:authorities="${applicationId}.grid_control"
+            android:exported="true" />
     </application>
 
 </manifest>

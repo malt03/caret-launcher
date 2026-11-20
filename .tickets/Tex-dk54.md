@@ -1,6 +1,6 @@
 ---
 id: Tex-dk54
-status: open
+status: closed
 deps: [Tex-1eos, Tex-w8ui]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -31,3 +31,9 @@ tags: [icons]
 - [ ] 「壁紙とスタイル」で形状を変えると、ランチャーにすぐ反映される
 - [ ] ランチャーを再起動しても設定が残る
 
+
+## Notes
+
+**2026-11-20T12:11:12Z**
+
+provider/CustomizationProvider を実装。エミュレータ（Android 17、com.google.android.apps.wallpaper）の「壁紙とスタイル」で、アイコンのスタイル（デフォルト/ミニマル）とシェイプ5種が表示され、変更がランチャーに反映された。ホームのプレビューは未実装（null を返す）。「名前」タブも表示されるが、こちらは応答していない

@@ -1,6 +1,6 @@
 ---
 id: Tex-lczw
-status: open
+status: closed
 deps: [Tex-68f3]
 links: []
 created: 2026-11-20T11:48:45Z
@@ -29,3 +29,7 @@ frameworks/libs/systemui の iconloaderlib（android-17.0.0_r1）を third_party
 **2026-11-20T12:06:10Z**
 
 iconloaderlib の取り込みとビルドは Tex-68f3 で済み。AppIconLoader で BaseIconFactory を使って通常のアイコンを生成している。テーマアイコンと形状はまだ
+
+**2026-11-20T12:11:12Z**
+
+AppIconLoader で BaseIconFactory（drawFullBleedIcons、MonoIconThemeController(shouldForceThemeIcon=true)）を使い、通常・テーマアイコンを生成。エミュレータで確認

@@ -1,6 +1,6 @@
 ---
 id: Tex-1eos
-status: open
+status: in_progress
 deps: [Tex-l0eq, Tex-4hiv, Tex-lczw]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -30,3 +30,9 @@ tags: [icons]
 - [ ] 単色アイコンを持たないアプリも単色で表示される
 - [ ] 形状を変えると全箇所のアイコンが切り抜かれる
 
+
+## Notes
+
+**2026-11-20T12:11:12Z**
+
+ShapesProvider.kt / IconShapeModel.kt を Launcher3 からコピー。形状での切り抜きとテーマアイコン（単色アイコンの自動生成込み）を検索結果で確認。ホーム・フォルダ・全アプリ一覧はそれぞれの画面ができてから

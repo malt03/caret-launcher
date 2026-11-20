@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TextLauncher: strings copied from Launcher3 res/values/strings.xml (android-17.0.0_r1) that the copied code uses. -->
+<resources>
+    <string name="circle_shape_title">Circle</string>
+    <string name="square_shape_title">Square</string>
+    <string name="four_sided_cookie_shape_title">4-sided cookie</string>
+    <string name="seven_sided_cookie_shape_title">7-sided cookie</string>
+    <string name="arch_shape_title">Arch</string>
+</resources>
