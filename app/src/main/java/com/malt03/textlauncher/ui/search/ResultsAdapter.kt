@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.search
 
 import android.graphics.drawable.GradientDrawable
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -10,16 +11,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
-import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.icons.AppIconLoader
+import com.malt03.textlauncher.ui.GridSpec
 
 /**
- * Search results (docs/spec.md 2.5): icon + app name. The first row is the one Enter launches,
- * so it is highlighted.
+ * App cells in the style of Launcher3's all-apps grid: icon with the app name below
+ * (docs/spec.md 2.5). The first item is the one Enter launches, so it is highlighted.
  */
 class ResultsAdapter(
     private val iconLoader: AppIconLoader,
+    private val grid: GridSpec,
     private val onClick: (AppEntry, View) -> Unit,
     private val onLongClick: (AppEntry, View) -> Boolean,
 ) : RecyclerView.Adapter<ResultsAdapter.Holder>() {
@@ -40,34 +42,29 @@ class ResultsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val context = parent.context
         val density = context.resources.displayMetrics.density
-        val row = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            val horizontal = (16 * density).toInt()
-            setPadding(horizontal, 0, horizontal, 0)
-            layoutParams = RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                context.resources.getDimensionPixelSize(R.dimen.result_row_height),
-            ).apply {
-                val margin = context.resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
-                leftMargin = margin; rightMargin = margin
-            }
+        val cell = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
+            layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
+            val padding = (4 * density).toInt()
+            setPadding(padding, padding, padding, padding)
             isClickable = true
             isFocusable = false
         }
-        val iconSize = context.resources.getDimensionPixelSize(R.dimen.result_icon_size)
         val icon = ImageView(context)
-        row.addView(icon, LinearLayout.LayoutParams(iconSize, iconSize))
+        cell.addView(icon, LinearLayout.LayoutParams(grid.iconSizePx, grid.iconSizePx))
         val label = TextView(context).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, grid.iconTextSizeSp)
             setTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface))
             setSingleLine(true)
-            setShadowLayer(4 * density, 0f, 0f, 0x66000000)
+            ellipsize = TextUtils.TruncateAt.END
+            gravity = Gravity.CENTER_HORIZONTAL
+            setShadowLayer(4 * density, 0f, 0f, 0x88000000.toInt())
         }
-        row.addView(label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-            leftMargin = (16 * density).toInt()
+        cell.addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = (6 * density).toInt()
         })
-        return Holder(row, icon, label)
+        return Holder(cell, icon, label)
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {

@@ -12,7 +12,8 @@ import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
+import com.malt03.textlauncher.R
 import androidx.recyclerview.widget.RecyclerView
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
@@ -46,13 +47,18 @@ class LauncherActivity : AppCompatActivity() {
         root = LauncherRootLayout(this)
         setContentView(root)
 
+        val grid = GridSpec.from(this)
         resultsAdapter = ResultsAdapter(
             app.iconLoader,
+            grid,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
             onLongClick = { _, _ -> false },
         )
         results = RecyclerView(this).apply {
-            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, true)
+            layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, true)
+            val sidePadding = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
+            setPadding(sidePadding, 0, sidePadding, 0)
+            clipToPadding = false
             adapter = resultsAdapter
             overScrollMode = View.OVER_SCROLL_NEVER
             itemAnimator = null
