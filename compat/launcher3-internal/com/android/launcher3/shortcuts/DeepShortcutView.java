@@ -3,6 +3,7 @@ package com.android.launcher3.shortcuts;
 import static com.android.launcher3.Flags.blurOnMoreSurfaces;
 
 import android.content.Context;
+import android.content.pm.ShortcutInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -11,20 +12,25 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.popup.PopupContainerWithArrow;
 import com.android.launcher3.util.Themes;
+import com.android.launcher3.views.ActivityContext;
 
 /**
  * Stand-in for Launcher3's DeepShortcutView (android-17.0.0_r1): a row in the long-press menu.
- * The members that system shortcut rows use are copied from DeepShortcutView.java; app shortcuts
- * (applyShortcutInfo, the add button) are left out, since TextLauncher's menu shows only its own
- * options.
+ * The members are copied from DeepShortcutView.java; changes are marked with "TextLauncher:".
+ * TextLauncher: app shortcuts are not pinned to the home screen (it holds apps and folders only),
+ * so the add button stays hidden and getFinalInfo is left out.
  */
 public class DeepShortcutView extends FrameLayout {
 
@@ -34,6 +40,10 @@ public class DeepShortcutView extends FrameLayout {
 
     private BubbleTextView mBubbleText;
     private View mIconView;
+    private ImageView mAddButton;
+
+    private WorkspaceItemInfo mInfo;
+    private ShortcutInfo mDetail;
 
     public DeepShortcutView(Context context) {
         this(context, null, 0);
@@ -53,6 +63,7 @@ public class DeepShortcutView extends FrameLayout {
         mBubbleText = findViewById(R.id.bubble_text);
         mBubbleText.setHideBadge(true);
         mIconView = findViewById(R.id.icon);
+        mAddButton = findViewById(R.id.deep_shortcut_add_button);
         tryUpdateTextBackground();
     }
 
@@ -123,7 +134,33 @@ public class DeepShortcutView extends FrameLayout {
         return sTempPoint;
     }
 
+    public void applyShortcutInfo(WorkspaceItemInfo info, ShortcutInfo detail,
+            PopupContainerWithArrow container, ActivityContext ac) {
+        mInfo = info;
+        mDetail = detail;
+        mBubbleText.applyFromWorkspaceItem(info);
+        mIconView.setBackground(mBubbleText.getIcon());
+
+        // Use the long label as long as it exists and fits.
+        CharSequence longLabel = mDetail.getLongLabel();
+        int availableWidth = mBubbleText.getWidth() - mBubbleText.getTotalPaddingLeft()
+                - mBubbleText.getTotalPaddingRight();
+        boolean usingLongLabel = !TextUtils.isEmpty(longLabel)
+                && mBubbleText.getPaint().measureText(longLabel.toString()) <= availableWidth;
+        mBubbleText.setText(usingLongLabel ? longLabel : mDetail.getShortLabel());
+
+        // TODO: Add the click handler to this view directly and not the child view.
+        mBubbleText.setOnClickListener(container.getItemClickListener());
+        mBubbleText.setOnLongClickListener(container.getItemDragHandler());
+        mBubbleText.setOnTouchListener(container.getItemDragHandler());
+        // TextLauncher: no add button (pinning to the home screen).
+    }
+
     public View getIconView() {
         return mIconView;
+    }
+
+    public ShortcutInfo getDetail() {
+        return mDetail;
     }
 }

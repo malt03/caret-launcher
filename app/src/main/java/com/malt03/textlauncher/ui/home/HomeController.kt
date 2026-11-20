@@ -7,7 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.widget.NestedScrollView
+import android.os.UserHandle
 import com.android.launcher3.AbstractFloatingView
+import com.android.launcher3.dagger.ActivityComponent
+import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.DeviceProfile
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.popup.PopupContainerWithArrow
@@ -46,6 +50,8 @@ class HomeController(
 
     interface Host {
         fun launch(entry: AppEntry, view: View)
+        /** An app shortcut from the long-press menu (ItemClickHandler.onClickAppShortcut). */
+        fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)
         /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
         fun editSearchTerms(entry: AppEntry)
         /** Edit mode (docs/spec.md 5.4) starts with a drag and ends after it. */
@@ -62,8 +68,24 @@ class HomeController(
         private val deviceProfile = DeviceProfile(
             DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx),
             DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx),
+            DeviceProfile.DeviceProperties(context.resources.displayMetrics.heightPixels),
         )
+        private val activityComponent = ActivityComponent().apply {
+            setPopupDataProvider(PopupDataProvider(context))
+        }
         override fun getDeviceProfile(): DeviceProfile = deviceProfile
+        override fun getActivityComponent(): ActivityComponent = activityComponent
+
+        /**
+         * ItemClickHandler for the items the long-press menu shows: app shortcuts
+         * (onClickAppShortcut).
+         */
+        override fun getItemOnClickListener(): View.OnClickListener = View.OnClickListener { v ->
+            val info = v.tag as? WorkspaceItemInfo ?: return@OnClickListener
+            val id = info.deepShortcutId ?: return@OnClickListener
+            val packageName = info.targetPackage ?: return@OnClickListener
+            host.startShortcut(packageName, id, v, info.user)
+        }
         override fun getDragLayer(): BaseDragLayer<*> = root.overlay
         override fun asContext() = context
 
@@ -223,7 +245,8 @@ class HomeController(
             )
             // PopupContainerWithArrow.configureForLauncher
             dragController.addDragListener(container)
-            container.populateAndShowRows(systemShortcuts)
+            val deepShortcutCount = activityContext.activityComponent.popupDataProvider.getShortcutCountForItem(item)
+            container.populateAndShowRows(deepShortcutCount, systemShortcuts)
             container.requestFocus()
             container.createPreDragCondition()
         }

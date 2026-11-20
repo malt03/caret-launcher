@@ -46,3 +46,7 @@ tags: [home]
 **2026-11-20T15:40:21Z**
 
 長押しメニューを Launcher3 の View 版（ArrowPopup / PopupContainerWithArrow、Flags.expandableLongPressMenu はリリースで無効）に置き換えた。ArrowPopup・RoundedArrowDrawable・AbstractFloatingView などはコピー、PopupContainer 系は使う経路のメソッドを互換クラスへ。アプリ情報は SystemShortcut.AppInfo、検索文字列の編集はその派生。メニュー外のタップと戻る操作で閉じ、16dp 動かすとドラッグに移ることをホーム・検索結果・フォルダでエミュレータ確認。残りは全アプリ一覧からの移行（一覧の実装待ち）
+
+**2026-11-20T16:29:27Z**
+
+長押しメニューにアプリのショートカットを追加（PopupPopulator・ShortcutRequest・DeepShortcutTextView をコピー、PopupContainerWithArrow のショートカット経路を互換クラスへ）。タップで LauncherApps.startShortcut で起動。ホームへの固定・ドラッグはしない。キーボードに重ならないよう、ドラッグレイヤーの下端をキーボードの上端にした

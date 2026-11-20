@@ -1,16 +1,37 @@
 package com.android.launcher3;
 
 /**
- * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder and workspace values
- * that the copied folder code reads. TextLauncher sets them from its own grid.
+ * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace and device
+ * values that the copied code reads. TextLauncher sets them from its own grid.
  */
 public class DeviceProfile {
     private final FolderProfile mFolderProfile;
     private final WorkspaceProfile mWorkspaceProfile;
+    private final DeviceProperties mDeviceProperties;
 
-    public DeviceProfile(FolderProfile folderProfile, WorkspaceProfile workspaceProfile) {
+    public DeviceProfile(FolderProfile folderProfile, WorkspaceProfile workspaceProfile,
+            DeviceProperties deviceProperties) {
         mFolderProfile = folderProfile;
         mWorkspaceProfile = workspaceProfile;
+        mDeviceProperties = deviceProperties;
+    }
+
+    public DeviceProperties getDeviceProperties() {
+        return mDeviceProperties;
+    }
+
+    /** Stand-in for DeviceProfile's device properties. */
+    public static class DeviceProperties {
+        private final int mAvailableHeightPx;
+
+        public DeviceProperties(int availableHeightPx) {
+            mAvailableHeightPx = availableHeightPx;
+        }
+
+        /** The height of the window minus the system bars. */
+        public int getAvailableHeightPx() {
+            return mAvailableHeightPx;
+        }
     }
 
     public WorkspaceProfile getWorkspaceProfile() {

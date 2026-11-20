@@ -1,11 +1,14 @@
 package com.android.launcher3.popup
 
+import android.animation.LayoutTransition
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.PointF
 import android.view.MotionEvent
 import android.view.View
+import android.os.Handler
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.annotation.LayoutRes
 import com.android.launcher3.DragSource
 import com.android.launcher3.R
@@ -14,6 +17,9 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.shortcuts.DeepShortcutTextView
 import com.android.launcher3.shortcuts.DeepShortcutView
+import com.android.launcher3.util.Executors
+import java.util.stream.Collectors
+import kotlin.math.max
 import com.android.launcher3.views.ActivityContext
 
 /**
@@ -21,9 +27,9 @@ import com.android.launcher3.views.ActivityContext
  * app icon. The members that show system shortcut rows are copied from
  * PopupContainerWithArrow.kt; changes are marked with "TextLauncher:".
  *
- * TextLauncher: the menu shows only the launcher's own options (docs/spec.md 5.3), so the app
- * shortcut (deep shortcut) rows, the icon-only row for many options and the Compose version are
- * left out, along with their layouts.
+ * TextLauncher: the Compose version (Flags.expandableLongPressMenu is disabled in the release
+ * config), live updates of the shortcuts and dragging app shortcuts out of the menu (the home
+ * screen holds apps and folders only) are left out.
  */
 class PopupContainerWithArrow<T : ActivityContext>
 private constructor(
@@ -37,9 +43,22 @@ private constructor(
     DragController.DragListener,
     Popup {
 
+    private val deepShortcuts: MutableList<DeepShortcutView> = ArrayList()
     private val interceptTouchDown = PointF()
+    private val shortcutHeight: Float =
+        resources.getDimension(R.dimen.system_shortcut_header_height)
+
+    val itemClickListener: OnClickListener
+        get() = OnClickListener { view: View? ->
+            mActivityContext?.itemOnClickListener?.onClick(view)
+        }
 
     private var containerWidth: Int = resources.getDimensionPixelSize(R.dimen.bg_popup_item_width)
+    private var deepShortcutContainer: ViewGroup? = null
+    private var currentHeight = 0f
+
+    var itemDragHandler: PopupItemDragHandler? = null
+        private set
 
     var widgetContainer: ViewGroup? = null
 
@@ -67,14 +86,31 @@ private constructor(
      * Populate and show shortcuts for the Launcher U app shortcut design. Will inflate the
      * container and shortcut View instances for the popup container.
      *
-     * TextLauncher: there are no deep shortcuts, so only the system shortcut rows are added.
-     *
+     * @param deepShortcutCount Number of DeepShortcutView instances to add to container
      * @param systemShortcuts List of SystemShortcuts to add to container
      */
-    fun populateAndShowRows(systemShortcuts: List<SystemShortcut<*>>) {
+    fun populateAndShowRows(deepShortcutCount: Int, systemShortcuts: List<SystemShortcut<*>>) {
+        populateAndShowRows(itemInfo, deepShortcutCount, systemShortcuts)
+    }
+
+    /**
+     * Populate and show shortcuts for the Launcher U app shortcut design. Will inflate the
+     * container and shortcut View instances for the popup container.
+     *
+     * @param itemInfo The info that is used to load app shortcuts
+     * @param deepShortcutCount Number of DeepShortcutView instances to add to container
+     * @param systemShortcuts List of SystemShortcuts to add to container
+     */
+    private fun populateAndShowRows(
+        itemInfo: ItemInfo,
+        deepShortcutCount: Int,
+        systemShortcuts: List<SystemShortcut<*>>,
+    ) {
         containerWidth = resources.getDimensionPixelSize(R.dimen.bg_popup_item_width)
 
-        if (systemShortcuts.isNotEmpty()) {
+        if (deepShortcutCount > 0) {
+            addAllShortcuts(deepShortcutCount, systemShortcuts)
+        } else if (systemShortcuts.isNotEmpty()) {
             addSystemShortcuts(
                 systemShortcuts,
                 R.layout.system_shortcut_rows_container,
@@ -82,6 +118,90 @@ private constructor(
             )
         }
         show()
+        loadAppShortcuts(itemInfo)
+    }
+
+    /** Animates and loads shortcuts on background thread for this popup container */
+    private fun loadAppShortcuts(originalItemInfo: ItemInfo) {
+        accessibilityPaneTitle = context.getString(R.string.action_deep_shortcut)
+        // All views are added. Animate layout from now on.
+        layoutTransition = LayoutTransition()
+
+        // Load the shortcuts on a background thread and update the container as it animates.
+        Executors.MODEL_EXECUTOR.handler.postAtFrontOfQueue(
+            PopupPopulator.createUpdateRunnable(
+                mActivityContext,
+                originalItemInfo,
+                Handler(context.mainLooper),
+                this,
+                deepShortcuts,
+            )
+        )
+    }
+
+    /**
+     * Adds any Deep Shortcuts, System Shortcuts and the Widget Shortcut to their respective
+     * containers
+     *
+     * @param deepShortcutCount number of DeepShortcutView instances
+     * @param systemShortcuts List of SystemShortcuts
+     */
+    private fun addAllShortcuts(deepShortcutCount: Int, systemShortcuts: List<SystemShortcut<*>>) {
+        if (deepShortcutCount + systemShortcuts.size <= SHORTCUT_COLLAPSE_THRESHOLD) {
+            // add all system shortcuts including widgets shortcut to same container
+            addSystemShortcuts(
+                systemShortcuts,
+                R.layout.system_shortcut_rows_container,
+                R.layout.system_shortcut,
+            )
+            val startingHeight = ((shortcutHeight * systemShortcuts.size) + mChildContainerMargin)
+            addDeepShortcuts(deepShortcutCount, startingHeight)
+            return
+        }
+
+        currentHeight = shortcutHeight + mChildContainerMargin
+
+        collapseEligibleSystemShortcutsIfOverThreshold(systemShortcuts)
+        addDeepShortcuts(deepShortcutCount, currentHeight)
+    }
+
+    /**
+     * If the total amount of shortcuts is over threshold, we collapse the shortcuts that are
+     * eligible to be collapsible, and make sure the non-collapsible ones get their own container.
+     *
+     * @param systemShortcuts List of SystemShortcuts
+     */
+    private fun collapseEligibleSystemShortcutsIfOverThreshold(
+        systemShortcuts: List<SystemShortcut<*>>
+    ) {
+        val collapsibleSystemShortcuts = getCollapsibleSystemShortcuts(systemShortcuts)
+        // If total shortcuts over threshold, collapse system shortcuts to single row
+        addSystemShortcutsIconsOnly(collapsibleSystemShortcuts)
+        // May need to recalculate row width
+        containerWidth =
+            max(
+                    containerWidth.toDouble(),
+                    (collapsibleSystemShortcuts.size *
+                            resources.getDimensionPixelSize(
+                                R.dimen.system_shortcut_header_icon_touch_size
+                            ))
+                        .toDouble(),
+                )
+                .toInt()
+        val nonCollapsibleSystemShortcuts =
+            systemShortcuts
+                .stream()
+                .filter { shortcut: SystemShortcut<*> -> !shortcut.mIsCollapsible }
+                .toList()
+        if (nonCollapsibleSystemShortcuts.isNotEmpty()) {
+            addSystemShortcuts(
+                nonCollapsibleSystemShortcuts,
+                R.layout.system_shortcut_rows_container,
+                R.layout.system_shortcut,
+            )
+            currentHeight +=
+                ((shortcutHeight * nonCollapsibleSystemShortcuts.size) + mChildContainerMargin)
+        }
     }
 
     /**
@@ -109,6 +229,64 @@ private constructor(
                 systemShortcuts[i],
                 i < systemShortcuts.size - 1,
             )
+        }
+    }
+
+    private fun addSystemShortcutsIconsOnly(systemShortcuts: List<SystemShortcut<*>>) {
+        if (systemShortcuts.isEmpty()) {
+            return
+        }
+
+        systemShortcutContainer = inflateAndAdd(R.layout.system_shortcut_icons_container, this)
+
+        for (i in systemShortcuts.indices) {
+            @LayoutRes var shortcutIconLayout = R.layout.system_shortcut_icon_only
+            var shouldAppendSpacer = true
+
+            if (i == 0) {
+                shortcutIconLayout = R.layout.system_shortcut_icon_only_start
+            } else if (i == systemShortcuts.size - 1) {
+                shortcutIconLayout = R.layout.system_shortcut_icon_only_end
+                shouldAppendSpacer = false
+            }
+            initializeSystemShortcut(
+                shortcutIconLayout,
+                systemShortcutContainer,
+                systemShortcuts[i],
+                shouldAppendSpacer,
+            )
+        }
+    }
+
+    /**
+     * Inflates and adds [deepShortcutCount] number of DeepShortcutView for the to a new container
+     *
+     * @param deepShortcutCount number of DeepShortcutView instances to add
+     * @param startingHeight height of popup before adding deep shortcuts
+     */
+    private fun addDeepShortcuts(deepShortcutCount: Int, startingHeight: Float) {
+        var height = startingHeight
+        deepShortcutContainer = inflateAndAdd(R.layout.deep_shortcut_container, this)
+        for (i in deepShortcutCount downTo 1) {
+            height += shortcutHeight
+            // when there is limited vertical screen space, limit total popup rows to fit
+            if (
+                height >=
+                    (mActivityContext?.deviceProfile?.deviceProperties?.availableHeightPx ?: 0)
+            )
+                break
+            val v = inflateAndAdd<DeepShortcutView>(R.layout.deep_shortcut, deepShortcutContainer)
+            v.layoutParams.width = containerWidth
+            deepShortcuts.add(v)
+        }
+        updateHiddenShortcuts()
+    }
+
+    private fun updateHiddenShortcuts() {
+        val total = deepShortcuts.size
+        for (i in 0..<total) {
+            val view = deepShortcuts[i]
+            view.visibility = if (i >= PopupPopulator.MAX_SHORTCUTS) GONE else VISIBLE
         }
     }
 
@@ -140,6 +318,11 @@ private constructor(
                     )
             }
             info.setIconAndLabelFor(shortcutView.iconView, shortcutView.bubbleText)
+        } else if (view is ImageView) {
+            // System shortcut is just an icon
+            info.setIconAndContentDescriptionFor(view)
+            if (shouldAppendSpacer) inflateAndAdd<View>(R.layout.system_shortcut_spacer, container)
+            view.setTooltipText(view.getContentDescription())
         }
         view.tag = info
         view.setOnClickListener(info)
@@ -147,6 +330,23 @@ private constructor(
     }
 
     companion object {
+        private const val SHORTCUT_COLLAPSE_THRESHOLD = 6
+
+        /**
+         * Returns list of [systemShortcuts] without the non-collapsible shortcuts.
+         *
+         * @param systemShortcuts list of SystemShortcuts to filter from.
+         * @return systemShortcuts without the Widgets Shortcut.
+         */
+        private fun getCollapsibleSystemShortcuts(
+            systemShortcuts: List<SystemShortcut<*>>
+        ): List<SystemShortcut<*>> {
+            return systemShortcuts
+                .stream()
+                .filter { shortcut: SystemShortcut<*> -> shortcut.mIsCollapsible }
+                .collect(Collectors.toList())
+        }
+
         /**
          * Creates a new instance of [PopupContainerWithArrow].
          *

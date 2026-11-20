@@ -7,4 +7,6 @@
     <string name="seven_sided_cookie_shape_title" msgid="4862560582029671668">"七面クッキー"</string>
     <string name="arch_shape_title" msgid="2213843822192871318">"アーチ"</string>
     <string name="app_info_drop_target_label" msgid="692894985365717661">"アプリ情報"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"ショートカット メニュー"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"ホーム画面に追加"</string>
 </resources>

@@ -7,4 +7,6 @@
     <string name="seven_sided_cookie_shape_title">7-sided cookie</string>
     <string name="arch_shape_title">Arch</string>
     <string name="app_info_drop_target_label">App info</string>
+    <string name="action_deep_shortcut">Shortcut Menu</string>
+    <string name="action_add_to_workspace">Add to home screen</string>
 </resources>

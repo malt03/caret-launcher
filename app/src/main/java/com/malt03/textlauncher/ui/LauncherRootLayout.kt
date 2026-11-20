@@ -85,6 +85,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     private var targetBarTranslation = 0f
     private var statusBarTop = 0
     private var navBottom = 0
+
+    /** The part of the window the keyboard covers; the drag layer ends above it. */
+    private var overlayBottomCut = 0
     var isKeyboardVisible = false
         private set
 
@@ -138,10 +141,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
         (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop + dropTargetBarTopMargin
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-        // Launcher3's DragLayer gets the system bar insets; floating views such as the long-press
-        // menu keep inside them.
-        overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, navBottom))
         val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
+        // Launcher3's DragLayer gets the system bar insets; floating views such as the long-press
+        // menu keep inside them. TextLauncher: the keyboard is shown most of the time
+        // (docs/spec.md 1.3), so the drag layer ends at its top (see onLayout), and floating
+        // views placed or centered in it stay above it.
+        overlayBottomCut = imeBottom
+        overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, if (imeBottom > 0) 0 else navBottom))
         // KeyboardInsetAnimationCallback animates from the old to this value.
         targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()
         barContainer.translationY = targetBarTranslation
@@ -169,7 +175,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         measureContentArea(width, contentBottom() - statusBarTop)
         overlay.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(height - overlayBottomCut, MeasureSpec.EXACTLY),
         )
         scrim.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
@@ -188,7 +194,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         barContainer.layout(0, barTop, width, barTop + barContainer.measuredHeight)
         searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
         layoutContentArea(force = true)
-        overlay.layout(0, 0, width, height)
+        overlay.layout(0, 0, width, height - overlayBottomCut)
         scrim.layout(0, 0, width, height)
         wallpaperScrim.layout(0, 0, width, height)
     }

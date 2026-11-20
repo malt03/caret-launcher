@@ -3,11 +3,22 @@ package com.android.launcher3.dagger;
 import com.android.launcher3.dragndrop.DragController;
 
 /**
- * Stand-in for Launcher3's Dagger activity component. Only what DragController and DragView read.
+ * Stand-in for Launcher3's Dagger activity component. Only what DragController, DragView and the long-press menu read.
  * There is no system (cross-window) drag. The app may override the icon loader for DragView's
  * spring icons.
  */
 public class ActivityComponent {
+    private com.android.launcher3.popup.PopupDataProvider mPopupDataProvider;
+
+    /** TextLauncher: the popup data provider is made by the app, which knows the context. */
+    public void setPopupDataProvider(com.android.launcher3.popup.PopupDataProvider provider) {
+        mPopupDataProvider = provider;
+    }
+
+    public com.android.launcher3.popup.PopupDataProvider getPopupDataProvider() {
+        return mPopupDataProvider;
+    }
+
     public DragController.SystemDragHandler getSystemDragController() {
         return null;
     }

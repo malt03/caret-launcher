@@ -2,4 +2,6 @@
 <!-- TextLauncher: strings copied from Launcher3 res/values-zh-rTW/strings.xml (android-17.0.0_r1) that the copied code uses. -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_info_drop_target_label" msgid="692894985365717661">"應用程式資訊"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"快速鍵選單"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"新增至主畫面"</string>
 </resources>

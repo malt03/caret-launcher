@@ -2,4 +2,6 @@
 <!-- TextLauncher: strings copied from Launcher3 res/values-ru/strings.xml (android-17.0.0_r1) that the copied code uses. -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_info_drop_target_label" msgid="692894985365717661">"О приложении"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"Быстрое меню"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"Добавить на главный экран"</string>
 </resources>

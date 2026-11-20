@@ -101,16 +101,6 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
 
     public static class AppInfo<T extends ActivityContext> extends SystemShortcut<T> {
 
-        /**
-         * TextLauncher: Launcher3 reads the component from the WorkspaceItemInfo; the app's
-         * ItemInfo for an app gives it here.
-         */
-        public interface Target {
-            ComponentName getComponent();
-
-            android.os.UserHandle getUser();
-        }
-
         public AppInfo(T target, ItemInfo itemInfo, @NonNull View originalView) {
             super(getDrawableId(), R.string.app_info_drop_target_label, target,
                     itemInfo, originalView);
@@ -131,13 +121,17 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
             startDetailsActivityForInfo(view.getContext(), mItemInfo, sourceBounds);
         }
 
-        /** PackageManagerHelper.startDetailsActivityForInfo */
+        /**
+         * PackageManagerHelper.startDetailsActivityForInfo. TextLauncher: every item here is an
+         * installed app's WorkspaceItemInfo.
+         */
         private static void startDetailsActivityForInfo(Context context, ItemInfo info,
                 Rect sourceBounds) {
-            if (info instanceof Target app) {
+            ComponentName componentName = info.getTargetComponent();
+            if (componentName != null) {
                 try {
                     context.getSystemService(LauncherApps.class).startAppDetailsActivity(
-                            app.getComponent(), app.getUser(), sourceBounds, null);
+                            componentName, info.user, sourceBounds, null);
                 } catch (SecurityException | ActivityNotFoundException e) {
                     Log.e(TAG, "Unable to launch settings", e);
                 }

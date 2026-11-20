@@ -2,4 +2,6 @@
 <!-- TextLauncher: strings copied from Launcher3 res/values-ml/strings.xml (android-17.0.0_r1) that the copied code uses. -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ആപ്പ് വിവരങ്ങൾ"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"കുറുക്കുവഴി മെനു"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"ഹോം സ്‌ക്രീനിലേക്ക് ചേർക്കുക"</string>
 </resources>

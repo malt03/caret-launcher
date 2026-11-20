@@ -3,7 +3,6 @@ package com.malt03.textlauncher.ui.home
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
-import android.os.UserHandle
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -15,7 +14,6 @@ import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
-import com.android.launcher3.popup.SystemShortcut
 import com.android.launcher3.util.MultiTranslateDelegate
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.data.AppEntry
@@ -24,15 +22,16 @@ import com.malt03.textlauncher.data.AppEntry
  * An app as Launcher3's views and drag code see it (WorkspaceItemInfo): what is dragged, and what
  * a folder holds.
  */
-class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo(), SystemShortcut.AppInfo.Target {
+class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo() {
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
         if (bitmap != null) this.bitmap = bitmap
+        user = entry.user
+        title = entry.label
     }
 
+    /** ItemInfo.mComponentName */
     override fun getComponent(): ComponentName = entry.component
-
-    override fun getUser(): UserHandle = entry.user
 }
 
 /** A view on the home grid. Launcher3's ReorderPreviewAnimation shakes it through [Reorderable]. */

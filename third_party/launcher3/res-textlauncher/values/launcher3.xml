@@ -65,7 +65,9 @@
 
     <!-- Long-press menu: AbstractFloatingView, ArrowPopup, PopupContainer and the system
          shortcut rows (layout/system_shortcut*.xml, drawable/popup_background.xml,
-         drawable/*_item_primary.xml, drawable/info_24px.xml, drawable/gm_edit_24.xml and
+         drawable/*_item_primary.xml, drawable/info_24px.xml, drawable/gm_edit_24.xml,
+         layout/deep_shortcut*.xml, drawable/ic_deepshortcut_placeholder.xml,
+         drawable/ic_add_circle_filled.xml, drawable/deep_shortcuts_text_placeholder.xml and
          color/popup_shade_*.xml are copied as is) -->
     <attr name="popupColorPrimary" format="color" />
     <attr name="popupColorSecondary" format="color" />
@@ -133,6 +135,15 @@
     <dimen name="system_shortcut_margin_start">16dp</dimen>
     <dimen name="system_shortcut_header_height">52dp</dimen>
     <dimen name="deep_shortcuts_start_drag_threshold">16dp</dimen>
+    <dimen name="deep_shortcut_icon_size">35dp</dimen>
+    <dimen name="deep_shortcut_drawable_padding">16dp</dimen>
+    <dimen name="deep_shortcut_add_button_size">48dp</dimen>
+    <dimen name="popup_padding_start">10dp</dimen>
+    <dimen name="deep_shortcut_text_end_padding">48dp</dimen>
+    <dimen name="system_shortcut_header_icon_touch_size">48dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding">14dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding_outer">16dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding_inner">12dp</dimen>
     <!-- values/config.xml -->
     <item type="id" name="popup_container" />
     <string name="popup_container_iterate_children" translatable="false">popup_container_iterate_children</string>
@@ -148,6 +159,13 @@
         <item name="android:defaultFocusHighlightEnabled">false</item>
         <!-- No shadows in the base theme -->
         <item name="android:shadowRadius">0</item>
+    </style>
+    <style name="BaseIcon" parent="BaseIconUnBounded">
+        <item name="android:lines">1</item>
+    </style>
+    <style name="PopupItemIconOnly">
+        <item name="android:colorControlHighlight">?attr/popupColorTertiary</item>
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
     </style>
     <style name="PopupItem">
         <item name="android:colorControlHighlight">?attr/popupColorTertiary</item>

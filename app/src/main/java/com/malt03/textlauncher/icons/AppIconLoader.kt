@@ -8,6 +8,8 @@ import android.os.Looper
 import android.util.LruCache
 import androidx.core.graphics.PathParser
 import com.android.launcher3.Flags
+import com.android.launcher3.LauncherAppState
+import com.android.launcher3.icons.IconCache
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.GraphicsUtils
@@ -39,7 +41,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     /** Bumped on every settings change; results computed for an older generation are dropped. */
     private var generation = 0
 
-    private var isThemed = settings.isThemed
+    @Volatile private var isThemed = settings.isThemed
     private var iconShape: IconShape = createIconShape(settings.shape.pathString)
 
     // Used only on [executor]: BaseIconFactory is not thread safe.
@@ -48,6 +50,26 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     init {
         settings.addListener(::onSettingsChanged)
         updateThemeManager()
+        LauncherAppState.getInstance(context).iconCache.setShortcutIconFactory(ShortcutIconFactory())
+    }
+
+    /**
+     * CacheableShortcutCachingLogic.loadIcon for the app shortcuts in the long-press menu. Runs on
+     * Launcher3's model thread, so it makes its own factory (LauncherIcons come from a pool).
+     */
+    private inner class ShortcutIconFactory : IconCache.ShortcutIconFactory {
+        private val appContext = this@AppIconLoader.context
+
+        override fun getContext(): Context = appContext
+
+        override fun getFullResIconDpi(): Int = appContext.resources.configuration.densityDpi
+
+        override fun createShortcutIconBitmap(icon: Drawable): BitmapInfo =
+            createFactory(isThemed).createBadgedIconBitmap(
+                icon,
+                BaseIconFactory.IconOptions()
+                    .setExtractedColor(GraphicsUtils.getAttrColor(appContext, android.R.attr.colorAccent)),
+            )
     }
 
     /**

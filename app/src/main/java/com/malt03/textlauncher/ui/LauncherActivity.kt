@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.LauncherApps
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -227,6 +228,19 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         val top = resultsAdapter.items.firstOrNull() ?: return
         val view = results.findViewHolderForAdapterPosition(0)?.itemView
         launch(top, view, fromSearch = true)
+    }
+
+    /** Launcher.startShortcut, for an app shortcut in the long-press menu. */
+    override fun startShortcut(packageName: String, id: String, view: View, user: UserHandle) {
+        val location = IntArray(2).also { view.getLocationOnScreen(it) }
+        val bounds = Rect(location[0], location[1], location[0] + view.width, location[1] + view.height)
+        val options = ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.width, view.height).toBundle()
+        isLaunching = true
+        try {
+            getSystemService(LauncherApps::class.java).startShortcut(packageName, id, bounds, options, user)
+        } catch (e: Exception) {
+            isLaunching = false
+        }
     }
 
     private fun launch(entry: AppEntry, view: View?, fromSearch: Boolean) {

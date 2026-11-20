@@ -2,12 +2,24 @@ package com.android.launcher3;
 
 import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
 
+import static com.android.launcher3.icons.BitmapInfo.FLAG_NO_BADGE;
+import static com.android.launcher3.icons.BitmapInfo.FLAG_THEMED;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.widget.TextView;
+
+import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.ItemInfoWithIcon;
+import com.android.launcher3.model.data.WorkspaceItemInfo;
 
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.dragndrop.DraggableView;
@@ -33,9 +45,18 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
     private static final int TEXT_ALPHA_INDEX_CONTAINER_VISIBILITY = 0;
     private static final int TEXT_ALPHA_INDEX_TRANSITION = 1;
 
+    public static final int DISPLAY_SHORTCUT_POPUP = 4;
+    public static final int DISPLAY_TASKBAR = 5;
+
     private int mTextColor;
     private ColorStateList mTextColorStateList;
     private boolean mHideBadge = false;
+
+    private final boolean mLayoutHorizontal;
+    private final int mIconSize;
+    private final int mDisplay;
+    private FastBitmapDrawable mIcon;
+    private boolean mIsIconVisible = true;
 
     private final AnimatedFloat mTextAlpha = new AnimatedFloat(() -> {
         if (mTextColorStateList != null) {
@@ -62,21 +83,128 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
 
     public BubbleTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        TypedArray a = context.obtainStyledAttributes(attrs,
+                R.styleable.BubbleTextView, defStyle, 0);
+        mLayoutHorizontal = a.getBoolean(R.styleable.BubbleTextView_layoutHorizontal, false);
+        mDisplay = a.getInteger(R.styleable.BubbleTextView_iconDisplay, DISPLAY_WORKSPACE);
+        // TextLauncher: the default size comes from the device profile in Launcher3; the views
+        // that draw an icon here give its size (iconSizeOverride, or getIconSize in the app).
+        mIconSize = a.getDimensionPixelSize(R.styleable.BubbleTextView_iconSizeOverride, 0);
+        a.recycle();
     }
 
-    /** TextLauncher: the icon size; the app's icon view gives it. */
+    /** TextLauncher: the icon size; the app's icon view overrides it. */
     public int getIconSize() {
-        return 0;
+        return mIconSize;
     }
 
-    /** TextLauncher: the icon; the app's icon view draws and returns it. */
+    /** Returns the icon for this view. */
     public FastBitmapDrawable getIcon() {
-        return null;
+        return mIcon;
     }
 
     public int getIconDisplay() {
-        return DISPLAY_WORKSPACE;
+        return mDisplay;
     }
+
+    public void applyFromWorkspaceItem(WorkspaceItemInfo info) {
+        applyIconAndLabel(info);
+        setItemInfo(info);
+
+        // NOTE: We do not verify high res immediately for workspace items as doing so would result
+        // in eager loading of icons for foldered items which should instead be lazily loaded on
+        // first open.
+        // TextLauncher: no notification dots or download states.
+    }
+
+    protected void setItemInfo(ItemInfoWithIcon itemInfo) {
+        setTag(itemInfo);
+    }
+
+    /** TextLauncher: no automated or pending icons, so always BubbleTextView.setStandardIcon. */
+    public void applyIconAndLabel(ItemInfoWithIcon info) {
+        FastBitmapDrawable iconDrawable =
+                info.newIcon(getContext(), getIconCreationFlagsForInfo(info));
+        setIcon(iconDrawable);
+        applyLabel(info);
+    }
+
+    /**
+     * Returns the creation flags for the icon of the given info.
+     */
+    public int getIconCreationFlagsForInfo(ItemInfoWithIcon info) {
+        // Set nonPendingIcon acts as a restart which should refresh the flag state when applicable.
+        int flags = shouldUseTheme() ? FLAG_THEMED : 0;
+        // Remove badge on icons smaller than 48dp.
+        if (mHideBadge) {
+            flags |= FLAG_NO_BADGE;
+        }
+        return flags;
+    }
+
+    protected boolean shouldUseTheme() {
+        return mDisplay == DISPLAY_WORKSPACE || mDisplay == DISPLAY_FOLDER
+                || mDisplay == DISPLAY_TASKBAR;
+    }
+
+    public void applyLabel(ItemInfo info) {
+        CharSequence label = info.title;
+        if (label != null) {
+            setText(label);
+        }
+        if (info.contentDescription != null) {
+            setContentDescription(info.contentDescription);
+        }
+    }
+
+    protected void setIcon(FastBitmapDrawable icon) {
+        if (mIsIconVisible) {
+            applyCompoundDrawables(icon);
+        }
+        mIcon = icon;
+        if (mIcon != null) {
+            mIcon.setVisible(getWindowVisibility() == VISIBLE && isShown(), false);
+        }
+    }
+
+    protected void applyCompoundDrawables(Drawable icon) {
+        if (icon == null) {
+            // Icon can be null when we use the BubbleTextView for text only.
+            return;
+        }
+
+        icon.setBounds(0, 0, mIconSize, mIconSize);
+
+        updateIcon(icon);
+    }
+
+    private void updateIcon(Drawable newIcon) {
+        if (mLayoutHorizontal) {
+            setCompoundDrawablesRelative(newIcon, null, null, null);
+        } else {
+            setCompoundDrawables(null, newIcon, null, null);
+        }
+    }
+
+    protected boolean shouldIgnoreTouchDown(MotionEvent event) {
+        if (mDisplay == DISPLAY_TASKBAR) {
+            // Allow touching within padding on taskbar, given icon sizes are smaller.
+            return false;
+        }
+        return event.getY() < getPaddingTop()
+                || event.getX() < getPaddingLeft()
+                || event.getY() > getHeight() - getPaddingBottom()
+                || event.getX() > getWidth() - getPaddingRight();
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawDotIfNecessary(canvas);
+    }
+
+    /** TextLauncher: no notification dots. */
+    protected void drawDotIfNecessary(Canvas canvas) { }
 
     public void setHideBadge(boolean hideBadge) {
         mHideBadge = hideBadge;
@@ -141,9 +269,19 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
     @Override
     public void setForceHideDot(boolean forceHideDot) { }
 
-    /** TextLauncher: the app's icon view hides and shows its icon. */
     @Override
-    public void setIconVisible(boolean visible) { }
+    public void setIconVisible(boolean visible) {
+        mIsIconVisible = visible;
+        if (!mIsIconVisible) {
+            resetIconScale();
+        }
+        Drawable icon = getIconOrTransparentColor();
+        applyCompoundDrawables(icon);
+    }
+
+    private Drawable getIconOrTransparentColor() {
+        return mIsIconVisible ? mIcon : new ColorDrawable(Color.TRANSPARENT);
+    }
 
     @Override
     public int getIconHeight() {
