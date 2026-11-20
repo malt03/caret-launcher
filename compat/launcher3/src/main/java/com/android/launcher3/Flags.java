@@ -30,8 +30,28 @@ public final class Flags {
         return false;
     }
 
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean enableDragStartEndMultiDispatch() {
+        return false;
+    }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean enableSystemDrag() {
+        return false;
+    }
+
     /** cp1a: ENABLED */
     public static boolean enableExpressiveFolderExpansion() {
+        return true;
+    }
+
+    /** Not set in bp4a / cp1a (cp2a enables it): declaration default (disabled). */
+    public static boolean enableAppAutomationIndicator() {
+        return false;
+    }
+
+    /** bp3a: ENABLED (cp1a inherits bp4a, which inherits bp3a) */
+    public static boolean msdlFeedback() {
         return true;
     }
 }

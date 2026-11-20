@@ -6,4 +6,7 @@
     <dimen name="search_bar_margin_vertical">8dp</dimen>
     <dimen name="result_icon_size">44dp</dimen>
     <dimen name="result_row_height">60dp</dimen>
+    <!-- Launcher3 res/values/dimens.xml (android-17.0.0_r1): drop target bar -->
+    <dimen name="drop_target_drag_padding">14dp</dimen>
+    <dimen name="drop_target_button_drawable_size">20dp</dimen>
 </resources>

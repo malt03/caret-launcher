@@ -38,3 +38,7 @@ tags: [home]
 **2026-11-20T12:32:36Z**
 
 長押しメニューから 16dp（deep_shortcuts_start_drag_threshold）動かすとドラッグに移る動きを実装し、エミュレータで確認。メニューの見た目はまだ標準の PopupMenu
+
+**2026-11-20T14:44:16Z**
+
+長押しメニューからの移行を Launcher3 の pre-drag（BubbleTextView.startLongPressAction と PopupContainer.createPreDragCondition）に置き換えた。長押しで DragView が少し持ち上がった状態で出て、16dp 動かすとメニューが閉じてドラッグが始まる。動かさずに離すとメニューだけ残る。メニュー本体は PopupMenu のまま

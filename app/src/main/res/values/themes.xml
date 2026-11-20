@@ -12,5 +12,7 @@
         <item name="folderPreviewColor">@color/folder_preview_light</item>
         <item name="folderBackgroundColor">@color/folder_background_light</item>
         <item name="folderIconBorderColor">?android:attr/colorPrimary</item>
+        <!-- LauncherTheme and LauncherTheme.Dark; only the DarkText themes (light wallpapers) use _dark -->
+        <item name="workspaceAccentColor">@color/workspace_accent_color_light</item>
     </style>
 </resources>

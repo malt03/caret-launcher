@@ -10,4 +10,20 @@ public class ItemInfo {
     public int spanX = 1;
     public int spanY = 1;
     public int rank = 0;
+    public int itemType = 0;
+
+    public ItemInfo makeShallowCopy() {
+        ItemInfo info = new ItemInfo();
+        info.cellX = cellX;
+        info.cellY = cellY;
+        info.spanX = spanX;
+        info.spanY = spanY;
+        info.rank = rank;
+        info.itemType = itemType;
+        return info;
+    }
+
+    public boolean isDisabled() {
+        return false;
+    }
 }

@@ -40,6 +40,24 @@ path=src/com/android/launcher3/graphics/PathWrapper.kt
 path=src/com/android/launcher3/celllayout/DelegatedCellDrawing.kt
 path=src/com/android/launcher3/views/ClipPathView.java
 path=src/com/android/launcher3/util/MultiScalePropertyFactory.java
+path=src/com/android/launcher3/dragndrop/DragController.java
+path=src/com/android/launcher3/dragndrop/DragView.java
+path=src/com/android/launcher3/dragndrop/DragDriver.java
+path=src/com/android/launcher3/dragndrop/DragOptions.java
+path=src/com/android/launcher3/dragndrop/DraggableView.java
+path=src/com/android/launcher3/DropTarget.java
+path=src/com/android/launcher3/DragSource.java
+path=src/com/android/launcher3/util/TouchController.java
+path=src/com/android/launcher3/util/RunnableList.java
+path=src/com/android/launcher3/util/TouchUtil.java
+path=src/com/android/launcher3/util/ViewEx.kt
+path=src/com/android/launcher3/graphics/DragPreviewProvider.java
+path=src/com/android/launcher3/Alarm.java
+path=src/com/android/launcher3/OnAlarmListener.java
+path=src/com/android/launcher3/InterruptibleInOutAnimator.java
+path=src/com/android/launcher3/folder/PreviewItemManager.java
+path=src/com/android/launcher3/folder/FolderPreviewItemAnim.java
+path=src/com/android/launcher3/folder/PreviewItemDrawingParams.java
 ```
 
 ## 取り込んでいないもの
@@ -47,7 +65,7 @@ path=src/com/android/launcher3/util/MultiScalePropertyFactory.java
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、`values/folder.xml` にまとめたフォルダ用の attr・色・寸法）と、`drawable/round_rect_folder.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、`values/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠用の attr・色・寸法・時間）と、`drawable/round_rect_folder.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 
@@ -60,17 +78,18 @@ path=src/com/android/launcher3/util/MultiScalePropertyFactory.java
 | クラス | 使っているファイル |
 |---|---|
 | `com.android.launcher3.Utilities`（`mapRange`） | `anim/KeyboardInsetAnimationCallback.java` |
-| `com.android.launcher3.CellLayout`（画面には置かない。アルゴリズムと委譲描画が使うメンバーだけを `CellLayout.java` から移した） | `celllayout/ReorderAlgorithm.java`、`celllayout/ViewCluster.kt` |
-| `com.android.launcher3.model.data.ItemInfo`（`cellX`、`cellY`、`spanX`、`spanY` だけ） | `util/GridOccupancy.java` |
-| `com.android.launcher3.folder.PreviewItemDrawingParams`（位置と拡大率だけ。公開の getter を追加） | `folder/ClippedFolderIconLayoutRule.java` |
+| `com.android.launcher3.CellLayout`（画面には置かない。アルゴリズム、並び替えの反映、落とし先の枠、委譲描画のメンバーを `CellLayout.java` から移した。子 View はホームのグリッドが `CellLayout.Children` として持つ） | `celllayout/ReorderAlgorithm.java`、`celllayout/ViewCluster.kt`、`celllayout/ReorderPreviewAnimation.kt`、`folder/PreviewBackground.java` |
+| `com.android.launcher3.model.data.ItemInfo`、`ItemInfoWithIcon`、`WorkspaceItemInfo`、`FolderInfo`、`AppPairInfo` | `util/GridOccupancy.java`、ドラッグ、`folder/PreviewItemManager.java`。`ItemInfoWithIcon.newIcon` は元の処理を写した |
 | `com.android.launcher3.LauncherAnimUtils`（`VIEW_TRANSLATE_X`、`VIEW_TRANSLATE_Y`） | `util/MultiTranslateDelegate.java` |
 | `com.android.launcher3.Workspace`（`REORDER_TIMEOUT`） | `celllayout/ReorderPreviewAnimation.kt` |
 | `com.android.launcher3.util.window.RefreshRateTracker`（`getSingleFrameMs`。ディスプレイのリフレッシュレートから計算） | `anim/SpringAnimationBuilder.java` |
-| `com.android.launcher3.folder.Folder`、`FolderIcon`、`FolderPagedView`、`PreviewItemManager`、`LauncherDelegate` | フォルダのアニメーション（`folder/` 以下）。アプリ側の `OpenFolder`、`FolderIconView` がこれらを継承する。1ページだけで、名前とフッターは持たない |
+| `com.android.launcher3.folder.Folder`、`FolderIcon`、`FolderPagedView`、`LauncherDelegate` | フォルダのアニメーション、プレビュー、ドロップ（`folder/` 以下）。アプリ側の `OpenFolder`、`FolderIconView` がこれらを継承する。1ページだけで、名前とフッターは持たない。`FolderIcon` のプレビュー描画、`onDrop`、`performCreateAnimation` などは `FolderIcon.java` から移した。`FolderIcon` が `Folder` に対して呼ぶ処理は `FolderIcon.FolderContent` が受ける |
 | `com.android.launcher3.BubbleTextView`、`apppairs.AppPairIcon` | フォルダのアニメーション。アプリ側の `AppIconView` が `BubbleTextView` を継承する。ラベルがないので文字の透明度は何もしない |
 | `com.android.launcher3.Launcher`、`Workspace`、`Hotseat`、`views.ScrimView` | フォルダの背景の暗転と縮小。`Workspace` はホームのグリッドを、`Hotseat` は検索フィールドを包む |
-| `com.android.launcher3.views.BaseDragLayer`、`views.ActivityContext`、`DeviceProfile` | フォルダの配置と寸法。`DeviceProfile` はフォルダの列数・行数とアイコンサイズだけ |
-| `com.android.launcher3.graphics.ThemeManager` | フォルダの形。選んだアイコン形状の `folderRadiusRatio` から作る（`ThemeManager.parseIconState` と同じ） |
+| `com.android.launcher3.views.BaseDragLayer`、`views.ActivityContext`、`DeviceProfile` | フォルダの配置と寸法、ドラッグ。`BaseDragLayer` には `DragLayer` のドロップアニメーション（`animateViewIntoPosition`、`animateView`）を移した。ホームの上に重ねた層なので、層の外の View は親を通して座標を変換する。`DeviceProfile` はフォルダの列数・行数とアイコンサイズだけ |
+| `com.android.launcher3.graphics.ThemeManager` | アイコンのテーマの有無と形状（アプリのアイコン読み込みが設定する）、フォルダの形。フォルダの形は選んだアイコン形状の `folderRadiusRatio` から作る（`ThemeManager.parseIconState` と同じ） |
 | `com.android.launcher3.ShortcutAndWidgetContainer`、`util.Themes`、`model.data.FolderInfo` | フォルダのアニメーションと `FolderGridOrganizer` |
-| `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt` |
+| `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ |
+| `com.android.launcher3.AbstractFloatingView`、`LauncherSettings`、`BuildConfig`、`LauncherAppState`、`icons.IconCache`、`dagger/`、`logging/`、`accessibility.DragViewStateAnnouncer`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView`、`util.Executors` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（システムのドラッグ、ウィジェット、App Pair、インストール中のアプリなど）は何もしないか、通らない |
+| `com.android.launcher3.dragndrop.DragLayerAccess` | `BaseDragLayer` の互換クラスから、`DragController` のパッケージ内メソッド（`onDeferredEndDrag`）を呼ぶため |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

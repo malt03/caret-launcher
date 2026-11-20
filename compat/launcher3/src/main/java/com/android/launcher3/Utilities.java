@@ -49,6 +49,47 @@ public final class Utilities {
         return scale;
     }
 
+    private static final android.graphics.Matrix sMatrix = new android.graphics.Matrix();
+    private static final android.graphics.Matrix sInverseMatrix = new android.graphics.Matrix();
+
+    public static void mapCoordInSelfToDescendant(android.view.View descendant, android.view.View root, float[] coord) {
+        sMatrix.reset();
+        //TODO(b/307488755) when implemented this check should be removed
+        if (!java.util.Objects.equals(descendant.getWindowId(), root.getWindowId())) {
+            return;
+        }
+        android.view.View v = descendant;
+        while (v != root) {
+            sMatrix.postTranslate(-v.getScrollX(), -v.getScrollY());
+            sMatrix.postConcat(v.getMatrix());
+            sMatrix.postTranslate(v.getLeft(), v.getTop());
+            v = (android.view.View) v.getParent();
+        }
+        sMatrix.postTranslate(-v.getScrollX(), -v.getScrollY());
+        sMatrix.invert(sInverseMatrix);
+        sInverseMatrix.mapPoints(coord);
+    }
+
+    /**
+     * Sets {@param out} to be same as {@param in} by rounding individual values
+     */
+    public static void roundArray(float[] in, int[] out) {
+        for (int i = 0; i < in.length; i++) {
+            out[i] = Math.round(in[i]);
+        }
+    }
+
+    public static void scaleRectAboutCenter(android.graphics.Rect r, float scale) {
+        if (scale != 1.0f) {
+            float cx = r.exactCenterX();
+            float cy = r.exactCenterY();
+            r.left = Math.round(cx + (r.left - cx) * scale);
+            r.top = Math.round(cy + (r.top - cy) * scale);
+            r.right = Math.round(cx + (r.right - cx) * scale);
+            r.bottom = Math.round(cy + (r.bottom - cy) * scale);
+        }
+    }
+
     public static void offsetPoints(float[] points, float offsetX, float offsetY) {
         for (int i = 0; i < points.length; i += 2) {
             points[i] += offsetX;
@@ -58,5 +99,10 @@ public final class Utilities {
 
     public static float mapRange(float value, float min, float max) {
         return min + (value * (max - min));
+    }
+
+    /** Utilities.dpToPx */
+    public static int dpToPx(float dp) {
+        return (int) (dp * android.content.res.Resources.getSystem().getDisplayMetrics().density);
     }
 }

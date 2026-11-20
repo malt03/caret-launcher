@@ -9,7 +9,6 @@ import android.view.WindowInsets
 import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.ui.drag.DropTargetBar
 import com.android.launcher3.Hotseat
 import com.android.launcher3.views.BaseDragLayer
 import com.android.launcher3.views.ScrimView
@@ -32,24 +31,23 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     var onKeyboardHidden: (() -> Unit)? = null
 
     /** Full-size layer on top of everything: drag views, open folders (Launcher3's drag layer). */
-    val overlay = BaseDragLayer(context)
+    val overlay = BaseDragLayer<Any>(context)
 
     /** Dims the home screen while a folder is open (Launcher3's ScrimView). */
     val scrim = ScrimView(context)
-    val dropTargetBar = DropTargetBar(context)
-    private val dropTargetBarHeight = (64 * resources.displayMetrics.density).toInt()
+    private var dropTargetBar: View? = null
+    val dropTargetBarHeight = (64 * resources.displayMetrics.density).toInt()
 
     /**
-     * Sees every touch event before the children. When it returns true the event is consumed
-     * and the children get ACTION_CANCEL once (used by drag and drop).
+     * Sees every touch event before the children, in this view's coordinates, which are the
+     * overlay's. When it returns true the event is consumed and the children get ACTION_CANCEL
+     * once (BaseDragLayer's touch controllers: drag and drop).
      */
     var touchInterceptor: ((MotionEvent) -> Boolean)? = null
     private var childrenCancelled = false
 
-    /** Raw position of the latest ACTION_DOWN. */
-    var lastDownRawX = 0f
-        private set
-    var lastDownRawY = 0f
+    /** Launcher.isTouchInProgress */
+    var isTouchInProgress = false
         private set
 
     /** The search field and its margins; Launcher3's hotseat for the folder animation. */
@@ -74,7 +72,6 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         addView(contentArea)
         barContainer.addView(searchBar)
         addView(barContainer)
-        overlay.addView(dropTargetBar, LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarHeight))
         addView(scrim)
         addView(overlay)
         isFocusableInTouchMode = true
@@ -96,10 +93,12 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            lastDownRawX = ev.rawX
-            lastDownRawY = ev.rawY
-            childrenCancelled = false
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                isTouchInProgress = true
+                childrenCancelled = false
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> isTouchInProgress = false
         }
         if (touchInterceptor?.invoke(ev) == true) {
             if (!childrenCancelled) {
@@ -115,6 +114,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
+        (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
         val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
         // KeyboardInsetAnimationCallback animates from the old to this value.
@@ -161,7 +161,6 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         layoutContentArea(force = true)
         overlay.layout(0, 0, width, height)
         scrim.layout(0, 0, width, height)
-        dropTargetBar.layout(0, statusBarTop, width, statusBarTop + dropTargetBarHeight)
     }
 
     /** The visual top of the search field container, including keyboard translation. */
@@ -181,6 +180,12 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         if (unchanged && !force && !contentArea.isLayoutRequested) return
         measureContentArea(width, bottom - statusBarTop)
         contentArea.layout(0, statusBarTop, width, bottom)
+    }
+
+    /** Launcher3's DropTargetBar sits in the drag layer, below the status bar. */
+    fun attachDropTargetBar(bar: View) {
+        dropTargetBar = bar
+        overlay.addView(bar, 0, LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarHeight).apply { topMargin = statusBarTop })
     }
 
     fun isInsideSearchBar(view: View): Boolean = view === searchBar || view.parent === searchBar

@@ -49,3 +49,7 @@ DragController と DropTargetBar を実装。検索結果・ホーム・フォ�
 **2026-11-20T12:43:18Z**
 
 押しのけのアニメーションを Launcher3 から移植（ReorderPreviewAnimation.kt をコピー。animateChildToPosition と hint/preview の呼び出しは CellLayout に倣って実装）。押下フィードバックは FastBitmapDrawable に押下状態を渡して有効化。フォルダの受け皿（PreviewBackground の ACCEPT_SCALE_FACTOR 1.2 / 100ms）と作成アニメーション（400ms）を追加
+
+**2026-11-20T14:44:16Z**
+
+ドラッグをコピー方式に寄せた。DragController / DragView / DragPreviewProvider などをコピーし、Workspace のドラッグ部分を HomeWorkspace、LauncherDragController を HomeDragController、ButtonDropTarget 系を DropTargetBar、Folder のドラッグ元を FolderDragSource に同じ名前とロジックで書き写した。並び替えの反映（performReorder / revertTempState / visualizeDropLocation）は CellLayout 互換クラスへ移し、フォルダのプレビューと作成・ドロップのアニメーションは PreviewItemManager / FolderPreviewItemAnim をコピーして FolderIcon 互換クラスで動かす。エミュレータで、フォルダとアプリの移動、検索結果からの追加、既存フォルダへの追加、フォルダ作成、フォルダから出して1つ残ると解除、並び替え、削除、アンインストールのキャンセルを確認

@@ -12,4 +12,12 @@ public abstract class AppPairIcon extends View {
     }
 
     public abstract BubbleTextView getTitleTextView();
+
+    /** AppPairIcon.getIconDrawableArea, for folder/PreviewItemManager. */
+    public abstract IconDrawableArea getIconDrawableArea();
+
+    /** Stand-in for AppPairIconDrawableBackground's view. */
+    public interface IconDrawableArea {
+        android.graphics.drawable.Drawable getDrawable();
+    }
 }

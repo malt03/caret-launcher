@@ -34,15 +34,15 @@ import com.malt03.textlauncher.ui.GridSpec
  */
 @SuppressLint("ViewConstructor")
 class OpenFolder(
-    private val dragLayer: BaseDragLayer,
+    private val dragLayer: BaseDragLayer<*>,
     private val folderIconView: FolderIconView,
-    entries: List<AppEntry>,
+    items: List<AppItemInfo>,
     grid: GridSpec,
     iconLoader: AppIconLoader,
     activityContext: ActivityContext,
     private val launcher: Launcher,
     onClick: (AppEntry, View) -> Unit,
-    onLongPress: (AppEntry, View) -> Unit,
+    onLongPress: (AppItemInfo, AppIconView) -> Unit,
     private val onDismiss: () -> Unit,
 ) : Folder(dragLayer.context, activityContext) {
     private val density = context.resources.displayMetrics.density
@@ -58,10 +58,9 @@ class OpenFolder(
         val drawable = ResourcesCompat.getDrawable(resources, com.android.launcher3.R.drawable.round_rect_folder, context.theme) as GradientDrawable
         mBackground.color = drawable.color
         mBackground.cornerRadius = drawable.cornerRadius
-        elevation = 8 * density
 
         // FolderGridOrganizer, as Folder sizes its pages.
-        repeat(entries.size) { mInfo.contents.add(ItemInfo()) }
+        repeat(items.size) { mInfo.contents.add(ItemInfo()) }
         val organizer = FolderGridOrganizer.createFolderGridOrganizer(activityContext.deviceProfile).setFolderInfo(mInfo)
         val countX = organizer.countX
         val countY = organizer.countY
@@ -69,15 +68,17 @@ class OpenFolder(
         val cellHeight = cellWidth
         val padding = (16 * density).toInt()
         val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
-        entries.forEachIndexed { rank, entry ->
+        items.forEachIndexed { rank, item ->
+            val entry = item.entry
             val icon = AppIconView(context, grid.iconSizePx)
-            iconLoader.load(entry) { info -> icon.icon = iconLoader.newDrawable(info) }
+            icon.itemInfo = item
+            iconLoader.load(entry) { info -> icon.iconDrawable = iconLoader.newDrawable(info) }
             icon.setOnClickListener {
                 dismiss()
                 onClick(entry, icon)
             }
             icon.setOnLongClickListener {
-                onLongPress(entry, icon)
+                onLongPress(item, icon)
                 true
             }
             val pos = organizer.getPosForRank(rank)

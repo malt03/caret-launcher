@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TextLauncher: resources copied from Launcher3 res/values (android-17.0.0_r1) that the copied
+  folder and drag code uses: attrs.xml, colors.xml (values-v31 for the accent colors),
+  config.xml and dimens.xml.
+  drawable/round_rect_folder.xml is copied as is.
+-->
+<resources>
+    <attr name="folderPreviewColor" format="color" />
+    <attr name="folderBackgroundColor" format="color" />
+    <attr name="folderIconBorderColor" format="color" />
+    <declare-styleable name="FolderIconPreview">
+        <attr name="folderPreviewColor" />
+        <attr name="folderIconBorderColor" />
+    </declare-styleable>
+    <color name="folder_background_light">#EFEDED</color>
+    <color name="folder_background_dark">#1F2020</color>
+    <color name="folder_preview_light">#7FCFFF</color>
+    <color name="folder_preview_dark">#1E1F20</color>
+    <integer name="config_materialFolderExpandDuration">200</integer>
+    <dimen name="bg_round_rect_radius">8dp</dimen>
+    <!-- dragndrop (util/ViewEx.kt also reads this id) -->
+    <item type="id" name="perform_a11y_action_on_launcher_state_normal_tag" />
+    <dimen name="blur_size_medium_outline">2dp</dimen>
+    <dimen name="pre_drag_view_scale">6dp</dimen>
+    <integer name="config_dropAnimMinDuration">100</integer>
+    <integer name="config_dropAnimMaxDuration">500</integer>
+    <integer name="config_dropAnimMaxDist">800</integer>
+    <!-- CellLayout drop location -->
+    <attr name="workspaceAccentColor" format="color" />
+    <color name="workspace_accent_color_light">@android:color/system_accent1_100</color>
+    <color name="workspace_accent_color_dark">@android:color/system_accent1_900</color>
+    <dimen name="grid_visualization_rounding_radius">16dp</dimen>
+    <dimen name="grid_visualization_horizontal_cell_spacing">6dp</dimen>
+    <dimen name="grid_visualization_vertical_cell_spacing">6dp</dimen>
+    <integer name="config_dragOutlineFadeTime">500</integer>
+    <integer name="config_dragOutlineMaxAlpha">255</integer>
+    <!-- ButtonDropTarget -->
+    <dimen name="drag_distanceThreshold">30dp</dimen>
+</resources>

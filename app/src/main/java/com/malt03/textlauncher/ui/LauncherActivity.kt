@@ -22,13 +22,14 @@ import com.malt03.textlauncher.search.Normalizer
 import com.malt03.textlauncher.search.Ranker
 import com.malt03.textlauncher.search.SearchCandidate
 import com.malt03.textlauncher.ui.home.HomeController
+import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.ui.search.ResultsAdapter
 
 /**
  * The home screen. The search field always has focus and the keyboard is always shown
  * (docs/spec.md 1).
  */
-class LauncherActivity : AppCompatActivity(), HomeController.Host {
+class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityContext.Provider {
     private companion object {
         const val MENU_SEARCH_TERMS = 1
         const val MENU_APP_INFO = 2
@@ -71,8 +72,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
             app.iconLoader,
             grid,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
-            onLongClick = { entry, view ->
-                home.onAppLongPress(entry, view, null, null)
+            onLongClick = { entry, iconView ->
+                home.onSearchResultLongPress(entry, iconView)
                 true
             },
         )
@@ -122,7 +123,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Home button while already on the home screen.
-        home.drag.cancel()
+        home.cancelDrag()
         home.closeFolder()
         clearQuery()
         focusSearch()
@@ -132,6 +133,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
         super.onResume()
         isResumedState = true
         isLaunching = false
+        home.onResume()
         focusSearch()
     }
 
@@ -143,7 +145,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
     override fun onStop() {
         super.onStop()
         // docs/spec.md 1.2: the query is cleared every time the launcher comes back.
-        home.drag.cancel()
+        home.cancelDrag()
         home.closeFolder()
         clearQuery()
     }
@@ -199,7 +201,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
 
     /**
      * Long-press menu for an app (docs/spec.md 5.3). Moving while pressing turns it into a drag
-     * (HomeController.onAppLongPress).
+     * (HomeController.startLongPressAction).
      * TODO(Tex-e1ph): replace this platform PopupMenu with a menu following Launcher3 popup/.
      */
     override fun showAppMenu(entry: AppEntry, anchor: View): PopupMenu {
@@ -233,6 +235,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
     }
 
     override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
+
+    /** ActivityContext.lookupContext finds Launcher3's ActivityContext through the activity. */
+    override fun getActivityContext(): ActivityContext = home.activityContext
 
     private fun launchTopResult() {
         val top = resultsAdapter.items.firstOrNull() ?: return

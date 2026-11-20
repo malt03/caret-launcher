@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.dynamicanimation)
     implementation(libs.androidx.graphics.shapes)
     api(project(":launcher3-compat"))

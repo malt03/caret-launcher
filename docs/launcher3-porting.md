@@ -32,11 +32,11 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 |---|---|---|---|
 | アイコン処理 | ライブラリごとコピー | `frameworks/libs/systemui/iconloaderlib/` | — |
 | アイコン形状の定義 | コピー | `shapes/ShapesProvider.kt`、`shapes/IconShapeModel.kt` | — |
-| 並び替え（押しのけ、空き探し） | アルゴリズムだけコピー | `celllayout/ReorderAlgorithm.java`、`celllayout/ItemConfiguration.kt`、`celllayout/ViewCluster.kt`、`celllayout/ReorderParameters.kt`、`celllayout/CellLayoutLayoutParams.java`、`util/GridOccupancy.java`、`util/CellAndSpan.java` | `CellLayout` は View ではない互換クラスにし、アルゴリズムが使うメンバー（`findNearestArea` 系、`cellToRect` など）だけを `CellLayout.java` から移す。結果をグリッドに反映する処理（`performReorder`、`animateItemsToSolution` など）は `CellLayout.java` に倣って自前で書く |
-| ドラッグ | 土台をコピー | `dragndrop/DragDriver.java`、`dragndrop/DragOptions.java`、`DropTarget.java`、`DragSource.java`、`dragndrop/DraggableView.java`、`util/TouchController.java`。余力があれば `dragndrop/DragController.java`、`dragndrop/DragView.java` も | ドラッグレイヤーと削除・アンインストールの落とし先は、`ButtonDropTarget` の閾値とアニメーションに倣って自前で書く |
+| 並び替え（押しのけ、空き探し） | アルゴリズムと反映をコピー | `celllayout/ReorderAlgorithm.java`、`celllayout/ItemConfiguration.kt`、`celllayout/ViewCluster.kt`、`celllayout/ReorderParameters.kt`、`celllayout/CellLayoutLayoutParams.java`、`celllayout/ReorderPreviewAnimation.kt`、`util/GridOccupancy.java`、`util/CellAndSpan.java`、`InterruptibleInOutAnimator.java` | `CellLayout` は画面に置かない互換クラスにし、アルゴリズム、結果の反映（`performReorder`、`animateItemsToSolution`、`revertTempState` など）、落とし先の枠（`visualizeDropLocation`）を `CellLayout.java` から移す。子 View の並べ方（`ShortcutAndWidgetContainer`）はホームのグリッドが受け持つ |
+| ドラッグ | コピー | `dragndrop/DragController.java`、`dragndrop/DragView.java`、`dragndrop/DragDriver.java`、`dragndrop/DragOptions.java`、`dragndrop/DraggableView.java`、`DropTarget.java`、`DragSource.java`、`graphics/DragPreviewProvider.java`、`util/TouchController.java`、`Alarm.java` など | `LauncherDragController` はアプリ側の `HomeDragController` に、`Workspace` のドラッグ部分（`onDragOver`、`onDrop`、フォルダ作成など）は `HomeWorkspace` に、`ButtonDropTarget`・`DeleteDropTarget`・`SecondaryDropTarget`・`DropTargetBar` は `DropTargetBar` に、`Folder` のドラッグ元の部分は `FolderDragSource` に、同じ名前とロジックのまま書き写す。`DragLayer` のドロップアニメーションは `BaseDragLayer` の互換クラスに移す |
 | 長押しメニューとドラッグへの移行 | 部品をコピー | `popup/RoundedArrowDrawable.java`、`popup/Popup.kt`、必要なら `popup/ArrowPopup.java` | メニュー本体は自前。ドラッグへの移行は `DragController` の pre-drag の仕組み（`DragOptions.preDragCondition`）を使う |
 | ウィジェットのリサイズ枠 | 自前（参考） | — | `AppWidgetResizeFrame.kt` に倣う。`applyDeltaAndBound`、`getSpanIncrement` の計算は移植する |
-| フォルダ | コピー | `folder/` の開閉アニメーション一式（`FolderAnimationSpringBuilderManager.kt`、`FolderSpringAnimatorSet.kt`、`FolderAnimationData.kt`、`ClipRevealData.kt`、`IconAnimationData.kt` など）、`folder/PreviewBackground.java`、`folder/ClippedFolderIconLayoutRule.java`、`folder/FolderGridOrganizer.java`、`graphics/ShapeDelegate.kt` | `Folder`、`FolderIcon`、`BubbleTextView`、`Launcher` などは互換クラスにし、アプリ側の View がそれを継承する |
+| フォルダ | コピー | `folder/` の開閉アニメーション一式（`FolderAnimationSpringBuilderManager.kt`、`FolderSpringAnimatorSet.kt`、`FolderAnimationData.kt`、`ClipRevealData.kt`、`IconAnimationData.kt` など）、`folder/PreviewItemManager.java`、`folder/FolderPreviewItemAnim.java`、`folder/PreviewBackground.java`、`folder/ClippedFolderIconLayoutRule.java`、`folder/FolderGridOrganizer.java`、`graphics/ShapeDelegate.kt` | `Folder`、`FolderIcon`、`BubbleTextView`、`Launcher` などは互換クラスにし、アプリ側の View がそれを継承する。`FolderIcon` のプレビュー描画、ドロップ、作成アニメーションのメソッドは `FolderIcon.java` から互換クラスに移す |
 | 見出しに飛ぶスクロールバー | スクロールバーをコピー | `views/RecyclerViewFastScroller.java`、`graphics/FastScrollThumbDrawable.java`、`FastScrollRecyclerView.java`、`allapps/AllAppsFastScrollHelper.java` | 見出しの区切りの作り方は `AlphabeticalAppsList.java` に倣って自前で書く |
 | 縦スワイプの判定、端での引っ張り | コピー | `touch/BaseSwipeDetector.java`、`touch/SingleAxisSwipeDetector.java`、`touch/OverScroll.java`、`util/TranslateEdgeEffect.java`、`util/EdgeEffectCompat.java`、`MotionEventsUtils.java` | — |
 | ハプティック | ライブラリごとコピー | `frameworks/libs/systemui/msdllib/` | `util/MSDLPlayerWrapper.java` の代わりを互換層に置く。鳴らす場所と種類は Launcher3 に合わせる（下記） |
@@ -47,15 +47,15 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 
 コピーせずに参考にとどめたもの（依存が深いため）は次のとおり。
 
-- `CellLayout.java` 本体、`dragndrop/DragLayer.java`、`ButtonDropTarget`、`DeleteDropTarget`、`DropTargetBar`：`Launcher`、`Workspace`、`DeviceProfile`、Dagger に依存している
+- `CellLayout.java` 本体、`dragndrop/DragLayer.java`、`Workspace.java`、`dragndrop/LauncherDragController.java`、`ButtonDropTarget`、`DeleteDropTarget`、`SecondaryDropTarget`、`DropTargetBar`：`Launcher`、`LauncherState`、`DeviceProfile`、Dagger に依存している。必要なメソッドだけを、名前とロジックを保って互換クラスかアプリ側に書き写した
 - `AppWidgetResizeFrame.kt`：`Launcher`、`Workspace`、本物の `CellLayout` に依存している
-- `folder/FolderIcon`、`folder/Folder`、`folder/PreviewItemManager`：`Launcher`、`Workspace`、`BubbleTextView` などに依存している。アニメーションが使うメンバーだけを互換クラスで用意した
+- `folder/FolderIcon`、`folder/Folder`：`Launcher`、`Workspace`、`BubbleTextView` などに依存している。アニメーション、プレビュー、ドロップが使うメンバーだけを互換クラスに移した
 - `popup/PopupContainerWithArrow.kt`、`popup/PopupContainer.kt`、`touch/ItemLongClickListener.java`：`Launcher`、`LauncherState`、Compose の UI に依存している
 - `allapps/AlphabeticalAppsList.java`：`AllAppsStore`、仕事用プロファイルなどの管理クラスに依存している
 
 ### ハプティックを鳴らす場所
 
-Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じく `Flags.msdlFeedback()` で切り替える。
+Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じく `Flags.msdlFeedback()` で切り替える。`msdllib` を取り込むまでは、MSDL の `DRAG_INDICATOR_DISCRETE` を `SEGMENT_FREQUENT_TICK`、`SWIPE_THRESHOLD_INDICATOR` を `SEGMENT_TICK` の `performHapticFeedback` で代わりに鳴らしている。
 
 | 場面 | Launcher3 の鳴らし方 |
 |---|---|

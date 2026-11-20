@@ -7,7 +7,6 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +14,8 @@ import com.google.android.material.color.MaterialColors
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.ui.GridSpec
+import com.malt03.textlauncher.ui.home.AppIconView
+import com.malt03.textlauncher.ui.home.AppItemInfo
 
 /**
  * App cells in the style of Launcher3's all-apps grid: icon with the app name below
@@ -24,7 +25,7 @@ class ResultsAdapter(
     private val iconLoader: AppIconLoader,
     private val grid: GridSpec,
     private val onClick: (AppEntry, View) -> Unit,
-    private val onLongClick: (AppEntry, View) -> Boolean,
+    private val onLongClick: (AppEntry, AppIconView) -> Boolean,
 ) : RecyclerView.Adapter<ResultsAdapter.Holder>() {
 
     var items: List<AppEntry> = emptyList()
@@ -53,7 +54,7 @@ class ResultsAdapter(
             isFocusable = false
         }
         // The cell's pressed state reaches the icon, so FastBitmapDrawable plays its click feedback.
-        val icon = ImageView(context).apply { isDuplicateParentStateEnabled = true }
+        val icon = AppIconView(context, grid.iconSizePx).apply { isDuplicateParentStateEnabled = true }
         cell.addView(icon, LinearLayout.LayoutParams(grid.iconSizePx, grid.iconSizePx))
         val label = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, grid.iconTextSizeSp)
@@ -73,16 +74,23 @@ class ResultsAdapter(
         val entry = items[position]
         holder.entry = entry
         holder.label.text = entry.label
-        holder.icon.setImageDrawable(null)
+        holder.icon.iconDrawable = null
+        // A drag hides the icon it starts from (PopupContainer's pre-drag condition).
+        holder.icon.visibility = View.VISIBLE
+        val itemInfo = AppItemInfo(entry, iconLoader.cached(entry))
+        holder.icon.itemInfo = itemInfo
         iconLoader.load(entry) { info ->
-            if (holder.entry == entry) holder.icon.setImageDrawable(iconLoader.newDrawable(info))
+            if (holder.entry == entry) {
+                itemInfo.bitmap = info
+                holder.icon.iconDrawable = iconLoader.newDrawable(info)
+            }
         }
         holder.itemView.background = if (position == 0 && highlightFirst) holder.highlight else null
         holder.itemView.setOnClickListener { onClick(entry, holder.icon) }
         holder.itemView.setOnLongClickListener { onLongClick(entry, holder.icon) }
     }
 
-    class Holder(view: View, val icon: ImageView, val label: TextView) : RecyclerView.ViewHolder(view) {
+    class Holder(view: View, val icon: AppIconView, val label: TextView) : RecyclerView.ViewHolder(view) {
         var entry: AppEntry? = null
         val highlight = focusOutline(view)
     }

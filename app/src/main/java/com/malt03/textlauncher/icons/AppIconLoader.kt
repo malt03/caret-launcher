@@ -14,6 +14,8 @@ import com.android.launcher3.icons.GraphicsUtils
 import com.android.launcher3.icons.IconShape
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.graphics.ThemeManager
+import com.android.launcher3.icons.FastBitmapDrawable
+import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.AppEntry
 import java.util.concurrent.Executors
@@ -45,12 +47,17 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
 
     init {
         settings.addListener(::onSettingsChanged)
-        updateFolderShape()
+        updateThemeManager()
     }
 
-    /** ThemeManager.parseIconState: the folder shape follows the icon shape's folderRadiusRatio. */
-    private fun updateFolderShape() {
-        ThemeManager.INSTANCE.get(context).setFolderRadiusRatio(settings.shape.folderRadiusRatio)
+    /**
+     * ThemeManager.parseIconState: the icon state that ItemInfoWithIcon.newIcon reads, and the
+     * folder shape, which follows the icon shape's folderRadiusRatio.
+     */
+    private fun updateThemeManager() {
+        val themeManager = ThemeManager.INSTANCE.get(context)
+        themeManager.setIconState(isThemed, iconShape)
+        themeManager.setFolderRadiusRatio(settings.shape.folderRadiusRatio)
     }
 
     /** Called on the main thread when every icon has to be rebound. */
@@ -88,8 +95,29 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         }
     }
 
-    fun newDrawable(info: BitmapInfo): Drawable =
-        info.newIcon(context, if (isThemed) BitmapInfo.FLAG_THEMED else 0, iconShape)
+    /**
+     * Calls [onLoaded] on the main thread once every icon is cached. Launcher3 binds the home
+     * screen with its icons already looked up; the folder preview sizes itself from them.
+     */
+    fun loadAll(entries: Collection<AppEntry>, onLoaded: () -> Unit) {
+        var remaining = entries.size
+        if (remaining == 0) {
+            onLoaded()
+            return
+        }
+        for (entry in entries) {
+            load(entry) {
+                remaining--
+                if (remaining == 0) onLoaded()
+            }
+        }
+    }
+
+    /** BubbleTextView.applyIconAndLabel: icons on the home screen ask for the themed version. */
+    fun newDrawable(info: BitmapInfo): FastBitmapDrawable = itemInfo(info).newIcon(context, BitmapInfo.FLAG_THEMED)
+
+    /** The ItemInfo that Launcher3's views and the copied folder code take for an app. */
+    fun itemInfo(info: BitmapInfo): WorkspaceItemInfo = WorkspaceItemInfo().apply { bitmap = info }
 
     private fun onSettingsChanged() {
         val themed = settings.isThemed
@@ -99,7 +127,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         pending.clear()
         isThemed = themed
         iconShape = createIconShape(shapePath)
-        updateFolderShape()
+        updateThemeManager()
         executor.execute { factory = createFactory(themed) }
         changeListeners.toList().forEach { it() }
     }

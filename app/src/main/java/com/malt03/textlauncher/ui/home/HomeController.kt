@@ -1,38 +1,44 @@
 package com.malt03.textlauncher.ui.home
 
-import android.content.Intent
-import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.PopupMenu
 import androidx.core.widget.NestedScrollView
+import com.android.launcher3.DeviceProfile
+import com.android.launcher3.DragSource
+import com.android.launcher3.DropTarget.DragObject
+import com.android.launcher3.Launcher
+import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
+import com.android.launcher3.dragndrop.DragController
+import com.android.launcher3.dragndrop.DragOptions
+import com.android.launcher3.graphics.DragPreviewProvider
+import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.views.ActivityContext
+import com.android.launcher3.views.BaseDragLayer
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.HomeItem
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
-import com.android.launcher3.DeviceProfile
-import com.android.launcher3.Launcher
-import com.android.launcher3.Workspace
-import com.android.launcher3.views.ActivityContext
-import com.android.launcher3.views.BaseDragLayer
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
-import com.malt03.textlauncher.ui.drag.DragController
 import com.malt03.textlauncher.ui.drag.DropTargetBar
+import com.malt03.textlauncher.ui.drag.HomeDragController
 
 /**
  * The home layout shown while the query is empty (docs/spec.md 5): builds views from
- * [com.malt03.textlauncher.data.HomeModel], opens folders, and applies drag and drop results.
+ * [com.malt03.textlauncher.data.HomeModel], opens folders, and keeps the model in step with
+ * Launcher3's drag and drop ([HomeDragController], [HomeWorkspace], [DropTargetBar]).
  */
 class HomeController(
     private val app: TextLauncherApplication,
     private val root: LauncherRootLayout,
     private val host: Host,
-) : DragController.Callbacks {
+) {
 
     interface Host {
         fun launch(entry: AppEntry, view: View)
@@ -47,13 +53,18 @@ class HomeController(
     val grid = HomeGridView(context, GridSpec.from(context))
     private val gridSpec = grid.grid
 
-    /** Launcher3's ActivityContext for the copied folder code. */
+    /** Launcher3's ActivityContext for the copied folder and drag code. */
     val activityContext = object : ActivityContext {
         private val deviceProfile = DeviceProfile(
-            DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows),
+            DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx),
+            DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx),
         )
         override fun getDeviceProfile(): DeviceProfile = deviceProfile
-        override fun getDragLayer(): BaseDragLayer = root.overlay
+        override fun getDragLayer(): BaseDragLayer<*> = root.overlay
+        override fun asContext() = context
+
+        /** Edit mode hides the keyboard once the drag starts (docs/spec.md 5.4), not at the long press. */
+        override fun hideKeyboard() = Unit
     }
 
     val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
@@ -61,23 +72,41 @@ class HomeController(
         overScrollMode = View.OVER_SCROLL_NEVER
         isVerticalScrollBarEnabled = false
         addView(grid, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        addOnLayoutChangeListener { v, _, top, _, bottom, _, _, _, _ -> grid.viewportHeight = bottom - top }
+        addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ -> grid.viewportHeight = bottom - top }
     }
-    /** Launcher3's Workspace: holds the home grid and shrinks while a folder is open. */
+
+    /** Launcher3's Workspace stand-in: holds the home grid and shrinks while a folder is open. */
     val workspace = Workspace<Any>(context).apply {
-        addView(scrollView, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
+        addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
     private val launcher = Launcher(workspace, root.hotseat, root.scrim)
-    val drag = DragController(root.overlay, scrollView, grid, root.dropTargetBar, this)
+
+    private val dragController = HomeDragController(activityContext) { root.isTouchInProgress }
+    private val homeWorkspace = HomeWorkspace(activityContext, grid, scrollView, dragController, WorkspaceHost())
+    private val dropTargetBar = DropTargetBar(context, { activityContext }, { dragController }, ::canRemove)
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private var loaded = false
     private var folderPopup: OpenFolder? = null
+    private var folderDragSource: FolderDragSource? = null
+    private var dragIntercepting = false
+
+    /** ActivityAllAppsContainerView as a DragSource: nothing to do when an app from search drops. */
+    private val searchDragSource = DragSource { _, _, _ -> }
 
     init {
-        grid.activityContext = activityContext
         val padding = (8 * context.resources.displayMetrics.density).toInt()
         grid.setPadding(padding, padding, padding, padding)
-        root.touchInterceptor = { drag.onTouchEvent(it) }
+
+        // Launcher.setupViews
+        root.overlay.setDragController(dragController)
+        dragController.defaultDropTarget = homeWorkspace
+        dragController.addDragListener(homeWorkspace)
+        dragController.addDragListener(SpringLoadedListener())
+        root.attachDropTargetBar(dropTargetBar)
+        dropTargetBar.setup(dragController)
+        root.touchInterceptor = ::onDragLayerTouch
+
         app.ioExecutor.execute {
             val items = model.loadBlocking()
             mainHandler.post {
@@ -89,15 +118,54 @@ class HomeController(
         }
     }
 
-    /** Re-creates every view, e.g. after the icon theme changed. */
-    fun rebuild() {
-        grid.removeAllViews()
-        for (item in model.items) addViewFor(item)
+    /**
+     * BaseDragLayer.onInterceptTouchEvent / onTouchEvent with the drag controller as the only
+     * TouchController: it sees every event, and takes the gesture over once a drag is going.
+     */
+    private fun onDragLayerTouch(ev: MotionEvent): Boolean {
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) dragIntercepting = false
+        if (!dragIntercepting) {
+            dragIntercepting = dragController.onControllerInterceptTouchEvent(ev)
+        } else {
+            dragController.onControllerTouchEvent(ev)
+        }
+        return dragIntercepting
     }
+
+    /**
+     * Re-creates every view, e.g. after the icon theme changed. Like Launcher3's binding, the views
+     * are built once the icons are loaded.
+     */
+    fun rebuild() {
+        val generation = ++rebuildGeneration
+        val keys = model.items.flatMap {
+            when (it) {
+                is HomeItem.App -> listOf(it.appKey)
+                is HomeItem.Folder -> it.appKeys
+                is HomeItem.Widget -> emptyList()
+            }
+        }
+        app.iconLoader.loadAll(keys.mapNotNull { app.appRepository.find(it) }) {
+            if (generation != rebuildGeneration) return@loadAll
+            grid.removeAllViews()
+            for (item in model.items) addViewFor(item)
+        }
+    }
+
+    private var rebuildGeneration = 0
 
     fun onAppsChanged() {
         if (!loaded) return
         if (pruneMissingApps()) rebuild()
+    }
+
+    /** Launcher.onResume: runs the uninstall drop target's deferred result. */
+    fun onResume() {
+        dropTargetBar.uninstall.onLauncherResume()
+    }
+
+    fun cancelDrag() {
+        dragController.cancelDrag()
     }
 
     fun closeFolder() {
@@ -107,105 +175,203 @@ class HomeController(
 
     val isFolderOpen: Boolean get() = folderPopup != null
 
+    // ---- starting drags (ItemLongClickListener) ----
+
+    /** A long press on an app in the search results: its menu, and a drag once it moves. */
+    fun onSearchResultLongPress(entry: AppEntry, iconView: AppIconView) {
+        val info = iconView.itemInfo ?: return
+        homeWorkspace.beginDragShared(
+            iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
+            startLongPressAction(entry, iconView),
+        )
+    }
+
+    private fun onHomeAppLongPress(entry: AppEntry, view: AppIconView) {
+        val info = view.itemInfo ?: return
+        homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(entry, view))
+    }
+
+    private fun onHomeFolderLongPress(view: FolderIconView) {
+        homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
+    }
+
+    /** Folder.startDrag for an app in the open folder. */
+    private fun onFolderItemLongPress(folderIcon: FolderIconView, item: AppItemInfo, view: AppIconView) {
+        val source = FolderDragSource(folderIcon, dragController, ::replaceFolderWithFinalItem)
+        folderDragSource = source
+        source.startDrag()
+        homeWorkspace.beginDragShared(
+            view, source, item, DragPreviewProvider(view), DragOptions(), startLongPressAction(item.entry, view),
+        )
+    }
+
     /**
-     * Long press on an app anywhere (home, folder, search results): show its menu and arm the
-     * move-to-drag transition (docs/spec.md 5.3).
+     * BubbleTextView.startLongPressAction: shows the app's menu (docs/spec.md 5.3) and returns its
+     * pre-drag condition (PopupContainer.createPreDragCondition). Moving more than
+     * deep_shortcuts_start_drag_threshold closes the menu and starts the drag.
      */
-    fun onAppLongPress(entry: AppEntry, anchor: View, homeItem: HomeItem?, homeView: View?, onDragStart: () -> Unit = {}) {
-        anchor.parent?.requestDisallowInterceptTouchEvent(true)
-        val menu = host.showAppMenu(entry, anchor)
-        val info = app.iconLoader.cached(entry) ?: return
-        val payload = DragController.Payload(entry.key, homeItem, homeView, {
-            AppIconView(context, grid.grid.iconSizePx).apply { icon = app.iconLoader.newDrawable(info) }
-        })
-        drag.armPreDrag(payload, root.lastDownRawX, root.lastDownRawY) {
-            menu.dismiss()
-            onDragStart()
+    private fun startLongPressAction(entry: AppEntry, originalView: View): () -> DragOptions.PreDragCondition = {
+        val menu = host.showAppMenu(entry, originalView)
+        val startDragThreshold = START_DRAG_THRESHOLD_DP * context.resources.displayMetrics.density
+        object : DragOptions.PreDragCondition {
+            override fun shouldStartDrag(distanceDragged: Double): Boolean = distanceDragged > startDragThreshold
+
+            override fun onPreDragStart(dragObject: DragObject) {
+                // The menu is not above the icon: hide both the icon and the text.
+                originalView.visibility = View.INVISIBLE
+            }
+
+            override fun onPreDragEnd(dragObject: DragObject, dragStarted: Boolean) {
+                if (dragStarted) {
+                    // Make sure we keep the original icon hidden while it is being dragged.
+                    originalView.visibility = View.INVISIBLE
+                    // PopupContainer closes itself when the drag starts.
+                    menu.dismiss()
+                } else {
+                    originalView.visibility = View.VISIBLE
+                }
+            }
         }
     }
 
+    /**
+     * Spring-loaded mode while dragging (docs/spec.md 5.4 edit mode): the keyboard goes down, the
+     * grid makes room for the drop targets and for drops below its last item.
+     */
+    private inner class SpringLoadedListener : DragController.DragListener {
+        private var editing = false
+
+        override fun onDragStart(dragObject: DragObject, options: DragOptions) {
+            editing = true
+            closeFolder()
+            host.onEditModeChanged(true)
+            grid.headroomRows = dragObject.dragInfo.spanY + 1
+            scrollView.animate().translationY(root.dropTargetBarHeight.toFloat()).setDuration(EDIT_ANIMATION_MS)
+                .withEndAction { if (dragController.isDragging) dragController.forceTouchMove() }.start()
+        }
+
+        override fun onDragEnd() {
+            if (!editing) return
+            editing = false
+            grid.headroomRows = 0
+            scrollView.animate().translationY(0f).setDuration(EDIT_ANIMATION_MS).start()
+            host.onEditModeChanged(false)
+        }
+    }
+
+    /** DeleteDropTarget.canRemove: items on the home screen or in a folder. */
+    private fun canRemove(d: DragObject): Boolean = d.dragSource !== searchDragSource
+
     // ---- views ----
 
-    private fun addViewFor(item: HomeItem) {
-        val iconSize = grid.grid.iconSizePx
+    private fun addViewFor(item: HomeItem, itemInfo: AppItemInfo? = null): View? {
+        val iconSize = gridSpec.iconSizePx
         val view: View = when (item) {
-            is HomeItem.App -> AppIconView(context, iconSize).apply {
-                val entry = app.appRepository.find(item.appKey)
-                if (entry != null) {
-                    app.iconLoader.load(entry) { info -> icon = app.iconLoader.newDrawable(info) }
+            is HomeItem.App -> {
+                val entry = app.appRepository.find(item.appKey) ?: return null
+                AppIconView(context, iconSize).apply {
+                    val info = itemInfo ?: AppItemInfo(entry, app.iconLoader.cached(entry))
+                    this.itemInfo = info
+                    app.iconLoader.load(entry) { bitmap ->
+                        info.bitmap = bitmap
+                        iconDrawable = app.iconLoader.newDrawable(bitmap)
+                    }
                     setOnClickListener { host.launch(entry, this) }
                     setOnLongClickListener {
-                        onAppLongPress(entry, this, item, this)
+                        onHomeAppLongPress(entry, this)
                         true
                     }
                 }
             }
-            is HomeItem.Folder -> FolderIconView(context, iconSize, activityContext).apply {
-                bindFolderIcons(this, item)
-                setOnClickListener { openFolder(item, this) }
-                setOnLongClickListener {
-                    parent?.requestDisallowInterceptTouchEvent(true)
-                    val icons = this.icons
-                    drag.startDrag(
-                        DragController.Payload(null, item, this, { FolderIconView(context, iconSize, activityContext).also { it.icons = icons } }),
-                        root.lastDownRawX, root.lastDownRawY,
-                    )
-                    true
-                }
-            }
-            is HomeItem.Widget -> return // TODO(Tex-t2ea): widgets
+            is HomeItem.Folder -> createFolderView(item)
+            is HomeItem.Widget -> return null // TODO(Tex-t2ea): widgets
         }
         grid.addItemView(view, item)
+        return view
     }
 
-    private fun bindFolderIcons(view: FolderIconView, folder: HomeItem.Folder) {
-        val entries = folder.appKeys.mapNotNull { app.appRepository.find(it) }
-        val drawables = arrayOfNulls<Drawable>(entries.size)
-        entries.forEachIndexed { index, entry ->
-            app.iconLoader.load(entry) { info ->
-                drawables[index] = app.iconLoader.newDrawable(info)
-                view.icons = drawables.filterNotNull()
+    private fun createFolderView(folder: HomeItem.Folder): FolderIconView =
+        FolderIconView(context, gridSpec.iconSizePx, activityContext, folderCallbacks).apply {
+            val items = folder.appKeys.mapNotNull { app.appRepository.find(it) }
+                .map { AppItemInfo(it, app.iconLoader.cached(it)) }
+            setContents(items)
+            for (item in items) {
+                app.iconLoader.load(item.entry) { bitmap ->
+                    if (item.bitmap === bitmap) return@load
+                    item.bitmap = bitmap
+                    updatePreviewItems { it === item }
+                }
             }
+            setOnClickListener { openFolder(this) }
+            setOnLongClickListener {
+                onHomeFolderLongPress(this)
+                true
+            }
+        }
+
+    private val folderCallbacks = object : FolderIconView.Callbacks {
+        override fun onContentChanged(view: FolderIconView) {
+            val folder = view.tag as? HomeItem.Folder ?: return
+            folder.appKeys.clear()
+            folder.appKeys += view.contents.map { it.entry.key }
+            model.save()
+        }
+
+        override fun onNotifyDrop(view: FolderIconView) {
+            folderDragSource?.takeIf { it.folderIcon === view }?.notifyDrop()
         }
     }
 
-
-    private fun openFolder(folder: HomeItem.Folder, folderView: FolderIconView) {
+    private fun openFolder(folderView: FolderIconView) {
         closeFolder()
-        val entries = folder.appKeys.mapNotNull { app.appRepository.find(it) }
+        folderView.folder.setOpen(true)
         folderPopup = OpenFolder(
-            root.overlay, folderView, entries, grid.grid, app.iconLoader, activityContext, launcher,
+            root.overlay, folderView, folderView.contents, gridSpec, app.iconLoader, activityContext, launcher,
             onClick = { entry, view -> host.launch(entry, view) },
-            onLongPress = { entry, view ->
-                onAppLongPress(entry, view, null, null) {
-                    closeFolder()
-                    removeFromFolder(folder, entry.key)
-                }
+            onLongPress = { item, view -> onFolderItemLongPress(folderView, item, view) },
+            onDismiss = {
+                folderView.folder.setOpen(false)
+                folderPopup = null
             },
-            onDismiss = { folderPopup = null },
         )
     }
 
     // ---- model changes ----
 
-    private fun replace(old: HomeItem, new: HomeItem?) {
-        grid.viewFor(old)?.let { grid.removeView(it) }
-        model.items.remove(old)
-        if (new != null) {
-            model.items += new
-            addViewFor(new)
+    /** LauncherDelegate.replaceFolderWithFinalItem */
+    private fun replaceFolderWithFinalItem(folderView: FolderIconView) {
+        // Add the last remaining child to the workspace in place of the folder
+        val onCompleteRunnable = Runnable {
+            val folder = folderView.tag as? HomeItem.Folder ?: return@Runnable
+            val itemCount = folderView.folderInfo.contents.size
+            if (itemCount <= 1) {
+                var newItem: HomeItem.App? = null
+                var finalItem: AppItemInfo? = null
+                if (itemCount == 1) {
+                    // Move the item from the folder to the workspace, in the position of the folder
+                    finalItem = folderView.folderInfo.contents.removeAt(0) as AppItemInfo
+                    newItem = HomeItem.App(model.newId(), finalItem.entry.key).also {
+                        it.cellX = folder.cellX
+                        it.cellY = folder.cellY
+                    }
+                }
+                // Remove the folder
+                grid.removeView(folderView)
+                model.items.remove(folder)
+                if (newItem != null) {
+                    // We add the child after removing the folder to prevent both from existing at
+                    // the same time in the CellLayout.
+                    model.items += newItem
+                    addViewFor(newItem, finalItem)
+                }
+                model.save()
+            }
         }
-    }
-
-    /** Takes an app out of a folder. A folder left with one app turns back into that app. */
-    private fun removeFromFolder(folder: HomeItem.Folder, appKey: String) {
-        folder.appKeys.remove(appKey)
-        when (folder.appKeys.size) {
-            0 -> replace(folder, null)
-            1 -> replace(folder, HomeItem.App(model.newId(), folder.appKeys.first()).also { it.cellX = folder.cellX; it.cellY = folder.cellY })
-            else -> grid.viewFor(folder)?.let { bindFolderIcons(it as FolderIconView, folder) }
+        if (folderView.folderInfo.contents.isNotEmpty()) {
+            folderView.performDestroyAnimation(onCompleteRunnable)
+        } else {
+            onCompleteRunnable.run()
         }
-        model.save()
     }
 
     /** Removes apps that are no longer installed. Returns true when something changed. */
@@ -234,75 +400,53 @@ class HomeController(
         return changed
     }
 
-    // ---- DragController.Callbacks ----
+    /** HomeWorkspace's model side (Launcher, ModelWriter). */
+    private inner class WorkspaceHost : HomeWorkspace.Host {
+        override fun addFolder(cellX: Int, cellY: Int): FolderIconView {
+            val folder = HomeItem.Folder(model.newId(), mutableListOf())
+            folder.cellX = cellX
+            folder.cellY = cellY
+            model.items += folder
+            return addViewFor(folder) as FolderIconView
+        }
 
-    override fun onDragStarted(payload: DragController.Payload) {
-        closeFolder()
-        host.onEditModeChanged(true)
-        // Make room for the drop target bar, like Launcher3's spring-loaded workspace.
-        scrollView.animate().translationY(root.dropTargetBar.layoutParams.height.toFloat()).setDuration(EDIT_ANIMATION_MS)
-            .withEndAction { drag.onGridMoved() }.start()
-    }
-
-    override fun onDropOnGrid(payload: DragController.Payload, cellX: Int, cellY: Int) {
-        val homeItem = payload.homeItem
-        val homeView = payload.homeView
-        if (homeItem != null && homeView != null) {
-            val lp = homeView.layoutParams as CellLayoutLayoutParams
-            lp.cellX = cellX
-            lp.cellY = cellY
-            homeItem.cellX = cellX
-            homeItem.cellY = cellY
-            grid.requestLayout()
-        } else {
-            val key = payload.appKey ?: return
-            val item = HomeItem.App(model.newId(), key).also { it.cellX = cellX; it.cellY = cellY }
+        override fun addApp(info: AppItemInfo, cellX: Int, cellY: Int): View {
+            val item = HomeItem.App(model.newId(), info.entry.key)
+            item.cellX = cellX
+            item.cellY = cellY
             model.items += item
-            addViewFor(item)
+            return addViewFor(item, info)!!
         }
-        model.save()
-    }
 
-    override fun onDropIntoFolderOrApp(payload: DragController.Payload, target: View) {
-        val key = payload.appKey ?: return
-        payload.homeItem?.let { replace(it, null) }
-        when (val targetItem = target.tag as HomeItem) {
-            is HomeItem.Folder -> {
-                targetItem.appKeys += key
-                bindFolderIcons(target as FolderIconView, targetItem)
-            }
-            is HomeItem.App -> {
-                val folder = HomeItem.Folder(model.newId(), mutableListOf(targetItem.appKey, key))
-                folder.cellX = targetItem.cellX
-                folder.cellY = targetItem.cellY
-                replace(targetItem, folder)
-                (grid.viewFor(folder) as? FolderIconView)?.playCreateAnimation()
-            }
-            is HomeItem.Widget -> Unit
+        override fun removeWorkspaceItem(view: View) {
+            if (view.parent === grid) grid.removeView(view)
+            (view.tag as? HomeItem)?.let { model.items.remove(it) }
+            model.save()
         }
-        model.save()
-    }
 
-    override fun onDropOnTarget(payload: DragController.Payload, target: DropTargetBar.Target) {
-        when (target) {
-            DropTargetBar.Target.REMOVE -> payload.homeItem?.let { replace(it, null) }
-            DropTargetBar.Target.UNINSTALL -> {
-                val component = payload.appKey?.let(AppEntry::componentOf) ?: return
-                context.startActivity(
-                    Intent(Intent.ACTION_DELETE, Uri.fromParts("package", component.packageName, null))
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                )
+        override fun onItemsMoved() {
+            for (child in grid.itemViews()) {
+                val item = child.tag as? HomeItem ?: continue
+                val lp = child.layoutParams as CellLayoutLayoutParams
+                item.cellX = lp.cellX
+                item.cellY = lp.cellY
+                item.spanX = lp.cellHSpan
+                item.spanY = lp.cellVSpan
             }
+            model.save()
         }
-        model.save()
-    }
 
-    override fun onDragEnded() {
-        scrollView.animate().translationY(0f).setDuration(EDIT_ANIMATION_MS).start()
-        host.onEditModeChanged(false)
+        override fun itemInfoOf(view: View): ItemInfo? = when (view) {
+            is AppIconView -> view.itemInfo
+            is FolderIconView -> view.folderInfo
+            else -> null
+        }
     }
 
     private companion object {
         const val EDIT_ANIMATION_MS = 150L
+
+        /** Launcher3 deep_shortcuts_start_drag_threshold */
+        const val START_DRAG_THRESHOLD_DP = 16
     }
 }
