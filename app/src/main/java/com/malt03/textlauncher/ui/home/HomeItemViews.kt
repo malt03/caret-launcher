@@ -3,6 +3,7 @@ package com.malt03.textlauncher.ui.home
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.ShortcutInfo
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -19,10 +20,16 @@ import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.data.AppEntry
 
 /**
- * An app as Launcher3's views and drag code see it (WorkspaceItemInfo): what is dragged, and what
- * a folder holds.
+ * An item on the home screen or in a folder as Launcher3's views and drag code see it
+ * (WorkspaceItemInfo): what is dragged, and what a folder holds. [homeKey] is the key the home
+ * model stores it by ([AppEntry.key] or [com.malt03.textlauncher.data.HomeShortcutKey.key]).
  */
-class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo() {
+interface HomeItemInfo {
+    val homeKey: String
+}
+
+/** An app (WorkspaceItemInfo of ITEM_TYPE_APPLICATION). */
+class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo(), HomeItemInfo {
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
         if (bitmap != null) this.bitmap = bitmap
@@ -30,8 +37,34 @@ class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo(
         title = entry.label
     }
 
+    override val homeKey: String get() = entry.key
+
     /** ItemInfo.mComponentName */
     override fun getComponent(): ComponentName = entry.component
+}
+
+/**
+ * An app shortcut placed on the home screen (WorkspaceItemInfo of ITEM_TYPE_DEEP_SHORTCUT,
+ * docs/spec.md 5.3).
+ */
+class ShortcutItemInfo(
+    override val homeKey: String,
+    shortcut: ShortcutInfo,
+    context: Context,
+    bitmap: BitmapInfo?,
+) : WorkspaceItemInfo(shortcut, context), HomeItemInfo {
+    var shortcut: ShortcutInfo = shortcut
+        private set
+
+    init {
+        if (bitmap != null) this.bitmap = bitmap
+    }
+
+    /** ShortcutsChangedTask: the app changed the shortcut. */
+    fun update(shortcut: ShortcutInfo, context: Context) {
+        this.shortcut = shortcut
+        updateFromDeepShortcutInfo(shortcut, context)
+    }
 }
 
 /** A view on the home grid. Launcher3's ReorderPreviewAnimation shakes it through [Reorderable]. */
@@ -58,8 +91,8 @@ private class ReorderableState(private val view: View) {
 class AppIconView(context: Context, private val iconSizePx: Int) : BubbleTextView(context), HomeItemView {
     private val reorderable = ReorderableState(this)
 
-    /** The app shown here; Launcher3's views keep it in their tag. */
-    var itemInfo: AppItemInfo? = null
+    /** The app or shortcut shown here; Launcher3's views keep it in their tag. */
+    var itemInfo: WorkspaceItemInfo? = null
 
     /** BubbleTextView.setIconVisible: the long-press menu hides the icon while it is lifted. */
     private var isIconVisible = true
@@ -131,7 +164,7 @@ class FolderIconView(
     private val callbacks: Callbacks,
 ) : FolderIcon(context, activityContext), HomeItemView {
     interface Callbacks {
-        /** The folder's apps changed; the home model is saved from [FolderIconView.contents]. */
+        /** The folder's items changed; the home model is saved from [FolderIconView.contents]. */
         fun onContentChanged(view: FolderIconView)
 
         /** Folder.notifyDrop: something was dropped on this icon. */
@@ -140,11 +173,11 @@ class FolderIconView(
 
     private val reorderable = ReorderableState(this)
 
-    /** The apps in the folder, in order. */
-    val contents: List<AppItemInfo> get() = folderInfo.contents.map { it as AppItemInfo }
+    /** The apps and shortcuts in the folder, in order. */
+    val contents: List<WorkspaceItemInfo> get() = folderInfo.contents.map { it as WorkspaceItemInfo }
 
-    /** Binds the folder's apps without animation (FolderIcon.inflateIcon). */
-    fun setContents(items: List<AppItemInfo>) {
+    /** Binds the folder's items without animation (FolderIcon.inflateIcon). */
+    fun setContents(items: List<WorkspaceItemInfo>) {
         folderInfo.contents.clear()
         folderInfo.contents.addAll(items)
         items.forEachIndexed { index, item -> item.rank = index }

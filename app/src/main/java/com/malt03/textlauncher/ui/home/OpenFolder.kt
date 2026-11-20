@@ -18,14 +18,13 @@ import com.android.launcher3.folder.FolderGridOrganizer
 import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.ThemeManager
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.views.BaseDragLayer
-import com.malt03.textlauncher.data.AppEntry
-import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.ui.GridSpec
 
 /**
- * An open folder (docs/spec.md 5.2): the apps inside, icons only. Tapping outside closes it.
+ * An open folder (docs/spec.md 5.2): the apps and shortcuts inside, icons only. Tapping outside closes it.
  *
  * Extends the Launcher3 Folder stand-in so that Launcher3's expressive folder animation is used
  * as copied (FolderAnimationSpringBuilderManager, FolderSpringAnimatorSet, FolderAnimationData,
@@ -36,13 +35,14 @@ import com.malt03.textlauncher.ui.GridSpec
 class OpenFolder(
     private val dragLayer: BaseDragLayer<*>,
     private val folderIconView: FolderIconView,
-    items: List<AppItemInfo>,
+    items: List<WorkspaceItemInfo>,
     grid: GridSpec,
-    iconLoader: AppIconLoader,
     activityContext: ActivityContext,
     private val launcher: Launcher,
-    onClick: (AppEntry, View) -> Unit,
-    onLongPress: (AppItemInfo, AppIconView) -> Unit,
+    /** Sets the item's icon on the view, now or once it is loaded. */
+    bindIcon: (WorkspaceItemInfo, AppIconView) -> Unit,
+    onClick: (WorkspaceItemInfo, View) -> Unit,
+    onLongPress: (WorkspaceItemInfo, AppIconView) -> Unit,
     private val onDismiss: () -> Unit,
 ) : Folder(dragLayer.context, activityContext) {
     private val density = context.resources.displayMetrics.density
@@ -69,13 +69,12 @@ class OpenFolder(
         val padding = (16 * density).toInt()
         val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
         items.forEachIndexed { rank, item ->
-            val entry = item.entry
             val icon = AppIconView(context, grid.iconSizePx)
             icon.itemInfo = item
-            iconLoader.load(entry) { info -> icon.iconDrawable = iconLoader.newDrawable(info) }
+            bindIcon(item, icon)
             icon.setOnClickListener {
                 dismiss()
-                onClick(entry, icon)
+                onClick(item, icon)
             }
             icon.setOnLongClickListener {
                 onLongPress(item, icon)

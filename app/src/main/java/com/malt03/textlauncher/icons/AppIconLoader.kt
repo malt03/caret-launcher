@@ -1,6 +1,8 @@
 package com.malt03.textlauncher.icons
 
 import android.content.Context
+import android.content.pm.LauncherApps
+import android.content.pm.ShortcutInfo
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
 import android.os.Handler
@@ -92,6 +94,60 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     }
 
     fun cached(entry: AppEntry): BitmapInfo? = cache.get(entry.key)
+
+    /** The cached icon of the app shortcut loaded with [loadShortcut] under [key]. */
+    fun cachedShortcut(key: String): BitmapInfo? = cache.get(key)
+
+    /** Drops the cached icons of app shortcuts, which their apps may have changed. */
+    fun forgetShortcuts(keys: Collection<String>) {
+        keys.forEach { cache.remove(it) }
+    }
+
+    /**
+     * The icon of an app shortcut on the home screen (IconCache.getShortcutIcon): the shortcut's
+     * icon, badged with its app's icon. Calls [onLoaded] on the main thread; cached by [key] like
+     * app icons.
+     */
+    fun loadShortcut(key: String, shortcut: ShortcutInfo, app: AppEntry?, onLoaded: (BitmapInfo) -> Unit) {
+        cache.get(key)?.let { onLoaded(it); return }
+        val waiting = pending[key]
+        if (waiting != null) {
+            waiting += onLoaded
+            return
+        }
+        pending[key] = mutableListOf(onLoaded)
+        val requestedGeneration = generation
+        val appBitmap = app?.let { cache.get(it.key) }
+        executor.execute {
+            val dpi = context.resources.configuration.densityDpi
+            val badge = appBitmap ?: app?.let {
+                factory.createBadgedIconBitmap(it.info.getIcon(dpi), BaseIconFactory.IconOptions().setUser(it.user))
+            }
+            val drawable = try {
+                context.getSystemService(LauncherApps::class.java).getShortcutIconDrawable(shortcut, dpi)
+            } catch (e: Exception) {
+                null
+            }
+            val icon = drawable?.let {
+                factory.createBadgedIconBitmap(
+                    it,
+                    BaseIconFactory.IconOptions()
+                        .setExtractedColor(GraphicsUtils.getAttrColor(context, android.R.attr.colorAccent)),
+                )
+            }
+            // Without its own icon, a shortcut shows its app's icon, or the default one.
+            val info = icon?.withBadgeInfo(badge) ?: badge
+                ?: factory.createBadgedIconBitmap(context.packageManager.defaultActivityIcon, BaseIconFactory.IconOptions())
+            mainHandler.post {
+                if (requestedGeneration != generation) return@post
+                cache.put(key, info)
+                pending.remove(key)?.forEach { it(info) }
+            }
+        }
+    }
+
+    /** The cached icon of an app, the badge of its shortcuts (IconCache.getShortcutInfoBadge). */
+    fun badgeFor(app: AppEntry?): BitmapInfo? = app?.let { cache.get(it.key) }
 
     /** Calls [onLoaded] on the main thread, immediately when the icon is cached. */
     fun load(entry: AppEntry, onLoaded: (BitmapInfo) -> Unit) {

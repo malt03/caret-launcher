@@ -50,3 +50,7 @@ tags: [home]
 **2026-11-20T16:29:27Z**
 
 長押しメニューにアプリのショートカットを追加（PopupPopulator・ShortcutRequest・DeepShortcutTextView をコピー、PopupContainerWithArrow のショートカット経路を互換クラスへ）。タップで LauncherApps.startShortcut で起動。ホームへの固定・ドラッグはしない。キーボードに重ならないよう、ドラッグレイヤーの下端をキーボードの上端にした
+
+**2026-11-20T17:28:25Z**
+
+アプリのショートカットをホームとフォルダに置けるようにした。メニューから長押しでドラッグ（LauncherPopupItemDragHandler をアプリ側へ移植、ShortcutDragPreviewProvider をコピー）、行の + で最初の空きセルに追加（バウンス付き、検索結果からは入力をクリア）。置いたものは BgDataModel.updateShortcutPinnedState の移植でシステムに pin し、外すと unpin。アイコンにアプリのバッジ。エミュレータで追加・ドラッグ・フォルダ・起動・削除（unpin）・再起動後の保持を確認

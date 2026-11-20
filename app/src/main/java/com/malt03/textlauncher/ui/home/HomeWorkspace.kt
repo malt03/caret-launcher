@@ -25,6 +25,7 @@ import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 
 /**
@@ -48,8 +49,11 @@ class HomeWorkspace(
         /** Launcher.addFolder: an empty folder at the cell, added to the grid. */
         fun addFolder(cellX: Int, cellY: Int): FolderIconView
 
-        /** ItemInflater.inflateItem and Workspace.addInScreen: the app at the cell, on the grid. */
-        fun addApp(info: AppItemInfo, cellX: Int, cellY: Int): View
+        /**
+         * ItemInflater.inflateItem and Workspace.addInScreen: the app or shortcut at the cell, on
+         * the grid.
+         */
+        fun addItem(info: WorkspaceItemInfo, cellX: Int, cellY: Int): View
 
         /** Workspace.removeWorkspaceItem, with the model delete. */
         fun removeWorkspaceItem(view: View)
@@ -135,6 +139,22 @@ class HomeWorkspace(
         previewProvider: DragPreviewProvider,
         dragOptions: DragOptions,
         startLongPressAction: (() -> DragOptions.PreDragCondition?)? = null,
+    ): DragView = beginDragShared(
+        child, child as? DraggableView, source, dragObject, previewProvider, dragOptions, startLongPressAction,
+    )
+
+    /**
+     * Workspace.beginDragShared with the view whose bounds the drag starts from, as for an app
+     * shortcut dragged out of the long-press menu.
+     */
+    fun beginDragShared(
+        child: View,
+        draggableView: DraggableView?,
+        source: DragSource,
+        dragObject: ItemInfo,
+        previewProvider: DragPreviewProvider,
+        dragOptions: DragOptions,
+        startLongPressAction: (() -> DragOptions.PreDragCondition?)? = null,
     ): DragView {
         var iconScale = 1f
         if (child is BubbleTextView) {
@@ -150,8 +170,6 @@ class HomeWorkspace(
         if (child is BubbleTextView) {
             child.clearPressedBackground()
         }
-
-        val draggableView = child as? DraggableView
 
         val contentView = previewProvider.contentView
         val scale: Float
@@ -491,12 +509,13 @@ class HomeWorkspace(
     }
 
     /**
-     * Workspace.onDropExternal, for drops that did not start on the grid: apps from search results
-     * and folders ("other drag/drop cases, like dragging from All Apps").
+     * Workspace.onDropExternal, for drops that did not start on the grid: apps from search results,
+     * items from folders and app shortcuts from the long-press menu ("other drag/drop cases, like
+     * dragging from All Apps").
      */
     private fun onDropExternal(touchXY: IntArray?, cellLayout: CellLayout?, d: DragObject) {
         cellLayout ?: return
-        val info = d.dragInfo as? AppItemInfo ?: return
+        val info = d.dragInfo as? WorkspaceItemInfo ?: return
         var spanX = info.spanX
         var spanY = info.spanY
         mDragInfo?.let {
@@ -526,7 +545,7 @@ class HomeWorkspace(
         )
         // Add the item to DB before adding to screen ensures that the container and other
         // values of the info is properly updated.
-        val view = host.addApp(info, mTargetCell[0], mTargetCell[1])
+        val view = host.addItem(info, mTargetCell[0], mTargetCell[1])
         host.onItemsMoved()
         cellLayout.onDropChild(view)
         grid.measureChild(view)

@@ -113,6 +113,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     override fun onDestroy() {
         app.appRepository.removeListener(appsListener)
         app.iconLoader.removeChangeListener(iconsListener)
+        home.destroy()
         super.onDestroy()
     }
 
@@ -221,6 +222,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
 
+    /** An item added from the long-press menu shows on the home screen, so the query goes. */
+    override fun showHome() = clearQuery()
+
     /** ActivityContext.lookupContext finds Launcher3's ActivityContext through the activity. */
     override fun getActivityContext(): ActivityContext = home.activityContext
 
@@ -230,7 +234,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         launch(top, view, fromSearch = true)
     }
 
-    /** Launcher.startShortcut, for an app shortcut in the long-press menu. */
+    /** Launcher.startShortcut, for an app shortcut in the long-press menu or on the home screen. */
     override fun startShortcut(packageName: String, id: String, view: View, user: UserHandle) {
         val location = IntArray(2).also { view.getLocationOnScreen(it) }
         val bounds = Rect(location[0], location[1], location[0] + view.width, location[1] + view.height)

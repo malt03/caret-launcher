@@ -70,6 +70,7 @@ path=src/com/android/launcher3/popup/IconViewController.kt
 path=src/com/android/launcher3/popup/PopupPopulator.java
 path=src/com/android/launcher3/shortcuts/ShortcutRequest.java
 path=src/com/android/launcher3/shortcuts/DeepShortcutTextView.java
+path=src/com/android/launcher3/shortcuts/ShortcutDragPreviewProvider.java
 ```
 
 ## 取り込んでいないもの
@@ -104,6 +105,6 @@ path=src/com/android/launcher3/shortcuts/DeepShortcutTextView.java
 | `com.android.launcher3.icons.IconCache`、`LauncherAppState` | `folder/PreviewItemManager.java`、`popup/PopupPopulator.java`。アプリのショートカットのアイコンは、アプリのアイコン読み込みが渡す関数で作る（キャッシュしない） |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ |
 | `com.android.launcher3.LauncherSettings`、`BuildConfig`、`dagger/`、`logging/`、`accessibility.DragViewStateAnnouncer`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView`、`util.Executors` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（システムのドラッグ、ウィジェット、App Pair、インストール中のアプリなど）は何もしないか、通らない |
-| `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`SystemShortcut`、`shortcuts.DeepShortcutView`、`shortcuts.ShortcutKey`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`dragndrop.DragLayer`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）、ホームへの固定とアプリのショートカットのドラッグは持たない。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
+| `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`popup.PopupItemDragHandler`、`SystemShortcut`、`shortcuts.DeepShortcutView`、`shortcuts.ShortcutKey`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`dragndrop.DragLayer`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）は持たない。`PopupItemDragHandler` はインターフェースだけを置き、`LauncherPopupItemDragHandler` はアプリ側（`HomeController`）に移した。`DeepShortcutView.getFinalInfo` と追加ボタンは、アプリのバッジ付けとホームへの追加をアプリ側（`DeepShortcutView.WorkspaceHost`）に任せる。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
 | `com.android.launcher3.dragndrop.DragLayerAccess` | `BaseDragLayer` の互換クラスから、`DragController` のパッケージ内メソッド（`onDeferredEndDrag`）を呼ぶため |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

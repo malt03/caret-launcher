@@ -154,5 +154,8 @@ data class HomeRow(
         const val TYPE_APP = 0
         const val TYPE_FOLDER = 1
         const val TYPE_WIDGET = 2
+
+        /** An app shortcut; [appKey] holds its HomeShortcutKey key. */
+        const val TYPE_SHORTCUT = 3
     }
 }

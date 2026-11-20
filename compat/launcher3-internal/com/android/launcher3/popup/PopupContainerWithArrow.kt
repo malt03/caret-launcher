@@ -28,8 +28,8 @@ import com.android.launcher3.views.ActivityContext
  * PopupContainerWithArrow.kt; changes are marked with "TextLauncher:".
  *
  * TextLauncher: the Compose version (Flags.expandableLongPressMenu is disabled in the release
- * config), live updates of the shortcuts and dragging app shortcuts out of the menu (the home
- * screen holds apps and folders only) are left out.
+ * config) and live updates of the shortcuts are left out; configureForLauncher's drag handler
+ * is set by the app.
  */
 class PopupContainerWithArrow<T : ActivityContext>
 private constructor(
@@ -59,6 +59,10 @@ private constructor(
 
     var itemDragHandler: PopupItemDragHandler? = null
         private set
+
+    fun setPopupItemDragHandler(popupItemDragHandler: PopupItemDragHandler?) {
+        itemDragHandler = popupItemDragHandler
+    }
 
     var widgetContainer: ViewGroup? = null
 

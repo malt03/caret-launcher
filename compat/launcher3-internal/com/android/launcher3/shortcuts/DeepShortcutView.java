@@ -1,6 +1,7 @@
 package com.android.launcher3.shortcuts;
 
 import static com.android.launcher3.Flags.blurOnMoreSurfaces;
+import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_NOT_PINNABLE;
 
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
@@ -21,6 +22,8 @@ import android.widget.ImageView;
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainerWithArrow;
 import com.android.launcher3.util.Themes;
@@ -29,10 +32,22 @@ import com.android.launcher3.views.ActivityContext;
 /**
  * Stand-in for Launcher3's DeepShortcutView (android-17.0.0_r1): a row in the long-press menu.
  * The members are copied from DeepShortcutView.java; changes are marked with "TextLauncher:".
- * TextLauncher: app shortcuts are not pinned to the home screen (it holds apps and folders only),
- * so the add button stays hidden and getFinalInfo is left out.
+ * TextLauncher: what DeepShortcutView asks Launcher for (adding to the workspace, the badged
+ * item) goes to the activity context's {@link WorkspaceHost}.
  */
 public class DeepShortcutView extends FrameLayout {
+
+    /** TextLauncher: the Launcher calls DeepShortcutView makes. */
+    public interface WorkspaceHost {
+        /**
+         * Launcher.getModel().updateAndBindWorkspaceItem: the item to place on the home screen for
+         * the shortcut, with its badged icon.
+         */
+        WorkspaceItemInfo makeWorkspaceItem(WorkspaceItemInfo info, ShortcutInfo detail);
+
+        /** LauncherAccessibilityDelegate.addToWorkspace */
+        boolean addToWorkspace(ItemInfo item);
+    }
 
     private static final Point sTempPoint = new Point();
 
@@ -153,7 +168,62 @@ public class DeepShortcutView extends FrameLayout {
         mBubbleText.setOnClickListener(container.getItemClickListener());
         mBubbleText.setOnLongClickListener(container.getItemDragHandler());
         mBubbleText.setOnTouchListener(container.getItemDragHandler());
-        // TextLauncher: no add button (pinning to the home screen).
+        if (ac instanceof WorkspaceHost host && isPinnable(container)) {
+            setupAddButton();
+            setAddButtonClickListener(host, info, container);
+        }
+    }
+
+    /**
+     * TextLauncher: Launcher3 reads the item from the original icon's tag; here the popup holds
+     * it.
+     */
+    private boolean isPinnable(PopupContainerWithArrow container) {
+        if (!(container.getOriginalIcon() instanceof BubbleTextView)) {
+            return false;
+        }
+        boolean isPinnable = false;
+        if (container.getItemInfo() instanceof ItemInfoWithIcon infoWithIcon) {
+            isPinnable = (infoWithIcon.runtimeStatusFlags & FLAG_NOT_PINNABLE) == 0;
+        }
+        return isPinnable;
+    }
+
+    private void setupAddButton() {
+        mAddButton.setVisibility(VISIBLE);
+        mBubbleText.setPadding(
+                mBubbleText.getPaddingStart(),
+                mBubbleText.getPaddingTop(),
+                (int) getResources().getDimension(R.dimen.deep_shortcut_text_end_padding),
+                mBubbleText.getPaddingBottom());
+    }
+
+    private void setAddButtonClickListener(WorkspaceHost host, WorkspaceItemInfo info,
+            PopupContainerWithArrow container) {
+        mAddButton.setOnClickListener(v -> {
+            // TextLauncher: no stats logging.
+            host.addToWorkspace(getFinalInfo());
+            // If we have an open folder, don't animate the popup closing.
+            // TextLauncher: the open folder is not an AbstractFloatingView; the host closes it.
+            container.close(true);
+        });
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mAddButton != null) {
+            mAddButton.setOnClickListener(null);
+        }
+    }
+
+    /**
+     * Returns the shortcut info that is suitable to be added on the homescreen
+     */
+    public WorkspaceItemInfo getFinalInfo() {
+        // TextLauncher: the host makes the badged copy.
+        ActivityContext ac = ActivityContext.lookupContext(getContext());
+        return ((WorkspaceHost) ac).makeWorkspaceItem(mInfo, mDetail);
     }
 
     public View getIconView() {
