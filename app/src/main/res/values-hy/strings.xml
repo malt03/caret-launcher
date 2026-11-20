@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Որոնել հավելվածներ"</string>
-    <string name="menu_app_info">"Հավելվածի մասին"</string>
     <string name="drop_target_remove">"Հեռացնել"</string>
     <string name="drop_target_uninstall">"Ապատեղադրել"</string>
 </resources>

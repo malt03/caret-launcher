@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Hľadať aplikácie"</string>
-    <string name="menu_app_info">"Info o aplikácii"</string>
     <string name="drop_target_remove">"Odstrániť"</string>
     <string name="drop_target_uninstall">"Odinštalovať"</string>
 </resources>

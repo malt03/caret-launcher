@@ -58,6 +58,15 @@ path=src/com/android/launcher3/InterruptibleInOutAnimator.java
 path=src/com/android/launcher3/folder/PreviewItemManager.java
 path=src/com/android/launcher3/folder/FolderPreviewItemAnim.java
 path=src/com/android/launcher3/folder/PreviewItemDrawingParams.java
+path=src/com/android/launcher3/AbstractFloatingView.java
+path=src/com/android/launcher3/AbstractFloatingViewHelper.kt
+path=src/com/android/launcher3/InsettableFrameLayout.java
+path=src/com/android/launcher3/Insettable.java
+path=src/com/android/launcher3/anim/AnimatedFloat.java
+path=src/com/android/launcher3/popup/ArrowPopup.java
+path=src/com/android/launcher3/popup/RoundedArrowDrawable.java
+path=src/com/android/launcher3/popup/Popup.kt
+path=src/com/android/launcher3/popup/IconViewController.kt
 ```
 
 ## 取り込んでいないもの
@@ -65,7 +74,7 @@ path=src/com/android/launcher3/folder/PreviewItemDrawingParams.java
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン用の attr・色・寸法・時間）と、そのままコピーした `drawable/round_rect_folder.xml`、`drawable/drop_target_background.xml`、`drawable/drop_target_frame.xml`、`drawable/drop_target_frame_hover.xml`、`drawable/ic_remove_no_shadow.xml`、`drawable/ic_uninstall_no_shadow.xml`、`color/drop_target_text.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー用の attr・色・寸法・時間・スタイル）と、そのままコピーした `drawable/round_rect_folder.xml`、`drawable/drop_target_background.xml`、`drawable/drop_target_frame.xml`、`drawable/drop_target_frame_hover.xml`、`drawable/ic_remove_no_shadow.xml`、`drawable/ic_uninstall_no_shadow.xml`、`color/drop_target_text.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 
@@ -86,10 +95,11 @@ path=src/com/android/launcher3/folder/PreviewItemDrawingParams.java
 | `com.android.launcher3.folder.Folder`、`FolderIcon`、`FolderPagedView`、`LauncherDelegate` | フォルダのアニメーション、プレビュー、ドロップ（`folder/` 以下）。アプリ側の `OpenFolder`、`FolderIconView` がこれらを継承する。1ページだけで、名前とフッターは持たない。`FolderIcon` のプレビュー描画、`onDrop`、`performCreateAnimation` などは `FolderIcon.java` から移した。`FolderIcon` が `Folder` に対して呼ぶ処理は `FolderIcon.FolderContent` が受ける |
 | `com.android.launcher3.BubbleTextView`、`apppairs.AppPairIcon` | フォルダのアニメーション。アプリ側の `AppIconView` が `BubbleTextView` を継承する。ラベルがないので文字の透明度は何もしない |
 | `com.android.launcher3.Launcher`、`Workspace`、`Hotseat`、`views.ScrimView` | フォルダの背景の暗転と縮小。`Workspace` はホームのグリッドを、`Hotseat` は検索フィールドを包む |
-| `com.android.launcher3.views.BaseDragLayer`、`views.ActivityContext`、`DeviceProfile` | フォルダの配置と寸法、ドラッグ。`BaseDragLayer` には `DragLayer` のドロップアニメーション（`animateViewIntoPosition`、`animateView`）を移した。ホームの上に重ねた層なので、層の外の View は親を通して座標を変換する。`DeviceProfile` はフォルダの列数・行数とアイコンサイズだけ |
+| `com.android.launcher3.views.BaseDragLayer`、`views.ActivityContext`、`DeviceProfile` | フォルダの配置と寸法、ドラッグ、長押しメニュー。`BaseDragLayer` は元と同じく `InsettableFrameLayout` を継承し、タッチコントローラーの振り分け（開いている `AbstractFloatingView` を先に、次にドラッグ）を `BaseDragLayer.java` から移した。ホームの上に重ねた層なので、タッチは親から渡してもらう。ほかに `DragLayer` のドロップアニメーション（`animateViewIntoPosition`、`animateView`）を移した。ホームの上に重ねた層なので、層の外の View は親を通して座標を変換する。`DeviceProfile` はフォルダの列数・行数とアイコンサイズだけ |
 | `com.android.launcher3.graphics.ThemeManager` | アイコンのテーマの有無と形状（アプリのアイコン読み込みが設定する）、フォルダの形。フォルダの形は選んだアイコン形状の `folderRadiusRatio` から作る（`ThemeManager.parseIconState` と同じ） |
 | `com.android.launcher3.ShortcutAndWidgetContainer`、`util.Themes`、`model.data.FolderInfo` | フォルダのアニメーションと `FolderGridOrganizer` |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ |
 | `com.android.launcher3.AbstractFloatingView`、`LauncherSettings`、`BuildConfig`、`LauncherAppState`、`icons.IconCache`、`dagger/`、`logging/`、`accessibility.DragViewStateAnnouncer`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView`、`util.Executors` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（システムのドラッグ、ウィジェット、App Pair、インストール中のアプリなど）は何もしないか、通らない |
+| `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`SystemShortcut`、`shortcuts.DeepShortcutView`、`shortcuts.DeepShortcutTextView`、`dragndrop.DragLayer`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`）。システムショートカットの行を出す経路のメソッドだけを元のファイルから移した。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）とアプリのショートカットは持たない。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
 | `com.android.launcher3.dragndrop.DragLayerAccess` | `BaseDragLayer` の互換クラスから、`DragController` のパッケージ内メソッド（`onDeferredEndDrag`）を呼ぶため |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

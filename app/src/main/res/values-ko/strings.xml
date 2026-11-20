@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"앱 검색"</string>
-    <string name="menu_app_info">"앱 정보"</string>
     <string name="drop_target_remove">"삭제"</string>
     <string name="drop_target_uninstall">"제거"</string>
     <string name="menu_search_terms">검색어 편집</string>

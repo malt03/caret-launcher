@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"ಆ್ಯಪ್‍ಗಳನ್ನು ಹುಡುಕಿ"</string>
-    <string name="menu_app_info">"ಆ್ಯಪ್ ಮಾಹಿತಿ"</string>
     <string name="drop_target_remove">"ತೆಗೆದುಹಾಕಿ"</string>
     <string name="drop_target_uninstall">"ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್"</string>
 </resources>

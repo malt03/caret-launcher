@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Leita í forritum"</string>
-    <string name="menu_app_info">"Forritsupplýsingar"</string>
     <string name="drop_target_remove">"Taka niður"</string>
     <string name="drop_target_uninstall">"Fjarlægja"</string>
 </resources>

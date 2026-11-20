@@ -59,6 +59,97 @@
     <dimen name="drop_target_button_frame_radius">80dp</dimen>
     <dimen name="drop_target_button_gap">28dp</dimen>
     <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
-    <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark one) -->
+    <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
     <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
+    <color name="materialColorSurfaceContainer">@android:color/system_surface_container_light</color>
+
+    <!-- Long-press menu: AbstractFloatingView, ArrowPopup, PopupContainer and the system
+         shortcut rows (layout/system_shortcut*.xml, drawable/popup_background.xml,
+         drawable/*_item_primary.xml, drawable/info_24px.xml, drawable/gm_edit_24.xml and
+         color/popup_shade_*.xml are copied as is) -->
+    <attr name="popupColorPrimary" format="color" />
+    <attr name="popupColorSecondary" format="color" />
+    <attr name="popupColorTertiary" format="color" />
+    <attr name="popupTextColor" format="color" />
+    <attr name="popupShadeFirst" format="color" />
+    <attr name="popupShadeSecond" format="color" />
+    <attr name="popupShadeThird" format="color" />
+    <declare-styleable name="BubbleTextView">
+        <attr name="layoutHorizontal" format="boolean" />
+        <attr name="iconSizeOverride" format="dimension" />
+        <attr name="iconDisplay" format="integer">
+            <enum name="workspace" value="0" />
+            <enum name="all_apps" value="1" />
+            <enum name="folder" value="2" />
+            <enum name="widget_section" value="3" />
+            <enum name="shortcut_popup" value="4" />
+            <enum name="taskbar" value="5" />
+            <enum name="search_result_tall" value="6" />
+            <enum name="search_result_small" value="7" />
+            <enum name="prediction_row" value="8" />
+            <enum name="search_result_app_row" value="9" />
+        </attr>
+        <attr name="centerVertically" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="InsettableFrameLayout_Layout">
+        <attr name="layout_ignoreInsets" format="boolean" />
+    </declare-styleable>
+    <!-- values-v31/colors.xml -->
+    <color name="popup_color_primary_light">@android:color/system_accent2_50</color>
+    <color name="popup_color_secondary_light">@android:color/system_neutral2_100</color>
+    <color name="popup_color_tertiary_light">@android:color/system_neutral2_300</color>
+    <color name="popup_color_primary_dark">@android:color/system_neutral2_800</color>
+    <color name="popup_color_secondary_dark">@android:color/system_neutral1_900</color>
+    <color name="popup_color_tertiary_dark">@android:color/system_neutral2_700</color>
+    <color name="workspace_text_color_light">@android:color/system_neutral1_0</color>
+    <!-- values-v34/colors.xml -->
+    <color name="system_on_surface_light">@android:color/system_on_surface_light</color>
+    <color name="system_on_surface_dark">@android:color/system_on_surface_dark</color>
+    <!-- values/colors.xml -->
+    <color name="popup_shade_first_light">#F9F9F9</color>
+    <color name="popup_shade_second_light">#F1F1F1</color>
+    <color name="popup_shade_third_light">#E2E2E2</color>
+    <color name="popup_shade_first_dark">#303030</color>
+    <color name="popup_shade_second_dark">#262626</color>
+    <color name="popup_shade_third_dark">#1B1B1B</color>
+    <!-- values/dimens.xml -->
+    <dimen name="dialogCornerRadius">@dimen/default_dialog_corner_radius</dimen>
+    <dimen name="default_dialog_corner_radius">26dp</dimen>
+    <dimen name="popup_smaller_radius">4dp</dimen>
+    <dimen name="popup_single_item_radius">100dp</dimen>
+    <dimen name="deep_shortcuts_elevation">2dp</dimen>
+    <dimen name="popup_margin">2dp</dimen>
+    <dimen name="popup_arrow_width">12dp</dimen>
+    <dimen name="popup_arrow_height">10dp</dimen>
+    <dimen name="popup_arrow_vertical_offset">-1dp</dimen>
+    <dimen name="popup_arrow_horizontal_center_offset">26dp</dimen>
+    <dimen name="popup_arrow_corner_radius">2dp</dimen>
+    <dimen name="popup_vertical_padding">4dp</dimen>
+    <dimen name="bg_popup_item_width">216dp</dimen>
+    <dimen name="bg_popup_item_height">52dp</dimen>
+    <dimen name="deep_shortcuts_text_padding_start">54dp</dimen>
+    <dimen name="popup_padding_end">14dp</dimen>
+    <dimen name="system_shortcut_icon_size">20dp</dimen>
+    <dimen name="system_shortcut_margin_start">16dp</dimen>
+    <dimen name="system_shortcut_header_height">52dp</dimen>
+    <dimen name="deep_shortcuts_start_drag_threshold">16dp</dimen>
+    <!-- values/config.xml -->
+    <item type="id" name="popup_container" />
+    <string name="popup_container_iterate_children" translatable="false">popup_container_iterate_children</string>
+    <!-- values/styles.xml -->
+    <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
+    <style name="BaseIconUnBounded" parent="BaseIconRoot">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textColor">@color/workspace_text_color_light</item>
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+        <!-- No shadows in the base theme -->
+        <item name="android:shadowRadius">0</item>
+    </style>
+    <style name="PopupItem">
+        <item name="android:colorControlHighlight">?attr/popupColorTertiary</item>
+    </style>
 </resources>

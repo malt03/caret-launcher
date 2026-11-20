@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Deursoek programme"</string>
-    <string name="menu_app_info">"Appinligting"</string>
     <string name="drop_target_remove">"Verwyder"</string>
     <string name="drop_target_uninstall">"Deïnstalleer"</string>
 </resources>

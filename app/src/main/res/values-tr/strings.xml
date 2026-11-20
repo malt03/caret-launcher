@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Uygulamalarda ara"</string>
-    <string name="menu_app_info">"Uygulama bilgileri"</string>
     <string name="drop_target_remove">"Sil"</string>
     <string name="drop_target_uninstall">"Kaldır"</string>
     <string name="menu_search_terms">Arama kelimelerini düzenle</string>

@@ -26,6 +26,8 @@ public class Interpolators {
     public static final Interpolator EMPHASIZED_DECELERATE = new PathInterpolator(
             0.05f, 0.7f, 0.1f, 1f);
     public static final Interpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
+    public static final Interpolator EMPHASIZED_ACCELERATE = new PathInterpolator(
+            0.3f, 0f, 0.8f, 0.15f);
     public static final Interpolator ACCELERATE = new android.view.animation.AccelerateInterpolator();
     public static final Interpolator DECELERATE_1_5 = new DecelerateInterpolator(1.5f);
     public static final Interpolator DECELERATE_2 = new DecelerateInterpolator(2);

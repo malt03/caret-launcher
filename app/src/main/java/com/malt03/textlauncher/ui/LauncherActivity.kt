@@ -9,7 +9,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.WindowInsets
-import android.widget.PopupMenu
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -30,11 +29,6 @@ import com.malt03.textlauncher.ui.search.ResultsAdapter
  * (docs/spec.md 1).
  */
 class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityContext.Provider {
-    private companion object {
-        const val MENU_SEARCH_TERMS = 1
-        const val MENU_APP_INFO = 2
-    }
-
     private val app get() = application as TextLauncherApplication
 
     private lateinit var root: LauncherRootLayout
@@ -106,6 +100,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         // docs/spec.md 1.4: the back gesture itself does nothing on the home screen.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                if (home.closeTopFloatingView()) return
                 if (home.isFolderOpen) home.closeFolder()
             }
         })
@@ -124,6 +119,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         super.onNewIntent(intent)
         // Home button while already on the home screen.
         home.cancelDrag()
+        home.closeFloatingViews(animate = false)
         home.closeFolder()
         clearQuery()
         focusSearch()
@@ -146,6 +142,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         super.onStop()
         // docs/spec.md 1.2: the query is cleared every time the launcher comes back.
         home.cancelDrag()
+        home.closeFloatingViews(animate = false)
         home.closeFolder()
         clearQuery()
     }
@@ -169,6 +166,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
         if (isEditMode || isLaunching || !isResumedState || !hasWindowFocus()) return
+        // The keyboard takes the back gesture while it is shown, so closing it also closes the
+        // long-press menu, which Launcher3 closes on back.
+        home.closeTopFloatingView()
         clearQuery()
         focusSearch()
     }
@@ -199,28 +199,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         home.scrollView.visibility = View.GONE
     }
 
-    /**
-     * Long-press menu for an app (docs/spec.md 5.3). Moving while pressing turns it into a drag
-     * (HomeController.startLongPressAction).
-     * TODO(Tex-e1ph): replace this platform PopupMenu with a menu following Launcher3 popup/.
-     */
-    override fun showAppMenu(entry: AppEntry, anchor: View): PopupMenu {
-        val menu = PopupMenu(this, anchor)
-        menu.menu.add(0, MENU_SEARCH_TERMS, 0, R.string.menu_search_terms)
-        menu.menu.add(0, MENU_APP_INFO, 1, R.string.menu_app_info)
-        menu.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                MENU_SEARCH_TERMS -> SearchTermsDialog.show(this, entry, app.searchStore) {
-                    refreshResults()
-                    focusSearch()
-                }
-                MENU_APP_INFO -> getSystemService(LauncherApps::class.java)
-                    .startAppDetailsActivity(entry.component, entry.user, null, null)
-            }
-            true
+    /** docs/spec.md 4: the long-press menu's "Edit search terms". */
+    override fun editSearchTerms(entry: AppEntry) {
+        SearchTermsDialog.show(this, entry, app.searchStore) {
+            refreshResults()
+            focusSearch()
         }
-        menu.show()
-        return menu
     }
 
     override fun onEditModeChanged(editing: Boolean) {

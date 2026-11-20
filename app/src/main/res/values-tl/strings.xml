@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Maghanap ng mga app"</string>
-    <string name="menu_app_info">"Impormasyon ng app"</string>
     <string name="drop_target_remove">"Alisin"</string>
     <string name="drop_target_uninstall">"I-uninstall"</string>
 </resources>

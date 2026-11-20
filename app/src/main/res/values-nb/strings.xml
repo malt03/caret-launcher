@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Søk etter apper"</string>
-    <string name="menu_app_info">"Info om appen"</string>
     <string name="drop_target_remove">"Fjern"</string>
     <string name="drop_target_uninstall">"Avinstaller"</string>
     <string name="menu_search_terms">Rediger søkeord</string>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TextLauncher: strings copied from Launcher3 res/values-sv/strings.xml (android-17.0.0_r1) that the copied code uses. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_info_drop_target_label" msgid="692894985365717661">"Info om appen"</string>
+</resources>

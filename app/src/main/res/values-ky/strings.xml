@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Колдонмолорду издөө"</string>
-    <string name="menu_app_info">"Колдонмо тууралуу"</string>
     <string name="drop_target_remove">"Өчүрүү"</string>
     <string name="drop_target_uninstall">"Чыгарып салуу"</string>
 </resources>

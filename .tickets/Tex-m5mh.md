@@ -1,6 +1,6 @@
 ---
 id: Tex-m5mh
-status: in_progress
+status: closed
 deps: [Tex-f4yo, Tex-4hiv, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -35,3 +35,7 @@ tags: [search]
 **2026-11-20T12:13:01Z**
 
 検索文字列の編集ダイアログ（SearchTermsDialog）とアプリ情報を実装し、エミュレータで登録→検索を確認。メニューは仮に標準の PopupMenu。Launcher3 の popup/ への置き換えは Tex-e1ph と一緒に行う
+
+**2026-11-20T15:40:21Z**
+
+メニューを Launcher3 の popup/ の見た目に置き換えた（Tex-e1ph）。検索文字列の編集とアプリ情報をエミュレータで確認

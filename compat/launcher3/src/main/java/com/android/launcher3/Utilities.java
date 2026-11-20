@@ -105,4 +105,19 @@ public final class Utilities {
     public static int dpToPx(float dp) {
         return (int) (dp * android.content.res.Resources.getSystem().getDisplayMetrics().density);
     }
+
+    public static float squaredHypot(float x, float y) {
+        return x * x + y * y;
+    }
+
+    public static float squaredTouchSlop(android.content.Context context) {
+        float slop = android.view.ViewConfiguration.get(context).getScaledTouchSlop();
+        return slop * slop;
+    }
+
+    public static android.graphics.Rect getViewBounds(android.view.View v) {
+        int[] pos = new int[2];
+        v.getLocationOnScreen(pos);
+        return new android.graphics.Rect(pos[0], pos[1], pos[0] + v.getWidth(), pos[1] + v.getHeight());
+    }
 }

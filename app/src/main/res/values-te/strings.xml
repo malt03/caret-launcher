@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"యాప్‌ల కోసం సెర్చ్ చేయండి"</string>
-    <string name="menu_app_info">"యాప్ సమాచారం"</string>
     <string name="drop_target_remove">"తీసివేయండి"</string>
     <string name="drop_target_uninstall">"అన్ఇన్‌స్టాల్ చేయండి"</string>
 </resources>

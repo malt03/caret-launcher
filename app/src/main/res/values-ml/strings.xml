@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"ആപ്പുകൾ തിരയുക"</string>
-    <string name="menu_app_info">"ആപ്പ് വിവരങ്ങൾ"</string>
     <string name="drop_target_remove">"നീക്കംചെയ്യുക"</string>
     <string name="drop_target_uninstall">"അൺഇൻസ്റ്റാൾ"</string>
 </resources>

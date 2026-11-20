@@ -138,6 +138,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
         (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop + dropTargetBarTopMargin
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+        // Launcher3's DragLayer gets the system bar insets; floating views such as the long-press
+        // menu keep inside them.
+        overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, navBottom))
         val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
         // KeyboardInsetAnimationCallback animates from the old to this value.
         targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()
@@ -235,10 +238,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         val horizontalMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bar_margin_horizontal)
         overlay.addView(
             bar, 0,
-            LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarSize, android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.TOP).apply {
+            BaseDragLayer.LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarSize).apply {
+                gravity = android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.TOP
                 topMargin = statusBarTop + dropTargetBarTopMargin
                 leftMargin = horizontalMargin
                 rightMargin = horizontalMargin
+                // The margins above already include the status bar.
+                ignoreInsets = true
             },
         )
     }

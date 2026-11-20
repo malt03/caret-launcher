@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Caută aplicații"</string>
-    <string name="menu_app_info">"Informații despre aplicații"</string>
     <string name="drop_target_remove">"Elimină"</string>
     <string name="drop_target_uninstall">"Dezinstalează"</string>
 </resources>

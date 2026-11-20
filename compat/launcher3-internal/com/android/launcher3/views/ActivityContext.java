@@ -31,6 +31,26 @@ public interface ActivityContext {
         ActivityContext getActivityContext();
     }
 
+    /** Called when the drag layer sees a new touch (ActivityContext.finishAutoCancelActionMode). */
+    default boolean finishAutoCancelActionMode() {
+        return false;
+    }
+
+    default boolean canUseMultipleShadesForPopup() {
+        return true;
+    }
+
+    default android.view.View.OnClickListener getItemOnClickListener() {
+        return v -> {
+            // No op.
+        };
+    }
+
+    /** Launcher3's ActivityContext.getDragController. */
+    default com.android.launcher3.dragndrop.DragController getDragController() {
+        return null;
+    }
+
     default ActivityComponent getActivityComponent() {
         return new ActivityComponent();
     }

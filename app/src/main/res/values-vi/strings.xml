@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Tìm kiếm ứng dụng"</string>
-    <string name="menu_app_info">"Thông tin ứng dụng"</string>
     <string name="drop_target_remove">"Xóa"</string>
     <string name="drop_target_uninstall">"Gỡ cài đặt"</string>
     <string name="menu_search_terms">Chỉnh sửa từ khóa tìm kiếm</string>

@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Bilatu aplikazioetan"</string>
-    <string name="menu_app_info">"Aplik. buruzko info."</string>
     <string name="drop_target_remove">"Kendu"</string>
     <string name="drop_target_uninstall">"Desinstalatu"</string>
 </resources>

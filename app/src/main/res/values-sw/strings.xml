@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Tafuta programu"</string>
-    <string name="menu_app_info">"Maelezo ya programu"</string>
     <string name="drop_target_remove">"Ondoa"</string>
     <string name="drop_target_uninstall">"Sakinusha"</string>
 </resources>

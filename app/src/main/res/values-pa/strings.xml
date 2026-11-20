@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"ਐਪਾਂ ਖੋਜੋ"</string>
-    <string name="menu_app_info">"ਐਪ ਸੰਬੰਧੀ ਜਾਣਕਾਰੀ"</string>
     <string name="drop_target_remove">"ਹਟਾਓ"</string>
     <string name="drop_target_uninstall">"ਅਣਸਥਾਪਤ ਕਰੋ"</string>
 </resources>

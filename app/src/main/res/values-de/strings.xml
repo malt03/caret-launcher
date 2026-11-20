@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Apps finden"</string>
-    <string name="menu_app_info">"App-Info"</string>
     <string name="drop_target_remove">"Entfernen"</string>
     <string name="drop_target_uninstall">"Deinstallieren"</string>
     <string name="menu_search_terms">Suchbegriffe bearbeiten</string>

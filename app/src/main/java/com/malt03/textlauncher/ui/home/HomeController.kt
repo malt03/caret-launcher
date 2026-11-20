@@ -6,9 +6,13 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.PopupMenu
 import androidx.core.widget.NestedScrollView
+import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.DeviceProfile
+import com.android.launcher3.popup.PopupContainer
+import com.android.launcher3.popup.PopupContainerWithArrow
+import com.android.launcher3.popup.SystemShortcut
+import com.malt03.textlauncher.R
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Launcher
@@ -42,8 +46,8 @@ class HomeController(
 
     interface Host {
         fun launch(entry: AppEntry, view: View)
-        /** Shows the long-press menu of an app and returns it. */
-        fun showAppMenu(entry: AppEntry, anchor: View): PopupMenu
+        /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
+        fun editSearchTerms(entry: AppEntry)
         /** Edit mode (docs/spec.md 5.4) starts with a drag and ends after it. */
         fun onEditModeChanged(editing: Boolean)
     }
@@ -65,6 +69,8 @@ class HomeController(
 
         /** Edit mode hides the keyboard once the drag starts (docs/spec.md 5.4), not at the long press. */
         override fun hideKeyboard() = Unit
+
+        override fun getDragController(): DragController = this@HomeController.dragController
     }
 
     val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
@@ -81,7 +87,7 @@ class HomeController(
     }
     private val launcher = Launcher(workspace, root.hotseat, root.scrim)
 
-    private val dragController = HomeDragController(activityContext) { root.isTouchInProgress }
+    private val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
     private val homeWorkspace = HomeWorkspace(activityContext, grid, scrollView, dragController, WorkspaceHost())
     private val dropTargetBar = DropTargetBar(context, { activityContext }, { dragController }, ::canRemove)
 
@@ -89,7 +95,6 @@ class HomeController(
     private var loaded = false
     private var folderPopup: OpenFolder? = null
     private var folderDragSource: FolderDragSource? = null
-    private var dragIntercepting = false
 
     /** ActivityAllAppsContainerView as a DragSource: nothing to do when an app from search drops. */
     private val searchDragSource = DragSource { _, _, _ -> }
@@ -105,7 +110,10 @@ class HomeController(
         dragController.addDragListener(SpringLoadedListener())
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
-        root.touchInterceptor = ::onDragLayerTouch
+        // DragLayer.recreateControllers: the drag controller is the touch controller; open
+        // floating views (the long-press menu) are asked first.
+        root.overlay.setControllers(dragController)
+        root.touchInterceptor = root.overlay::dispatchTouchEventFromParent
 
         app.ioExecutor.execute {
             val items = model.loadBlocking()
@@ -116,20 +124,6 @@ class HomeController(
                 rebuild()
             }
         }
-    }
-
-    /**
-     * BaseDragLayer.onInterceptTouchEvent / onTouchEvent with the drag controller as the only
-     * TouchController: it sees every event, and takes the gesture over once a drag is going.
-     */
-    private fun onDragLayerTouch(ev: MotionEvent): Boolean {
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) dragIntercepting = false
-        if (!dragIntercepting) {
-            dragIntercepting = dragController.onControllerInterceptTouchEvent(ev)
-        } else {
-            dragController.onControllerTouchEvent(ev)
-        }
-        return dragIntercepting
     }
 
     /**
@@ -182,13 +176,13 @@ class HomeController(
         val info = iconView.itemInfo ?: return
         homeWorkspace.beginDragShared(
             iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
-            startLongPressAction(entry, iconView),
+            startLongPressAction(entry, iconView, info),
         )
     }
 
     private fun onHomeAppLongPress(entry: AppEntry, view: AppIconView) {
         val info = view.itemInfo ?: return
-        homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(entry, view))
+        homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(entry, view, info))
     }
 
     private fun onHomeFolderLongPress(view: FolderIconView) {
@@ -201,37 +195,64 @@ class HomeController(
         folderDragSource = source
         source.startDrag()
         homeWorkspace.beginDragShared(
-            view, source, item, DragPreviewProvider(view), DragOptions(), startLongPressAction(item.entry, view),
+            view, source, item, DragPreviewProvider(view), DragOptions(), startLongPressAction(item.entry, view, item),
         )
     }
 
     /**
-     * BubbleTextView.startLongPressAction: shows the app's menu (docs/spec.md 5.3) and returns its
-     * pre-drag condition (PopupContainer.createPreDragCondition). Moving more than
-     * deep_shortcuts_start_drag_threshold closes the menu and starts the drag.
+     * BubbleTextView.startLongPressAction with PopupControllerForAppIcon.show: shows the app's
+     * long-press menu (docs/spec.md 5.3) and returns the menu's pre-drag condition. Moving more
+     * than deep_shortcuts_start_drag_threshold closes the menu and starts the drag.
      */
-    private fun startLongPressAction(entry: AppEntry, originalView: View): () -> DragOptions.PreDragCondition = {
-        val menu = host.showAppMenu(entry, originalView)
-        val startDragThreshold = START_DRAG_THRESHOLD_DP * context.resources.displayMetrics.density
-        object : DragOptions.PreDragCondition {
-            override fun shouldStartDrag(distanceDragged: Double): Boolean = distanceDragged > startDragThreshold
-
-            override fun onPreDragStart(dragObject: DragObject) {
-                // The menu is not above the icon: hide both the icon and the text.
-                originalView.visibility = View.INVISIBLE
-            }
-
-            override fun onPreDragEnd(dragObject: DragObject, dragStarted: Boolean) {
-                if (dragStarted) {
-                    // Make sure we keep the original icon hidden while it is being dragged.
-                    originalView.visibility = View.INVISIBLE
-                    // PopupContainer closes itself when the drag starts.
-                    menu.dismiss()
-                } else {
-                    originalView.visibility = View.VISIBLE
-                }
-            }
+    private fun startLongPressAction(entry: AppEntry, originalView: View, item: AppItemInfo): () -> DragOptions.PreDragCondition? = {
+        if (PopupContainer.getOpen(activityContext) != null) {
+            // There is already an items container open, so don't open this one.
+            originalView.clearFocus()
+            null
+        } else {
+            // TextLauncher: the launcher's own options (docs/spec.md 5.3) instead of
+            // ActivityContext.getSupportedShortcuts, and no app shortcuts.
+            val systemShortcuts = listOf(
+                EditSearchTerms(entry, item, originalView),
+                SystemShortcut.AppInfo(activityContext, item, originalView),
+            )
+            val container = PopupContainerWithArrow.create<ActivityContext>(
+                context = context,
+                originalView = originalView,
+                itemInfo = item,
+            )
+            // PopupContainerWithArrow.configureForLauncher
+            dragController.addDragListener(container)
+            container.populateAndShowRows(systemShortcuts)
+            container.requestFocus()
+            container.createPreDragCondition()
         }
+    }
+
+    /** The long-press menu's "Edit search terms" (docs/spec.md 4), a TextLauncher option. */
+    private inner class EditSearchTerms(
+        private val entry: AppEntry,
+        item: AppItemInfo,
+        originalView: View,
+    ) : SystemShortcut<ActivityContext>(
+        com.android.launcher3.R.drawable.gm_edit_24, R.string.menu_search_terms, activityContext, item, originalView,
+    ) {
+        override fun onClick(view: View) {
+            dismissTaskMenuView()
+            host.editSearchTerms(entry)
+        }
+    }
+
+    /** Closes the long-press menu and other floating views (Launcher.onNewIntent and onStop). */
+    fun closeFloatingViews(animate: Boolean) {
+        AbstractFloatingView.closeAllOpenViews(activityContext, animate)
+    }
+
+    /** The back gesture closes the long-press menu first, like Launcher3's floating views. */
+    fun closeTopFloatingView(): Boolean {
+        val top = AbstractFloatingView.getTopOpenView(activityContext) ?: return false
+        top.close(true)
+        return true
     }
 
     /**
@@ -447,8 +468,5 @@ class HomeController(
 
     private companion object {
         const val EDIT_ANIMATION_MS = 150L
-
-        /** Launcher3 deep_shortcuts_start_drag_threshold */
-        const val START_DRAG_THRESHOLD_DP = 16
     }
 }

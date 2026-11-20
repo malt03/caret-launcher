@@ -15,5 +15,13 @@
         <item name="workspaceAccentColor">@color/workspace_accent_color_light</item>
         <item name="dropTargetHoverTextColor">@color/drop_target_hover_text_color_light</item>
         <item name="dropTargetHoverButtonColor">@color/drop_target_hover_button_color_light</item>
+        <!-- LauncherTheme / LauncherTheme.Dark: the long-press menu -->
+        <item name="popupColorPrimary">@color/popup_color_primary_dark</item>
+        <item name="popupColorSecondary">@color/popup_color_secondary_dark</item>
+        <item name="popupColorTertiary">@color/popup_color_tertiary_dark</item>
+        <item name="popupTextColor">@color/system_on_surface_dark</item>
+        <item name="popupShadeFirst">@color/popup_shade_first_dark</item>
+        <item name="popupShadeSecond">@color/popup_shade_second_dark</item>
+        <item name="popupShadeThird">@color/popup_shade_third_dark</item>
     </style>
 </resources>

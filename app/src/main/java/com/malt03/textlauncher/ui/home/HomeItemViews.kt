@@ -1,7 +1,9 @@
 package com.malt03.textlauncher.ui.home
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
+import android.os.UserHandle
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -13,6 +15,7 @@ import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.popup.SystemShortcut
 import com.android.launcher3.util.MultiTranslateDelegate
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.data.AppEntry
@@ -21,11 +24,15 @@ import com.malt03.textlauncher.data.AppEntry
  * An app as Launcher3's views and drag code see it (WorkspaceItemInfo): what is dragged, and what
  * a folder holds.
  */
-class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo() {
+class AppItemInfo(val entry: AppEntry, bitmap: BitmapInfo?) : WorkspaceItemInfo(), SystemShortcut.AppInfo.Target {
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
         if (bitmap != null) this.bitmap = bitmap
     }
+
+    override fun getComponent(): ComponentName = entry.component
+
+    override fun getUser(): UserHandle = entry.user
 }
 
 /** A view on the home grid. Launcher3's ReorderPreviewAnimation shakes it through [Reorderable]. */
@@ -55,6 +62,9 @@ class AppIconView(context: Context, private val iconSizePx: Int) : BubbleTextVie
     /** The app shown here; Launcher3's views keep it in their tag. */
     var itemInfo: AppItemInfo? = null
 
+    /** BubbleTextView.setIconVisible: the long-press menu hides the icon while it is lifted. */
+    private var isIconVisible = true
+
     var iconDrawable: FastBitmapDrawable? = null
         set(value) {
             field?.callback = null
@@ -67,6 +77,13 @@ class AppIconView(context: Context, private val iconSizePx: Int) : BubbleTextVie
     override fun getIcon(): FastBitmapDrawable? = iconDrawable
 
     override fun getIconSize(): Int = iconSizePx
+
+    override fun getIconHeight(): Int = iconSizePx
+
+    override fun setIconVisible(visible: Boolean) {
+        isIconVisible = visible
+        invalidate()
+    }
 
     override fun getTranslateDelegate(): MultiTranslateDelegate = reorderable.translateDelegate
     override fun setReorderBounceScale(scale: Float) {
@@ -82,6 +99,7 @@ class AppIconView(context: Context, private val iconSizePx: Int) : BubbleTextVie
     }
 
     override fun onDraw(canvas: Canvas) {
+        if (!isIconVisible) return
         val drawable = iconDrawable ?: return
         val left = (width - iconSizePx) / 2
         drawable.setBounds(left, paddingTop, left + iconSizePx, paddingTop + iconSizePx)

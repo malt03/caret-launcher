@@ -42,3 +42,7 @@ tags: [home]
 **2026-11-20T14:44:16Z**
 
 長押しメニューからの移行を Launcher3 の pre-drag（BubbleTextView.startLongPressAction と PopupContainer.createPreDragCondition）に置き換えた。長押しで DragView が少し持ち上がった状態で出て、16dp 動かすとメニューが閉じてドラッグが始まる。動かさずに離すとメニューだけ残る。メニュー本体は PopupMenu のまま
+
+**2026-11-20T15:40:21Z**
+
+長押しメニューを Launcher3 の View 版（ArrowPopup / PopupContainerWithArrow、Flags.expandableLongPressMenu はリリースで無効）に置き換えた。ArrowPopup・RoundedArrowDrawable・AbstractFloatingView などはコピー、PopupContainer 系は使う経路のメソッドを互換クラスへ。アプリ情報は SystemShortcut.AppInfo、検索文字列の編集はその派生。メニュー外のタップと戻る操作で閉じ、16dp 動かすとドラッグに移ることをホーム・検索結果・フォルダでエミュレータ確認。残りは全アプリ一覧からの移行（一覧の実装待ち）

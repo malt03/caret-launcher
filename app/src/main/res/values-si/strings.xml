@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"යෙදුම් සොයන්න"</string>
-    <string name="menu_app_info">"යෙදුම් තොරතුරු"</string>
     <string name="drop_target_remove">"ඉවත් කරන්න"</string>
     <string name="drop_target_uninstall">"අස්ථාපනය කරන්න"</string>
 </resources>

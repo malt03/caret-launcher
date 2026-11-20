@@ -54,4 +54,9 @@ public final class Flags {
     public static boolean msdlFeedback() {
         return true;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean blurOnMoreSurfaces() {
+        return false;
+    }
 }

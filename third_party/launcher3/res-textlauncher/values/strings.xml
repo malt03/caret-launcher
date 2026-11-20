@@ -6,4 +6,5 @@
     <string name="four_sided_cookie_shape_title">4-sided cookie</string>
     <string name="seven_sided_cookie_shape_title">7-sided cookie</string>
     <string name="arch_shape_title">Arch</string>
+    <string name="app_info_drop_target_label">App info</string>
 </resources>

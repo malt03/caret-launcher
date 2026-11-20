@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"Tətbiqləri axtarın"</string>
-    <string name="menu_app_info">"Tətbiq haqqında"</string>
     <string name="drop_target_remove">"Silin"</string>
     <string name="drop_target_uninstall">"Sistemdən sil"</string>
 </resources>

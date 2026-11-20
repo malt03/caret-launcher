@@ -6,7 +6,6 @@
 -->
 <resources>
     <string name="search_hint">"ค้นหาแอป"</string>
-    <string name="menu_app_info">"ข้อมูลแอป"</string>
     <string name="drop_target_remove">"นำออก"</string>
     <string name="drop_target_uninstall">"ถอนการติดตั้ง"</string>
     <string name="menu_search_terms">แก้ไขคำค้นหา</string>
