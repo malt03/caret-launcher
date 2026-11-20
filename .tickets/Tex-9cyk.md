@@ -19,6 +19,10 @@ tags: [drawer]
 - この間は 1.4 のキーボード監視をしない
 仕様: docs/spec.md 6.5
 
+## Launcher3 からの移植
+
+- 一覧内の検索に入るときのアニメーションは allapps/SearchTransitionController.java を参考にする
+
 ## Acceptance Criteria
 
 - [ ] 一覧でフィールドをタップ → キーボードが出て、入力で一覧が絞り込まれる

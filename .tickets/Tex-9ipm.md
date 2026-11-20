@@ -1,7 +1,7 @@
 ---
 id: Tex-9ipm
 status: open
-deps: [Tex-l0eq, Tex-4hiv, Tex-maoz]
+deps: [Tex-l0eq, Tex-4hiv, Tex-maoz, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -17,6 +17,12 @@ tags: [home]
 - アプリ名は出さず、その分セルの高さを詰める
 - 行数の上限なし。収まらなければ縦スクロール
 仕様: docs/spec.md 5.1
+
+## Launcher3 からの移植
+
+- グリッドの寸法は device_profiles.xml（android-17.0.0_r1）の値を使う
+- セルの並び替えは CellLayout の並び替えロジックを移植して使う（範囲は Tex-wgyx で決める）
+- 縦スクロールの入れ物は自前で書く
 
 ## Acceptance Criteria
 

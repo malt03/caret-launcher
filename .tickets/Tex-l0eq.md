@@ -1,6 +1,6 @@
 ---
 id: Tex-l0eq
-status: open
+status: in_progress
 deps: [Tex-6b20]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -24,3 +24,9 @@ LauncherApps.getActivityList で個人用プロファイルのアプリを取得
 - [ ] アプリをインストール・アンインストールすると一覧に反映される
 - [ ] 仕事用プロファイルと Private Space のアプリは含まれない
 
+
+## Notes
+
+**2026-11-20T11:49:02Z**
+
+data/AppEntry.kt と data/AppRepository.kt を実装。画面がないため動作は未確認

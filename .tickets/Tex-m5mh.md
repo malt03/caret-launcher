@@ -1,7 +1,7 @@
 ---
 id: Tex-m5mh
 status: open
-deps: [Tex-f4yo, Tex-4hiv]
+deps: [Tex-f4yo, Tex-4hiv, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -17,6 +17,10 @@ tags: [search]
 - 検索文字列はアプリごとに複数登録・削除できる。照合時は正規化される
 - ホーム、検索結果、全アプリ一覧で共通の部品にする（ドラッグへの移行は別チケット）
 仕様: docs/spec.md 4、5.3
+
+## Launcher3 からの移植
+
+- メニューの見た目は Launcher3 の popup/ に合わせる（Tex-e1ph と共通の部品にする）
 
 ## Acceptance Criteria
 

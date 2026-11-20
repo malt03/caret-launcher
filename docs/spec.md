@@ -152,7 +152,7 @@
 
 ## 5. ホームの配置（未入力時）
 
-ユーザーが任意のアプリ、ウィジェット、フォルダを配置できる。基本は AOSP の Launcher3 の標準的な設定と操作に合わせ、以下に書いた点だけを変える。
+ユーザーが任意のアプリ、ウィジェット、フォルダを配置できる。基本は AOSP の Launcher3 の標準的な設定と操作に合わせ、以下に書いた点だけを変える。手触りに関わる部分は Launcher3 の実装を持ってくる（[Launcher3 からの取り込み方針](launcher3-porting.md)）。
 
 ### 5.1 グリッド
 
@@ -273,7 +273,7 @@
   - **テーマアイコン**：オンのとき、アプリが用意した単色アイコン（`AdaptiveIconDrawable.getMonochrome()`）をシステムのパレットで塗って表示する。初期値はオン
   - **単色アイコンを用意していないアプリ**：テーマアイコンがオンのときは、単色アイコンを自動生成して同じように塗る（Pixel Launcher と同じ挙動）
   - **アイコン形状**：選んだ形状で、すべてのアイコンを切り抜く。テーマアイコンにも通常のアイコンにも適用する。初期値は円
-- **実装の基準**：アイコンの生成と表示は、最新の AOSP Launcher3 の実装に従う
+- **実装の基準**：アイコンの生成と表示は、基準タグの AOSP Launcher3 の実装に従う（[Launcher3 からの取り込み方針](launcher3-porting.md)）
   - 対象：テーマアイコン、単色アイコンの自動生成、形状での切り抜き
   - 参照先：Launcher3 と、そのアイコン処理ライブラリ `frameworks/libs/systemui/iconloaderlib`（`MonochromeIconFactory` など）
   - 自動生成が Launcher3 で機能フラグの裏にあり、既定でオフになっている場合でも、このランチャーでは有効にする
@@ -338,15 +338,20 @@
   - キーボードの開閉は `WindowInsetsAnimationCompat` で同期させる
 - ハプティック：API 34 以上は `HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE`、API 33 は `CONFIRM` を使う
 - 「壁紙とスタイル」との連携（[7.3](#73-テーマアイコンとアイコン形状)）：
-  - AOSP のソースではまだ確認していない。サードパーティのランチャーの実装例（[pie-launcher-remake #28](https://github.com/jgoedde/pie-launcher-remake/issues/28) / [PR #46](https://github.com/jgoedde/pie-launcher-remake/pull/46)）から読み取った内容である。実装時に AOSP の Launcher3 と ThemePicker のソースで確かめる
-  - ホームの Activity に meta-data `com.android.launcher3.themedicon.option` と `com.android.launcher3.grid.control` を付け、どちらも同じ ContentProvider を指す
-  - Provider は `android.permission.BIND_WALLPAPER` で保護する
-  - `icon_themed`：
-    - 読み出しでは、`boolean_value` 列（1/0）を持つ1行を返す
-    - 書き込みでは、値を保存し、0 より大きい値を返して `notifyChange` する
-  - `shape_options`：形状の選択肢を返す
-    - 列は `shape_key`、`shape_title`、`path`（100×100 の SVG パス）、`is_default`（`"true"`/`"false"`）
-    - 選択肢は円、角丸四角形、4辺のクッキー、7辺のクッキー、アーチの5つ
-  - `shape`：`shape_key` を受け取って保存し、`notifyChange` する
-  - グリッド関連（`list_options`、`default_grid`、`get_preview`）：null を返す（グリッドの項目は出さない）
-  - 既知の問題：「壁紙とスタイル」は接続先のランチャーをキャッシュする。ホームアプリを切り替えた直後は、そのプロセスが終わるまで前のランチャーにつながることがある
+  - AOSP の `android-17.0.0_r1` のソースで確認した内容である（Launcher3 の `graphics/LauncherCustomizationProvider.kt`、`graphics/GridCustomizationsProxy.java`、`shapes/ShapesProvider.kt`、ThemePicker の `res/values/strings.xml`）
+  - **見つけてもらう仕組み**：ホームの Activity に meta-data を付け、値に Provider の authority（Launcher3 では `<applicationId>.grid_control`）を入れる
+    - `com.android.launcher3.grid.control`：Launcher3 の manifest にあるもの
+    - `com.android.launcher3.themedicon.option`：ThemePicker がテーマアイコンの問い合わせ先を探すのに使うもの
+  - **権限**：Provider は exported にし、呼び出し元が `android.permission.BIND_WALLPAPER` を持っているかをコード側で確かめる（Launcher3 と同じ）
+  - **読み出し（query）**：
+    - `/icon_themed`、`/get_icon_themed`：`boolean_value` 列（1/0）を持つ1行を返す
+    - `/shape_options`：列 `shape_key`、`shape_title`、`path`（100×100 の SVG パス）、`is_default`。選んでいる形状が `is_default` になる
+    - `/list_options`（グリッド）：null を返す。グリッドの選択肢は出さない
+    - `/workspace_items_label_hidden`（ホームのアプリ名を隠す設定。Android 17 で追加）：null を返す。このランチャーでは常に隠すため
+  - **書き込み（update）**：成功したら 1 を返し、`notifyChange` する
+    - `/icon_themed`、`/set_icon_themed`：`boolean_value` を保存する
+    - `/shape`：`shape_key` を保存する
+    - `/default_grid`：0 を返す（グリッドは変えさせない）
+  - **形状の選択肢**（`ShapesProvider.kt`）：`circle`（初期値）、`square`、`four_sided_cookie`、`seven_sided_cookie`、`arch` の5つ。SVG パスは取り込み時にそのまま移植する
+  - **プレビュー**（`call` の `get_preview`）：Launcher3 はホームのプレビューを描いて返す。まずは null を返し、「壁紙とスタイル」側の表示に問題が出るかを実機で確かめる
+  - 既知の問題（サードパーティのランチャーの実装例 [pie-launcher-remake #28](https://github.com/jgoedde/pie-launcher-remake/issues/28) より）：「壁紙とスタイル」は接続先のランチャーをキャッシュする。ホームアプリを切り替えた直後は、そのプロセスが終わるまで前のランチャーにつながることがある

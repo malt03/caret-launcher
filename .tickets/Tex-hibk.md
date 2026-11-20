@@ -1,7 +1,7 @@
 ---
 id: Tex-hibk
 status: open
-deps: [Tex-l0eq]
+deps: [Tex-l0eq, Tex-68f3]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -18,6 +18,10 @@ tags: [drawer]
 - 各アプリのアイコンとアプリ名。タップで起動
 - 長押しはアプリの長押しメニューと共通
 仕様: docs/spec.md 6.4
+
+## Launcher3 からの移植
+
+- 見出しに飛ぶスクロールバーと見出しでの区切りは views/RecyclerViewFastScroller.java、allapps/AllAppsFastScrollHelper.java、allapps/AlphabeticalAppsList.java をコピーして使う（依存の量は要確認）
 
 ## Acceptance Criteria
 

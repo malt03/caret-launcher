@@ -21,6 +21,11 @@ tags: [search]
 - 候補が0件、または未入力なら Enter で何もしない
 仕様: docs/spec.md 2.4、2.5、3.1
 
+## Launcher3 からの移植
+
+- Enter で先頭の結果を起動する流れは allapps/search/AllAppsSearchBarController.java を参考にする
+- ホームと検索結果の切り替えのアニメーションは allapps/SearchTransitionController.java を参考にする
+
 ## Acceptance Criteria
 
 - [ ] 文字を入力 → 候補が下寄せで出て、1位が強調される

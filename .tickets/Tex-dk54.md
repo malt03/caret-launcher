@@ -19,6 +19,12 @@ tags: [icons]
 - 変更時は notifyChange し、アイコンの表示をすぐ更新する
 仕様: docs/spec.md 7.3、付録
 
+## Launcher3 からの移植
+
+- 取り決めは android-17.0.0_r1 のソースで確認済み。内容は docs/spec.md の付録にある
+- 権限の確認は Launcher3 の LauncherCustomizationProvider.kt と同じく、呼び出し元の BIND_WALLPAPER をコードで確かめる
+- /workspace_items_label_hidden と /list_options は null、/default_grid は 0 を返す
+
 ## Acceptance Criteria
 
 - [ ] 「壁紙とスタイル」でテーマアイコンを切り替えると、ランチャーにすぐ反映される

@@ -1,6 +1,6 @@
 ---
 id: Tex-dit1
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-20T11:16:26Z
@@ -23,3 +23,9 @@ tags: [search]
 - [ ] 全角英数字、半角カナ、大文字、カタカナの単体テストが通る
 - [ ] 長音記号「ー」はそのまま残る
 
+
+## Notes
+
+**2026-11-20T11:49:02Z**
+
+search/Normalizer.kt と NormalizerTest（7件）で完了

@@ -1,6 +1,6 @@
 ---
 id: Tex-4hiv
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-20T11:16:26Z
@@ -25,3 +25,9 @@ tags: [infra]
 - [ ] 各データの読み書きの単体テストがある
 - [ ] アプリを再起動してもデータが残る
 
+
+## Notes
+
+**2026-11-20T11:49:02Z**
+
+data/LauncherDatabase.kt（SQLite）と data/SearchStore.kt を実装。テストは未作成

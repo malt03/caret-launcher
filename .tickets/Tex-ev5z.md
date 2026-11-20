@@ -1,7 +1,7 @@
 ---
 id: Tex-ev5z
 status: open
-deps: [Tex-ebnm, Tex-t2ea, Tex-bqud]
+deps: [Tex-ebnm, Tex-t2ea, Tex-bqud, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -19,6 +19,12 @@ tags: [home]
 - 編集モード: 開始時にキーボードを下ろしフォーカスを外す。終了時（ドロップ、枠外タップ、戻る、ホームボタン）にフォーカスとキーボードを戻す
 - 編集モード中の戻る操作は終了だけ（入力クリアしない）。キーボード監視も止める
 仕様: docs/spec.md 5.3、5.4
+
+## Launcher3 からの移植
+
+- ドラッグの見た目（持ち上げ、追従、ドロップ）は dragndrop/ から、並び替えは CellLayout と celllayout/ から移植する
+- 削除・アンインストールの落とし先は DropTargetBar、DeleteDropTarget などを参考にする
+- 範囲は Tex-wgyx で決める
 
 ## Acceptance Criteria
 

@@ -1,7 +1,7 @@
 ---
 id: Tex-maoz
 status: open
-deps: [Tex-6b20]
+deps: [Tex-6b20, Tex-68f3]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -18,6 +18,11 @@ tags: [search]
 - フォーカスが当たっていることが UI で分かるようにする
 - IME アクションは actionGo
 仕様: docs/spec.md 1.1〜1.3
+
+## Launcher3 からの移植
+
+- キーボードの出入りへの追従は anim/KeyboardInsetAnimationCallback.java をコピーして使う
+- 検索フィールドの振る舞い（入力の監視、入力のクリア）は allapps/search/AllAppsSearchBarController.java を参考にする
 
 ## Acceptance Criteria
 

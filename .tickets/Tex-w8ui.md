@@ -20,6 +20,12 @@ tags: [icons, spike]
 
 ## Acceptance Criteria
 
-- [ ] ソースで確認した取り決めの内容をノートに記録した
+- [x] ソースで確認した取り決めの内容を記録した（docs/spec.md の付録）
 - [ ] Pixel（Android 17）で項目が出るかどうかを確認し、結果を記録した
 
+
+## Notes
+
+**2026-11-20T11:49:01Z**
+
+android-17.0.0_r1 の Launcher3（graphics/LauncherCustomizationProvider.kt、graphics/GridCustomizationsProxy.java、shapes/ShapesProvider.kt）と ThemePicker（res/values/strings.xml）で取り決めを確認した。内容は docs/spec.md の付録に反映済み。残りは最小の Provider での実機確認。

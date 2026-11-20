@@ -1,7 +1,7 @@
 ---
 id: Tex-17s1
 status: open
-deps: [Tex-hibk, Tex-9ipm, Tex-bqud]
+deps: [Tex-hibk, Tex-9ipm, Tex-bqud, Tex-68f3]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -22,6 +22,16 @@ tags: [drawer]
 - アプリを起動して戻ってきたら、一覧は閉じた状態
 実装方針は付録（onInterceptTouchEvent、NestedScrollingParent3、SpringAnimation、ハプティック定数）
 仕様: docs/spec.md 6.1、6.2、6.4、6.6、付録
+
+## Launcher3 からの移植
+
+- 縦スワイプの判定と横取りは touch/SingleAxisSwipeDetector.java、touch/BaseSwipeDetector.java をコピーして使う
+- 端での引っ張りの感触は util/OverScroll.java、util/TranslateEdgeEffect.java をコピーして使う
+- 開閉の組み立て方（進み具合とスクリム・ホームの連動）は allapps/AllAppsTransitionController.java を参考にする
+- 速度による開く/戻るの判定、フリックの閾値は touch/AllAppsSwipeController.java、touch/AbstractStateChangeTouchController.java を参考にする
+- バネは anim/SpringAnimationBuilder.java、anim/FlingSpringAnim.java の値に合わせる
+- 引っ掛かりの部分は Launcher3 にないので自前で足す
+- ハプティックは util/MSDLPlayerWrapper.java（msdllib）を使えるか調べる
 
 ## Acceptance Criteria
 

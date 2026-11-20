@@ -1,7 +1,7 @@
 ---
 id: Tex-ebnm
 status: open
-deps: [Tex-9ipm]
+deps: [Tex-9ipm, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -17,6 +17,10 @@ tags: [home]
 - フォルダは名前なし。アイコンは中のアプリのプレビュー（Launcher3 と同様）
 - タップでフォルダを開く。中のアプリもアプリ名なし
 仕様: docs/spec.md 5.2
+
+## Launcher3 からの移植
+
+- フォルダのアイコンのプレビューと開閉のアニメーションは、Launcher3 の folder/（FolderIcon、Folder、PreviewBackground など）から移植する（範囲は Tex-wgyx で決める）
 
 ## Acceptance Criteria
 

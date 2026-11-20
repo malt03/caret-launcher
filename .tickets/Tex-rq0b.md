@@ -1,6 +1,6 @@
 ---
 id: Tex-rq0b
-status: open
+status: closed
 deps: [Tex-dit1, Tex-z822]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -25,3 +25,9 @@ tags: [search]
 - [ ] 各グループの判定と並び順の単体テストが通る
 - [ ] カタカナのアプリ名がひらがなの入力で一致する
 
+
+## Notes
+
+**2026-11-20T11:49:02Z**
+
+search/Ranker.kt と RankerTest（9件）で完了

@@ -1,7 +1,7 @@
 ---
 id: Tex-1eos
 status: open
-deps: [Tex-l0eq, Tex-4hiv]
+deps: [Tex-l0eq, Tex-4hiv, Tex-lczw]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -18,6 +18,11 @@ tags: [icons]
 - 適用範囲: ホーム、フォルダのプレビューと中身、検索結果、全アプリ一覧
 - 初期値: テーマアイコンはオン、形状は円
 仕様: docs/spec.md 7.3
+
+## Launcher3 からの移植
+
+- アイコン処理は iconloaderlib（Tex-lczw で取り込む）を使う
+- 形状の定義は Launcher3 の shapes/ShapesProvider.kt（android-17.0.0_r1）から移植する。circle、square、four_sided_cookie、seven_sided_cookie、arch の5つ
 
 ## Acceptance Criteria
 
