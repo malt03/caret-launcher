@@ -4,45 +4,45 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.view.View
+import com.android.launcher3.BubbleTextView
+import com.android.launcher3.Flags
 import com.android.launcher3.Reorderable
 import com.android.launcher3.folder.ClippedFolderIconLayoutRule
+import com.android.launcher3.folder.FolderIcon
 import com.android.launcher3.folder.PreviewItemDrawingParams
+import com.android.launcher3.folder.PreviewItemManager
 import com.android.launcher3.util.MultiTranslateDelegate
+import com.android.launcher3.views.ActivityContext
 
-/**
- * Base of the views on the home grid. Implements Launcher3's [Reorderable] so that the copied
- * ReorderPreviewAnimation can shake it, the same way BubbleTextView does.
- */
-abstract class HomeItemView(context: Context, protected val iconSize: Int) : View(context), Reorderable {
-    private val translateDelegate = MultiTranslateDelegate(this)
-    private var reorderBounceScale = 1f
-
-    override fun getTranslateDelegate(): MultiTranslateDelegate = translateDelegate
-
-    /** BubbleTextView.setReorderBounceScale */
-    override fun setReorderBounceScale(scale: Float) {
-        reorderBounceScale = scale
-        scaleX = scale
-        scaleY = scale
-    }
-
-    override fun getReorderBounceScale(): Float = reorderBounceScale
-
+/** A view on the home grid. Launcher3's ReorderPreviewAnimation shakes it through [Reorderable]. */
+interface HomeItemView : Reorderable {
     /** The icon's bounds inside this view. */
-    fun iconLeft(): Int = (width - iconSize) / 2
-    fun iconTop(): Int = (height - iconSize) / 2
+    fun iconLeft(): Int
+    fun iconTop(): Int
+}
+
+/** BubbleTextView.setReorderBounceScale and friends, shared by the home item views. */
+private class ReorderableState(private val view: View) {
+    val translateDelegate = MultiTranslateDelegate(view)
+    var bounceScale = 1f
+        set(value) {
+            field = value
+            view.scaleX = value
+            view.scaleY = value
+        }
 }
 
 /**
- * An app on the home screen: icon only, no label (docs/spec.md 5.2).
- * The view's pressed state is passed to the icon, so iconloaderlib's FastBitmapDrawable plays
- * Launcher3's click feedback (PRESSED_SCALE over CLICK_FEEDBACK_DURATION).
+ * An app on the home screen: icon only, no label (docs/spec.md 5.2). Stands in for Launcher3's
+ * BubbleTextView. The pressed state is passed to the icon, so iconloaderlib's FastBitmapDrawable
+ * plays Launcher3's click feedback.
  */
 @SuppressLint("ViewConstructor")
-class AppIconView(context: Context, iconSize: Int) : HomeItemView(context, iconSize) {
+class AppIconView(context: Context, private val iconSizePx: Int) : BubbleTextView(context), HomeItemView {
+    private val reorderable = ReorderableState(this)
+
     var icon: Drawable? = null
         set(value) {
             field?.callback = null
@@ -52,9 +52,19 @@ class AppIconView(context: Context, iconSize: Int) : HomeItemView(context, iconS
             invalidate()
         }
 
+    override fun getIconSize(): Int = iconSizePx
+    override fun iconLeft(): Int = (width - iconSizePx) / 2
+    override fun iconTop(): Int = (height - iconSizePx) / 2
+
+    override fun getTranslateDelegate(): MultiTranslateDelegate = reorderable.translateDelegate
+    override fun setReorderBounceScale(scale: Float) {
+        reorderable.bounceScale = scale
+    }
+    override fun getReorderBounceScale(): Float = reorderable.bounceScale
+
     override fun onDraw(canvas: Canvas) {
         val drawable = icon ?: return
-        drawable.setBounds(iconLeft(), iconTop(), iconLeft() + iconSize, iconTop() + iconSize)
+        drawable.setBounds(iconLeft(), iconTop(), iconLeft() + iconSizePx, iconTop() + iconSizePx)
         drawable.draw(canvas)
     }
 
@@ -72,33 +82,57 @@ class AppIconView(context: Context, iconSize: Int) : HomeItemView(context, iconS
 }
 
 /**
- * A folder on the home screen: no name (docs/spec.md 5.2). The preview places up to four icons
- * with Launcher3's ClippedFolderIconLayoutRule on a round background (PreviewBackground).
+ * A folder on the home screen: no name (docs/spec.md 5.2). Stands in for Launcher3's FolderIcon:
+ * the background is drawn by the copied PreviewBackground, and the preview items are placed by
+ * the copied ClippedFolderIconLayoutRule, offset and clipped like PreviewItemManager.
  */
 @SuppressLint("ViewConstructor")
-class FolderIconView(context: Context, iconSize: Int) : HomeItemView(context, iconSize) {
+class FolderIconView(
+    context: Context,
+    private val iconSizePx: Int,
+    private val activityContext: ActivityContext,
+) : FolderIcon(context), HomeItemView {
+    private val reorderable = ReorderableState(this)
+
     var icons: List<Drawable> = emptyList()
         set(value) {
             field = value
             invalidate()
         }
 
-    private val layoutRule = ClippedFolderIconLayoutRule().also {
-        it.init(iconSize, iconSize.toFloat(), layoutDirection == LAYOUT_DIRECTION_RTL, 2)
-    }
+    private val layoutRule = ClippedFolderIconLayoutRule()
+    private val previewItemManager = PreviewItemManager { setupPreview() }
     private val params = PreviewItemDrawingParams()
-    /**
-     * Launcher3's folderPreviewColor, the same color the open folder starts from and closes to,
-     * so the folder turns back into this icon without a jump.
-     */
-    private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
-            android.content.res.Configuration.UI_MODE_NIGHT_YES
-        color = if (isDark) FOLDER_PREVIEW_DARK else FOLDER_PREVIEW_LIGHT
-    }
+    private val previewClip = android.graphics.Path()
 
     /** 0..1 while the folder is being created: items move from a full icon into the preview. */
     private var createProgress = 1f
+
+    override fun getLayoutRule(): ClippedFolderIconLayoutRule = layoutRule
+    override fun getPreviewItemManager(): PreviewItemManager = previewItemManager
+    override fun iconLeft(): Int = (width - iconSizePx) / 2
+    override fun iconTop(): Int = (height - iconSizePx) / 2
+
+    override fun getTranslateDelegate(): MultiTranslateDelegate = reorderable.translateDelegate
+    override fun setReorderBounceScale(scale: Float) {
+        reorderable.bounceScale = scale
+    }
+    override fun getReorderBounceScale(): Float = reorderable.bounceScale
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        setupPreview()
+    }
+
+    /** PreviewItemManager.computePreviewDrawingParams */
+    private fun setupPreview() {
+        if (width == 0) return
+        mBackground.setup(context, activityContext, this, width, iconTop())
+        layoutRule.init(
+            mBackground.radius * 2, iconSizePx.toFloat(), layoutDirection == LAYOUT_DIRECTION_RTL,
+            activityContext.deviceProfile.folderProfile.numColumns,
+        )
+    }
 
     /**
      * FolderIcon's create animation: the first item shrinks from a full icon into its preview
@@ -117,38 +151,42 @@ class FolderIconView(context: Context, iconSize: Int) : HomeItemView(context, ic
     }
 
     override fun onDraw(canvas: Canvas) {
-        val left = iconLeft().toFloat()
-        val top = iconTop().toFloat()
-        canvas.drawCircle(left + iconSize / 2f, top + iconSize / 2f, iconSize / 2f, backgroundPaint)
+        mBackground.drawBackground(canvas)
+        // PreviewBackground.basePreviewOffsetX / Y are package private; they equal the icon bounds.
+        val offsetX = iconLeft().toFloat()
+        val offsetY = iconTop().toFloat()
         val shown = icons.take(ClippedFolderIconLayoutRule.MAX_NUM_ITEMS_IN_PREVIEW)
+        // PreviewItemManager.draw: clip the items to the folder shape.
+        val count = canvas.save()
+        // getClipPath() refills one shared Path; clip with a copy so a later call cannot change it.
+        if (Flags.enableLauncherIconShapes()) {
+            previewClip.set(mBackground.clipPath.path)
+            canvas.clipPath(previewClip)
+        }
         shown.forEachIndexed { index, drawable ->
             layoutRule.computePreviewItemDrawingParams(index, shown.size, params)
             var transX = params.transX
             var transY = params.transY
             var scale = params.scale
             if (createProgress < 1f && index == 0) {
-                // From the full icon (translation 0, scale 1) to the preview position.
                 transX *= createProgress
                 transY *= createProgress
                 scale = 1f + (scale - 1f) * createProgress
             }
             canvas.save()
-            canvas.translate(left + transX, top + transY)
+            canvas.translate(offsetX + transX, offsetY + transY)
             canvas.scale(scale, scale)
-            drawable.setBounds(0, 0, iconSize, iconSize)
+            drawable.setBounds(0, 0, iconSizePx, iconSizePx)
             if (createProgress < 1f && index > 0) drawable.alpha = (255 * createProgress).toInt()
             drawable.draw(canvas)
             drawable.alpha = 255
             canvas.restore()
         }
+        canvas.restoreToCount(count)
     }
 
-    companion object {
-        // Launcher3 res/values/colors.xml folder_preview_light / folder_preview_dark
-        val FOLDER_PREVIEW_LIGHT = android.graphics.Color.parseColor("#7FCFFF")
-        val FOLDER_PREVIEW_DARK = android.graphics.Color.parseColor("#1E1F20")
-
+    private companion object {
         /** FolderIcon.DROP_IN_ANIMATION_DURATION */
-        private const val DROP_IN_ANIMATION_DURATION = 400L
+        const val DROP_IN_ANIMATION_DURATION = 400L
     }
 }

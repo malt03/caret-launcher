@@ -46,3 +46,7 @@ tags: [home]
 **2026-11-20T13:01:35Z**
 
 フォルダの開閉アニメーションを Launcher3 の expressive 版（FolderAnimationSpringBuilderManager / FolderSpringAnimatorSet、FolderAnimationData・ClipRevealData・IconAnimationData の計算）に倣って実装。値（バネ、色、遅延、時間）は android-17.0.0_r1 と同じ。開閉・起動・ホームへの復帰をエミュレータで確認
+
+**2026-11-20T13:46:43Z**
+
+フォルダの開閉アニメーションを Launcher3 からのコピーに置き換え（FolderAnimationSpringBuilderManager など folder/ 一式、PreviewBackground、ShapeDelegate）。Folder・FolderIcon・BubbleTextView・Launcher などは互換クラスにし、OpenFolder・FolderIconView・AppIconView が継承する。閉じ終わりのずれがないこと、受け皿の円とフォルダ作成をエミュレータで確認

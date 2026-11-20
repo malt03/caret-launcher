@@ -15,6 +15,8 @@ import android.view.ViewGroup
 import com.android.launcher3.CellLayout
 import com.android.launcher3.Reorderable
 import com.android.launcher3.celllayout.ReorderPreviewAnimation
+import com.android.launcher3.folder.PreviewBackground
+import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.util.MultiTranslateDelegate
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.celllayout.ItemConfiguration
@@ -39,7 +41,10 @@ import kotlin.math.min
  */
 @SuppressLint("ViewConstructor")
 class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), CellLayout.Children {
-    val cellLayout = CellLayout(this)
+    val cellLayout = CellLayout(context, this).also { it.setOwnerView(this) }
+
+    /** Set by the owner; PreviewBackground reads the folder profile from it. */
+    lateinit var activityContext: ActivityContext
     private val cellPaddingV = (12 * resources.displayMetrics.density).toInt()
     val cellHeight: Int get() = grid.iconSizePx + cellPaddingV * 2
     var cellWidth = 0
@@ -70,19 +75,15 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         color = MaterialColors.getColor(this@HomeGridView, com.google.android.material.R.attr.colorOnSurface)
         alpha = 160
     }
-    private val folderRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = MaterialColors.getColor(this@HomeGridView, com.google.android.material.R.attr.colorSurfaceContainerHighest)
-        alpha = 200
-    }
     private var dropOutline: Rect? = null
-    private var folderRingCell: IntArray? = null
-    /** PreviewBackground's accept animation: 1 -> ACCEPT_SCALE_FACTOR over CONSUMPTION_ANIMATION_DURATION. */
-    private var folderRingScale = 1f
-    private var folderRingAnimator: ValueAnimator? = null
+
+    /** Workspace.mFolderCreateBg: the circle that grows while an app is held over another. */
+    private var folderCreateBg: PreviewBackground? = null
+    private var folderCreateCell: IntArray? = null
 
     // CellLayout.mReorderAnimators / mShakeAnimators
     private val reorderAnimators = HashMap<CellLayoutLayoutParams, ValueAnimator>()
-    private val shakeAnimators = ArrayMap<Reorderable, ReorderPreviewAnimation<HomeItemView>>()
+    private val shakeAnimators = ArrayMap<Reorderable, ReorderPreviewAnimation<*>>()
     private val reorderPreviewMagnitude = CellLayout.REORDER_PREVIEW_MAGNITUDE * grid.iconSizePx
     private val tmpRect = Rect()
 
@@ -148,11 +149,8 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        folderRingCell?.let { cell ->
-            cellLayout.cellToRect(cell[0], cell[1], 1, 1, tmpRect)
-            val radius = grid.iconSizePx / 2f * folderRingScale
-            canvas.drawCircle(tmpRect.exactCenterX(), tmpRect.exactCenterY(), radius, folderRingPaint)
-        }
+        // CellLayout.onDraw: delegated cell drawings (the folder creation circle).
+        cellLayout.drawDelegatedUnderItems(canvas)
         dropOutline?.let { rect ->
             val inset = 6 * resources.displayMetrics.density
             val corner = 16 * resources.displayMetrics.density
@@ -171,19 +169,27 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         }
     }
 
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        // CellLayout.dispatchDraw: delegated drawings over the items.
+        cellLayout.drawDelegatedOverItems(canvas)
+    }
+
+    /**
+     * Workspace.manageFolderFeedback / cleanupFolderCreation: a PreviewBackground grows on the
+     * cell of the app that a dropped app would make a folder with.
+     */
     fun showFolderRing(cell: IntArray?) {
-        if (cell.contentEquals(folderRingCell)) return
-        folderRingCell = cell?.copyOf()
-        folderRingAnimator?.cancel()
+        if (cell.contentEquals(folderCreateCell)) return
+        folderCreateBg?.animateToRest()
+        folderCreateBg = null
+        folderCreateCell = cell?.copyOf()
         if (cell != null) {
-            folderRingScale = 1f
-            folderRingAnimator = ValueAnimator.ofFloat(1f, ACCEPT_SCALE_FACTOR).apply {
-                duration = CONSUMPTION_ANIMATION_DURATION
-                addUpdateListener {
-                    folderRingScale = it.animatedValue as Float
-                    invalidate()
-                }
-                start()
+            val over = childAtCell(cell[0], cell[1], ignore = draggingView) ?: return
+            folderCreateBg = PreviewBackground(context).apply {
+                setup(context, activityContext, null, over.measuredWidth, (over as? HomeItemView)?.iconTop() ?: 0)
+                isClipping = false
+                animateToAccept(cellLayout, cell[0], cell[1])
             }
         }
         invalidate()
@@ -191,7 +197,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
 
     fun clearDragFeedback() {
         dropOutline = null
-        folderRingCell = null
+        showFolderRing(null)
         invalidate()
     }
 
@@ -351,13 +357,22 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
             val c = solution.map[child]
             val skip = mode == ReorderPreviewAnimation.MODE_HINT && solution.intersectingViews?.contains(child) != true
             val lp = child.layoutParams as CellLayoutLayoutParams
-            if (c != null && !skip && child is HomeItemView) {
-                ReorderPreviewAnimation(
-                    child, mode, lp.cellX, lp.cellY, c.cellX, c.cellY, c.spanX, c.spanY,
-                    reorderPreviewMagnitude, cellLayout, shakeAnimators,
-                ).animate()
+            if (c != null && !skip) {
+                when (child) {
+                    is AppIconView -> shake(child, mode, lp, c.cellX, c.cellY, c.spanX, c.spanY)
+                    is FolderIconView -> shake(child, mode, lp, c.cellX, c.cellY, c.spanX, c.spanY)
+                }
             }
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> shake(child: T, mode: Int, lp: CellLayoutLayoutParams, cellX: Int, cellY: Int, spanX: Int, spanY: Int)
+        where T : View, T : Reorderable {
+        ReorderPreviewAnimation(
+            child, mode, lp.cellX, lp.cellY, cellX, cellY, spanX, spanY,
+            reorderPreviewMagnitude, cellLayout, shakeAnimators as ArrayMap<Reorderable, ReorderPreviewAnimation<T>>,
+        ).animate()
     }
 
     /** CellLayout.completeAndClearReorderPreviewAnimations */
@@ -368,9 +383,5 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
 
     private companion object {
         val NO_BORDER = Point(0, 0)
-        /** PreviewBackground.ACCEPT_SCALE_FACTOR */
-        const val ACCEPT_SCALE_FACTOR = 1.20f
-        /** PreviewBackground.CONSUMPTION_ANIMATION_DURATION */
-        const val CONSUMPTION_ANIMATION_DURATION = 100L
     }
 }

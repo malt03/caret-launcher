@@ -10,6 +10,9 @@ import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.ui.drag.DropTargetBar
+import com.android.launcher3.Hotseat
+import com.android.launcher3.views.BaseDragLayer
+import com.android.launcher3.views.ScrimView
 
 /**
  * Lays out the home area / search results above the search field, and keeps the field right
@@ -28,8 +31,11 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** Called when the keyboard went from visible to hidden. */
     var onKeyboardHidden: (() -> Unit)? = null
 
-    /** Full-size layer on top of everything: drag views, folder popups. */
-    val overlay = FrameLayout(context)
+    /** Full-size layer on top of everything: drag views, open folders (Launcher3's drag layer). */
+    val overlay = BaseDragLayer(context)
+
+    /** Dims the home screen while a folder is open (Launcher3's ScrimView). */
+    val scrim = ScrimView(context)
     val dropTargetBar = DropTargetBar(context)
     private val dropTargetBarHeight = (64 * resources.displayMetrics.density).toInt()
 
@@ -46,7 +52,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     var lastDownRawY = 0f
         private set
 
-    private val barContainer = FrameLayout(context)
+    /** The search field and its margins; Launcher3's hotseat for the folder animation. */
+    val hotseat = Hotseat(context)
+    private val barContainer: FrameLayout get() = hotseat
 
     /** The search field with its margins; it moves with the keyboard. */
     val searchBarArea: View get() = barContainer
@@ -67,6 +75,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         barContainer.addView(searchBar)
         addView(barContainer)
         overlay.addView(dropTargetBar, LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarHeight))
+        addView(scrim)
         addView(overlay)
         isFocusableInTouchMode = true
         barContainer.setWindowInsetsAnimationCallback(keyboardCallback)
@@ -137,6 +146,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
         )
+        scrim.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+        )
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -147,6 +160,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
         layoutContentArea(force = true)
         overlay.layout(0, 0, width, height)
+        scrim.layout(0, 0, width, height)
         dropTargetBar.layout(0, statusBarTop, width, statusBarTop + dropTargetBarHeight)
     }
 

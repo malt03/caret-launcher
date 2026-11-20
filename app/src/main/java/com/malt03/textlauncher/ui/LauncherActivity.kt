@@ -87,7 +87,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
             visibility = View.GONE
         }
         home = HomeController(app, root, this)
-        root.contentArea.addView(home.scrollView)
+        root.contentArea.addView(home.workspace)
         root.contentArea.addView(results)
 
         val editText = root.searchBar.editText

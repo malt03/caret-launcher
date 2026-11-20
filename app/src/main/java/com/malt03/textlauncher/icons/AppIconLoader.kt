@@ -13,6 +13,7 @@ import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.GraphicsUtils
 import com.android.launcher3.icons.IconShape
 import com.android.launcher3.icons.mono.MonoIconThemeController
+import com.android.launcher3.graphics.ThemeManager
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.AppEntry
 import java.util.concurrent.Executors
@@ -44,6 +45,12 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
 
     init {
         settings.addListener(::onSettingsChanged)
+        updateFolderShape()
+    }
+
+    /** ThemeManager.parseIconState: the folder shape follows the icon shape's folderRadiusRatio. */
+    private fun updateFolderShape() {
+        ThemeManager.INSTANCE.get(context).setFolderRadiusRatio(settings.shape.folderRadiusRatio)
     }
 
     /** Called on the main thread when every icon has to be rebound. */
@@ -92,6 +99,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         pending.clear()
         isThemed = themed
         iconShape = createIconShape(shapePath)
+        updateFolderShape()
         executor.execute { factory = createFactory(themed) }
         changeListeners.toList().forEach { it() }
     }

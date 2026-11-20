@@ -1,5 +1,7 @@
 package com.android.launcher3;
 
+import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
@@ -7,21 +9,24 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.celllayout.DelegatedCellDrawing;
 import com.android.launcher3.celllayout.ItemConfiguration;
 import com.android.launcher3.util.CellAndSpan;
 import com.android.launcher3.util.GridOccupancy;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 /**
  * Stand-in for Launcher3's CellLayout (android-17.0.0_r1), used by the copied reorder algorithm
  * (celllayout/ReorderAlgorithm.java, celllayout/ViewCluster.kt).
  *
- * Not a View. The grid view of TextLauncher owns one, keeps its geometry in sync and lists its
- * children through {@link Children}. Method bodies are copied from CellLayout.java; changes are
+ * Never attached: TextLauncher's grid view owns one, keeps its geometry in sync, lists its
+ * children through {@link Children} and draws its delegated cell drawings. It is a View only
+ * because copied code reads View members of CellLayout (clipChildren and so on). Method bodies are copied from CellLayout.java; changes are
  * marked with "TextLauncher:".
  */
-public class CellLayout {
+public class CellLayout extends android.widget.FrameLayout {
 
     /** TextLauncher: replaces CellLayout's ShortcutAndWidgetContainer. */
     public interface Children {
@@ -57,9 +62,69 @@ public class CellLayout {
     private final Rect mTempRect = new Rect();
     private final int[] mTmpPoint = new int[2];
 
-    public CellLayout(Children children) {
+    private final ArrayList<DelegatedCellDrawing> mDelegatedCellDrawings = new ArrayList<>();
+    private android.view.View mOwnerView;
+
+    public CellLayout(Context context, Children children) {
+        super(context);
         mShortcutsAndWidgets = children;
         setGridSize(1, 1);
+    }
+
+    /** TextLauncher: no child container; see {@link ShortcutAndWidgetContainer}. */
+    public ShortcutAndWidgetContainer getShortcutsAndWidgets() {
+        return null;
+    }
+
+    /** TextLauncher: the view that draws this layout's content. */
+    public void setOwnerView(android.view.View owner) {
+        mOwnerView = owner;
+    }
+
+    /** TextLauncher: redraw happens in the owner view. */
+    @Override
+    public void invalidate() {
+        if (mOwnerView != null) mOwnerView.invalidate();
+    }
+
+    public void addDelegatedCellDrawing(DelegatedCellDrawing bg) {
+        mDelegatedCellDrawings.add(bg);
+    }
+
+    public void removeDelegatedCellDrawing(DelegatedCellDrawing bg) {
+        mDelegatedCellDrawings.remove(bg);
+    }
+
+    private final int[] mTempLocation = new int[2];
+
+    /** TextLauncher: CellLayout.onDraw's delegated drawing, called by the owner view. */
+    public void drawDelegatedUnderItems(Canvas canvas) {
+        for (int i = 0; i < mDelegatedCellDrawings.size(); i++) {
+            DelegatedCellDrawing cellDrawing = mDelegatedCellDrawings.get(i);
+            canvas.save();
+            cellToPoint(cellDrawing.mDelegateCellX, cellDrawing.mDelegateCellY, mTempLocation);
+            canvas.translate(mTempLocation[0], mTempLocation[1]);
+            cellDrawing.drawUnderItem(canvas);
+            canvas.restore();
+        }
+    }
+
+    /** TextLauncher: CellLayout.dispatchDraw's delegated drawing, called by the owner view. */
+    public void drawDelegatedOverItems(Canvas canvas) {
+        for (int i = 0; i < mDelegatedCellDrawings.size(); i++) {
+            DelegatedCellDrawing bg = mDelegatedCellDrawings.get(i);
+            canvas.save();
+            cellToPoint(bg.mDelegateCellX, bg.mDelegateCellY, mTempLocation);
+            canvas.translate(mTempLocation[0], mTempLocation[1]);
+            bg.drawOverItem(canvas);
+            canvas.restore();
+        }
+    }
+
+    void cellToPoint(int cellX, int cellY, int[] result) {
+        cellToRect(cellX, cellY, 1, 1, mTempRect);
+        result[0] = mTempRect.left;
+        result[1] = mTempRect.top;
     }
 
     /** TextLauncher: grid size. Occupancy is cleared when the size changes. */

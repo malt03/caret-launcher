@@ -15,6 +15,11 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.HomeItem
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
+import com.android.launcher3.DeviceProfile
+import com.android.launcher3.Launcher
+import com.android.launcher3.Workspace
+import com.android.launcher3.views.ActivityContext
+import com.android.launcher3.views.BaseDragLayer
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
 import com.malt03.textlauncher.ui.drag.DragController
 import com.malt03.textlauncher.ui.drag.DropTargetBar
@@ -40,6 +45,17 @@ class HomeController(
     private val context = root.context
     private val model = app.homeModel
     val grid = HomeGridView(context, GridSpec.from(context))
+    private val gridSpec = grid.grid
+
+    /** Launcher3's ActivityContext for the copied folder code. */
+    val activityContext = object : ActivityContext {
+        private val deviceProfile = DeviceProfile(
+            DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows),
+        )
+        override fun getDeviceProfile(): DeviceProfile = deviceProfile
+        override fun getDragLayer(): BaseDragLayer = root.overlay
+    }
+
     val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
         isFillViewport = true
         overScrollMode = View.OVER_SCROLL_NEVER
@@ -47,12 +63,18 @@ class HomeController(
         addView(grid, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         addOnLayoutChangeListener { v, _, top, _, bottom, _, _, _, _ -> grid.viewportHeight = bottom - top }
     }
+    /** Launcher3's Workspace: holds the home grid and shrinks while a folder is open. */
+    val workspace = Workspace<Any>(context).apply {
+        addView(scrollView, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
+    }
+    private val launcher = Launcher(workspace, root.hotseat, root.scrim)
     val drag = DragController(root.overlay, scrollView, grid, root.dropTargetBar, this)
     private val mainHandler = Handler(Looper.getMainLooper())
     private var loaded = false
-    private var folderPopup: FolderPopup? = null
+    private var folderPopup: OpenFolder? = null
 
     init {
+        grid.activityContext = activityContext
         val padding = (8 * context.resources.displayMetrics.density).toInt()
         grid.setPadding(padding, padding, padding, padding)
         root.touchInterceptor = { drag.onTouchEvent(it) }
@@ -118,14 +140,14 @@ class HomeController(
                     }
                 }
             }
-            is HomeItem.Folder -> FolderIconView(context, iconSize).apply {
+            is HomeItem.Folder -> FolderIconView(context, iconSize, activityContext).apply {
                 bindFolderIcons(this, item)
                 setOnClickListener { openFolder(item, this) }
                 setOnLongClickListener {
                     parent?.requestDisallowInterceptTouchEvent(true)
                     val icons = this.icons
                     drag.startDrag(
-                        DragController.Payload(null, item, this, { FolderIconView(context, iconSize).also { it.icons = icons } }),
+                        DragController.Payload(null, item, this, { FolderIconView(context, iconSize, activityContext).also { it.icons = icons } }),
                         root.lastDownRawX, root.lastDownRawY,
                     )
                     true
@@ -151,8 +173,8 @@ class HomeController(
     private fun openFolder(folder: HomeItem.Folder, folderView: FolderIconView) {
         closeFolder()
         val entries = folder.appKeys.mapNotNull { app.appRepository.find(it) }
-        folderPopup = FolderPopup(
-            root.overlay, folderView, entries, grid.grid, app.iconLoader,
+        folderPopup = OpenFolder(
+            root.overlay, folderView, entries, grid.grid, app.iconLoader, activityContext, launcher,
             onClick = { entry, view -> host.launch(entry, view) },
             onLongPress = { entry, view ->
                 onAppLongPress(entry, view, null, null) {
@@ -160,7 +182,6 @@ class HomeController(
                     removeFromFolder(folder, entry.key)
                 }
             },
-            backgroundViews = listOf(scrollView, root.searchBarArea),
             onDismiss = { folderPopup = null },
         )
     }

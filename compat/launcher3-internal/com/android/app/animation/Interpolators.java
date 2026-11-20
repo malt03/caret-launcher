@@ -1,6 +1,8 @@
 package com.android.app.animation;
 
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.PathInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
@@ -11,5 +13,8 @@ import android.view.animation.LinearInterpolator;
  */
 public class Interpolators {
     public static final Interpolator LINEAR = new LinearInterpolator();
+    public static final Interpolator EMPHASIZED_DECELERATE = new PathInterpolator(
+            0.05f, 0.7f, 0.1f, 1f);
+    public static final Interpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
     public static final Interpolator DECELERATE_1_5 = new DecelerateInterpolator(1.5f);
 }

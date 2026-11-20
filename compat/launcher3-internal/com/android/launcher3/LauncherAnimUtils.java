@@ -5,10 +5,79 @@ import android.util.Property;
 import android.view.View;
 
 /**
- * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1). Only the members used by the
- * copied util/MultiTranslateDelegate.java, copied from LauncherAnimUtils.java.
+ * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1). Only the members that copied code uses, copied from
+ * LauncherAnimUtils.java.
  */
 public class LauncherAnimUtils {
+    public static final FloatProperty<View> SCALE_PROPERTY = getScaleProperty();
+
+    /** Used to debug b/489475544, after the crash is fixed, caller can just use SCALE_PROPERTY t*/
+    public static FloatProperty<View> getScaleProperty() {
+        return new ScaleProperty();
+    }
+
+    /**
+     * FloatProperty that saves the creation call stacktrace, so that during animation frame if
+     * {@link android.view.ViewRootImpl$CalledFromWrongThreadException} is detected, the crash
+     * will contain creation call stacktrace.
+     */
+    private static class ScaleProperty extends FloatProperty<View> {
+
+        private final Exception mException;
+
+        ScaleProperty() {
+            super("scale");
+            mException = new Exception();
+        }
+
+        @Override
+        public Float get(View view) {
+            return view.getScaleX();
+        }
+
+        @Override
+        public void setValue(View view, float scale) {
+            try {
+                if (view.getHandler() != null
+                        && view.getHandler().getLooper() != android.os.Looper.myLooper()) {
+                    view.post(() -> {
+                        view.setScaleX(scale);
+                        view.setScaleY(scale);
+                    });
+                } else {
+                    view.setScaleX(scale);
+                    view.setScaleY(scale);
+                }
+            } catch (RuntimeException e) {
+                // Check if the class name matches the hidden Android exception
+                if (e.getClass().getName().contains("CalledFromWrongThreadException")) {
+                    RuntimeException diagnostic = new RuntimeException(
+                            "Thread Mismatch! Creator trace attached as cause.", e);
+                    diagnostic.initCause(mException);
+                    throw diagnostic;
+                }
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Property to set the scale of workspace. The value is based on a combination
+     * of all the ones set, to have a smooth experience even in the case of overlapping scaling
+     * animation.
+     */
+    public static final com.android.launcher3.util.MultiScalePropertyFactory<Workspace<?>> WORKSPACE_SCALE_PROPERTY_FACTORY =
+            new com.android.launcher3.util.MultiScalePropertyFactory<Workspace<?>>("workspace_scale_property");
+
+    /** Property to set the scale of hotseat. */
+    public static final com.android.launcher3.util.MultiScalePropertyFactory<Hotseat> HOTSEAT_SCALE_PROPERTY_FACTORY =
+            new com.android.launcher3.util.MultiScalePropertyFactory<Hotseat>("hotseat_scale_property");
+
+    public static final int SCALE_INDEX_FOLDER_ANIM = 5;
+
+    public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);
+    public static final FloatProperty<View> VIEW_ALPHA = convert(View.ALPHA);
+
     public static final FloatProperty<View> VIEW_TRANSLATE_X = convert(View.TRANSLATION_X);
     public static final FloatProperty<View> VIEW_TRANSLATE_Y = convert(View.TRANSLATION_Y);
 

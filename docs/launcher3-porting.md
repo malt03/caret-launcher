@@ -36,7 +36,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 | ドラッグ | 土台をコピー | `dragndrop/DragDriver.java`、`dragndrop/DragOptions.java`、`DropTarget.java`、`DragSource.java`、`dragndrop/DraggableView.java`、`util/TouchController.java`。余力があれば `dragndrop/DragController.java`、`dragndrop/DragView.java` も | ドラッグレイヤーと削除・アンインストールの落とし先は、`ButtonDropTarget` の閾値とアニメーションに倣って自前で書く |
 | 長押しメニューとドラッグへの移行 | 部品をコピー | `popup/RoundedArrowDrawable.java`、`popup/Popup.kt`、必要なら `popup/ArrowPopup.java` | メニュー本体は自前。ドラッグへの移行は `DragController` の pre-drag の仕組み（`DragOptions.preDragCondition`）を使う |
 | ウィジェットのリサイズ枠 | 自前（参考） | — | `AppWidgetResizeFrame.kt` に倣う。`applyDeltaAndBound`、`getSpanIncrement` の計算は移植する |
-| フォルダ | 一部コピー | `folder/ClippedFolderIconLayoutRule.java`、必要なら `folder/PreviewBackground.java`、`celllayout/DelegatedCellDrawing.kt`、`graphics/PathWrapper.kt` | フォルダアイコン、開いたときの表示とアニメーションは `FolderIcon`、`Folder`、`FolderAnimationManager` に倣って自前で書く |
+| フォルダ | コピー | `folder/` の開閉アニメーション一式（`FolderAnimationSpringBuilderManager.kt`、`FolderSpringAnimatorSet.kt`、`FolderAnimationData.kt`、`ClipRevealData.kt`、`IconAnimationData.kt` など）、`folder/PreviewBackground.java`、`folder/ClippedFolderIconLayoutRule.java`、`folder/FolderGridOrganizer.java`、`graphics/ShapeDelegate.kt` | `Folder`、`FolderIcon`、`BubbleTextView`、`Launcher` などは互換クラスにし、アプリ側の View がそれを継承する |
 | 見出しに飛ぶスクロールバー | スクロールバーをコピー | `views/RecyclerViewFastScroller.java`、`graphics/FastScrollThumbDrawable.java`、`FastScrollRecyclerView.java`、`allapps/AllAppsFastScrollHelper.java` | 見出しの区切りの作り方は `AlphabeticalAppsList.java` に倣って自前で書く |
 | 縦スワイプの判定、端での引っ張り | コピー | `touch/BaseSwipeDetector.java`、`touch/SingleAxisSwipeDetector.java`、`touch/OverScroll.java`、`util/TranslateEdgeEffect.java`、`util/EdgeEffectCompat.java`、`MotionEventsUtils.java` | — |
 | ハプティック | ライブラリごとコピー | `frameworks/libs/systemui/msdllib/` | `util/MSDLPlayerWrapper.java` の代わりを互換層に置く。鳴らす場所と種類は Launcher3 に合わせる（下記） |
@@ -49,7 +49,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 
 - `CellLayout.java` 本体、`dragndrop/DragLayer.java`、`ButtonDropTarget`、`DeleteDropTarget`、`DropTargetBar`：`Launcher`、`Workspace`、`DeviceProfile`、Dagger に依存している
 - `AppWidgetResizeFrame.kt`：`Launcher`、`Workspace`、本物の `CellLayout` に依存している
-- `folder/FolderIcon`、`folder/Folder`、`folder/PreviewItemManager`、`folder/FolderAnimationManager`：`Launcher`、`Workspace`、`BubbleTextView` などに依存している
+- `folder/FolderIcon`、`folder/Folder`、`folder/PreviewItemManager`：`Launcher`、`Workspace`、`BubbleTextView` などに依存している。アニメーションが使うメンバーだけを互換クラスで用意した
 - `popup/PopupContainerWithArrow.kt`、`popup/PopupContainer.kt`、`touch/ItemLongClickListener.java`：`Launcher`、`LauncherState`、Compose の UI に依存している
 - `allapps/AlphabeticalAppsList.java`：`AllAppsStore`、仕事用プロファイルなどの管理クラスに依存している
 

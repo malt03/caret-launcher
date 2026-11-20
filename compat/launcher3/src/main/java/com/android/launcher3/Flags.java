@@ -29,4 +29,9 @@ public final class Flags {
     public static boolean restoreArchivedAppIconsFromDb() {
         return false;
     }
+
+    /** cp1a: ENABLED */
+    public static boolean enableExpressiveFolderExpansion() {
+        return true;
+    }
 }

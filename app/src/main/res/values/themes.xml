@@ -8,5 +8,9 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:enforceNavigationBarContrast">false</item>
+        <!-- Launcher3 res/values/styles.xml (android-17.0.0_r1), light theme -->
+        <item name="folderPreviewColor">@color/folder_preview_light</item>
+        <item name="folderBackgroundColor">@color/folder_background_light</item>
+        <item name="folderIconBorderColor">?android:attr/colorPrimary</item>
     </style>
 </resources>
