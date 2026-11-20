@@ -42,3 +42,7 @@ tags: [home]
 **2026-11-20T12:57:09Z**
 
 フォルダを開いたときの背景の暗転と縮小を Launcher3（FolderSpringAnimatorSet.addWorkspaceAnimators）に合わせて追加。SpringAnimationBuilder をコピーして使用。フォルダ本体の開閉アニメーションは未移植
+
+**2026-11-20T13:01:35Z**
+
+フォルダの開閉アニメーションを Launcher3 の expressive 版（FolderAnimationSpringBuilderManager / FolderSpringAnimatorSet、FolderAnimationData・ClipRevealData・IconAnimationData の計算）に倣って実装。値（バネ、色、遅延、時間）は android-17.0.0_r1 と同じ。開閉・起動・ホームへの復帰をエミュレータで確認

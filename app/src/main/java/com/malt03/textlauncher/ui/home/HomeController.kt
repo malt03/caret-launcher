@@ -148,7 +148,7 @@ class HomeController(
     }
 
 
-    private fun openFolder(folder: HomeItem.Folder, folderView: View) {
+    private fun openFolder(folder: HomeItem.Folder, folderView: FolderIconView) {
         closeFolder()
         val entries = folder.appKeys.mapNotNull { app.appRepository.find(it) }
         folderPopup = FolderPopup(
