@@ -244,6 +244,7 @@ class HomeController(
         override fun onDragStart(dragObject: DragObject, options: DragOptions) {
             editing = true
             closeFolder()
+            root.animateWallpaperScrim(true)
             host.onEditModeChanged(true)
             grid.headroomRows = dragObject.dragInfo.spanY + 1
             scrollView.animate().translationY(root.dropTargetBarHeight.toFloat()).setDuration(EDIT_ANIMATION_MS)
@@ -253,6 +254,7 @@ class HomeController(
         override fun onDragEnd() {
             if (!editing) return
             editing = false
+            root.animateWallpaperScrim(false)
             grid.headroomRows = 0
             scrollView.animate().translationY(0f).setDuration(EDIT_ANIMATION_MS).start()
             host.onEditModeChanged(false)

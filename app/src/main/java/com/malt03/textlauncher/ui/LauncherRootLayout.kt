@@ -2,7 +2,10 @@ package com.malt03.textlauncher.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.view.MotionEvent
+import com.android.app.animation.Interpolators
+import com.android.launcher3.Utilities
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
@@ -35,6 +38,15 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     /** Dims the home screen while a folder is open (Launcher3's ScrimView). */
     val scrim = ScrimView(context)
+
+    /**
+     * Darkens only the wallpaper while editing, behind everything else. Stands in for the depth
+     * (wallpaper blur) of Launcher3's spring-loaded state, which keeps the drop targets readable.
+     */
+    private val wallpaperScrim = View(context).apply {
+        setBackgroundColor(Color.BLACK)
+        alpha = 0f
+    }
     private var dropTargetBar: View? = null
     private val dropTargetBarSize = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.dynamic_grid_drop_target_size)
     private val dropTargetBarTopMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_top_margin)
@@ -78,6 +90,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     init {
         clipChildren = false
+        addView(wallpaperScrim)
         addView(contentArea)
         barContainer.addView(searchBar)
         addView(barContainer)
@@ -159,6 +172,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
         )
+        wallpaperScrim.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+        )
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -170,6 +187,27 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         layoutContentArea(force = true)
         overlay.layout(0, 0, width, height)
         scrim.layout(0, 0, width, height)
+        wallpaperScrim.layout(0, 0, width, height)
+    }
+
+    /**
+     * Fades the wallpaper scrim in or out with the spring-loaded state: Launcher3 animates the
+     * depth over SpringLoadedState.getTransitionDuration (150ms, both ways) with LINEAR.
+     */
+    fun animateWallpaperScrim(visible: Boolean) {
+        // TextLauncher: a little lighter than the folder scrim (0.2, or 0.32 in the dark theme).
+        val finalAlpha = if (!visible) 0f else if (Utilities.isDarkTheme(context)) EDIT_SCRIM_ALPHA_DARK else EDIT_SCRIM_ALPHA
+        wallpaperScrim.animate().cancel()
+        wallpaperScrim.animate().alpha(finalAlpha)
+            .setDuration(SPRING_LOADED_TRANSITION_MS)
+            .setInterpolator(Interpolators.LINEAR)
+            .start()
+    }
+
+    private companion object {
+        const val SPRING_LOADED_TRANSITION_MS = 150L
+        const val EDIT_SCRIM_ALPHA = 0.15f
+        const val EDIT_SCRIM_ALPHA_DARK = 0.24f
     }
 
     /** The visual top of the search field container, including keyboard translation. */
