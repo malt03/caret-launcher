@@ -36,6 +36,8 @@ public class CellLayout {
     public static final int MODE_ON_DROP_EXTERNAL = 3;
     public static final int MODE_ACCEPT_DROP = 4;
     public static final int REORDER_ANIMATION_DURATION = 150;
+    public static final float DEFAULT_SCALE = 1f;
+    public static final float REORDER_PREVIEW_MAGNITUDE = 0.12f;
 
     private final Children mShortcutsAndWidgets;
 

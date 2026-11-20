@@ -217,7 +217,8 @@ class HomeController(
         closeFolder()
         host.onEditModeChanged(true)
         // Make room for the drop target bar, like Launcher3's spring-loaded workspace.
-        scrollView.animate().translationY(root.dropTargetBar.layoutParams.height.toFloat()).setDuration(EDIT_ANIMATION_MS).start()
+        scrollView.animate().translationY(root.dropTargetBar.layoutParams.height.toFloat()).setDuration(EDIT_ANIMATION_MS)
+            .withEndAction { drag.onGridMoved() }.start()
     }
 
     override fun onDropOnGrid(payload: DragController.Payload, cellX: Int, cellY: Int) {
@@ -252,6 +253,7 @@ class HomeController(
                 folder.cellX = targetItem.cellX
                 folder.cellY = targetItem.cellY
                 replace(targetItem, folder)
+                (grid.viewFor(folder) as? FolderIconView)?.playCreateAnimation()
             }
             is HomeItem.Widget -> Unit
         }

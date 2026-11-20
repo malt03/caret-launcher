@@ -18,6 +18,11 @@ path=src/com/android/launcher3/celllayout/CellLayoutLayoutParams.java
 path=src/com/android/launcher3/util/GridOccupancy.java
 path=src/com/android/launcher3/util/CellAndSpan.java
 path=src/com/android/launcher3/folder/ClippedFolderIconLayoutRule.java
+path=src/com/android/launcher3/celllayout/ReorderPreviewAnimation.kt
+path=src/com/android/launcher3/Reorderable.java
+path=src/com/android/launcher3/util/MultiTranslateDelegate.java
+path=src/com/android/launcher3/util/MultiPropertyFactory.java
+path=src/com/android/launcher3/util/Thunk.java
 ```
 
 ## 取り込んでいないもの
@@ -41,5 +46,7 @@ path=src/com/android/launcher3/folder/ClippedFolderIconLayoutRule.java
 | `com.android.launcher3.CellLayout`（View ではない。アルゴリズムが使うメンバーだけを `CellLayout.java` から移した） | `celllayout/ReorderAlgorithm.java`、`celllayout/ViewCluster.kt` |
 | `com.android.launcher3.model.data.ItemInfo`（`cellX`、`cellY`、`spanX`、`spanY` だけ） | `util/GridOccupancy.java` |
 | `com.android.launcher3.folder.PreviewItemDrawingParams`（位置と拡大率だけ。公開の getter を追加） | `folder/ClippedFolderIconLayoutRule.java` |
+| `com.android.launcher3.LauncherAnimUtils`（`VIEW_TRANSLATE_X`、`VIEW_TRANSLATE_Y`） | `util/MultiTranslateDelegate.java` |
+| `com.android.launcher3.Workspace`（`REORDER_TIMEOUT`） | `celllayout/ReorderPreviewAnimation.kt` |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt` |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

@@ -52,7 +52,8 @@ class ResultsAdapter(
             isClickable = true
             isFocusable = false
         }
-        val icon = ImageView(context)
+        // The cell's pressed state reaches the icon, so FastBitmapDrawable plays its click feedback.
+        val icon = ImageView(context).apply { isDuplicateParentStateEnabled = true }
         cell.addView(icon, LinearLayout.LayoutParams(grid.iconSizePx, grid.iconSizePx))
         val label = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, grid.iconTextSizeSp)

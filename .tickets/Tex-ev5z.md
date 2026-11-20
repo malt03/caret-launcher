@@ -45,3 +45,7 @@ tags: [home]
 **2026-11-20T12:32:36Z**
 
 DragController と DropTargetBar を実装。検索結果・ホーム・フォルダからのドラッグ、並び替え（REORDER_TIMEOUT 650ms）、アプリ同士の重ねでフォルダ作成、フォルダから1つ残して出すと解除、削除・アンインストールの落とし先、編集中のキーボード下ろしと終了後の復帰をエミュレータで確認。ウィジェット関連は未実装
+
+**2026-11-20T12:43:18Z**
+
+押しのけのアニメーションを Launcher3 から移植（ReorderPreviewAnimation.kt をコピー。animateChildToPosition と hint/preview の呼び出しは CellLayout に倣って実装）。押下フィードバックは FastBitmapDrawable に押下状態を渡して有効化。フォルダの受け皿（PreviewBackground の ACCEPT_SCALE_FACTOR 1.2 / 100ms）と作成アニメーション（400ms）を追加

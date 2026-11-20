@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import androidx.core.widget.NestedScrollView
 import com.android.launcher3.CellLayout
 import com.android.launcher3.celllayout.ItemConfiguration
+import com.android.launcher3.folder.ClippedFolderIconLayoutRule
 import com.malt03.textlauncher.data.HomeItem
 import com.malt03.textlauncher.ui.home.AppIconView
 import com.malt03.textlauncher.ui.home.HomeGridView
@@ -167,6 +168,11 @@ class DragController(
         onDragMove(rawX, rawY)
     }
 
+    /** Re-evaluates the drop location after the grid moved under a still finger. */
+    fun onGridMoved() {
+        if (payload != null) onDragMove(lastX, lastY)
+    }
+
     private fun onDragMove(rawX: Float, rawY: Float) {
         val payload = payload ?: return
         lastX = rawX
@@ -227,12 +233,25 @@ class DragController(
                 Rect(cell[0], cell[1], cell[0] + payload.spanX, cell[1] + payload.spanY), payload.homeView,
             ) != null
             if (occupied) {
+                // Workspace.onDragOver: show the reorder hint right away, reorder after REORDER_TIMEOUT.
+                showReorderHint()
                 handler.postDelayed(reorderRunnable, REORDER_TIMEOUT)
             } else {
                 grid.revertTemporaryReorder()
             }
             grid.showDropOutline(cell[0], cell[1], payload.spanX, payload.spanY)
         }
+    }
+
+    private fun showReorderHint() {
+        val payload = payload ?: return
+        val gridLocation = IntArray(2).also { grid.getLocationOnScreen(it) }
+        val iconSize = grid.grid.iconSizePx
+        val centerX = (lastX - touchOffsetX + iconSize / 2f - gridLocation[0]).toInt()
+        val centerY = (lastY - touchOffsetY + iconSize / 2f - gridLocation[1]).toInt()
+        grid.prepareOccupancy(payload.homeView)
+        val solution = grid.calculateReorder(centerX, centerY, payload.spanX, payload.spanY, payload.homeView)
+        if (solution.isSolution) grid.showReorderHint(solution, payload.homeView)
     }
 
     private fun performReorder() {
@@ -345,8 +364,11 @@ class DragController(
             }
             else -> null
         }
-        val animator = view.animate().scaleX(1f).scaleY(1f).setDuration(DROP_DURATION)
+        // Into a folder the icon shrinks to the preview size (ClippedFolderIconLayoutRule.MAX_SCALE).
+        val endScale = if (animateTo != null) ClippedFolderIconLayoutRule.MAX_SCALE else 1f
+        val animator = view.animate().scaleX(endScale).scaleY(endScale).setDuration(DROP_DURATION)
         if (destination != null) animator.x(destination.first).y(destination.second) else animator.alpha(0f)
+        if (animateTo != null) animator.alpha(0f)
         animator.setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) = done()
         }).start()

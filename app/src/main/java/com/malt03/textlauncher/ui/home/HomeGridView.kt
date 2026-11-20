@@ -1,5 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,8 +10,12 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.graphics.Rect
 import android.view.View
+import android.util.ArrayMap
 import android.view.ViewGroup
 import com.android.launcher3.CellLayout
+import com.android.launcher3.Reorderable
+import com.android.launcher3.celllayout.ReorderPreviewAnimation
+import com.android.launcher3.util.MultiTranslateDelegate
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.celllayout.ItemConfiguration
 import com.android.launcher3.celllayout.ReorderAlgorithm
@@ -70,6 +76,14 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
     }
     private var dropOutline: Rect? = null
     private var folderRingCell: IntArray? = null
+    /** PreviewBackground's accept animation: 1 -> ACCEPT_SCALE_FACTOR over CONSUMPTION_ANIMATION_DURATION. */
+    private var folderRingScale = 1f
+    private var folderRingAnimator: ValueAnimator? = null
+
+    // CellLayout.mReorderAnimators / mShakeAnimators
+    private val reorderAnimators = HashMap<CellLayoutLayoutParams, ValueAnimator>()
+    private val shakeAnimators = ArrayMap<Reorderable, ReorderPreviewAnimation<HomeItemView>>()
+    private val reorderPreviewMagnitude = CellLayout.REORDER_PREVIEW_MAGNITUDE * grid.iconSizePx
     private val tmpRect = Rect()
 
     init {
@@ -130,7 +144,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         super.onDraw(canvas)
         folderRingCell?.let { cell ->
             cellLayout.cellToRect(cell[0], cell[1], 1, 1, tmpRect)
-            val radius = grid.iconSizePx * 0.65f
+            val radius = grid.iconSizePx / 2f * folderRingScale
             canvas.drawCircle(tmpRect.exactCenterX(), tmpRect.exactCenterY(), radius, folderRingPaint)
         }
         dropOutline?.let { rect ->
@@ -152,10 +166,21 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
     }
 
     fun showFolderRing(cell: IntArray?) {
-        if (!cell.contentEquals(folderRingCell)) {
-            folderRingCell = cell?.copyOf()
-            invalidate()
+        if (cell.contentEquals(folderRingCell)) return
+        folderRingCell = cell?.copyOf()
+        folderRingAnimator?.cancel()
+        if (cell != null) {
+            folderRingScale = 1f
+            folderRingAnimator = ValueAnimator.ofFloat(1f, ACCEPT_SCALE_FACTOR).apply {
+                duration = CONSUMPTION_ANIMATION_DURATION
+                addUpdateListener {
+                    folderRingScale = it.animatedValue as Float
+                    invalidate()
+                }
+                start()
+            }
         }
+        invalidate()
     }
 
     fun clearDragFeedback() {
@@ -195,40 +220,41 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         )
     }
 
+    /** CellLayout.performReorder with MODE_SHOW_REORDER_HINT: shake the items in the way. */
+    fun showReorderHint(solution: ItemConfiguration, dragView: View?) {
+        beginOrAdjustReorderPreviewAnimations(solution, dragView, ReorderPreviewAnimation.MODE_HINT)
+    }
+
     /** CellLayout.performReorder with MODE_DRAG_OVER: move the others to temporary positions. */
     fun applyTemporaryReorder(solution: ItemConfiguration, dragView: View?) {
         for (child in itemViews()) {
             if (child === dragView) continue
             val c = solution.map[child] ?: continue
             val lp = child.layoutParams as CellLayoutLayoutParams
-            val currentX = if (lp.useTmpCoords) lp.tmpCellX else lp.cellX
-            val currentY = if (lp.useTmpCoords) lp.tmpCellY else lp.cellY
             lp.useTmpCoords = true
-            lp.tmpCellX = c.cellX
-            lp.tmpCellY = c.cellY
-            if (currentX != c.cellX || currentY != c.cellY) animateChild(child)
+            animateChildToPosition(child, c.cellX, c.cellY, permanent = false)
         }
-        requestLayout()
+        beginOrAdjustReorderPreviewAnimations(solution, dragView, ReorderPreviewAnimation.MODE_PREVIEW)
     }
 
     /** CellLayout.revertTempState. */
     fun revertTemporaryReorder() {
-        var changed = false
+        completeAndClearReorderPreviewAnimations()
         for (child in itemViews()) {
             val lp = child.layoutParams as CellLayoutLayoutParams
             if (!lp.useTmpCoords) continue
-            val moved = lp.tmpCellX != lp.cellX || lp.tmpCellY != lp.cellY
-            lp.useTmpCoords = false
-            if (moved) {
-                animateChild(child)
-                changed = true
+            if (lp.tmpCellX != lp.cellX || lp.tmpCellY != lp.cellY) {
+                lp.tmpCellX = lp.cellX
+                lp.tmpCellY = lp.cellY
+                animateChildToPosition(child, lp.cellX, lp.cellY, permanent = true)
             }
+            lp.useTmpCoords = false
         }
-        if (changed) requestLayout()
     }
 
     /** CellLayout.commitTempPlacement: temporary positions become the real ones. */
     fun commitTemporaryReorder() {
+        completeAndClearReorderPreviewAnimations()
         for (child in itemViews()) {
             val lp = child.layoutParams as CellLayoutLayoutParams
             if (lp.useTmpCoords) {
@@ -247,29 +273,98 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
 
     fun hasTemporaryReorder(): Boolean = itemViews().any { (it.layoutParams as CellLayoutLayoutParams).useTmpCoords }
 
-    /** Animates a child from where it is drawn now to its next layout position (150ms, like CellLayout). */
-    private fun animateChild(child: View) {
-        val oldLeft = child.left + child.translationX
-        val oldTop = child.top + child.translationY
-        child.addOnLayoutChangeListener(object : OnLayoutChangeListener {
-            override fun onLayoutChange(v: View, l: Int, t: Int, r: Int, b: Int, ol: Int, ot: Int, or: Int, ob: Int) {
-                v.removeOnLayoutChangeListener(this)
-                val dx = oldLeft - l
-                val dy = oldTop - t
-                ValueAnimator.ofFloat(1f, 0f).apply {
-                    duration = CellLayout.REORDER_ANIMATION_DURATION.toLong()
-                    addUpdateListener {
-                        val f = it.animatedValue as Float
-                        v.translationX = dx * f
-                        v.translationY = dy * f
-                    }
-                    start()
+    /**
+     * CellLayout.animateChildToPosition: the layout position changes at once, and the visual
+     * movement is played with the INDEX_REORDER_PREVIEW_OFFSET translation.
+     */
+    private fun animateChildToPosition(child: View, cellX: Int, cellY: Int, permanent: Boolean) {
+        val item = child as? HomeItemView ?: return
+        val lp = child.layoutParams as CellLayoutLayoutParams
+        reorderAnimators.remove(lp)?.cancel()
+
+        val oldX = lp.x
+        val oldY = lp.y
+        lp.isLockedToGrid = true
+        if (permanent) {
+            lp.cellX = cellX
+            lp.cellY = cellY
+        } else {
+            lp.tmpCellX = cellX
+            lp.tmpCellY = cellY
+        }
+        lp.setup(cellWidth, cellHeight, false, grid.columns, cellLayout.countY, NO_BORDER)
+        val newX = lp.x
+        val newY = lp.y
+        lp.x = oldX
+        lp.y = oldY
+        lp.isLockedToGrid = false
+
+        val delegate = item.translateDelegate
+        val initX = delegate.getTranslationX(MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET).value
+        val initY = delegate.getTranslationY(MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET).value
+        val finalX = (newX - oldX).toFloat()
+        val finalY = (newY - oldY).toFloat()
+        if (finalX == 0f && finalY == 0f && initX == 0f && initY == 0f) {
+            lp.isLockedToGrid = true
+            return
+        }
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+        animator.duration = CellLayout.REORDER_ANIMATION_DURATION.toLong()
+        reorderAnimators[lp] = animator
+        animator.addUpdateListener {
+            val r = it.animatedValue as Float
+            delegate.setTranslation(
+                MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET,
+                (1 - r) * initX + r * finalX,
+                (1 - r) * initY + r * finalY,
+            )
+        }
+        animator.addListener(object : AnimatorListenerAdapter() {
+            private var cancelled = false
+            override fun onAnimationEnd(animation: Animator) {
+                // A cancelled animation was interrupted by another one; do not lock yet.
+                if (!cancelled) {
+                    lp.isLockedToGrid = true
+                    delegate.setTranslation(MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET, 0f, 0f)
+                    child.requestLayout()
                 }
+                if (reorderAnimators[lp] === animation) reorderAnimators.remove(lp)
+            }
+
+            override fun onAnimationCancel(animation: Animator) {
+                cancelled = true
             }
         })
+        animator.start()
+    }
+
+    /** CellLayout.beginOrAdjustReorderPreviewAnimations */
+    private fun beginOrAdjustReorderPreviewAnimations(solution: ItemConfiguration, dragView: View?, mode: Int) {
+        for (child in itemViews()) {
+            if (child === dragView) continue
+            val c = solution.map[child]
+            val skip = mode == ReorderPreviewAnimation.MODE_HINT && solution.intersectingViews?.contains(child) != true
+            val lp = child.layoutParams as CellLayoutLayoutParams
+            if (c != null && !skip && child is HomeItemView) {
+                ReorderPreviewAnimation(
+                    child, mode, lp.cellX, lp.cellY, c.cellX, c.cellY, c.spanX, c.spanY,
+                    reorderPreviewMagnitude, cellLayout, shakeAnimators,
+                ).animate()
+            }
+        }
+    }
+
+    /** CellLayout.completeAndClearReorderPreviewAnimations */
+    private fun completeAndClearReorderPreviewAnimations() {
+        for (animation in shakeAnimators.values) animation.finishAnimation()
+        shakeAnimators.clear()
     }
 
     private companion object {
         val NO_BORDER = Point(0, 0)
+        /** PreviewBackground.ACCEPT_SCALE_FACTOR */
+        const val ACCEPT_SCALE_FACTOR = 1.20f
+        /** PreviewBackground.CONSUMPTION_ANIMATION_DURATION */
+        const val CONSUMPTION_ANIMATION_DURATION = 100L
     }
 }
