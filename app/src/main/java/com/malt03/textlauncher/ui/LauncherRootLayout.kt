@@ -47,6 +47,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         private set
 
     private val barContainer = FrameLayout(context)
+
+    /** The search field with its margins; it moves with the keyboard. */
+    val searchBarArea: View get() = barContainer
     private val barHeight = resources.getDimensionPixelSize(R.dimen.search_bar_height)
     private val barMarginH = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
     private val barMarginV = resources.getDimensionPixelSize(R.dimen.search_bar_margin_vertical)

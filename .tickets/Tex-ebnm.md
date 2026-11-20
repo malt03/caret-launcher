@@ -38,3 +38,7 @@ tags: [home]
 **2026-11-20T12:32:36Z**
 
 アプリとフォルダの表示、タップで起動、フォルダを開く（FolderPopup）を実装。フォルダのプレビューは Launcher3 の ClippedFolderIconLayoutRule をコピーして使用。開閉アニメーションは簡易版で、FolderAnimationManager に倣う作業が残っている
+
+**2026-11-20T12:57:09Z**
+
+フォルダを開いたときの背景の暗転と縮小を Launcher3（FolderSpringAnimatorSet.addWorkspaceAnimators）に合わせて追加。SpringAnimationBuilder をコピーして使用。フォルダ本体の開閉アニメーションは未移植

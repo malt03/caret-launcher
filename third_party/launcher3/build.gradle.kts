@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core)
+    implementation(libs.androidx.dynamicanimation)
     api(project(":launcher3-compat"))
     api(project(":iconloaderlib"))
 }

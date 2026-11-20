@@ -160,6 +160,7 @@ class HomeController(
                     removeFromFolder(folder, entry.key)
                 }
             },
+            backgroundViews = listOf(scrollView, root.searchBarArea),
             onDismiss = { folderPopup = null },
         )
     }

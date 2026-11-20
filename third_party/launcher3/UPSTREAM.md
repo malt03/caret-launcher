@@ -23,6 +23,8 @@ path=src/com/android/launcher3/Reorderable.java
 path=src/com/android/launcher3/util/MultiTranslateDelegate.java
 path=src/com/android/launcher3/util/MultiPropertyFactory.java
 path=src/com/android/launcher3/util/Thunk.java
+path=src/com/android/launcher3/anim/SpringAnimationBuilder.java
+path=src/com/android/launcher3/anim/AnimationSuccessListener.java
 ```
 
 ## 取り込んでいないもの
@@ -48,5 +50,6 @@ path=src/com/android/launcher3/util/Thunk.java
 | `com.android.launcher3.folder.PreviewItemDrawingParams`（位置と拡大率だけ。公開の getter を追加） | `folder/ClippedFolderIconLayoutRule.java` |
 | `com.android.launcher3.LauncherAnimUtils`（`VIEW_TRANSLATE_X`、`VIEW_TRANSLATE_Y`） | `util/MultiTranslateDelegate.java` |
 | `com.android.launcher3.Workspace`（`REORDER_TIMEOUT`） | `celllayout/ReorderPreviewAnimation.kt` |
+| `com.android.launcher3.util.window.RefreshRateTracker`（`getSingleFrameMs`。ディスプレイのリフレッシュレートから計算） | `anim/SpringAnimationBuilder.java` |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt` |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |
