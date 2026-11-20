@@ -159,7 +159,13 @@ class FolderPopup(
         val initialFolderSize = grid.iconSizePx.toFloat()
         val initialFolderScale = iconScale
         val overlayLocation = IntArray(2).also { overlay.getLocationOnScreen(it) }
+        // FolderAnimationSpringBuilderManager.resetLauncherScale: measure the folder icon where it
+        // is at full scale. While the folder is open the home screen is shrunk, and the closing
+        // animation ends when it is back at full scale.
+        val savedScales = backgroundViews.map { it.scaleX }
+        backgroundViews.forEach { it.scaleX = 1f; it.scaleY = 1f }
         val anchorLocation = IntArray(2).also { anchor.getLocationOnScreen(it) }
+        backgroundViews.forEachIndexed { i, v -> v.scaleX = savedScales[i]; v.scaleY = savedScales[i] }
         val previewLeft = anchorLocation[0] - overlayLocation[0] + anchor.iconLeft().toFloat()
         val previewTop = anchorLocation[1] - overlayLocation[1] + anchor.iconTop().toFloat()
         val contentOffset = padding * initialFolderScale
@@ -303,9 +309,9 @@ class FolderPopup(
         const val DEFAULT_DURATION = 200L
         // IconAnimationData.ICON_DELAY_INCREMENT
         const val ICON_DELAY_INCREMENT = 5
-        // res/values/colors.xml folder_preview_* / folder_background_*
-        val FOLDER_PREVIEW_LIGHT = Color.parseColor("#7FCFFF")
-        val FOLDER_PREVIEW_DARK = Color.parseColor("#1E1F20")
+        // res/values/colors.xml folder_background_*; the preview colors are in FolderIconView
+        val FOLDER_PREVIEW_LIGHT = FolderIconView.FOLDER_PREVIEW_LIGHT
+        val FOLDER_PREVIEW_DARK = FolderIconView.FOLDER_PREVIEW_DARK
         val FOLDER_BACKGROUND_LIGHT = Color.parseColor("#EFEDED")
         val FOLDER_BACKGROUND_DARK = Color.parseColor("#1F2020")
 

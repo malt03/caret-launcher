@@ -11,7 +11,6 @@ import com.android.launcher3.Reorderable
 import com.android.launcher3.folder.ClippedFolderIconLayoutRule
 import com.android.launcher3.folder.PreviewItemDrawingParams
 import com.android.launcher3.util.MultiTranslateDelegate
-import com.google.android.material.color.MaterialColors
 
 /**
  * Base of the views on the home grid. Implements Launcher3's [Reorderable] so that the copied
@@ -88,9 +87,14 @@ class FolderIconView(context: Context, iconSize: Int) : HomeItemView(context, ic
         it.init(iconSize, iconSize.toFloat(), layoutDirection == LAYOUT_DIRECTION_RTL, 2)
     }
     private val params = PreviewItemDrawingParams()
+    /**
+     * Launcher3's folderPreviewColor, the same color the open folder starts from and closes to,
+     * so the folder turns back into this icon without a jump.
+     */
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = MaterialColors.getColor(this@FolderIconView, com.google.android.material.R.attr.colorSurfaceContainerHighest)
-        alpha = 230
+        val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        color = if (isDark) FOLDER_PREVIEW_DARK else FOLDER_PREVIEW_LIGHT
     }
 
     /** 0..1 while the folder is being created: items move from a full icon into the preview. */
@@ -139,8 +143,12 @@ class FolderIconView(context: Context, iconSize: Int) : HomeItemView(context, ic
         }
     }
 
-    private companion object {
+    companion object {
+        // Launcher3 res/values/colors.xml folder_preview_light / folder_preview_dark
+        val FOLDER_PREVIEW_LIGHT = android.graphics.Color.parseColor("#7FCFFF")
+        val FOLDER_PREVIEW_DARK = android.graphics.Color.parseColor("#1E1F20")
+
         /** FolderIcon.DROP_IN_ANIMATION_DURATION */
-        const val DROP_IN_ANIMATION_DURATION = 400L
+        private const val DROP_IN_ANIMATION_DURATION = 400L
     }
 }
