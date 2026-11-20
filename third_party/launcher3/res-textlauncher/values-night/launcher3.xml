@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TextLauncher: frameworks/libs/systemui dynamiccolors res/values-night/colors.xml (android-17.0.0_r1) -->
+<resources>
+    <color name="materialColorOnSurface">@android:color/system_on_surface_dark</color>
+</resources>

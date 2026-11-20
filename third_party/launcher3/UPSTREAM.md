@@ -65,7 +65,7 @@ path=src/com/android/launcher3/folder/PreviewItemDrawingParams.java
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、`values/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠用の attr・色・寸法・時間）と、`drawable/round_rect_folder.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。コピーしたコードが使う文字列だけを `res-textlauncher/` に抜き出している（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン用の attr・色・寸法・時間）と、そのままコピーした `drawable/round_rect_folder.xml`、`drawable/drop_target_background.xml`、`drawable/drop_target_frame.xml`、`drawable/drop_target_frame_hover.xml`、`drawable/ic_remove_no_shadow.xml`、`drawable/ic_uninstall_no_shadow.xml`、`color/drop_target_text.xml`。更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 

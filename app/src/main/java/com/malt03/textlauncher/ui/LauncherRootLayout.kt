@@ -36,7 +36,16 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** Dims the home screen while a folder is open (Launcher3's ScrimView). */
     val scrim = ScrimView(context)
     private var dropTargetBar: View? = null
-    val dropTargetBarHeight = (64 * resources.displayMetrics.density).toInt()
+    private val dropTargetBarSize = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.dynamic_grid_drop_target_size)
+    private val dropTargetBarTopMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_top_margin)
+
+    /**
+     * DeviceProfile.getDropTargetBarHeight: the bar with its margins, which the home grid makes
+     * room for while dragging (the top of Launcher3's spring-loaded workspace).
+     */
+    val dropTargetBarHeight = dropTargetBarSize + dropTargetBarTopMargin +
+        resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bottom_margin) +
+        resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_button_workspace_edge_gap)
 
     /**
      * Sees every touch event before the children, in this view's coordinates, which are the
@@ -114,7 +123,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
-        (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop
+        (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop + dropTargetBarTopMargin
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
         val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
         // KeyboardInsetAnimationCallback animates from the old to this value.
@@ -182,10 +191,18 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         contentArea.layout(0, statusBarTop, width, bottom)
     }
 
-    /** Launcher3's DropTargetBar sits in the drag layer, below the status bar. */
+    /** Launcher3's DropTargetBar sits in the drag layer, below the status bar (DropTargetBar.setupInsets). */
     fun attachDropTargetBar(bar: View) {
         dropTargetBar = bar
-        overlay.addView(bar, 0, LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarHeight).apply { topMargin = statusBarTop })
+        val horizontalMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bar_margin_horizontal)
+        overlay.addView(
+            bar, 0,
+            LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarSize, android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.TOP).apply {
+                topMargin = statusBarTop + dropTargetBarTopMargin
+                leftMargin = horizontalMargin
+                rightMargin = horizontalMargin
+            },
+        )
     }
 
     fun isInsideSearchBar(view: View): Boolean = view === searchBar || view.parent === searchBar

@@ -35,6 +35,30 @@
     <dimen name="grid_visualization_vertical_cell_spacing">6dp</dimen>
     <integer name="config_dragOutlineFadeTime">500</integer>
     <integer name="config_dragOutlineMaxAlpha">255</integer>
-    <!-- ButtonDropTarget -->
+    <!-- DropTargetBar, ButtonDropTarget (drawable/drop_target_*.xml, drawable/ic_*_no_shadow.xml
+         and color/drop_target_text.xml are copied as is) -->
     <dimen name="drag_distanceThreshold">30dp</dimen>
+    <attr name="dropTargetHoverTextColor" format="color" />
+    <attr name="dropTargetHoverButtonColor" format="color" />
+    <color name="drop_target_hover_text_color_light">@android:color/system_accent1_900</color>
+    <color name="drop_target_hover_text_color_dark">@android:color/system_accent1_100</color>
+    <color name="drop_target_hover_button_color_light">@android:color/system_accent1_100</color>
+    <color name="drop_target_hover_button_color_dark">@android:color/system_accent1_700</color>
+    <dimen name="dynamic_grid_drop_target_size">56dp</dimen>
+    <dimen name="drop_target_top_margin">32dp</dimen>
+    <dimen name="drop_target_bottom_margin">16dp</dimen>
+    <dimen name="button_drop_target_min_text_size">10sp</dimen>
+    <dimen name="button_drop_target_resize_text_increment">1sp</dimen>
+    <dimen name="drop_target_drag_padding">14dp</dimen>
+    <dimen name="drop_target_text_size">16sp</dimen>
+    <dimen name="drop_target_bar_margin_horizontal">4dp</dimen>
+    <dimen name="drop_target_button_drawable_size">20dp</dimen>
+    <dimen name="drop_target_button_drawable_padding">8dp</dimen>
+    <dimen name="drop_target_button_drawable_horizontal_padding">16dp</dimen>
+    <dimen name="drop_target_button_drawable_vertical_padding">8dp</dimen>
+    <dimen name="drop_target_button_frame_radius">80dp</dimen>
+    <dimen name="drop_target_button_gap">28dp</dimen>
+    <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
+    <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark one) -->
+    <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
 </resources>
