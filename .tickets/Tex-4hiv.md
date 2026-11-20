@@ -1,6 +1,6 @@
 ---
 id: Tex-4hiv
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-20T11:16:26Z
@@ -31,3 +31,7 @@ tags: [infra]
 **2026-11-20T11:49:02Z**
 
 data/LauncherDatabase.kt（SQLite）と data/SearchStore.kt を実装。テストは未作成
+
+**2026-11-20T12:13:01Z**
+
+androidTest/LauncherDatabaseTest（6件）がエミュレータで通過

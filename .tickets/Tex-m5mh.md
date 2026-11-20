@@ -1,6 +1,6 @@
 ---
 id: Tex-m5mh
-status: open
+status: in_progress
 deps: [Tex-f4yo, Tex-4hiv, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -29,3 +29,9 @@ tags: [search]
 - [ ] カタカナで「カメラ」と登録 → 「かめら」で一致する
 - [ ] 「アプリ情報」→ OS のアプリ情報画面が開く
 
+
+## Notes
+
+**2026-11-20T12:13:01Z**
+
+検索文字列の編集ダイアログ（SearchTermsDialog）とアプリ情報を実装し、エミュレータで登録→検索を確認。メニューは仮に標準の PopupMenu。Launcher3 の popup/ への置き換えは Tex-e1ph と一緒に行う
