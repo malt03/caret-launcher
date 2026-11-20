@@ -21,13 +21,14 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
 import com.malt03.textlauncher.search.Ranker
 import com.malt03.textlauncher.search.SearchCandidate
+import com.malt03.textlauncher.ui.home.HomeController
 import com.malt03.textlauncher.ui.search.ResultsAdapter
 
 /**
  * The home screen. The search field always has focus and the keyboard is always shown
  * (docs/spec.md 1).
  */
-class LauncherActivity : AppCompatActivity() {
+class LauncherActivity : AppCompatActivity(), HomeController.Host {
     private companion object {
         const val MENU_SEARCH_TERMS = 1
         const val MENU_APP_INFO = 2
@@ -38,11 +39,21 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var root: LauncherRootLayout
     private lateinit var results: RecyclerView
     private lateinit var resultsAdapter: ResultsAdapter
-    private lateinit var searchBackdrop: SearchBackdrop
+    private lateinit var home: HomeController
+
+    /** docs/spec.md 5.4: while editing, the keyboard is down and the field has no focus. */
+    private var isEditMode = false
 
     private var apps: List<AppEntry> = emptyList()
-    private val appsListener: (List<AppEntry>) -> Unit = { apps = it; refreshResults() }
-    private val iconsListener: () -> Unit = { resultsAdapter.notifyItemRangeChanged(0, resultsAdapter.itemCount) }
+    private val appsListener: (List<AppEntry>) -> Unit = {
+        apps = it
+        refreshResults()
+        home.onAppsChanged()
+    }
+    private val iconsListener: () -> Unit = {
+        resultsAdapter.notifyItemRangeChanged(0, resultsAdapter.itemCount)
+        home.rebuild()
+    }
 
     /** True between launching an app and coming back; keyboard changes are expected then. */
     private var isLaunching = false
@@ -54,14 +65,16 @@ class LauncherActivity : AppCompatActivity() {
 
         root = LauncherRootLayout(this)
         setContentView(root)
-        searchBackdrop = SearchBackdrop(window, root)
 
         val grid = GridSpec.from(this)
         resultsAdapter = ResultsAdapter(
             app.iconLoader,
             grid,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
-            onLongClick = { entry, view -> showAppMenu(entry, view) },
+            onLongClick = { entry, view ->
+                home.onAppLongPress(entry, view, null, null)
+                true
+            },
         )
         results = RecyclerView(this).apply {
             layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, true)
@@ -73,20 +86,27 @@ class LauncherActivity : AppCompatActivity() {
             itemAnimator = null
             visibility = View.GONE
         }
+        home = HomeController(app, root, this)
+        root.contentArea.addView(home.scrollView)
         root.contentArea.addView(results)
 
         val editText = root.searchBar.editText
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
-            override fun afterTextChanged(s: Editable?) = refreshResults()
+            override fun afterTextChanged(s: Editable?) {
+                if (!s.isNullOrEmpty()) home.closeFolder()
+                refreshResults()
+            }
         })
         root.searchBar.onEnter = { launchTopResult() }
         root.onKeyboardHidden = ::onKeyboardHidden
 
         // docs/spec.md 1.4: the back gesture itself does nothing on the home screen.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = Unit
+            override fun handleOnBackPressed() {
+                if (home.isFolderOpen) home.closeFolder()
+            }
         })
 
         app.appRepository.addListener(appsListener)
@@ -102,6 +122,8 @@ class LauncherActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Home button while already on the home screen.
+        home.drag.cancel()
+        home.closeFolder()
         clearQuery()
         focusSearch()
     }
@@ -121,15 +143,18 @@ class LauncherActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         // docs/spec.md 1.2: the query is cleared every time the launcher comes back.
+        home.drag.cancel()
+        home.closeFolder()
         clearQuery()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) focusSearch()
+        if (hasFocus && !isEditMode) focusSearch()
     }
 
     private fun focusSearch() {
+        if (isEditMode) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
@@ -141,7 +166,7 @@ class LauncherActivity : AppCompatActivity() {
 
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
-        if (isLaunching || !isResumedState || !hasWindowFocus()) return
+        if (isEditMode || isLaunching || !isResumedState || !hasWindowFocus()) return
         clearQuery()
         focusSearch()
     }
@@ -152,8 +177,8 @@ class LauncherActivity : AppCompatActivity() {
         val query = Normalizer.normalize(currentQuery())
         if (query.isEmpty()) {
             results.visibility = View.GONE
+            home.scrollView.visibility = View.VISIBLE
             resultsAdapter.submit(emptyList())
-            searchBackdrop.setVisible(false)
             return
         }
         val store = app.searchStore
@@ -169,15 +194,15 @@ class LauncherActivity : AppCompatActivity() {
         resultsAdapter.submit(ranked)
         results.scrollToPosition(0)
         results.visibility = View.VISIBLE
-        searchBackdrop.setVisible(true)
+        home.scrollView.visibility = View.GONE
     }
 
     /**
-     * Long-press menu for an app (docs/spec.md 5.3).
-     * TODO(Tex-e1ph): replace this platform PopupMenu with the menu ported from Launcher3 popup/,
-     * including the move-to-drag transition.
+     * Long-press menu for an app (docs/spec.md 5.3). Moving while pressing turns it into a drag
+     * (HomeController.onAppLongPress).
+     * TODO(Tex-e1ph): replace this platform PopupMenu with a menu following Launcher3 popup/.
      */
-    private fun showAppMenu(entry: AppEntry, anchor: View): Boolean {
+    override fun showAppMenu(entry: AppEntry, anchor: View): PopupMenu {
         val menu = PopupMenu(this, anchor)
         menu.menu.add(0, MENU_SEARCH_TERMS, 0, R.string.menu_search_terms)
         menu.menu.add(0, MENU_APP_INFO, 1, R.string.menu_app_info)
@@ -193,8 +218,21 @@ class LauncherActivity : AppCompatActivity() {
             true
         }
         menu.show()
-        return true
+        return menu
     }
+
+    override fun onEditModeChanged(editing: Boolean) {
+        isEditMode = editing
+        if (editing) {
+            clearQuery()
+            root.requestFocus()
+            WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
+        } else {
+            focusSearch()
+        }
+    }
+
+    override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
 
     private fun launchTopResult() {
         val top = resultsAdapter.items.firstOrNull() ?: return

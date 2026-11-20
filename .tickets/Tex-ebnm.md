@@ -1,6 +1,6 @@
 ---
 id: Tex-ebnm
-status: open
+status: in_progress
 deps: [Tex-9ipm, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -34,3 +34,7 @@ tags: [home]
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-20T12:32:36Z**
+
+アプリとフォルダの表示、タップで起動、フォルダを開く（FolderPopup）を実装。フォルダのプレビューは Launcher3 の ClippedFolderIconLayoutRule をコピーして使用。開閉アニメーションは簡易版で、FolderAnimationManager に倣う作業が残っている

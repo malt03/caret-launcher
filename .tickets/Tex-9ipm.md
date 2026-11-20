@@ -1,6 +1,6 @@
 ---
 id: Tex-9ipm
-status: open
+status: in_progress
 deps: [Tex-l0eq, Tex-4hiv, Tex-maoz, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -36,3 +36,7 @@ tags: [home]
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-20T12:32:36Z**
+
+ui/home/HomeGridView を実装。列数とアイコンサイズは GridSpec（device_profiles.xml の近似）。アプリ名なし、行数上限なし、NestedScrollView で縦スクロール。並び替えは Launcher3 の ReorderAlgorithm を CellLayout 互換クラス経由で使用し、エミュレータで押しのけを確認。多数の行でのスクロールは未確認

@@ -2,12 +2,14 @@ package com.malt03.textlauncher.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
+import com.malt03.textlauncher.ui.drag.DropTargetBar
 
 /**
  * Lays out the home area / search results above the search field, and keeps the field right
@@ -26,6 +28,24 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** Called when the keyboard went from visible to hidden. */
     var onKeyboardHidden: (() -> Unit)? = null
 
+    /** Full-size layer on top of everything: drag views, folder popups. */
+    val overlay = FrameLayout(context)
+    val dropTargetBar = DropTargetBar(context)
+    private val dropTargetBarHeight = (64 * resources.displayMetrics.density).toInt()
+
+    /**
+     * Sees every touch event before the children. When it returns true the event is consumed
+     * and the children get ACTION_CANCEL once (used by drag and drop).
+     */
+    var touchInterceptor: ((MotionEvent) -> Boolean)? = null
+    private var childrenCancelled = false
+
+    /** Raw position of the latest ACTION_DOWN. */
+    var lastDownRawX = 0f
+        private set
+    var lastDownRawY = 0f
+        private set
+
     private val barContainer = FrameLayout(context)
     private val barHeight = resources.getDimensionPixelSize(R.dimen.search_bar_height)
     private val barMarginH = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
@@ -43,6 +63,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         addView(contentArea)
         barContainer.addView(searchBar)
         addView(barContainer)
+        overlay.addView(dropTargetBar, LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarHeight))
+        addView(overlay)
+        isFocusableInTouchMode = true
         barContainer.setWindowInsetsAnimationCallback(keyboardCallback)
         viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
@@ -58,6 +81,24 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
                 return true
             }
         })
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+            lastDownRawX = ev.rawX
+            lastDownRawY = ev.rawY
+            childrenCancelled = false
+        }
+        if (touchInterceptor?.invoke(ev) == true) {
+            if (!childrenCancelled) {
+                childrenCancelled = true
+                val cancel = MotionEvent.obtain(ev).apply { action = MotionEvent.ACTION_CANCEL }
+                super.dispatchTouchEvent(cancel)
+                cancel.recycle()
+            }
+            return true
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
@@ -89,6 +130,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(barHeight, MeasureSpec.EXACTLY),
         )
         measureContentArea(width, contentBottom() - statusBarTop)
+        overlay.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+        )
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -98,6 +143,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         barContainer.layout(0, barTop, width, barTop + barContainer.measuredHeight)
         searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
         layoutContentArea(force = true)
+        overlay.layout(0, 0, width, height)
+        dropTargetBar.layout(0, statusBarTop, width, statusBarTop + dropTargetBarHeight)
     }
 
     /** The visual top of the search field container, including keyboard translation. */

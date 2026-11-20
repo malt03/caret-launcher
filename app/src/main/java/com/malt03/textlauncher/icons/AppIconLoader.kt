@@ -55,6 +55,8 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         changeListeners -= listener
     }
 
+    fun cached(entry: AppEntry): BitmapInfo? = cache.get(entry.key)
+
     /** Calls [onLoaded] on the main thread, immediately when the icon is cached. */
     fun load(entry: AppEntry, onLoaded: (BitmapInfo) -> Unit) {
         cache.get(entry.key)?.let { onLoaded(it); return }

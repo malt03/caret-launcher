@@ -1,7 +1,7 @@
 package com.malt03.textlauncher.ui.search
 
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
+import androidx.core.graphics.ColorUtils
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
@@ -88,22 +88,18 @@ class ResultsAdapter(
 
     private companion object {
         /**
-         * Launcher3's keyboard focus outline (keyboard/ItemFocusIndicatorHelper,
-         * res focus_outline_* and focusOutlineColor / focusInnerOutlineColor): an outer and an
-         * inner stroke, no fill. Marks the result that Enter launches.
+         * Marks the result that Enter launches: a translucent, slightly lighter surface with a faint
+         * edge, so the wallpaper still shows through.
          */
-        fun focusOutline(view: View): LayerDrawable {
+        fun focusOutline(view: View): GradientDrawable {
             val density = view.resources.displayMetrics.density
-            val stroke = (2 * density).toInt()
-            val outer = GradientDrawable().apply {
-                cornerRadius = 16 * density
-                setStroke(stroke, MaterialColors.getColor(view, com.google.android.material.R.attr.colorSecondaryFixed))
+            return GradientDrawable().apply {
+                cornerRadius = 20 * density
+                val fill = MaterialColors.getColor(view, com.google.android.material.R.attr.colorSurfaceContainerHighest)
+                setColor(ColorUtils.setAlphaComponent(fill, (0.55f * 255).toInt()))
+                val edge = MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSurface)
+                setStroke((1 * density).toInt().coerceAtLeast(1), ColorUtils.setAlphaComponent(edge, (0.12f * 255).toInt()))
             }
-            val inner = GradientDrawable().apply {
-                cornerRadius = 14 * density
-                setStroke(stroke, MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSecondaryFixedVariant))
-            }
-            return LayerDrawable(arrayOf(outer, inner)).apply { setLayerInset(1, stroke, stroke, stroke, stroke) }
         }
     }
 }

@@ -1,6 +1,6 @@
 ---
 id: Tex-e1ph
-status: open
+status: in_progress
 deps: [Tex-m5mh, Tex-ev5z, Tex-hibk, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -34,3 +34,7 @@ tags: [home]
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-20T12:32:36Z**
+
+長押しメニューから 16dp（deep_shortcuts_start_drag_threshold）動かすとドラッグに移る動きを実装し、エミュレータで確認。メニューの見た目はまだ標準の PopupMenu

@@ -3,6 +3,7 @@ package com.malt03.textlauncher
 import android.app.Application
 import com.google.android.material.color.DynamicColors
 import com.malt03.textlauncher.data.AppRepository
+import com.malt03.textlauncher.data.HomeModel
 import com.malt03.textlauncher.data.LauncherDatabase
 import com.malt03.textlauncher.data.SearchStore
 import com.malt03.textlauncher.icons.AppIconLoader
@@ -20,6 +21,8 @@ class TextLauncherApplication : Application() {
         private set
     lateinit var appRepository: AppRepository
         private set
+    lateinit var homeModel: HomeModel
+        private set
     lateinit var iconSettings: IconSettings
         private set
     lateinit var iconLoader: AppIconLoader
@@ -32,6 +35,7 @@ class TextLauncherApplication : Application() {
         searchStore = SearchStore(database, ioExecutor)
         ioExecutor.execute { searchStore.loadBlocking() }
         appRepository = AppRepository(this)
+        homeModel = HomeModel(database, ioExecutor)
         iconSettings = IconSettings(this)
         iconLoader = AppIconLoader(this, iconSettings)
     }

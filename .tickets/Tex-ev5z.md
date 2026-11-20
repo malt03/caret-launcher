@@ -1,6 +1,6 @@
 ---
 id: Tex-ev5z
-status: open
+status: in_progress
 deps: [Tex-ebnm, Tex-t2ea, Tex-bqud, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -41,3 +41,7 @@ tags: [home]
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-20T12:32:36Z**
+
+DragController と DropTargetBar を実装。検索結果・ホーム・フォルダからのドラッグ、並び替え（REORDER_TIMEOUT 650ms）、アプリ同士の重ねでフォルダ作成、フォルダから1つ残して出すと解除、削除・アンインストールの落とし先、編集中のキーボード下ろしと終了後の復帰をエミュレータで確認。ウィジェット関連は未実装
