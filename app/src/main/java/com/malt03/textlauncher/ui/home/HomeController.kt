@@ -15,6 +15,7 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.HomeItem
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
+import com.malt03.textlauncher.ui.NoPressDelayScrollView
 import com.malt03.textlauncher.ui.drag.DragController
 import com.malt03.textlauncher.ui.drag.DropTargetBar
 
@@ -39,7 +40,7 @@ class HomeController(
     private val context = root.context
     private val model = app.homeModel
     val grid = HomeGridView(context, GridSpec.from(context))
-    val scrollView = NestedScrollView(context).apply {
+    val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
         isFillViewport = true
         overScrollMode = View.OVER_SCROLL_NEVER
         isVerticalScrollBarEnabled = false

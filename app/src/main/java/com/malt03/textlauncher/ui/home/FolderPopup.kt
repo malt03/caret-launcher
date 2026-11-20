@@ -8,6 +8,7 @@ import com.google.android.material.color.MaterialColors
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.ui.GridSpec
+import com.malt03.textlauncher.ui.NoPressDelayGridLayout
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -28,7 +29,7 @@ class FolderPopup(
     private val context = overlay.context
     private val density = context.resources.displayMetrics.density
     private val scrim = View(context).apply { setOnClickListener { dismiss() } }
-    private val card = GridLayout(context)
+    private val card = NoPressDelayGridLayout(context)
 
     init {
         val columns = min(grid.columns, maxOf(2, ceil(Math.sqrt(entries.size.toDouble())).toInt()))

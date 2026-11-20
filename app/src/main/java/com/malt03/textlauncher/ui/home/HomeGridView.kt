@@ -92,6 +92,9 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         clipToPadding = false
     }
 
+    /** Like Launcher3's CellLayout: show the icons' pressed state right away. */
+    override fun shouldDelayChildPressedState(): Boolean = false
+
     fun addItemView(view: View, item: HomeItem) {
         view.tag = item
         addView(view, CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY))

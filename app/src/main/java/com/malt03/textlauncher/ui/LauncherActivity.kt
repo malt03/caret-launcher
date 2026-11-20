@@ -76,7 +76,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
                 true
             },
         )
-        results = RecyclerView(this).apply {
+        results = NoPressDelayRecyclerView(this).apply {
             layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, true)
             val sidePadding = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
             setPadding(sidePadding, 0, sidePadding, 0)
