@@ -338,7 +338,7 @@
   - 引っ掛かりは、閾値までの移動量に減衰をかけて表現する
   - 戻る動きと開き切る動きは `SpringAnimation` を使う
   - キーボードの開閉は `WindowInsetsAnimationCompat` で同期させる
-- ハプティック：API 34 以上は `HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE`、API 33 は `CONFIRM` を使う
+- ハプティック：Launcher3 と同じく、`msdllib` の `SWIPE_THRESHOLD_INDICATOR` を鳴らす（[Launcher3 からの取り込み方針](launcher3-porting.md) の「ハプティックを鳴らす場所」）
 - 「壁紙とスタイル」との連携（[7.3](#73-テーマアイコンとアイコン形状)）：
   - AOSP の `android-17.0.0_r1` のソースで確認した内容である（Launcher3 の `graphics/LauncherCustomizationProvider.kt`、`graphics/GridCustomizationsProxy.java`、`shapes/ShapesProvider.kt`、ThemePicker の `res/values/strings.xml`）
   - **見つけてもらう仕組み**：ホームの Activity に meta-data を付け、値に Provider の authority（Launcher3 では `<applicationId>.grid_control`）を入れる
