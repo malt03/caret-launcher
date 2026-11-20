@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TextLauncher: the upstream manifest sets package=, which AGP no longer accepts. -->
+<manifest />

@@ -1,0 +1,10 @@
+This directory contains code copied from the Android Open Source Project.
+
+  packages/apps/Launcher3                 -> third_party/launcher3/
+  frameworks/libs/systemui (iconloaderlib) -> third_party/systemui/
+
+Copyright (C) The Android Open Source Project
+
+Licensed under the Apache License, Version 2.0 (see LICENSE in this directory).
+Files that TextLauncher has modified are listed in the UPSTREAM.md of each directory
+and carry a "TextLauncher:" comment at each change.

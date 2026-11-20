@@ -23,3 +23,9 @@ frameworks/libs/systemui の iconloaderlib（android-17.0.0_r1）を third_party
 - [ ] UPSTREAM.md に取り込んだファイルが記録されている
 - [ ] 通常のアイコン、テーマアイコン、単色アイコンを持たないアプリのアイコンを生成できる
 
+
+## Notes
+
+**2026-11-20T12:06:10Z**
+
+iconloaderlib の取り込みとビルドは Tex-68f3 で済み。AppIconLoader で BaseIconFactory を使って通常のアイコンを生成している。テーマアイコンと形状はまだ

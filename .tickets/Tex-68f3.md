@@ -1,6 +1,6 @@
 ---
 id: Tex-68f3
-status: open
+status: closed
 deps: [Tex-6b20]
 links: []
 created: 2026-11-20T11:48:44Z
@@ -26,3 +26,9 @@ Launcher3 からコードを持ってくるための土台を作る。
 - [ ] UPSTREAM.md に、取り込んだファイルの元パスとタグが記録されている
 - [ ] 更新スクリプトを、同じタグ同士で実行すると差分なしで終わる
 
+
+## Notes
+
+**2026-11-20T12:06:10Z**
+
+third_party/（launcher3、systemui/iconloaderlib）、compat/launcher3、scripts/update-upstream.sh を追加。同じタグで更新スクリプトを流して差分なしを確認。usertypelib は @Parcelize が AGP 9 の組み込み Kotlin で効かないため compat の UserType で代用

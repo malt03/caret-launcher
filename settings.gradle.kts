@@ -24,3 +24,13 @@ dependencyResolutionManagement {
 
 rootProject.name = "Text Launcher"
 include(":app")
+
+// Code copied from AOSP (docs/launcher3-porting.md)
+include(":launcher3")
+project(":launcher3").projectDir = file("third_party/launcher3")
+include(":iconloaderlib")
+project(":iconloaderlib").projectDir = file("third_party/systemui/iconloaderlib")
+
+// Stand-ins for the parts of AOSP the copied code depends on
+include(":launcher3-compat")
+project(":launcher3-compat").projectDir = file("compat/launcher3")
