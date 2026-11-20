@@ -10,6 +10,13 @@ tag=android-17.0.0_r1
 path=src/com/android/launcher3/anim/KeyboardInsetAnimationCallback.java
 path=src/com/android/launcher3/shapes/ShapesProvider.kt
 path=src/com/android/launcher3/shapes/IconShapeModel.kt
+path=src/com/android/launcher3/celllayout/ReorderAlgorithm.java
+path=src/com/android/launcher3/celllayout/ItemConfiguration.kt
+path=src/com/android/launcher3/celllayout/ViewCluster.kt
+path=src/com/android/launcher3/celllayout/ReorderParameters.kt
+path=src/com/android/launcher3/celllayout/CellLayoutLayoutParams.java
+path=src/com/android/launcher3/util/GridOccupancy.java
+path=src/com/android/launcher3/util/CellAndSpan.java
 ```
 
 ## 取り込んでいないもの
@@ -30,5 +37,7 @@ path=src/com/android/launcher3/shapes/IconShapeModel.kt
 | クラス | 使っているファイル |
 |---|---|
 | `com.android.launcher3.Utilities`（`mapRange`） | `anim/KeyboardInsetAnimationCallback.java` |
+| `com.android.launcher3.CellLayout`（View ではない。アルゴリズムが使うメンバーだけを `CellLayout.java` から移した） | `celllayout/ReorderAlgorithm.java`、`celllayout/ViewCluster.kt` |
+| `com.android.launcher3.model.data.ItemInfo`（`cellX`、`cellY`、`spanX`、`spanY` だけ） | `util/GridOccupancy.java` |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt` |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

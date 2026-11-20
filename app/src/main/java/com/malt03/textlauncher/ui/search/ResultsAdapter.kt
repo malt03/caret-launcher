@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.search
 
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
@@ -82,9 +83,27 @@ class ResultsAdapter(
 
     class Holder(view: View, val icon: ImageView, val label: TextView) : RecyclerView.ViewHolder(view) {
         var entry: AppEntry? = null
-        val highlight = GradientDrawable().apply {
-            cornerRadius = 20 * view.resources.displayMetrics.density
-            setColor(MaterialColors.getColor(view, com.google.android.material.R.attr.colorSecondaryContainer))
+        val highlight = focusOutline(view)
+    }
+
+    private companion object {
+        /**
+         * Launcher3's keyboard focus outline (keyboard/ItemFocusIndicatorHelper,
+         * res focus_outline_* and focusOutlineColor / focusInnerOutlineColor): an outer and an
+         * inner stroke, no fill. Marks the result that Enter launches.
+         */
+        fun focusOutline(view: View): LayerDrawable {
+            val density = view.resources.displayMetrics.density
+            val stroke = (2 * density).toInt()
+            val outer = GradientDrawable().apply {
+                cornerRadius = 16 * density
+                setStroke(stroke, MaterialColors.getColor(view, com.google.android.material.R.attr.colorSecondaryFixed))
+            }
+            val inner = GradientDrawable().apply {
+                cornerRadius = 14 * density
+                setStroke(stroke, MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSecondaryFixedVariant))
+            }
+            return LayerDrawable(arrayOf(outer, inner)).apply { setLayerInset(1, stroke, stroke, stroke, stroke) }
         }
     }
 }

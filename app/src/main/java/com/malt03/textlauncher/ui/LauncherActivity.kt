@@ -38,6 +38,7 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var root: LauncherRootLayout
     private lateinit var results: RecyclerView
     private lateinit var resultsAdapter: ResultsAdapter
+    private lateinit var searchBackdrop: SearchBackdrop
 
     private var apps: List<AppEntry> = emptyList()
     private val appsListener: (List<AppEntry>) -> Unit = { apps = it; refreshResults() }
@@ -53,6 +54,7 @@ class LauncherActivity : AppCompatActivity() {
 
         root = LauncherRootLayout(this)
         setContentView(root)
+        searchBackdrop = SearchBackdrop(window, root)
 
         val grid = GridSpec.from(this)
         resultsAdapter = ResultsAdapter(
@@ -151,6 +153,7 @@ class LauncherActivity : AppCompatActivity() {
         if (query.isEmpty()) {
             results.visibility = View.GONE
             resultsAdapter.submit(emptyList())
+            searchBackdrop.setVisible(false)
             return
         }
         val store = app.searchStore
@@ -166,6 +169,7 @@ class LauncherActivity : AppCompatActivity() {
         resultsAdapter.submit(ranked)
         results.scrollToPosition(0)
         results.visibility = View.VISIBLE
+        searchBackdrop.setVisible(true)
     }
 
     /**
