@@ -253,8 +253,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host {
             launcherApps.startMainActivity(entry.component, entry.user, bounds, options)
         } catch (e: Exception) {
             isLaunching = false
-            return
         }
-        clearQuery()
+        // The query and results stay while the app opens over them; onStop clears them once
+        // the launcher is hidden, so the home screen never flashes in between.
     }
 }
