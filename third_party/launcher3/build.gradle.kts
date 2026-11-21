@@ -31,4 +31,5 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     api(project(":launcher3-compat"))
     api(project(":iconloaderlib"))
+    api(project(":msdllib"))
 }

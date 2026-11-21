@@ -56,7 +56,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 
 ### ハプティックを鳴らす場所
 
-Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じく `Flags.msdlFeedback()` で切り替える。`msdllib` を取り込むまでは、MSDL の `DRAG_INDICATOR_DISCRETE` を `SEGMENT_FREQUENT_TICK`、`SWIPE_THRESHOLD_INDICATOR` を `SEGMENT_TICK` の `performHapticFeedback` で代わりに鳴らしている。
+Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じく `Flags.msdlFeedback()`（リリース設定で有効）で切り替え、`util/MSDLPlayerWrapper`（互換クラス。Dagger の代わりにアプリで1つのプレイヤーを持つ）の `playToken` で鳴らす。
 
 | 場面 | Launcher3 の鳴らし方 |
 |---|---|

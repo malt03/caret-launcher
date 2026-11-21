@@ -1,6 +1,6 @@
 ---
 id: Tex-t281
-status: open
+status: closed
 deps: [Tex-cklf]
 links: []
 created: 2026-11-21T09:18:12Z
@@ -20,3 +20,9 @@ MSDL の代わりに performHapticFeedback で鳴らす処理が 3 か所にあ�
 - [ ] 呼ぶ側が上流と同じ形（msdlPlayerWrapper.playToken(...)）になっている
 - [ ] ドラッグ中の並び替え・フォルダ作成・削除ボタンに入ったときのハプティックが今と同じに鳴る
 
+
+## Notes
+
+**2026-11-21T09:33:31Z**
+
+msdllib（frameworks/libs/systemui）を third_party/systemui/msdllib にライブラリごとコピーし、MSDLPlayerWrapper の互換クラス（INSTANCE.get(context) でアプリに1つ）を置いた。CellLayout・HomeWorkspace・DropTargetBar の代用をやめ、上流と同じ mMSDLPlayerWrapper.playToken(...) にした。エミュレータでドラッグ中のセル移動が vibrator に Primitive=TICK(scale=0.50)（DRAG_INDICATOR_DISCRETE）として出ることを dumpsys vibrator_manager で確認

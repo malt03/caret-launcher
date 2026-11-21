@@ -13,7 +13,6 @@ import android.net.Uri
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.HapticFeedbackConstants
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -26,7 +25,9 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.views.ActivityContext
+import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.BaseDragLayer
+import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.ui.home.AppItemInfo
 import com.android.launcher3.R as L3R
@@ -255,6 +256,7 @@ class DropTargetBar(
         private val drawablePadding = resources.getDimensionPixelSize(L3R.dimen.drop_target_button_drawable_padding)
         private var active = false
         private val tempCords = IntArray(2)
+        private val mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context)
 
         protected var mText: CharSequence = ""
         protected lateinit var mDrawable: Drawable
@@ -296,9 +298,7 @@ class DropTargetBar(
         override fun onDragEnter(d: DragObject) {
             // Perform Haptic feedback
             if (Flags.msdlFeedback()) {
-                // TextLauncher: MSDLToken.SWIPE_THRESHOLD_INDICATOR, as a platform haptic until
-                // msdllib is added.
-                performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
+                mMSDLPlayerWrapper.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
             }
             // TextLauncher: the text is always visible, so there is no tooltip.
             d.dragView.alpha = DRAG_VIEW_HOVER_OVER_OPACITY

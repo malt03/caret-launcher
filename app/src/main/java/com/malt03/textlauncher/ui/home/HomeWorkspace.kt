@@ -4,7 +4,6 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
-import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import com.android.launcher3.Alarm
@@ -26,7 +25,9 @@ import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.ActivityContext
+import com.google.android.msdl.data.model.MSDLToken
 
 /**
  * The home grid as a drop target and drag source: the drag and drop part of Launcher3's Workspace
@@ -99,6 +100,8 @@ class HomeWorkspace(
     private var mDragOverView: View? = null
     private var mCreateUserFolderOnDrop = false
     private var mAddToExistingFolderOnDrop = false
+
+    private val mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context)
 
     private val handler = Handler(Looper.getMainLooper())
     private val density = context.resources.displayMetrics.density
@@ -753,7 +756,7 @@ class HomeWorkspace(
         val userFolderPending = willCreateUserFolder(info, dragOverView, false)
         if (mDragMode == DRAG_MODE_NONE && userFolderPending && dragOverView != null) {
             if (Flags.msdlFeedback()) {
-                playDragIndicatorDiscrete()
+                mMSDLPlayerWrapper.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE)
             }
             mFolderCreateBg = PreviewBackground(context)
             mFolderCreateBg.setup(context, activity, null, dragOverView.measuredWidth, dragOverView.paddingTop)
@@ -785,11 +788,6 @@ class HomeWorkspace(
         if (mDragMode == DRAG_MODE_CREATE_FOLDER && !userFolderPending) {
             setDragMode(DRAG_MODE_NONE)
         }
-    }
-
-    /** TextLauncher: MSDLToken.DRAG_INDICATOR_DISCRETE, as a platform haptic until msdllib is added. */
-    private fun playDragIndicatorDiscrete() {
-        grid.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
     }
 
     private inner class ReorderAlarmListener(

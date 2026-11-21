@@ -36,7 +36,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.ArrayMap;
-import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -51,9 +50,12 @@ import com.android.launcher3.celllayout.ReorderParameters;
 import com.android.launcher3.celllayout.ReorderPreviewAnimation;
 import com.android.launcher3.util.CellAndSpan;
 import com.android.launcher3.util.GridOccupancy;
+import com.android.launcher3.util.MSDLPlayerWrapper;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.Thunk;
+
+import com.google.android.msdl.data.model.MSDLToken;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +137,8 @@ public class CellLayout extends FrameLayout {
     private final ArrayList<DelegatedCellDrawing> mDelegatedCellDrawings = new ArrayList<>();
     private View mOwnerView;
 
+    private final MSDLPlayerWrapper mMSDLPlayerWrapper;
+
     private final int mIconSizePx;
 
     public CellLayout(Context context, Children children, int iconSizePx) {
@@ -143,6 +147,7 @@ public class CellLayout extends FrameLayout {
         mShortcutsAndWidgets = children;
         mReorderPreviewAnimationMagnitude = (REORDER_PREVIEW_MAGNITUDE * iconSizePx);
         setGridSize(1, 1);
+        mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context);
 
         Resources res = getResources();
         mGridColor = Themes.getAttrColor(context, R.attr.workspaceAccentColor);
@@ -267,12 +272,7 @@ public class CellLayout extends FrameLayout {
                 || mDragCellSpan[1] != spanY) {
             determineIfDragHapticsPlay();
             if (mPlayDragHaptics && Flags.msdlFeedback()) {
-                // TextLauncher: MSDLToken.DRAG_INDICATOR_DISCRETE, played as a platform haptic
-                // until msdllib is added.
-                if (mOwnerView != null) {
-                    mOwnerView.performHapticFeedback(
-                            HapticFeedbackConstants.SEGMENT_FREQUENT_TICK);
-                }
+                mMSDLPlayerWrapper.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE);
             }
             mDragCell[0] = cellX;
             mDragCell[1] = cellY;

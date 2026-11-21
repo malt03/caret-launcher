@@ -30,6 +30,8 @@ include(":launcher3")
 project(":launcher3").projectDir = file("third_party/launcher3")
 include(":iconloaderlib")
 project(":iconloaderlib").projectDir = file("third_party/systemui/iconloaderlib")
+include(":msdllib")
+project(":msdllib").projectDir = file("third_party/systemui/msdllib")
 
 // Stand-ins for the parts of AOSP the copied code depends on
 include(":launcher3-compat")
