@@ -553,6 +553,8 @@ class HomeController(
         AppIconView(context, gridSpec.iconSizePx).apply {
             itemInfo = info
             bindIcon(info, this)
+            // ItemInflater: the item's focus listener is Launcher.getFocusHandler.
+            setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             setOnClickListener { onItemClick(info, this) }
             setOnLongClickListener {
                 onHomeItemLongPress(this)
@@ -562,6 +564,7 @@ class HomeController(
 
     private fun createFolderView(folder: HomeItem.Folder): FolderIconView =
         FolderIconView(context, gridSpec.iconSizePx, activityContext, folderCallbacks).apply {
+            setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             val items = folder.itemKeys.mapNotNull(::itemInfoFor)
             setContents(items)
             for (item in items) {

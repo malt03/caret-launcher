@@ -7,6 +7,7 @@ import android.graphics.Point
 import android.view.View
 import android.view.ViewGroup
 import com.android.launcher3.CellLayout
+import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DraggableView
 import com.malt03.textlauncher.data.HomeItem
@@ -25,6 +26,13 @@ import kotlin.math.max
 @SuppressLint("ViewConstructor")
 class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), CellLayout.Children {
     val cellLayout = CellLayout(context, this, grid.iconSizePx).also { it.setOwnerView(this) }
+
+    /**
+     * DragLayer's focus outline for the home items (Launcher.getFocusHandler, which ItemInflater
+     * sets as each item's focus listener). It is drawn here, in the scrolled grid, so that it
+     * scrolls with the items.
+     */
+    val focusIndicatorHelper = ViewGroupFocusHelper(this)
 
     private val cellPaddingV = (12 * resources.displayMetrics.density).toInt()
     val cellHeight: Int get() = grid.iconSizePx + cellPaddingV * 2
@@ -113,6 +121,8 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
     }
 
     override fun dispatchDraw(canvas: Canvas) {
+        // DragLayer.dispatchDraw: the focus outline goes below the items.
+        focusIndicatorHelper.draw(canvas)
         super.dispatchDraw(canvas)
         // CellLayout.dispatchDraw: delegated drawings over the items.
         cellLayout.drawDelegatedOverItems(canvas)

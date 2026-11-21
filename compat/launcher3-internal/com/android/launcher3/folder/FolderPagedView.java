@@ -8,18 +8,30 @@ import android.view.ViewGroup;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.graphics.PathWrapper;
+import com.android.launcher3.keyboard.ViewGroupFocusHelper;
 import com.android.launcher3.views.ClipPathView;
 
 /**
  * Stand-in for Launcher3's FolderPagedView: the folder's content. TextLauncher's folders have a
  * single page, so the children are placed directly by their CellLayoutLayoutParams (x, y, width,
- * height, as CellLayout sets them up). Clip handling is copied from FolderPagedView.java.
+ * height, as CellLayout sets them up). Clip handling and the keyboard focus outline are copied
+ * from FolderPagedView.java.
  */
 public class FolderPagedView extends ViewGroup implements ClipPathView {
+    private final ViewGroupFocusHelper mFocusIndicatorHelper;
     private PathWrapper mClipPath;
 
     public FolderPagedView(Context context) {
         super(context);
+        mFocusIndicatorHelper = new ViewGroupFocusHelper(this);
+    }
+
+    /**
+     * TextLauncher: FolderPagedView.createNewView sets this as each icon's focus listener; the
+     * icons are made by the app's OpenFolder.
+     */
+    public ViewGroupFocusHelper getFocusIndicatorHelper() {
+        return mFocusIndicatorHelper;
     }
 
     public int getCurrentPage() {
@@ -76,9 +88,11 @@ public class FolderPagedView extends ViewGroup implements ClipPathView {
         if (mClipPath != null) {
             int count = canvas.save();
             canvas.clipPath(mClipPath.getPath());
+            mFocusIndicatorHelper.draw(canvas);
             super.dispatchDraw(canvas);
             canvas.restoreToCount(count);
         } else {
+            mFocusIndicatorHelper.draw(canvas);
             super.dispatchDraw(canvas);
         }
     }

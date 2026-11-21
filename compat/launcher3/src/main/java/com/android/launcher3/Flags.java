@@ -10,6 +10,11 @@ package com.android.launcher3;
 public final class Flags {
     private Flags() {}
 
+    /** bp1a: ENABLED (cp1a inherits it through bp4a, bp3a and bp2a) */
+    public static boolean enableFocusOutline() {
+        return true;
+    }
+
     /** bp4a: ENABLED */
     public static boolean enableLauncherIconShapes() {
         return true;

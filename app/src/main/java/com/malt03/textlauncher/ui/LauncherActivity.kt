@@ -7,12 +7,17 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.os.UserHandle
 import android.text.Editable
+import android.text.Selection
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.text.method.TextKeyListener
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import com.malt03.textlauncher.R
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +27,8 @@ import com.malt03.textlauncher.search.Normalizer
 import com.malt03.textlauncher.search.Ranker
 import com.malt03.textlauncher.search.SearchCandidate
 import com.malt03.textlauncher.ui.home.HomeController
+import com.android.launcher3.keyboard.FocusedItemDecorator
+import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.ui.search.ResultsAdapter
 
@@ -35,6 +42,15 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     private lateinit var root: LauncherRootLayout
     private lateinit var results: RecyclerView
     private lateinit var resultsAdapter: ResultsAdapter
+
+    /** The search results' focus outline (ActivityAllAppsContainerView.AdapterHolder.setup). */
+    private lateinit var resultsFocusHelper: ViewGroupFocusHelper
+
+    /** The result [focusTopResult] put the focus outline on. */
+    private var autoFocusedResult: View? = null
+
+    /** AppsSearchContainerLayout.mSearchQueryBuilder */
+    private val searchQueryBuilder = SpannableStringBuilder().also { Selection.setSelection(it, 0) }
     private lateinit var home: HomeController
 
     /** docs/spec.md 5.4: while editing, the keyboard is down and the field has no focus. */
@@ -82,6 +98,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             itemAnimator = null
             visibility = View.GONE
         }
+        // ActivityAllAppsContainerView.AdapterHolder.setup: the search list draws the outline
+        // with a ViewGroupFocusHelper, which the icons get as their focus listener.
+        resultsFocusHelper = ViewGroupFocusHelper(results)
+        val focusedItemDecorator = FocusedItemDecorator(resultsFocusHelper)
+        results.addItemDecoration(focusedItemDecorator)
+        resultsAdapter.iconFocusListener = focusedItemDecorator.focusListener
         home = HomeController(app, root, this)
         root.contentArea.addView(home.workspace)
         root.contentArea.addView(results)
@@ -107,7 +129,16 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
                     return
                 }
                 if (home.closeTopFloatingView()) return
-                if (home.isFolderOpen) home.closeFolder()
+                if (home.isFolderOpen) {
+                    home.closeFolder()
+                    return
+                }
+                // docs/spec.md 1.4: a search result has keyboard focus and the keyboard is down, so the
+                // back gesture reaches here; it clears the query like closing the keyboard does.
+                if (!root.searchBar.editText.hasFocus()) {
+                    clearQuery()
+                    focusSearch()
+                }
             }
         })
 
@@ -168,11 +199,45 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     private fun clearQuery() {
         root.searchBar.editText.text?.clear()
+        // AppsSearchContainerLayout.clearSearchResult
+        searchQueryBuilder.clear()
+        searchQueryBuilder.clearSpans()
+        Selection.setSelection(searchQueryBuilder, 0)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        preDispatchKeyEvent(event)
+        return super.dispatchKeyEvent(event)
+    }
+
+    /**
+     * AppsSearchContainerLayout.preDispatchKeyEvent: typing while a search result has keyboard focus
+     * focuses the search field first, so that it gets the key.
+     */
+    private fun preDispatchKeyEvent(event: KeyEvent) {
+        // Determine if the key event was actual text, if so, focus the search bar and then dispatch
+        // the key normally so that it can process this key event
+        val editText = root.searchBar.editText
+        if (!editText.isFocused && event.action == KeyEvent.ACTION_DOWN) {
+            val unicodeChar = event.unicodeChar
+            val isKeyNotWhitespace = unicodeChar > 0 &&
+                !Character.isWhitespace(unicodeChar) && !Character.isSpaceChar(unicodeChar)
+            if (isKeyNotWhitespace) {
+                val gotKey = TextKeyListener.getInstance().onKeyDown(editText, searchQueryBuilder,
+                    event.keyCode, event)
+                if (gotKey && searchQueryBuilder.isNotEmpty()) {
+                    focusSearch()
+                }
+            }
+        }
     }
 
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
         if (isEditMode || isLaunching || !isResumedState || !hasWindowFocus()) return
+        // Keyboard focus moved from the field to a search result (arrow keys), which hides the
+        // keyboard.
+        if (!root.searchBar.editText.hasFocus()) return
         // The keyboard takes the back gesture while it is shown, so closing it also closes the
         // long-press menu, which Launcher3 closes on back.
         home.closeTopFloatingView()
@@ -188,6 +253,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             results.visibility = View.GONE
             home.scrollView.visibility = View.VISIBLE
             resultsAdapter.submit(emptyList())
+            focusTopResult()
             return
         }
         val store = app.searchStore
@@ -204,6 +270,34 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         results.scrollToPosition(0)
         results.visibility = View.VISIBLE
         home.scrollView.visibility = View.GONE
+        focusTopResult()
+    }
+
+    /**
+     * Pixel Launcher's search (not in AOSP Launcher3): when the results change, the one Enter
+     * launches gets the focus outline, while the keyboard focus stays in the search field.
+     * The outline is Launcher3's ([resultsFocusHelper]), so arrow keys move it from there.
+     */
+    private fun focusTopResult() {
+        if (results.visibility != View.VISIBLE) {
+            setAutoFocusedResult(null)
+            return
+        }
+        // The new results are bound on the next layout.
+        results.doOnLayout {
+            if (results.visibility == View.VISIBLE) {
+                setAutoFocusedResult(results.findViewHolderForAdapterPosition(0)?.itemView)
+            }
+        }
+    }
+
+    private fun setAutoFocusedResult(view: View?) {
+        val previous = autoFocusedResult
+        autoFocusedResult = view
+        when {
+            view != null -> resultsFocusHelper.onFocusChange(view, true)
+            previous != null -> resultsFocusHelper.onFocusChange(previous, false)
+        }
     }
 
     /** docs/spec.md 4: the long-press menu's "Edit search terms". */

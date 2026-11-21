@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.view.FocusFinder;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Stand-in for Launcher3's Folder (android-17.0.0_r1): the open folder. Holds the members the
  * copied folder animation reads; TextLauncher's open folder extends this and fills them in.
- * Background and clip drawing are copied from Folder.java.
+ * Background and clip drawing and the keyboard focus handling are copied from Folder.java.
  */
 public abstract class Folder extends FrameLayout implements ClipPathView {
     public final ActivityContext mActivityContext;
@@ -40,6 +41,31 @@ public abstract class Folder extends FrameLayout implements ClipPathView {
         mFooter = new View(context);
         mFolderName = new View(context);
         setWillNotDraw(false);
+        // Folder sets focusable in touch mode, so that it takes the focus back from its name
+        // field. TextLauncher's folders have no name, and a touch must not take the focus from the
+        // search field (docs/spec.md 1), so it is focusable only for keys.
+        setFocusable(true);
+    }
+
+    /**
+     * Folder.onAttachedToWindow's requestFocus. TextLauncher's folder is attached invisible until
+     * it is laid out, which would drop the focus again, so this is called once it is shown. Only
+     * when opened with keys: opened by touch, the search field keeps the focus and the keyboard
+     * stays up.
+     */
+    protected void requestFocusOnOpen() {
+        // requestFocus() causes the focus onto the folder itself, which doesn't cause visual
+        // effect but the next arrow key can start the keyboard focus inside of the folder, not
+        // the folder itself.
+        if (!isInTouchMode()) {
+            requestFocus();
+        }
+    }
+
+    @Override
+    public View focusSearch(int direction) {
+        // When the folder is focused, further focus search should be within the folder contents.
+        return FocusFinder.getInstance().findNextFocus(this, null, direction);
     }
 
     public FolderPagedView getContent() {

@@ -62,6 +62,16 @@
     <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
     <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
     <color name="materialColorSurfaceContainer">@android:color/system_surface_container_light</color>
+    <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_light</color>
+    <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_light</color>
+
+    <!-- Keyboard focus outline: keyboard/ItemFocusIndicatorHelper.java, FocusIndicatorHelper.java -->
+    <attr name="focusOutlineColor" format="color" />
+    <attr name="focusInnerOutlineColor" format="color" />
+    <color name="focused_background">#80c6c5c5</color>
+    <dimen name="focus_outline_radius">16dp</dimen>
+    <dimen name="focus_inner_outline_radius">14dp</dimen>
+    <dimen name="focus_outline_stroke_width">2dp</dimen>
 
     <!-- Long-press menu: AbstractFloatingView, ArrowPopup, PopupContainer and the system
          shortcut rows (layout/system_shortcut*.xml, drawable/popup_background.xml,

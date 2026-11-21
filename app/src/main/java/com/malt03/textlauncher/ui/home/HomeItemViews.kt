@@ -67,6 +67,17 @@ class ShortcutItemInfo(
     }
 }
 
+/**
+ * Keyboard focus as Launcher3's icons have it (docs/spec.md 2.6): the BaseIconUnBounded style
+ * makes them focusable without the default focus highlight, and ItemInflater / FolderPagedView
+ * set the container's focus outline as their focus listener.
+ */
+fun View.setFocusableAsLauncher3Icon(focusListener: View.OnFocusChangeListener) {
+    isFocusable = true
+    defaultFocusHighlightEnabled = false
+    onFocusChangeListener = focusListener
+}
+
 /** A view on the home grid. Launcher3's ReorderPreviewAnimation shakes it through [Reorderable]. */
 interface HomeItemView : Reorderable
 

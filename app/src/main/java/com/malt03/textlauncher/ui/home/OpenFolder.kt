@@ -72,6 +72,8 @@ class OpenFolder(
             val icon = AppIconView(context, grid.iconSizePx)
             icon.itemInfo = item
             bindIcon(item, icon)
+            // FolderPagedView.createNewView
+            icon.setFocusableAsLauncher3Icon(mContent.focusIndicatorHelper)
             icon.setOnClickListener {
                 dismiss()
                 onClick(item, icon)
@@ -116,6 +118,7 @@ class OpenFolder(
     /** Folder.animateOpen: the folder icon hides while its folder is open. */
     private fun animateOpen() {
         visibility = View.VISIBLE
+        requestFocusOnOpen()
         folderIconView.visibility = View.INVISIBLE
         animator = createAnimator(isOpening = true).also { it.start() }
     }
@@ -132,8 +135,15 @@ class OpenFolder(
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     mIsAnimatingClosed = false
-                    folderIconView.visibility = View.VISIBLE
+                    // Launcher3's open folder always has the focus. TextLauncher's has it only
+                    // when it was opened with keys and nothing took it since (the home button
+                    // gives it to the search field), and only then does it go back to the icon.
+                    val hadFocus = hasFocus()
                     dragLayer.removeView(this@OpenFolder)
+                    // Folder.closeComplete: the keyboard focus goes back to the folder icon.
+                    clearFocus()
+                    folderIconView.visibility = View.VISIBLE
+                    if (hadFocus) folderIconView.requestFocus()
                 }
             })
             start()

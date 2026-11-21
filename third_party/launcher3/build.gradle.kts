@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.dynamicanimation)
     implementation(libs.androidx.graphics.shapes)
+    implementation(libs.androidx.recyclerview)
     api(project(":launcher3-compat"))
     api(project(":iconloaderlib"))
 }

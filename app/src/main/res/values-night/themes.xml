@@ -23,5 +23,8 @@
         <item name="popupShadeFirst">@color/popup_shade_first_dark</item>
         <item name="popupShadeSecond">@color/popup_shade_second_dark</item>
         <item name="popupShadeThird">@color/popup_shade_third_dark</item>
+        <!-- LauncherTheme: the keyboard focus outline (the dark theme uses the same) -->
+        <item name="focusOutlineColor">@color/materialColorSecondaryFixed</item>
+        <item name="focusInnerOutlineColor">@color/materialColorOnSecondaryFixedVariant</item>
     </style>
 </resources>

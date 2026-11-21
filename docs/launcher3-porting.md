@@ -41,6 +41,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 | 縦スワイプの判定、端での引っ張り | コピー | `touch/BaseSwipeDetector.java`、`touch/SingleAxisSwipeDetector.java`、`touch/OverScroll.java`、`util/TranslateEdgeEffect.java`、`util/EdgeEffectCompat.java`、`MotionEventsUtils.java` | — |
 | ハプティック | ライブラリごとコピー | `frameworks/libs/systemui/msdllib/` | `util/MSDLPlayerWrapper.java` の代わりを互換層に置く。鳴らす場所と種類は Launcher3 に合わせる（下記） |
 | キーボードの出入りへの追従 | コピー | `anim/KeyboardInsetAnimationCallback.java` | — |
+| キーボードのフォーカス枠 | コピー | `keyboard/ItemFocusIndicatorHelper.java`、`keyboard/FocusIndicatorHelper.java`、`keyboard/FocusedItemDecorator.java`、`keyboard/ViewGroupFocusHelper.java` | 検索結果への付け方は `ActivityAllAppsContainerView.AdapterHolder.setup` と `BaseAllAppsAdapter.setIconFocusListener` に、ホームは `DragLayer` と `ItemInflater` に（枠はスクロールするグリッドに描く）、フォルダは `FolderPagedView` と `Folder` のフォーカス処理（開いたらフォルダにフォーカス、中だけを探す、閉じたらアイコンに戻す）に、文字を打ったら検索フィールドに戻す処理は `AppsSearchContainerLayout.preDispatchKeyEvent` に倣う。入力が変わったら1位に枠を付ける処理は Pixel Launcher に合わせた自前のもの（docs/spec.md 2.6）。`PagedView` は名前だけの互換クラス |
 | ウィジェットピッカー | 要調査 | — | OS 標準の選択画面（`AppWidgetManager.ACTION_APPWIDGET_PICK`）と比べて決める（Tex-h3ld） |
 | グリッドの寸法 | 値を参照 | `res/xml/device_profiles.xml` | — |
 | 「壁紙とスタイル」連携 | 取り決めだけ合わせる | — | `graphics/GridCustomizationsProxy.java`、`graphics/LauncherCustomizationProvider.kt` に倣って自前で書く |

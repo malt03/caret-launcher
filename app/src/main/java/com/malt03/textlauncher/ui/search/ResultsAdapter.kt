@@ -1,7 +1,5 @@
 package com.malt03.textlauncher.ui.search
 
-import android.graphics.drawable.GradientDrawable
-import androidx.core.graphics.ColorUtils
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
@@ -19,7 +17,8 @@ import com.malt03.textlauncher.ui.home.AppItemInfo
 
 /**
  * App cells in the style of Launcher3's all-apps grid: icon with the app name below
- * (docs/spec.md 2.5). The first item is the one Enter launches, so it is highlighted.
+ * (docs/spec.md 2.5). The cells take keyboard focus like Launcher3's all-apps icons; the
+ * container's focus outline is set with [iconFocusListener].
  */
 class ResultsAdapter(
     private val iconLoader: AppIconLoader,
@@ -31,7 +30,8 @@ class ResultsAdapter(
     var items: List<AppEntry> = emptyList()
         private set
 
-    var highlightFirst: Boolean = true
+    /** BaseAllAppsAdapter.setIconFocusListener */
+    var iconFocusListener: View.OnFocusChangeListener? = null
 
     fun submit(newItems: List<AppEntry>) {
         items = newItems
@@ -51,7 +51,10 @@ class ResultsAdapter(
             val padding = (4 * density).toInt()
             setPadding(padding, padding, padding, padding)
             isClickable = true
-            isFocusable = false
+            // BaseIconUnBounded: focusable, without the default focus highlight.
+            isFocusable = true
+            defaultFocusHighlightEnabled = false
+            onFocusChangeListener = iconFocusListener
         }
         // The cell's pressed state reaches the icon, so FastBitmapDrawable plays its click feedback.
         val icon = AppIconView(context, grid.iconSizePx).apply { isDuplicateParentStateEnabled = true }
@@ -85,30 +88,11 @@ class ResultsAdapter(
                 holder.icon.iconDrawable = iconLoader.newDrawable(info)
             }
         }
-        holder.itemView.background = if (position == 0 && highlightFirst) holder.highlight else null
         holder.itemView.setOnClickListener { onClick(entry, holder.icon) }
         holder.itemView.setOnLongClickListener { onLongClick(entry, holder.icon) }
     }
 
     class Holder(view: View, val icon: AppIconView, val label: TextView) : RecyclerView.ViewHolder(view) {
         var entry: AppEntry? = null
-        val highlight = focusOutline(view)
-    }
-
-    private companion object {
-        /**
-         * Marks the result that Enter launches: a translucent, slightly lighter surface with a faint
-         * edge, so the wallpaper still shows through.
-         */
-        fun focusOutline(view: View): GradientDrawable {
-            val density = view.resources.displayMetrics.density
-            return GradientDrawable().apply {
-                cornerRadius = 20 * density
-                val fill = MaterialColors.getColor(view, com.google.android.material.R.attr.colorSurfaceContainerHighest)
-                setColor(ColorUtils.setAlphaComponent(fill, (0.55f * 255).toInt()))
-                val edge = MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSurface)
-                setStroke((1 * density).toInt().coerceAtLeast(1), ColorUtils.setAlphaComponent(edge, (0.12f * 255).toInt()))
-            }
-        }
     }
 }
