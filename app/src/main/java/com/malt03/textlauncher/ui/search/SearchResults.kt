@@ -23,6 +23,10 @@ import com.malt03.textlauncher.ui.NoPressDelayRecyclerView
  * (the search RecyclerView with its AdapterHolder) and the ranking that AllAppsSearchBarController
  * asks for. TextLauncher: the ranking is its own (docs/spec.md 2.2 to 2.4), and Pixel Launcher's
  * outline marks the result Enter launches.
+ *
+ * [inAllApps]: the search in the all apps list (docs/spec.md 6.5), on the sheet under the field at
+ * the top of the screen: the results go from the top, in the sheet's text style. Otherwise they are
+ * over the wallpaper right above the field, and go from the bottom (docs/spec.md 2.5).
  */
 class SearchResults(
     context: Context,
@@ -31,14 +35,15 @@ class SearchResults(
     grid: GridSpec,
     onClick: (AppEntry, View) -> Unit,
     onLongClick: (AppEntry, BubbleTextView) -> Unit,
+    private val inAllApps: Boolean = false,
 ) {
-    private val adapter = ResultsAdapter(iconLoader, grid, onClick) { entry, view ->
+    private val adapter = ResultsAdapter(iconLoader, grid, onClick, onSurface = inAllApps) { entry, view ->
         onLongClick(entry, view)
         true
     }
 
     val view: RecyclerView = NoPressDelayRecyclerView(context).apply {
-        layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, true)
+        layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, !inAllApps)
         val sidePadding = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
         setPadding(sidePadding, 0, sidePadding, 0)
         clipToPadding = false
@@ -61,6 +66,11 @@ class SearchResults(
         val focusedItemDecorator = FocusedItemDecorator(focusHelper)
         view.addItemDecoration(focusedItemDecorator)
         adapter.iconFocusListener = focusedItemDecorator.focusListener
+    }
+
+    /** The space under the results that the keyboard or the navigation bar covers. */
+    fun setBottomInset(bottom: Int) {
+        view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, bottom)
     }
 
     val isShown: Boolean get() = view.visibility == View.VISIBLE

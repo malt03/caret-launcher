@@ -25,6 +25,8 @@ class ResultsAdapter(
     private val iconLoader: AppIconLoader,
     private val grid: GridSpec,
     private val onClick: (AppEntry, View) -> Unit,
+    /** The cells' text style: on the all apps sheet, or over the wallpaper. */
+    private val onSurface: Boolean = false,
     private val onLongClick: (AppEntry, BubbleTextView) -> Boolean,
 ) : RecyclerView.Adapter<ResultsAdapter.Holder>() {
 
@@ -43,7 +45,7 @@ class ResultsAdapter(
     override fun getItemCount(): Int = items.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val icon = ResultIconView(parent.context, grid).apply {
+        val icon = ResultIconView(parent.context, grid, onSurface).apply {
             layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
             onFocusChangeListener = iconFocusListener
         }

@@ -59,6 +59,9 @@ class AllAppsSheet(context: Context) : FrameLayout(context) {
         })
     }
 
+    /** The results of the search in the list (the container's search RecyclerView), under the handle area. */
+    fun setSearchResults(results: View) = setList(results)
+
     /** ActivityAllAppsContainerView.getBackgroundColor for whether the blur is on. */
     fun setBlurEnabled(enabled: Boolean) {
         sheetBackground.setColor(

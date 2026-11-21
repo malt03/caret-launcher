@@ -46,6 +46,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     private lateinit var root: LauncherRootLayout
     private lateinit var results: SearchResults
     private lateinit var allApps: AllAppsView
+
+    /** docs/spec.md 6.5: the search in the all apps list, on the sheet under the field. */
+    private lateinit var allAppsResults: SearchResults
     private lateinit var allAppsTransition: AllAppsTransitionController
 
     /** LauncherState NORMAL / ALL_APPS: whether the all apps list is open or going to be. */
@@ -67,6 +70,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     }
     private val iconsListener: () -> Unit = {
         results.onIconsChanged()
+        allAppsResults.onIconsChanged()
         home.rebuild()
         allApps.setApps(apps)
     }
@@ -104,6 +108,17 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root.contentArea.addView(results.view)
         allApps = AllAppsView(this, home.activityContext, app.iconLoader, GridSpec.from(this))
         root.allAppsView = allApps
+        allAppsResults = SearchResults(
+            this,
+            app.iconLoader,
+            app.searchStore,
+            GridSpec.from(this),
+            onClick = { entry, view -> launch(entry, view, fromSearch = true) },
+            onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
+            inAllApps = true,
+        )
+        root.allAppsSheet.setSearchResults(allAppsResults.view)
+        root.onBottomInsetChanged = allAppsResults::setBottomInset
         allAppsTransition = AllAppsTransitionController(root)
         root.allAppsTouchInterceptor = AllAppsSwipeController(this, root, allAppsTransition, allAppsSwipeCallbacks)::onTouch
 
@@ -117,10 +132,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             }
         })
         root.searchBar.onEnter = { launchTopResult() }
-        // TextLauncher: tapping the field closes the all apps list until the search in it
-        // (docs/spec.md 6.5, Tex-9cyk) is there.
+        // docs/spec.md 6.5: tapping the field with the all apps list open searches in it; the field
+        // gets the focus and the keyboard comes up, over the list.
         root.searchBar.onFocusChanged = { hasFocus ->
-            if (hasFocus && isAllAppsOpen && !allAppsTransition.isAnimating) closeAllApps(animate = true)
+            if (hasFocus && isAllAppsOpen && !allAppsTransition.isAnimating) {
+                WindowCompat.getInsetsController(window, root.searchBar.editText).show(WindowInsets.Type.ime())
+            }
         }
         root.onKeyboardHidden = ::onKeyboardHidden
 
@@ -234,7 +251,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
                 val gotKey = TextKeyListener.getInstance().onKeyDown(editText, searchQueryBuilder,
                     event.keyCode, event)
                 if (gotKey && searchQueryBuilder.isNotEmpty()) {
-                    focusSearch()
+                    if (isAllAppsOpen) {
+                        // docs/spec.md 6.5: the search in the all apps list.
+                        editText.requestFocus()
+                    } else {
+                        focusSearch()
+                    }
                 }
             }
         }
@@ -242,6 +264,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
+        // docs/spec.md 6.5: closing the keyboard while searching in the all apps list keeps the
+        // query and shows the filtered list without the focus.
+        if (isAllAppsOpen && !allAppsTransition.isAnimating && root.searchBar.editText.hasFocus()) {
+            root.requestFocus()
+            return
+        }
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
         if (isEditMode || root.isAllAppsShown || isLaunching || !isResumedState || !hasWindowFocus()) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
@@ -319,6 +347,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** docs/spec.md 6.6: closing, the field gets the focus and the keyboard comes back with it. */
     private fun prepareAllAppsClose() {
         isAllAppsOpen = false
+        // docs/spec.md 6.6: closing clears the query (of the search in the list).
+        clearQuery()
         root.holdFieldAboveKeyboard = true
         val editText = root.searchBar.editText
         editText.requestFocus()
@@ -345,6 +375,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         } else {
             allAppsTransition.cancelAnimation()
             isAllAppsOpen = false
+            clearQuery()
             allAppsTransition.progress = 0f
             onAllAppsClosed(focus)
         }
@@ -353,6 +384,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     private fun onAllAppsClosed(focus: Boolean) {
         isAllAppsOpen = false
         allApps.reset()
+        refreshResults()
         if (focus) focusSearch()
     }
 
@@ -361,6 +393,21 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** docs/spec.md 2.5: the results replace the home screen while there is a query. */
     private fun refreshResults() {
         val query = Normalizer.normalize(currentQuery())
+        if (isAllAppsOpen) {
+            // docs/spec.md 6.5: the results replace the list on the sheet, without an animation.
+            results.hide()
+            home.scrollView.visibility = View.VISIBLE
+            if (query.isEmpty()) {
+                allAppsResults.hide()
+                allApps.visibility = View.VISIBLE
+            } else {
+                allAppsResults.show(query, apps)
+                allApps.visibility = View.INVISIBLE
+            }
+            return
+        }
+        allAppsResults.hide()
+        allApps.visibility = View.VISIBLE
         if (query.isEmpty()) {
             results.hide()
             home.scrollView.visibility = View.VISIBLE
@@ -400,8 +447,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     override fun getActivityContext(): ActivityContext = home.activityContext
 
     private fun launchTopResult() {
-        val top = results.topResult ?: return
-        launch(top, results.topResultView, fromSearch = true)
+        val shown = if (isAllAppsOpen) allAppsResults else results
+        val top = shown.topResult ?: return
+        launch(top, shown.topResultView, fromSearch = true)
     }
 
     /** Launcher.startShortcut, for an app shortcut in the long-press menu or on the home screen. */

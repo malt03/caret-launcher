@@ -89,7 +89,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         }
 
     /** The all apps bottom sheet with its handle. */
-    private val allAppsSheet = AllAppsSheet(context)
+    val allAppsSheet = AllAppsSheet(context)
+
+    /** Called with the space at the bottom of the screen the keyboard or the navigation bar covers. */
+    var onBottomInsetChanged: ((Int) -> Unit)? = null
 
     /**
      * BaseDepthControllerImpl: the depth of the spring-loaded state (SpringLoadedState.DEPTH_15_PERCENT
@@ -247,6 +250,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         // (docs/spec.md 1.3), so the drag layer ends at its top (see onLayout), and floating
         // views placed or centered in it stay above it.
         overlayBottomCut = imeBottom
+        onBottomInsetChanged?.invoke(maxOf(imeBottom, navBottom))
         overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, if (imeBottom > 0) 0 else navBottom))
         // KeyboardInsetAnimationCallback animates from the old to this value.
         targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()
