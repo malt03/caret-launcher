@@ -10,12 +10,14 @@ import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.model.data.ItemInfo
 import com.malt03.textlauncher.ui.GridSpec
-import kotlin.math.ceil
 import kotlin.math.max
 
 /**
- * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count, icons without
- * labels, and no row limit. It sits in a vertical scroll container.
+ * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count and icons without
+ * labels. Like Launcher3's workspace page, the grid fills the space above the hotseat (the search
+ * field) with the keyboard down ([pageHeight]): as many rows as fit, and the cells share the space
+ * (CellLayout's cell height is the page height over the rows). It sits in a vertical scroll
+ * container, which scrolls it while the keyboard covers part of it.
  *
  * It is the [CellLayout] stand-in's ShortcutAndWidgetContainer; the CellLayout holds the copied
  * reorder, drop location and cell drawing code, and the drag and drop logic itself is in
@@ -33,15 +35,24 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     val focusIndicatorHelper = ViewGroupFocusHelper(this)
 
     private val cellPaddingV = (12 * resources.displayMetrics.density).toInt()
-    val cellHeight: Int get() = grid.iconSizePx + cellPaddingV * 2
+
+    /** The smallest cell height: the icon with its padding (the cells have no labels). */
+    private val minCellHeight: Int get() = grid.iconSizePx + cellPaddingV * 2
+    var cellHeight = minCellHeight
+        private set
     var cellWidth = 0
         private set
 
-    /** Extra empty rows below the last item, so that items can be dropped there while editing. */
-    var headroomRows = 0
+    /**
+     * The page: the height above the search field with the keyboard down (Launcher3's workspace
+     * above the hotseat). Set by the root layout as it measures.
+     */
+    var pageHeight = 0
         set(value) {
-            field = value
-            requestLayout()
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
         }
 
 
@@ -75,30 +86,27 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
 
     fun itemViews(): List<View> = (0 until childCount).map { getChildAt(it) }
 
-    /** Rows in use, counting where the reorder preview has moved items to. */
+    /** Rows the items are in (the reorder preview stays inside the grid). */
     private fun usedRows(): Int = itemViews().maxOfOrNull {
         val lp = it.layoutParams as CellLayoutLayoutParams
-        max(lp.cellY, if (lp.useTmpCoords) lp.tmpCellY else 0) + lp.cellVSpan
+        lp.cellY + lp.cellVSpan
     } ?: 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
-        // The scroll view (fillViewport) measures the grid again at its own height, EXACTLY, when
-        // the items need less; that height is the visible area the grid fills.
-        val viewportHeight = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) {
-            MeasureSpec.getSize(heightMeasureSpec)
-        } else {
-            0
-        }
-        val viewportRows = ceil((viewportHeight - paddingTop - paddingBottom).toFloat() / cellHeight).toInt()
-        val contentRows = usedRows() + headroomRows
-        cellLayout.setGridSize(grid.columns, max(contentRows, max(viewportRows, 1)))
+        // The page's rows: as many as fit (TextLauncher: Launcher3 takes numRows from the grid
+        // option and fits the cells, which here would be too tall without labels), and the cells
+        // share the page's height (DeviceProfile: cellHeight from the workspace height and rows).
+        val available = pageHeight - paddingTop - paddingBottom
+        val pageRows = if (available > 0) max(available / minCellHeight, 1) else 1
+        cellHeight = if (available > 0) available / pageRows else minCellHeight
+        // TextLauncher: items placed below the page by earlier versions stay reachable.
+        val rows = max(pageRows, usedRows())
+        cellLayout.setGridSize(grid.columns, rows)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
         for (child in itemViews()) measureChild(child)
-        // Only as tall as the items need, but at least the visible area: the grid scrolls only when
-        // items are placed below it. The last cell row may still be partly visible for dropping.
-        setMeasuredDimension(width, max(contentRows * cellHeight + paddingTop + paddingBottom, viewportHeight))
+        setMeasuredDimension(width, rows * cellHeight + paddingTop + paddingBottom)
     }
 
     override fun onDraw(canvas: Canvas) {

@@ -287,7 +287,9 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
 
     @Override
     public int getScrollBarTop() {
-        return getResources().getDimensionPixelOffset(R.dimen.all_apps_header_top_padding);
+        // TextLauncher: no header above the list (the search field is above the sheet), so the
+        // scrollbar starts at the top of the list.
+        return 0;
     }
 
     @Override

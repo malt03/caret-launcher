@@ -91,6 +91,24 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** The all apps bottom sheet with its handle. */
     val allAppsSheet = AllAppsSheet(context)
 
+    /**
+     * The home page's height: from below the status bar to the search field with the keyboard
+     * down (Launcher3's workspace above the hotseat). Called as it is measured.
+     */
+    var onPageHeightChanged: ((Int) -> Unit)? = null
+    private var pageHeight = 0
+
+    /**
+     * While editing (docs/spec.md 5.4) the home screen is laid out at once as with the keyboard
+     * down, so it does not follow the keyboard as it goes down and comes back.
+     */
+    var isEditLayout = false
+        set(value) {
+            if (field == value) return
+            field = value
+            requestLayout()
+        }
+
     /** Called with the space at the bottom of the screen the keyboard or the navigation bar covers. */
     var onBottomInsetChanged: ((Int) -> Unit)? = null
 
@@ -282,6 +300,11 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(width - barMarginH * 2, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(barHeight, MeasureSpec.EXACTLY),
         )
+        val page = height - navBottom - barContainer.measuredHeight - statusBarTop
+        if (page != pageHeight) {
+            pageHeight = page
+            onPageHeightChanged?.invoke(page)
+        }
         measureContentArea(width, contentBottom() - statusBarTop)
         // The sheet, open, is right under the field at the top of the screen.
         allAppsSheet.measure(
@@ -436,8 +459,14 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         super.onDetachedFromWindow()
     }
 
-    /** The visual top of the search field container when closed, with the keyboard translation. */
-    private fun contentBottom(): Int = closedBarTop.toInt()
+    /**
+     * The bottom of the content area: the top of the closed search field, with the keyboard
+     * translation, or without it while editing ([isEditLayout]).
+     */
+    private fun contentBottom(): Int = if (isEditLayout) barContainer.top else closedBarTop.toInt()
+
+    /** The top of the closed search field with the keyboard down (the hotseat's top while editing). */
+    val keyboardHiddenBarTop: Float get() = barContainer.top.toFloat()
 
     private fun measureContentArea(width: Int, height: Int) {
         contentArea.measure(

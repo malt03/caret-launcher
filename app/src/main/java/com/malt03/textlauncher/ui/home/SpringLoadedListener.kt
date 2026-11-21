@@ -19,9 +19,8 @@ import com.android.launcher3.dragndrop.DragOptions
  * spring-loaded progress) over the darkened wallpaper (getWorkspaceBackgroundAlpha), animated over
  * the state's 150ms as WorkspaceStateTransitionAnimation does.
  *
- * TextLauncher: the page is the visible part of the vertical home screen, which also gets empty
- * rows below its last item for dropping there. The scale and translation follow the layout while
- * the keyboard goes down and comes back.
+ * TextLauncher: the page is the whole home grid, which the content area shows in full while
+ * editing (the keyboard is down).
  */
 internal class SpringLoadedListener(private val home: HomeController) : DragController.DragListener {
     private var editing = false
@@ -39,9 +38,10 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
     override fun onDragStart(dragObject: DragObject, options: DragOptions) {
         editing = true
         AbstractFloatingView.closeOpenViews(home.activityContext, true, AbstractFloatingView.TYPE_FOLDER)
+        // docs/spec.md 5.4: the home screen takes its keyboard-down size at once.
+        home.root.isEditLayout = true
         home.root.animateWallpaperScrim(true)
         home.host.onEditModeChanged(true)
-        home.grid.headroomRows = dragObject.dragInfo.spanY + 1
         animateTo(1f) { if (home.dragController.isDragging) home.dragController.forceTouchMove() }
     }
 
@@ -49,8 +49,7 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         if (!editing) return
         editing = false
         home.root.animateWallpaperScrim(false)
-        home.grid.headroomRows = 0
-        animateTo(0f) {}
+        animateTo(0f) { if (!editing) home.root.isEditLayout = false }
         home.host.onEditModeChanged(false)
     }
 
@@ -102,7 +101,7 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         // getCellLayoutSpringLoadShrunkTop: the drop target bar with its margins, in root coordinates.
         val shrunkTop = root.statusBarTop + root.dropTargetBarShrunkHeight.toFloat()
         // getCellLayoutSpringLoadShrunkBottom: above the hotseat and its spring-loaded top margin.
-        val shrunkBottom = root.closedBarTop - res.getDimensionPixelSize(R.dimen.spring_loaded_hotseat_top_margin)
+        val shrunkBottom = root.keyboardHiddenBarTop - res.getDimensionPixelSize(R.dimen.spring_loaded_hotseat_top_margin)
         var scale = ((shrunkBottom - shrunkTop) / cellLayoutHeight).coerceAtMost(1f)
         // Reduce scale if next pages would not be visible after scaling the workspace.
         val workspaceWidth = workspace.width.toFloat()

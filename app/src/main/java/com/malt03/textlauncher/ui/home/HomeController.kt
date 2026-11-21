@@ -137,6 +137,7 @@ class HomeController(
     init {
         val padding = (8 * context.resources.displayMetrics.density).toInt()
         grid.setPadding(padding, padding, padding, padding)
+        root.onPageHeightChanged = { grid.pageHeight = it }
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
