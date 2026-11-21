@@ -74,7 +74,6 @@ class HomeController(
         overScrollMode = View.OVER_SCROLL_NEVER
         isVerticalScrollBarEnabled = false
         addView(grid, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ -> grid.viewportHeight = bottom - top }
     }
 
     /** Launcher3's Workspace stand-in: holds the home grid and shrinks while a folder is open. */

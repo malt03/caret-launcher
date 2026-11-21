@@ -44,14 +44,6 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
             requestLayout()
         }
 
-    /** Minimum height, so that the grid fills the visible area. */
-    var viewportHeight = 0
-        set(value) {
-            if (field != value) {
-                field = value
-                requestLayout()
-            }
-        }
 
     init {
         setWillNotDraw(false)
@@ -92,6 +84,13 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
+        // The scroll view (fillViewport) measures the grid again at its own height, EXACTLY, when
+        // the items need less; that height is the visible area the grid fills.
+        val viewportHeight = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) {
+            MeasureSpec.getSize(heightMeasureSpec)
+        } else {
+            0
+        }
         val viewportRows = ceil((viewportHeight - paddingTop - paddingBottom).toFloat() / cellHeight).toInt()
         val contentRows = usedRows() + headroomRows
         cellLayout.setGridSize(grid.columns, max(contentRows, max(viewportRows, 1)))
