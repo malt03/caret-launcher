@@ -2,10 +2,12 @@ package com.malt03.textlauncher.ui.home
 
 import android.graphics.Rect
 import android.os.UserHandle
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
+import androidx.core.graphics.ColorUtils
 import androidx.core.widget.NestedScrollView
 import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
@@ -22,6 +24,7 @@ import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
@@ -72,7 +75,23 @@ class HomeController(
     val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
         isFillViewport = true
         overScrollMode = View.OVER_SCROLL_NEVER
-        isVerticalScrollBarEnabled = false
+        // TextLauncher: Launcher3's home pages have a page indicator instead. The vertical home
+        // screen shows where it is with a scrollbar in the all apps scrollbar's colors and width
+        // (RecyclerViewFastScroller: the accent thumb on a textColorPrimary track at alpha 30,
+        // fastscroll_track_min_width), shown whenever it can scroll.
+        isVerticalScrollBarEnabled = true
+        isScrollbarFadingEnabled = false
+        scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+        val trackWidth = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.fastscroll_track_min_width)
+        scrollBarSize = trackWidth
+        verticalScrollbarThumbDrawable = GradientDrawable().apply {
+            cornerRadius = trackWidth / 2f
+            setColor(Themes.getColorAccent(context))
+        }
+        verticalScrollbarTrackDrawable = GradientDrawable().apply {
+            cornerRadius = trackWidth / 2f
+            setColor(ColorUtils.setAlphaComponent(Themes.getAttrColor(context, android.R.attr.textColorPrimary), SCROLLBAR_TRACK_ALPHA))
+        }
         addView(grid, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
     }
 
@@ -337,6 +356,9 @@ class HomeController(
     }
 
     private companion object {
+        /** RecyclerViewFastScroller.MAX_TRACK_ALPHA */
+        const val SCROLLBAR_TRACK_ALPHA = 30
+
         /** ItemInstallQueue.NEW_SHORTCUT_BOUNCE_DURATION */
         const val NEW_SHORTCUT_BOUNCE_DURATION = 450L
 
