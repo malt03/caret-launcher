@@ -238,9 +238,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
         // keyboard.
         if (!root.searchBar.editText.hasFocus()) return
-        // The keyboard takes the back gesture while it is shown, so closing it also closes the
-        // long-press menu, which Launcher3 closes on back.
-        home.closeTopFloatingView()
+        // The keyboard takes the back gesture while it is shown, so closing it also closes what
+        // Launcher3 closes on back: the long-press menu, or else the open folder.
+        if (!home.closeTopFloatingView()) home.closeFolder()
         clearQuery()
         focusSearch()
     }
