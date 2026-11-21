@@ -66,7 +66,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     fun addItemView(view: View, item: ItemInfo) {
         view.tag = item
         val lp = CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY)
-        // The grid grows with its items; make room before marking the cells.
+        // Items are bound before the first measure sizes the grid; make room before marking the cells.
         cellLayout.setGridSize(grid.columns, max(cellLayout.countY, item.cellY + item.spanY))
         addView(view, lp)
         cellLayout.markCellsAsOccupiedForView(view)
@@ -86,12 +86,6 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
 
     fun itemViews(): List<View> = (0 until childCount).map { getChildAt(it) }
 
-    /** Rows the items are in (the reorder preview stays inside the grid). */
-    private fun usedRows(): Int = itemViews().maxOfOrNull {
-        val lp = it.layoutParams as CellLayoutLayoutParams
-        lp.cellY + lp.cellVSpan
-    } ?: 0
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
@@ -99,10 +93,8 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         // option and fits the cells, which here would be too tall without labels), and the cells
         // share the page's height (DeviceProfile: cellHeight from the workspace height and rows).
         val available = pageHeight - paddingTop - paddingBottom
-        val pageRows = if (available > 0) max(available / minCellHeight, 1) else 1
-        cellHeight = if (available > 0) available / pageRows else minCellHeight
-        // TextLauncher: items placed below the page by earlier versions stay reachable.
-        val rows = max(pageRows, usedRows())
+        val rows = if (available > 0) max(available / minCellHeight, 1) else 1
+        cellHeight = if (available > 0) available / rows else minCellHeight
         cellLayout.setGridSize(grid.columns, rows)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
         for (child in itemViews()) measureChild(child)
