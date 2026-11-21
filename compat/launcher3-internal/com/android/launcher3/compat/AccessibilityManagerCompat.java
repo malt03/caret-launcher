@@ -28,7 +28,7 @@ import android.view.accessibility.AccessibilityManager;
 
 /**
  * Stand-in for Launcher3's AccessibilityManagerCompat (android-17.0.0_r1). The methods
- * AbstractFloatingView calls are copied; the test protocol parts are left out.
+ * AbstractFloatingView calls are copied; the test protocol messages are not sent.
  */
 public class AccessibilityManagerCompat {
 
@@ -54,5 +54,12 @@ public class AccessibilityManagerCompat {
 
     private static AccessibilityManager getManager(Context context) {
         return (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+    }
+
+    /**
+     * TextLauncher: does nothing. Launcher3 sends this only under its UI Automation tests
+     * (Utilities.isRunningInTestHarness), which TextLauncher does not run.
+     */
+    public static void sendTestProtocolEventToTest(Context context, String testProtocolEvent) {
     }
 }

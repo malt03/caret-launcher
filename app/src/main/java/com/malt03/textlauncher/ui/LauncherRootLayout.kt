@@ -12,6 +12,7 @@ import android.view.WindowInsets
 import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
+import com.malt03.textlauncher.ui.allapps.AllAppsView
 import com.android.launcher3.Hotseat
 import com.android.launcher3.dragndrop.DragLayer
 import com.android.launcher3.views.BaseDragLayer
@@ -65,6 +66,35 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      * overlay's. When it returns true the event is consumed and the children get ACTION_CANCEL
      * once (BaseDragLayer's touch controllers: drag and drop).
      */
+    /**
+     * The all apps list (docs/spec.md 6.4), set by the activity. Open, the search field sits at
+     * the top of the screen and the list fills the space below it; closed, the list is hidden.
+     * TextLauncher: the states only; the transition between them (AllAppsTransitionController) is
+     * not here yet.
+     */
+    var allAppsView: AllAppsView? = null
+        set(value) {
+            field?.let(::removeView)
+            field = value
+            value?.let {
+                it.visibility = if (isAllAppsOpen) VISIBLE else GONE
+                it.setBottomInset(navBottom)
+                addView(it, indexOfChild(barContainer))
+            }
+        }
+
+    var isAllAppsOpen = false
+        set(value) {
+            if (field == value) return
+            field = value
+            allAppsView?.visibility = if (value) VISIBLE else GONE
+            contentArea.visibility = if (value) INVISIBLE else VISIBLE
+            // The field does not follow the keyboard while it is at the top.
+            barContainer.setWindowInsetsAnimationCallback(if (value) null else keyboardCallback)
+            barContainer.translationY = barTranslation()
+            requestLayout()
+        }
+
     var touchInterceptor: ((MotionEvent) -> Boolean)? = null
     private var childrenCancelled = false
 
@@ -110,7 +140,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
                 if (keyboardCallback.keyboardTranslationState ==
                     KeyboardInsetAnimationCallback.KeyboardTranslationState.SYSTEM
                 ) {
-                    barContainer.translationY = targetBarTranslation
+                    barContainer.translationY = barTranslation()
                 }
                 layoutContentArea()
                 return true
@@ -142,6 +172,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
         (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop + dropTargetBarTopMargin
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+        allAppsView?.setBottomInset(navBottom)
         val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
         // Launcher3's DragLayer gets the system bar insets; floating views such as the long-press
         // menu keep inside them. TextLauncher: the keyboard is shown most of the time
@@ -151,7 +182,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, if (imeBottom > 0) 0 else navBottom))
         // KeyboardInsetAnimationCallback animates from the old to this value.
         targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()
-        barContainer.translationY = targetBarTranslation
+        barContainer.translationY = barTranslation()
 
         val visible = insets.isVisible(WindowInsets.Type.ime())
         val wasVisible = isKeyboardVisible
@@ -174,6 +205,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(barHeight, MeasureSpec.EXACTLY),
         )
         measureContentArea(width, contentBottom() - statusBarTop)
+        allAppsView?.measure(
+            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec((height - statusBarTop - barContainer.measuredHeight).coerceAtLeast(0), MeasureSpec.EXACTLY),
+        )
         overlay.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(height - overlayBottomCut, MeasureSpec.EXACTLY),
@@ -191,8 +226,12 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         val width = right - left
         val height = bottom - top
-        val barTop = height - navBottom - barContainer.measuredHeight
+        val barTop = if (isAllAppsOpen) statusBarTop else height - navBottom - barContainer.measuredHeight
         barContainer.layout(0, barTop, width, barTop + barContainer.measuredHeight)
+        allAppsView?.let {
+            val listTop = statusBarTop + barContainer.measuredHeight
+            it.layout(0, listTop, width, listTop + it.measuredHeight)
+        }
         searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
         layoutContentArea(force = true)
         overlay.layout(0, 0, width, height - overlayBottomCut)
@@ -219,6 +258,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         const val EDIT_SCRIM_ALPHA = 0.15f
         const val EDIT_SCRIM_ALPHA_DARK = 0.24f
     }
+
+    /** The field follows the keyboard (docs/spec.md 1.3), except at the top with all apps open. */
+    private fun barTranslation(): Float = if (isAllAppsOpen) 0f else targetBarTranslation
 
     /** The visual top of the search field container, including keyboard translation. */
     private fun contentBottom(): Int = (barContainer.top + barContainer.translationY).toInt()

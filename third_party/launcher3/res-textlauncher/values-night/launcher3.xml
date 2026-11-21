@@ -2,6 +2,8 @@
 <!-- TextLauncher: frameworks/libs/systemui dynamiccolors res/values-night/colors.xml (android-17.0.0_r1) -->
 <resources>
     <color name="materialColorOnSurface">@android:color/system_on_surface_dark</color>
+    <color name="materialColorSurface">@android:color/system_surface_dark</color>
+    <color name="materialColorSurfaceBright">@android:color/system_surface_bright_dark</color>
     <color name="materialColorSurfaceContainer">@android:color/system_surface_container_dark</color>
     <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_dark</color>
     <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_dark</color>

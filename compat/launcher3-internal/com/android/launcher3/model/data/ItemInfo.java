@@ -43,6 +43,12 @@ public class ItemInfo {
     public int rank = 0;
     public int itemType = 0;
     public CharSequence title;
+
+    /**
+     * Optionally set: The appTitle might e.g. be different if {@code title} is used to
+     * display progress (e.g. Downloading..).
+     */
+    public CharSequence appTitle;
     public CharSequence contentDescription;
     public UserHandle user = Process.myUserHandle();
 

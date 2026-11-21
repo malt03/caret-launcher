@@ -23,6 +23,7 @@ package com.android.launcher3;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_NO_BADGE;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_THEMED;
 import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
+import static com.android.launcher3.icons.cache.CacheLookupFlag.DEFAULT_LOOKUP_FLAG;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -38,14 +39,19 @@ import android.view.MotionEvent;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.icons.FastBitmapDrawable;
+import com.android.launcher3.icons.IconCache.ItemInfoUpdateReceiver;
+import com.android.launcher3.icons.cache.CacheLookupFlag;
+import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.IconViewController;
+import com.android.launcher3.util.CancellableTask;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.SafeCloseable;
@@ -58,9 +64,10 @@ import com.android.launcher3.util.SafeCloseable;
  * itself; the text is only used where Launcher3 inflates a BubbleTextView from a layout, as in the
  * long-press menu's rows (layout/system_shortcut_content.xml). No notification dots.
  */
-public class BubbleTextView extends TextView implements DraggableView, Reorderable,
-        IconViewController {
+public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, DraggableView,
+        Reorderable, IconViewController {
     public static final int DISPLAY_WORKSPACE = 0;
+    public static final int DISPLAY_ALL_APPS = 1;
     public static final int DISPLAY_FOLDER = 2;
     public static final int DISPLAY_SEARCH_RESULT_APP_ROW = 9;
 
@@ -81,6 +88,9 @@ public class BubbleTextView extends TextView implements DraggableView, Reorderab
     private FastBitmapDrawable mIcon;
     private boolean mIsIconVisible = true;
     private boolean mCenterVertically;
+
+    private boolean mHighResUpdateInProgress = false;
+    private CancellableTask mIconLoadRequest;
 
     private float mScaleForReorderBounce = 1f;
 
@@ -126,8 +136,105 @@ public class BubbleTextView extends TextView implements DraggableView, Reorderab
      * device profile.
      */
     public BubbleTextView(Context context, int iconSize) {
-        this(context, null, 0);
+        this(context, iconSize, DISPLAY_WORKSPACE);
+    }
+
+    /** TextLauncher: also the display (iconDisplay in the layouts of Launcher3). */
+    public BubbleTextView(Context context, int iconSize, int display) {
+        super(context, null, 0);
+        mLayoutHorizontal = false;
+        mDisplay = display;
         mIconSize = iconSize;
+    }
+
+    /**
+     * Resets the view so it can be recycled.
+     *
+     * <p>TextLauncher: no dots, minimal popups or line indicators.
+     */
+    public void reset() {
+        setBackground(null);
+
+        setTag(null);
+        if (mIconLoadRequest != null) {
+            mIconLoadRequest.cancel();
+            mIconLoadRequest = null;
+        }
+        // Reset any shifty arrangements in case animation is disrupted.
+        setPivotY(0);
+        setAlpha(1);
+        setScaleY(1);
+        setTranslationY(0);
+        setMaxLines(1);
+        setVisibility(VISIBLE);
+    }
+
+    @UiThread
+    public void applyFromApplicationInfo(AppInfo info) {
+        applyIconAndLabel(info);
+        setItemInfo(info);
+
+        // Verify high res immediately
+        verifyHighRes();
+
+        // TextLauncher: no notification dots or download states.
+    }
+
+    /**
+     * Apply label and tag using a generic {@link ItemInfoWithIcon}
+     */
+    @UiThread
+    public void applyFromItemInfoWithIcon(ItemInfoWithIcon info) {
+        applyIconAndLabel(info);
+        // We don't need to check the info since it's not a WorkspaceItemInfo
+        setItemInfo(info);
+
+        // Verify high res immediately
+        verifyHighRes();
+
+        // TextLauncher: no download states.
+    }
+
+    /**
+     * Applies the item info if it is same as what the view is pointing to currently.
+     *
+     * <p>TextLauncher: relayout is not held off while the icon is applied.
+     */
+    @Override
+    public void reapplyItemInfo(ItemInfoWithIcon info) {
+        if (getTag() == info) {
+            mIconLoadRequest = null;
+            mHighResUpdateInProgress = true;
+
+            // Optimization: Starting in N, pre-uploads the bitmap to RenderThread.
+            info.bitmap.icon.prepareToDraw();
+
+            if (info instanceof AppInfo) {
+                applyFromApplicationInfo((AppInfo) info);
+            } else if (info instanceof WorkspaceItemInfo) {
+                applyFromWorkspaceItem((WorkspaceItemInfo) info);
+            } else if (info != null) {
+                applyFromItemInfoWithIcon(info);
+            }
+
+            mHighResUpdateInProgress = false;
+        }
+    }
+
+    /**
+     * Verifies that the current icon is high-res otherwise posts a request to load the icon.
+     */
+    public void verifyHighRes() {
+        CacheLookupFlag expectedFlag = DEFAULT_LOOKUP_FLAG.withThemeIcon(shouldUseTheme());
+        if (getTag() instanceof ItemInfoWithIcon info && !mHighResUpdateInProgress
+                && info.getMatchingLookupFlag().isVisuallyLessThan(expectedFlag)) {
+            if (mIconLoadRequest != null) {
+                mIconLoadRequest.cancel();
+            }
+            mIconLoadRequest = LauncherAppState.getInstance(getContext()).getIconCache()
+                    .updateIconInBackground(getContext().getMainExecutor(), BubbleTextView.this,
+                            info, expectedFlag);
+        }
     }
 
     public int getIconSize() {

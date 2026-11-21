@@ -32,6 +32,9 @@ class SearchBarView(context: Context) : FrameLayout(context) {
     private val focusedStroke = MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary)
     private val unfocusedStroke = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutlineVariant)
 
+    /** Called when the field gains or loses keyboard focus. */
+    var onFocusChanged: ((Boolean) -> Unit)? = null
+
     init {
         setBackground(background)
         editText.apply {
@@ -52,7 +55,10 @@ class SearchBarView(context: Context) : FrameLayout(context) {
                 if (isEnter) onEnter?.invoke()
                 isEnter
             }
-            setOnFocusChangeListener { _, _ -> updateStroke() }
+            setOnFocusChangeListener { _, hasFocus ->
+                updateStroke()
+                onFocusChanged?.invoke(hasFocus)
+            }
         }
         addView(editText, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         updateStroke()

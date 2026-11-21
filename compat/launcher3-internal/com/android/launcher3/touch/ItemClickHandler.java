@@ -44,6 +44,7 @@ import com.android.launcher3.R;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.logging.StatsLogManager;
+import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
@@ -83,7 +84,10 @@ public class ItemClickHandler {
             onClickAppShortcut(v, (WorkspaceItemInfo) tag, launcher);
         } else if (tag instanceof FolderInfo) {
             onClickFolderIcon(v);
-        // TextLauncher: no app pairs, all-apps AppInfo items or widgets.
+        // TextLauncher: no app pairs.
+        } else if (tag instanceof AppInfo) {
+            startAppShortcutOrInfoActivity(v, (AppInfo) tag, launcher);
+        // TextLauncher: no widgets.
         } else if (tag instanceof ItemClickProxy) {
             ((ItemClickProxy) tag).onItemClicked(v);
         }

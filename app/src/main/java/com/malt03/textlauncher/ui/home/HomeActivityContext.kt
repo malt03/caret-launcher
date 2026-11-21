@@ -3,6 +3,7 @@ package com.malt03.textlauncher.ui.home
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.view.View
+import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DeviceProfile
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherModel
@@ -15,6 +16,7 @@ import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.RunnableList
+import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
 import java.util.function.Consumer
@@ -42,12 +44,19 @@ internal class HomeActivityContext(private val home: HomeController) :
         // No labels (docs/spec.md 5.2): the icons are centered in their cells.
         DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
         DeviceProfile.DeviceProperties(context.resources.displayMetrics.heightPixels),
+        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx),
     )
     private val activityComponent = ActivityComponent().apply {
         setPopupDataProvider(PopupDataProvider(context))
     }
     override fun getDeviceProfile(): DeviceProfile = deviceProfile
     override fun getActivityComponent(): ActivityComponent = activityComponent
+
+    /** ItemLongClickListener.INSTANCE_ALL_APPS: the menu, and a drag once the finger moves. */
+    override fun getAllAppsItemLongClickListener(): View.OnLongClickListener = View.OnLongClickListener { v ->
+        home.itemLongClickListener.onAllAppsItemLongPress(v as BubbleTextView)
+        true
+    }
 
     /** ItemClickHandler, for the items in folders and the long-press menu's app shortcuts. */
     override fun getItemOnClickListener(): View.OnClickListener = ItemClickHandler.INSTANCE
@@ -59,6 +68,7 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun startActivitySafely(v: View, intent: Intent, item: ItemInfo?): RunnableList? {
         when {
             item is AppItemInfo -> item.entry?.let { home.host.launch(it, v) }
+            item is AllAppsAppInfo -> home.host.launch(item.entry, v)
             item != null && item.isDeepShortcut -> {
                 val key = ShortcutKey.fromItemInfo(item)
                 home.host.startShortcut(key.packageName, key.id, v, item.user)

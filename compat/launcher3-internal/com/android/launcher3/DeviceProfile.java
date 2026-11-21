@@ -21,19 +21,44 @@
 package com.android.launcher3;
 
 /**
- * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace and device
- * values that the copied code reads. TextLauncher sets them from its own grid.
+ * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace, all apps
+ * and device values that the copied code reads. TextLauncher sets them from its own grid.
  */
 public class DeviceProfile {
     private final FolderProfile mFolderProfile;
     private final WorkspaceProfile mWorkspaceProfile;
     private final DeviceProperties mDeviceProperties;
+    private final AllAppsProfile mAllAppsProfile;
 
     public DeviceProfile(FolderProfile folderProfile, WorkspaceProfile workspaceProfile,
-            DeviceProperties deviceProperties) {
+            DeviceProperties deviceProperties, AllAppsProfile allAppsProfile) {
         mFolderProfile = folderProfile;
         mWorkspaceProfile = workspaceProfile;
         mDeviceProperties = deviceProperties;
+        mAllAppsProfile = allAppsProfile;
+    }
+
+    public AllAppsProfile getAllAppsProfile() {
+        return mAllAppsProfile;
+    }
+
+    /** DeviceProfile.AllAppsProfile: the all apps grid's columns and cell height. */
+    public static class AllAppsProfile {
+        private final int mNumShownAllAppsColumns;
+        private final int mCellHeightPx;
+
+        public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx) {
+            mNumShownAllAppsColumns = numShownAllAppsColumns;
+            mCellHeightPx = cellHeightPx;
+        }
+
+        public int getNumShownAllAppsColumns() {
+            return mNumShownAllAppsColumns;
+        }
+
+        public int getCellHeightPx() {
+            return mCellHeightPx;
+        }
     }
 
     public DeviceProperties getDeviceProperties() {

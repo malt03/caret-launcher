@@ -45,9 +45,6 @@ class ResultsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val icon = ResultIconView(parent.context, grid).apply {
             layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
-            // BaseIconUnBounded: focusable, without the default focus highlight.
-            isFocusable = true
-            defaultFocusHighlightEnabled = false
             onFocusChangeListener = iconFocusListener
         }
         return Holder(icon)
@@ -80,8 +77,12 @@ class ResultsAdapter(
 
 /** The all-apps BubbleTextView (all_apps_icon.xml): the icon, and the app name below it. */
 @SuppressLint("ViewConstructor")
-class ResultIconView(context: Context, grid: GridSpec) : BubbleTextView(context, grid.iconSizePx) {
+class ResultIconView(context: Context, grid: GridSpec) :
+    BubbleTextView(context, grid.iconSizePx, DISPLAY_ALL_APPS) {
     init {
+        // BaseIconUnBounded: focusable, without the default focus highlight.
+        isFocusable = true
+        defaultFocusHighlightEnabled = false
         val density = resources.displayMetrics.density
         setCenterVertically(true)
         compoundDrawablePadding = (6 * density).toInt()

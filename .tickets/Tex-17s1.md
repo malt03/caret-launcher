@@ -49,3 +49,9 @@ tags: [drawer]
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-21**
+
+Tex-hibk で、全アプリ一覧は開いた状態と閉じた状態の切り替えだけ入った（LauncherRootLayout.isAllAppsOpen、LauncherActivity.openAllApps / closeAllApps）。このチケットで:
+- 開閉のアニメーションと進み具合（AllAppsTransitionController）、一覧の背景（上流のパネルとスクリム）を足す
+- デバッグ用の EXTRA_SHOW_ALL_APPS（ホームの intent で一覧を開く）を消す

@@ -10,6 +10,7 @@ import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DraggableView
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.popup.PopupContainerWithArrow
@@ -19,6 +20,7 @@ import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.shortcuts.ShortcutDragPreviewProvider
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.R
+import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
 
@@ -36,11 +38,17 @@ internal class ItemLongClickListener(private val home: HomeController) {
     /** A long press on an app in the search results: its menu, and a drag once it moves. */
     fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) {
         // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
-        val info = AppItemInfo(entry, (iconView.tag as? AppItemInfo)?.bitmap)
+        val info = AppItemInfo(entry, (iconView.tag as? ItemInfoWithIcon)?.bitmap)
         home.homeWorkspace.beginDragShared(
             iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
             startLongPressAction(iconView, info),
         )
+    }
+
+    /** ItemLongClickListener.INSTANCE_ALL_APPS: a long press on an app in the all apps list. */
+    fun onAllAppsItemLongPress(iconView: BubbleTextView) {
+        val app = iconView.tag as? AllAppsAppInfo ?: return
+        onSearchResultLongPress(app.entry, iconView)
     }
 
     fun onHomeItemLongPress(view: AppIconView) {
