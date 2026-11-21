@@ -1,7 +1,7 @@
 ---
 id: Tex-hibk
 status: open
-deps: [Tex-l0eq, Tex-68f3]
+deps: [Tex-l0eq, Tex-68f3, Tex-6ct1, Tex-9vav]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task

@@ -1,7 +1,7 @@
 ---
 id: Tex-t2ea
 status: open
-deps: [Tex-9ipm, Tex-wgyx, Tex-h3ld]
+deps: [Tex-9ipm, Tex-wgyx, Tex-h3ld, Tex-f33r]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
