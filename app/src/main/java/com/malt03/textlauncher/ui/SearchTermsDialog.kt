@@ -1,15 +1,19 @@
 package com.malt03.textlauncher.ui
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.malt03.textlauncher.R
@@ -50,7 +54,11 @@ object SearchTermsDialog {
                     setTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface))
                 }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 row.addView(ImageButton(context).apply {
-                    setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
+                    // Launcher3's remove icon (the drop target bar's), in the dialog's text color.
+                    setImageResource(com.android.launcher3.R.drawable.ic_remove_no_shadow)
+                    imageTintList = ColorStateList.valueOf(
+                        MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant),
+                    )
                     background = null
                     contentDescription = context.getString(R.string.search_terms_remove)
                     setOnClickListener {
@@ -93,7 +101,11 @@ object SearchTermsDialog {
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { addFromInput() }
             input.requestFocus()
+            // The field has the focus, so the keyboard comes up with it: the dialog is a window of
+            // its own, which the launcher's keyboard does not carry over to.
+            dialog.window?.let { WindowCompat.getInsetsController(it, input).show(WindowInsetsCompat.Type.ime()) }
         }
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         dialog.show()
     }
 }
