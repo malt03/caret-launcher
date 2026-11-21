@@ -39,12 +39,12 @@ import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.dragndrop.DragView;
 import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.views.ActivityContext;
-import com.android.launcher3.views.BaseDragLayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,9 +156,9 @@ public abstract class FolderIcon extends View implements DraggableView {
         // Typically, the animateView corresponds to the DragView; however, if this is being done
         // after a configuration activity (ie. for a Shortcut being dragged from AllApps) we
         // will not have a view to animate
-        // TextLauncher: the activity context gives the drag layer.
+        // TextLauncher: the activity context is not a Launcher; its drag layer is the DragLayer.
         if (animateView != null) {
-            BaseDragLayer dragLayer = mActivity.getDragLayer();
+            DragLayer dragLayer = (DragLayer) mActivity.getDragLayer();
             Rect to = finalRect;
             if (to == null) {
                 to = new Rect();
@@ -224,7 +224,7 @@ public abstract class FolderIcon extends View implements DraggableView {
                         mPreviewItemManager.hidePreviewItem(finalIndex, false);
                         mFolder.showItem(item);
                     },
-                    BaseDragLayer.ANIMATION_END_DISAPPEAR, null);
+                    DragLayer.ANIMATION_END_DISAPPEAR, null);
 
             mFolder.hideItem(item);
 

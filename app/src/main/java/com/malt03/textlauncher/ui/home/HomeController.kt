@@ -150,12 +150,12 @@ class HomeController(
     val workspace = Workspace<Any>(context).apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
-    private val launcher = Launcher(workspace, root.hotseat, root.scrim)
+    private val launcher = Launcher(root.overlay, workspace, root.hotseat, root.scrim)
 
     private val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
     private val workspaceHost = WorkspaceHost()
-    private val homeWorkspace = HomeWorkspace(activityContext, grid, scrollView, dragController, workspaceHost)
-    private val dropTargetBar = DropTargetBar(context, { activityContext }, { dragController }, ::canRemove)
+    private val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
+    private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController }, ::canRemove)
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var loaded = false

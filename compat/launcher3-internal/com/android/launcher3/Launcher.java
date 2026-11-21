@@ -21,6 +21,7 @@
 package com.android.launcher3;
 
 import com.android.launcher3.util.MultiPropertyFactory;
+import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.views.ScrimView;
 
 /**
@@ -28,14 +29,21 @@ import com.android.launcher3.views.ScrimView;
  * changes (FolderSpringAnimatorSet.addWorkspaceAnimators).
  */
 public class Launcher {
+    private final DragLayer mDragLayer;
     private final Workspace<?> mWorkspace;
     private final Hotseat mHotseat;
     private final ScrimView mScrimView;
 
-    public Launcher(Workspace<?> workspace, Hotseat hotseat, ScrimView scrimView) {
+    public Launcher(DragLayer dragLayer, Workspace<?> workspace, Hotseat hotseat,
+            ScrimView scrimView) {
+        mDragLayer = dragLayer;
         mWorkspace = workspace;
         mHotseat = hotseat;
         mScrimView = scrimView;
+    }
+
+    public DragLayer getDragLayer() {
+        return mDragLayer;
     }
 
     public Workspace<?> getWorkspace() {

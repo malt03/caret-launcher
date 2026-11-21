@@ -1,6 +1,6 @@
 ---
 id: Tex-pb0n
-status: open
+status: closed
 deps: [Tex-cklf]
 links: []
 created: 2026-11-21T09:18:12Z
@@ -20,3 +20,9 @@ BaseDragLayer.java の 228〜406 行目（animateViewIntoPosition、animateView�
 - [ ] DragLayerAccess.java がない
 - [ ] ドロップ・取り消し・フォルダへのドロップのアニメーションが今と同じ
 
+
+## Notes
+
+**2026-11-21T09:37:08Z**
+
+BaseDragLayer にあった DragLayer.java の処理（animateViewIntoPosition、animateView、playDropAnimation、clearAnimatedView、ANIMATION_END_*、setDragController）を dragndrop/DragLayer の互換クラスへ移し、DragLayerAccess を消した。アプリの重ねた層は DragLayer になり、Launcher の互換クラスが getDragLayer() で返す（HomeWorkspace は mLauncher.getDragLayer()、DropTargetBar はドロップターゲットのハンドラーとして同じものを使う）。エミュレータでセルへのドロップ、フォルダへのドロップ、検索結果のキャンセルへのドロップのアニメーションを確認

@@ -13,6 +13,7 @@ import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
+import com.android.launcher3.Launcher
 import com.android.launcher3.OnAlarmListener
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DragController
@@ -40,6 +41,7 @@ import com.google.android.msdl.data.model.MSDLToken
  */
 class HomeWorkspace(
     private val activity: ActivityContext,
+    private val mLauncher: Launcher,
     private val grid: HomeGridView,
     private val scrollView: NestedScrollView,
     private val dragController: DragController,
@@ -382,7 +384,7 @@ class HomeWorkspace(
             }
 
             val folderLocation = Rect()
-            val scale = activity.dragLayer.getDescendantRectRelativeToSelf(v, folderLocation)
+            val scale = mLauncher.dragLayer.getDescendantRectRelativeToSelf(v, folderLocation)
             host.removeWorkspaceItem(v)
             val fi = host.addFolder(targetCell[0], targetCell[1])
             destInfo.cellX = -1
@@ -502,7 +504,7 @@ class HomeWorkspace(
 
             val parent = layout
             if (d.dragView.hasDrawn()) {
-                activity.dragLayer.animateViewIntoPosition(d.dragView, cell, -1, grid)
+                mLauncher.dragLayer.animateViewIntoPosition(d.dragView, cell, -1, grid)
             } else {
                 d.deferDragViewCleanupPostAnimation = false
                 cell.visibility = View.VISIBLE
@@ -554,7 +556,7 @@ class HomeWorkspace(
         grid.measureChild(view)
 
         if (d.dragView != null) {
-            activity.dragLayer.animateViewIntoPosition(d.dragView, view, -1, grid)
+            mLauncher.dragLayer.animateViewIntoPosition(d.dragView, view, -1, grid)
         }
     }
 

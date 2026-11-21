@@ -13,6 +13,7 @@ import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
 import com.android.launcher3.Hotseat
+import com.android.launcher3.dragndrop.DragLayer
 import com.android.launcher3.views.BaseDragLayer
 import com.android.launcher3.views.ScrimView
 
@@ -34,7 +35,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     var onKeyboardHidden: (() -> Unit)? = null
 
     /** Full-size layer on top of everything: drag views, open folders (Launcher3's drag layer). */
-    val overlay = BaseDragLayer<Any>(context)
+    val overlay = DragLayer(context)
 
     /** Dims the home screen while a folder is open (Launcher3's ScrimView). */
     val scrim = ScrimView(context)

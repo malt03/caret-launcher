@@ -21,12 +21,13 @@ import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
+import com.android.launcher3.Launcher
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.util.MSDLPlayerWrapper
-import com.android.launcher3.views.BaseDragLayer
+import com.android.launcher3.dragndrop.DragLayer
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.ui.home.AppItemInfo
@@ -43,6 +44,8 @@ import com.android.launcher3.R as L3R
 class DropTargetBar(
     context: Context,
     private val activity: () -> ActivityContext,
+    /** DropTargetHandler: its drag layer. */
+    private val launcher: Launcher,
     private val dragController: () -> DragController,
     /** Which items the Remove target removes (DeleteDropTarget.canRemove). */
     private val canRemove: (DragObject) -> Boolean,
@@ -340,7 +343,7 @@ class DropTargetBar(
 
         /** On drop animate the dropView to the icon. */
         override fun onDrop(d: DragObject, options: DragOptions) {
-            val dragLayer = activity().dragLayer
+            val dragLayer = launcher.dragLayer
             val dragView = d.dragView
             val to = getIconRect(d)
             val scale = to.width().toFloat() / dragView.measuredWidth
@@ -357,7 +360,7 @@ class DropTargetBar(
                 d.dragView, to, scale, 0.1f, 0.1f,
                 DRAG_VIEW_DROP_DURATION,
                 Interpolators.DECELERATE_2, onAnimationEndRunnable,
-                BaseDragLayer.ANIMATION_END_DISAPPEAR, null,
+                DragLayer.ANIMATION_END_DISAPPEAR, null,
             )
         }
 
