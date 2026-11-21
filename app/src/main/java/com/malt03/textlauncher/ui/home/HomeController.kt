@@ -82,7 +82,8 @@ class HomeController(
     private inner class HomeActivityContext : ActivityContext, DeepShortcutView.WorkspaceHost {
         private val deviceProfile = DeviceProfile(
             DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx),
-            DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx),
+            // No labels (docs/spec.md 5.2): the icons are centered in their cells.
+            DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
             DeviceProfile.DeviceProperties(context.resources.displayMetrics.heightPixels),
         )
         private val activityComponent = ActivityComponent().apply {
@@ -563,7 +564,7 @@ class HomeController(
         }
 
     private fun createFolderView(folder: HomeItem.Folder): FolderIconView =
-        FolderIconView(context, gridSpec.iconSizePx, activityContext, folderCallbacks).apply {
+        FolderIconView(context, activityContext, folderCallbacks).apply {
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             val items = folder.itemKeys.mapNotNull(::itemInfoFor)
             setContents(items)

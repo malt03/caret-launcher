@@ -61,13 +61,19 @@ public class DeviceProfile {
     /** Stand-in for DeviceProfile's workspace values. */
     public static class WorkspaceProfile {
         private final int mIconSizePx;
+        private final boolean mIconCenterVertically;
 
-        public WorkspaceProfile(int iconSizePx) {
+        public WorkspaceProfile(int iconSizePx, boolean iconCenterVertically) {
             mIconSizePx = iconSizePx;
+            mIconCenterVertically = iconCenterVertically;
         }
 
         public int getIconSizePx() {
             return mIconSizePx;
+        }
+
+        public boolean getIconCenterVertically() {
+            return mIconCenterVertically;
         }
     }
 

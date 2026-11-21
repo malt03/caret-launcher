@@ -29,6 +29,7 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -46,6 +47,7 @@ import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.IconViewController;
 import com.android.launcher3.util.MultiPropertyFactory;
+import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.SafeCloseable;
 
 /**
@@ -56,7 +58,8 @@ import com.android.launcher3.util.SafeCloseable;
  * itself; the text is only used where Launcher3 inflates a BubbleTextView from a layout, as in the
  * long-press menu's rows (layout/system_shortcut_content.xml). No notification dots.
  */
-public class BubbleTextView extends TextView implements DraggableView, IconViewController {
+public class BubbleTextView extends TextView implements DraggableView, Reorderable,
+        IconViewController {
     public static final int DISPLAY_WORKSPACE = 0;
     public static final int DISPLAY_FOLDER = 2;
     public static final int DISPLAY_SEARCH_RESULT_APP_ROW = 9;
@@ -73,10 +76,15 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
     private boolean mHideBadge = false;
 
     private final boolean mLayoutHorizontal;
-    private final int mIconSize;
+    private int mIconSize;
     private final int mDisplay;
     private FastBitmapDrawable mIcon;
     private boolean mIsIconVisible = true;
+    private boolean mCenterVertically;
+
+    private float mScaleForReorderBounce = 1f;
+
+    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
 
     private final AnimatedFloat mTextAlpha = new AnimatedFloat(() -> {
         if (mTextColorStateList != null) {
@@ -113,7 +121,15 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
         a.recycle();
     }
 
-    /** TextLauncher: the icon size; the app's icon view overrides it. */
+    /**
+     * TextLauncher: views created in code give their icon size, which Launcher3 takes from the
+     * device profile.
+     */
+    public BubbleTextView(Context context, int iconSize) {
+        this(context, null, 0);
+        mIconSize = iconSize;
+    }
+
     public int getIconSize() {
         return mIconSize;
     }
@@ -217,6 +233,38 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
                 || event.getX() > getWidth() - getPaddingRight();
     }
 
+    /**
+     * Sets whether to vertically center the content.
+     */
+    public void setCenterVertically(boolean centerVertically) {
+        mCenterVertically = centerVertically;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        if (mCenterVertically) {
+            Paint.FontMetrics fm = getPaint().getFontMetrics();
+            int cellHeightPx = mIconSize + getCompoundDrawablePadding() +
+                    (int) Math.ceil(fm.bottom - fm.top) * getCellSpecMaxTextLineCount();
+            setPadding(getPaddingLeft(), (height - cellHeightPx) / 2, getPaddingRight(),
+                    getPaddingBottom());
+        }
+        // TextLauncher: no app contrast tiles and no two-line labels.
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    /**
+     * @return The number of lines the that the cell spec associated with the BubbleTextView
+     * declared it can support.
+     *
+     * TextLauncher: 1 as with enableScalabilityForDesktopExperience disabled; protected so that a
+     * view without a label can say 0.
+     */
+    protected int getCellSpecMaxTextLineCount() {
+        return 1;
+    }
+
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -311,6 +359,23 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
         }
 
         return icon.getBounds().height();
+    }
+
+    @Override
+    public MultiTranslateDelegate getTranslateDelegate() {
+        return mTranslateDelegate;
+    }
+
+    @Override
+    public void setReorderBounceScale(float scale) {
+        mScaleForReorderBounce = scale;
+        super.setScaleX(scale);
+        super.setScaleY(scale);
+    }
+
+    @Override
+    public float getReorderBounceScale() {
+        return mScaleForReorderBounce;
     }
 
     @Override

@@ -1,6 +1,6 @@
 ---
 id: Tex-htxz
-status: open
+status: closed
 deps: [Tex-cklf]
 links: []
 created: 2026-11-21T09:18:13Z
@@ -23,3 +23,9 @@ BubbleTextView 互換クラスは Reorderable を実装していないので、�
 - [ ] HomeItemViews.kt に上流メソッドの書き直しが残っていない
 - [ ] 並び替えの揺れ・押しのけ、長押し中のアイコン非表示、押したときの縮みが今と同じ
 
+
+## Notes
+
+**2026-11-21T09:43:33Z**
+
+HomeItemViews.kt の上流メソッドの書き直しをなくした。BubbleTextView と FolderIcon の互換クラスに Reorderable（getTranslateDelegate / setReorderBounceScale）と縦の中央寄せの onMeasure を上流から移し、AppIconView は BubbleTextView の setIcon / setIconVisible / 描画をそのまま使う（独自の iconDrawable の描画と状態の受け渡しはなくした）。ラベルなしはアプリ側で getCellSpecMaxTextLineCount = 0 と WorkspaceProfile の iconCenterVertically = true として渡す。HomeItemView インターフェースは不要になったので消した。エミュレータでホーム・フォルダ・検索結果の表示、長押しで元のアイコンが消えること、押しのけの並び替えを確認

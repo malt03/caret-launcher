@@ -37,6 +37,7 @@ import com.android.app.animation.Interpolators;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
+import com.android.launcher3.Reorderable;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.dragndrop.DragLayer;
@@ -44,6 +45,7 @@ import com.android.launcher3.dragndrop.DragView;
 import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.views.ActivityContext;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ import java.util.function.Predicate;
  * {@link Folder} view is bound to the icon: the open folder is built each time it opens. The
  * calls FolderIcon makes on its Folder go to {@link FolderContent}.
  */
-public abstract class FolderIcon extends View implements DraggableView {
+public abstract class FolderIcon extends View implements DraggableView, Reorderable {
     protected ActivityContext mActivity;
     protected FolderInfo mInfo = new FolderInfo();
 
@@ -78,6 +80,10 @@ public abstract class FolderIcon extends View implements DraggableView {
 
     boolean mAnimating = false;
 
+    private float mScaleForReorderBounce = 1f;
+
+    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
+
     private final FolderContent mFolder = new FolderContent();
 
     // TextLauncher: FolderIcon(Context) and inflateIcon in one.
@@ -93,6 +99,37 @@ public abstract class FolderIcon extends View implements DraggableView {
 
     public FolderInfo getFolderInfo() {
         return mInfo;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        boolean shouldCenterIcon = mActivity.getDeviceProfile().getWorkspaceProfile()
+                .getIconCenterVertically();
+        if (shouldCenterIcon) {
+            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
+            // TextLauncher: no folder name, so only the icon is centered.
+            int cellHeightPx = iconSize;
+            setPadding(getPaddingLeft(), (MeasureSpec.getSize(heightMeasureSpec)
+                    - cellHeightPx) / 2, getPaddingRight(), getPaddingBottom());
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    public MultiTranslateDelegate getTranslateDelegate() {
+        return mTranslateDelegate;
+    }
+
+    @Override
+    public void setReorderBounceScale(float scale) {
+        mScaleForReorderBounce = scale;
+        super.setScaleX(scale);
+        super.setScaleY(scale);
+    }
+
+    @Override
+    public float getReorderBounceScale() {
+        return mScaleForReorderBounce;
     }
 
     /** TextLauncher: stands in for the Folder that Launcher3 binds to the icon. */
