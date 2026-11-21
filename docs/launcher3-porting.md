@@ -124,6 +124,9 @@ Launcher3 と `frameworks/libs/systemui` は Apache License 2.0 である。
 - 取り込んだファイルのライセンスヘッダーは残す
 - `third_party/` 以下に LICENSE と NOTICE を置く
 - 書き換えたファイルには、変更したことを示す記載を入れる（Apache License 2.0 の条件）
+- 互換層のクラスのうち、上流に同じ名前のファイルがあるものは、上流のライセンスヘッダーをそのまま付け、その下に「TextLauncher のために変更した」旨のコメントを置く。中身が上流のコードか、名前とシグネチャだけかは問わない
+  - 上流のファイルにヘッダーがないもの（`popup/SystemShortcut.java`、`shortcuts/ShortcutKey.java`）は、年を除いた AOSP の標準のヘッダーを、上流にヘッダーがない旨と一緒に付ける
+- 上流にソースファイルがないもの（ビルドで生成される `BuildConfig`、aconfig の `Flags`、Dagger の `ActivityComponent`、`com.android.users.UserType`、上流にない `DragLayerAccess` など）は、上流のコードを含まないのでヘッダーを付けない
 
 ---
 

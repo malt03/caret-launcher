@@ -1,6 +1,6 @@
 ---
 id: Tex-oixt
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:12Z
@@ -20,3 +20,9 @@ compat/ の 61 ファイルのどれにもライセンスヘッダーがない�
 - [ ] 上流のコードを含む互換クラスすべてに Apache 2.0 のヘッダーと変更の記載がある
 - [ ] 自前の互換クラスの扱いが docs/launcher3-porting.md に書いてある
 
+
+## Notes
+
+**2026-11-21T09:29:53Z**
+
+上流に同じ名前のファイルがある互換クラス 55 個に、上流のヘッダーと変更の記載を付けた。上流にヘッダーがない SystemShortcut と ShortcutKey は年なしの標準ヘッダーを付けた。上流にソースがない 6 個（BuildConfig、2 つの Flags、ActivityComponent、UserType、DragLayerAccess）は付けない。決まりを docs/launcher3-porting.md の「ライセンス」に書いた
