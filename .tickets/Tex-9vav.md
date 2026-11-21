@@ -19,3 +19,9 @@ LauncherActivity が、検索結果の表示（RecyclerView、並び替え、1 �
 - [ ] 検索結果の表示が LauncherActivity の外にある
 - [ ] 検索・Enter での起動・1 位の枠・矢印キー・長押しからのドラッグが今と同じ
 
+
+## Notes
+
+**2026-11-21T09:43:49Z**
+
+検索結果のセルは LinearLayout に AppIconView と別の TextView を並べている。上流の全アプリ一覧と同じく、ラベル付きの BubbleTextView（DISPLAY_ALL_APPS）1 つにできるか確かめる（Tex-htxz で BubbleTextView がアイコンを描くようになった）

@@ -396,6 +396,11 @@ public class CellLayout extends FrameLayout {
      * TextLauncher: grid size. The home grid grows and shrinks by rows, so the occupancy of the
      * cells inside both sizes is kept.
      */
+    /**
+     * TextLauncher: the home grid grows and shrinks by rows as items are placed (it scrolls
+     * vertically), so the occupancy of the cells that remain is kept. Launcher3's CellLayout has a
+     * fixed size and starts with empty occupancy here. Calls with the same size do nothing.
+     */
     public void setGridSize(int countX, int countY) {
         if (mOccupied != null && countX == mCountX && countY == mCountY) return;
         GridOccupancy oldOccupied = mOccupied;

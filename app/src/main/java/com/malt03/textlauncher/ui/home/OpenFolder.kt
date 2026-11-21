@@ -54,6 +54,10 @@ class OpenFolder(
 
     init {
         mFolderIcon = folderIconView
+        // Folder is focusable in touch mode, so that it takes the focus back from its name field.
+        // TextLauncher's folders have no name, and a touch must not take the focus from the search
+        // field (docs/spec.md 1, 2.6): only keys give it the focus.
+        isFocusableInTouchMode = false
         // Folder: R.drawable.round_rect_folder
         val drawable = ResourcesCompat.getDrawable(resources, com.android.launcher3.R.drawable.round_rect_folder, context.theme) as GradientDrawable
         mBackground.color = drawable.color
@@ -118,7 +122,10 @@ class OpenFolder(
     /** Folder.animateOpen: the folder icon hides while its folder is open. */
     private fun animateOpen() {
         visibility = View.VISIBLE
-        requestFocusOnOpen()
+        // Folder.onAttachedToWindow's requestFocus: the folder is attached invisible until it is
+        // laid out, which drops the focus, so it is asked again once shown. Opened by touch, the
+        // search field keeps the focus and the keyboard stays up (not focusable in touch mode).
+        requestFocus()
         folderIconView.visibility = View.INVISIBLE
         animator = createAnimator(isOpening = true).also { it.start() }
     }

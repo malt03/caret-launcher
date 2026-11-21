@@ -61,25 +61,16 @@ public abstract class Folder extends FrameLayout implements ClipPathView {
         mFooter = new View(context);
         mFolderName = new View(context);
         setWillNotDraw(false);
-        // Folder sets focusable in touch mode, so that it takes the focus back from its name
-        // field. TextLauncher's folders have no name, and a touch must not take the focus from the
-        // search field (docs/spec.md 1), so it is focusable only for keys.
-        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
-    /**
-     * Folder.onAttachedToWindow's requestFocus. TextLauncher's folder is attached invisible until
-     * it is laid out, which would drop the focus again, so this is called once it is shown. Only
-     * when opened with keys: opened by touch, the search field keeps the focus and the keyboard
-     * stays up.
-     */
-    protected void requestFocusOnOpen() {
+    @Override
+    protected void onAttachedToWindow() {
         // requestFocus() causes the focus onto the folder itself, which doesn't cause visual
         // effect but the next arrow key can start the keyboard focus inside of the folder, not
         // the folder itself.
-        if (!isInTouchMode()) {
-            requestFocus();
-        }
+        requestFocus();
+        super.onAttachedToWindow();
     }
 
     @Override

@@ -1,6 +1,6 @@
 ---
 id: Tex-tn9i
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:13Z
@@ -22,3 +22,9 @@ tags: [refactor]
 - [ ] 互換クラスに spec.md を根拠にした振る舞いの分岐がない（使わない部分を省く説明は可）
 - [ ] フォルダのキー操作とタッチでのフォーカスの動き（docs/spec.md 2.6）が今と同じ
 
+
+## Notes
+
+**2026-11-21T09:44:44Z**
+
+Folder 互換クラスのフォーカスを上流どおり（setFocusableInTouchMode(true)、onAttachedToWindow で requestFocus）に戻し、タッチでフォーカスを取らない方針と、表示してから取り直す処理は OpenFolder に移した。ActivityContext.hideKeyboard の説明を上流の文に戻した。CellLayout.setGridSize は占有を保つ理由を TextLauncher: の説明として明記した（中身が mOccupied などの内部に触るため、サブクラスには出さない）。エミュレータでタッチで開くと検索欄にフォーカスが残り、キーで開くと中を選べ、戻るで閉じることを確認

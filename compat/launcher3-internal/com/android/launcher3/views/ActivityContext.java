@@ -36,7 +36,9 @@ public interface ActivityContext {
 
     Context asContext();
 
-    /** Hides the keyboard when a drag starts (docs/spec.md 5.4: edit mode). */
+    /**
+     * Hides the keyboard if it is visible
+     */
     void hideKeyboard();
 
     /** ActivityContext.lookupContext: TextLauncher's activity holds the ActivityContext. */
