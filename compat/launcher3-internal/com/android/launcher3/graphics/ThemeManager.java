@@ -22,6 +22,8 @@ package com.android.launcher3.graphics;
 
 import android.content.Context;
 
+import com.android.launcher3.icons.IconShape;
+
 /**
  * Stand-in for Launcher3's ThemeManager. Holds the icon state (theme on/off and shape) and the
  * folder shape, which TextLauncher derives from the selected icon shape the same way
@@ -42,14 +44,14 @@ public class ThemeManager {
     }
 
     private boolean mIconThemeEnabled = false;
-    private com.android.launcher3.icons.IconShape mIconShapeData;
+    private IconShape mIconShapeData;
 
     public boolean isIconThemeEnabled() {
         return mIconThemeEnabled;
     }
 
     /** ThemeManager.getIconShapeData().getValue(): the selected icon shape at the icon size. */
-    public com.android.launcher3.icons.IconShape getIconShapeData() {
+    public IconShape getIconShapeData() {
         return mIconShapeData;
     }
 
@@ -58,7 +60,7 @@ public class ThemeManager {
      * app's icon loader, which sets it here.
      */
     public void setIconState(boolean iconThemeEnabled,
-            com.android.launcher3.icons.IconShape iconShapeData) {
+            IconShape iconShapeData) {
         mIconThemeEnabled = iconThemeEnabled;
         mIconShapeData = iconShapeData;
     }

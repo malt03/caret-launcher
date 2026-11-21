@@ -21,6 +21,7 @@
 package com.android.launcher3.apppairs;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.android.launcher3.BubbleTextView;
@@ -38,6 +39,6 @@ public abstract class AppPairIcon extends View {
 
     /** Stand-in for AppPairIconDrawableBackground's view. */
     public interface IconDrawableArea {
-        android.graphics.drawable.Drawable getDrawable();
+        Drawable getDrawable();
     }
 }

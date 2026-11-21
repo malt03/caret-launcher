@@ -1,6 +1,11 @@
 package com.android.launcher3.dagger;
 
+import android.graphics.drawable.AdaptiveIconDrawable;
+import android.graphics.drawable.Drawable;
+
 import com.android.launcher3.dragndrop.DragController;
+import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.popup.PopupDataProvider;
 
 /**
  * Stand-in for Launcher3's Dagger activity component. Only what DragController, DragView and the long-press menu read.
@@ -8,14 +13,14 @@ import com.android.launcher3.dragndrop.DragController;
  * spring icons.
  */
 public class ActivityComponent {
-    private com.android.launcher3.popup.PopupDataProvider mPopupDataProvider;
+    private PopupDataProvider mPopupDataProvider;
 
     /** TextLauncher: the popup data provider is made by the app, which knows the context. */
-    public void setPopupDataProvider(com.android.launcher3.popup.PopupDataProvider provider) {
+    public void setPopupDataProvider(PopupDataProvider provider) {
         mPopupDataProvider = provider;
     }
 
-    public com.android.launcher3.popup.PopupDataProvider getPopupDataProvider() {
+    public PopupDataProvider getPopupDataProvider() {
         return mPopupDataProvider;
     }
 
@@ -31,13 +36,13 @@ public class ActivityComponent {
     /** Stand-in for the icon loader DragView uses for spring icons. */
     public interface IconLoader {
         FullDrawable getFullDrawable(
-                com.android.launcher3.model.data.ItemInfo info, int width, int height,
+                ItemInfo info, int width, int height,
                 boolean shouldThemeIcon);
     }
 
     /** The adaptive icon and badge returned for spring icons. */
     public static class FullDrawable {
-        public android.graphics.drawable.AdaptiveIconDrawable icon;
-        public android.graphics.drawable.Drawable badge;
+        public AdaptiveIconDrawable icon;
+        public Drawable badge;
     }
 }

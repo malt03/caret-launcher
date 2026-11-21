@@ -20,6 +20,7 @@
 
 package com.android.launcher3.dragndrop;
 
+import android.graphics.Path;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -32,5 +33,5 @@ public abstract class FolderAdaptiveIcon extends AdaptiveIconDrawable {
         super(bg, fg);
     }
 
-    public abstract android.graphics.Path getIconMask();
+    public abstract Path getIconMask();
 }

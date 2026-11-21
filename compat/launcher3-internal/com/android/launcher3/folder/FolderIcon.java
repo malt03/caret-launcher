@@ -34,6 +34,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.CellLayout;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Utilities;
@@ -46,6 +47,7 @@ import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.BaseDragLayer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -110,7 +112,7 @@ public abstract class FolderIcon extends View implements DraggableView {
      * TextLauncher: the folder does not open while an item is held over it (SPRING_LOADING_ENABLED
      * in Launcher3), because the open folder is not a drop target here.
      */
-    public void onDragEnter(ItemInfo dragInfo, com.android.launcher3.CellLayout cl) {
+    public void onDragEnter(ItemInfo dragInfo, CellLayout cl) {
         if (mFolder.isDestroyed() || !willAcceptItem(dragInfo)) return;
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) getLayoutParams();
 
@@ -432,7 +434,7 @@ public abstract class FolderIcon extends View implements DraggableView {
 
         /** Remove all matching app or shortcut. Does not change the DB. */
         public void removeFolderContent(boolean animate, ItemInfo... items) {
-            List<ItemInfo> itemArray = java.util.Arrays.asList(items);
+            List<ItemInfo> itemArray = Arrays.asList(items);
             mInfo.getContents().removeAll(itemArray);
             updateRanks();
 

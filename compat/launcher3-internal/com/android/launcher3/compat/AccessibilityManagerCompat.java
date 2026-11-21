@@ -21,6 +21,7 @@
 package com.android.launcher3.compat;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
@@ -44,7 +45,7 @@ public class AccessibilityManagerCompat {
         if (target != null && isObservedEventType(target.getContext(), type)) {
             AccessibilityEvent event = AccessibilityEvent.obtain(type);
             target.onInitializeAccessibilityEvent(event);
-            if (!android.text.TextUtils.isEmpty(text)) {
+            if (!TextUtils.isEmpty(text)) {
                 event.getText().add(text);
             }
             getManager(target.getContext()).sendAccessibilityEvent(event);

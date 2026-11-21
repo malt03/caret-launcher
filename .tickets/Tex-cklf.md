@@ -1,6 +1,6 @@
 ---
 id: Tex-cklf
-status: open
+status: closed
 deps: [Tex-oixt]
 links: []
 created: 2026-11-21T09:18:12Z
@@ -18,3 +18,9 @@ BaseDragLayer、CellLayout（119〜125、239〜243 行目など）、Utilities�
 
 - [ ] 上流と同じ import に戻し、上流との差分が実質的な違いだけになっている
 
+
+## Notes
+
+**2026-11-21T09:30:40Z**
+
+互換クラス 17 個の完全修飾名を import に置き換え、import を AOSP の並びに揃えた。上流でも完全修飾で書いているもの（LauncherAnimUtils の Looper、CellLayout の IconNormalizer など）と、名前がぶつかるもの（PopupContainerWithArrow の wm.shell.Flags）はそのまま

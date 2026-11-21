@@ -20,10 +20,9 @@
 
 package com.android.launcher3;
 
-import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
-
 import static com.android.launcher3.icons.BitmapInfo.FLAG_NO_BADGE;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_THEMED;
+import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -37,13 +36,14 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
-import com.android.launcher3.model.data.ItemInfo;
-import com.android.launcher3.model.data.ItemInfoWithIcon;
-import com.android.launcher3.model.data.WorkspaceItemInfo;
+import androidx.annotation.NonNull;
 
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.icons.FastBitmapDrawable;
+import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.ItemInfoWithIcon;
+import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.IconViewController;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.SafeCloseable;
@@ -249,7 +249,7 @@ public class BubbleTextView extends TextView implements DraggableView, IconViewC
      *
      * @return a MultiProperty that has the alpha for the text.
      */
-    @androidx.annotation.NonNull
+    @NonNull
     @Override
     public MultiPropertyFactory<AnimatedFloat>.MultiProperty getFloatingViewTextAlpha() {
         return mTextAlphaMultiPropertyFactory.get(TEXT_ALPHA_INDEX_TRANSITION);

@@ -20,6 +20,7 @@
 
 package com.android.launcher3;
 
+import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.views.ScrimView;
 
 /**
@@ -56,7 +57,7 @@ public class Launcher {
 
     /** Stand-in for statehandlers.DepthController. */
     public static class DepthController {
-        public com.android.launcher3.util.MultiPropertyFactory<?>.MultiProperty getFolderZoom() {
+        public MultiPropertyFactory<?>.MultiProperty getFolderZoom() {
             return null;
         }
     }

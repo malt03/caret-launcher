@@ -21,31 +21,42 @@
 package com.android.launcher3;
 
 import static com.android.launcher3.util.MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET;
-import com.android.launcher3.util.Thunk;
-import com.android.launcher3.util.MultiTranslateDelegate;
-import com.android.launcher3.celllayout.ReorderPreviewAnimation;
-import com.android.launcher3.celllayout.ReorderParameters;
-import com.android.launcher3.celllayout.ReorderAlgorithm;
-import android.util.ArrayMap;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.animation.ValueAnimator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.Animator;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.util.ArrayMap;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+import com.android.app.animation.Interpolators;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.celllayout.DelegatedCellDrawing;
 import com.android.launcher3.celllayout.ItemConfiguration;
+import com.android.launcher3.celllayout.ReorderAlgorithm;
+import com.android.launcher3.celllayout.ReorderParameters;
+import com.android.launcher3.celllayout.ReorderPreviewAnimation;
 import com.android.launcher3.util.CellAndSpan;
 import com.android.launcher3.util.GridOccupancy;
+import com.android.launcher3.util.MultiTranslateDelegate;
+import com.android.launcher3.util.Themes;
+import com.android.launcher3.util.Thunk;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 /**
@@ -57,7 +68,7 @@ import java.util.Stack;
  * because copied code reads View members of CellLayout (clipChildren and so on). Method bodies are copied from CellLayout.java; changes are
  * marked with "TextLauncher:".
  */
-public class CellLayout extends android.widget.FrameLayout {
+public class CellLayout extends FrameLayout {
 
     /** TextLauncher: replaces CellLayout's ShortcutAndWidgetContainer. */
     public interface Children {
@@ -122,7 +133,7 @@ public class CellLayout extends android.widget.FrameLayout {
     private final int[] mTmpPoint = new int[2];
 
     private final ArrayList<DelegatedCellDrawing> mDelegatedCellDrawings = new ArrayList<>();
-    private android.view.View mOwnerView;
+    private View mOwnerView;
 
     private final int mIconSizePx;
 
@@ -133,8 +144,8 @@ public class CellLayout extends android.widget.FrameLayout {
         mReorderPreviewAnimationMagnitude = (REORDER_PREVIEW_MAGNITUDE * iconSizePx);
         setGridSize(1, 1);
 
-        android.content.res.Resources res = getResources();
-        mGridColor = com.android.launcher3.util.Themes.getAttrColor(context, R.attr.workspaceAccentColor);
+        Resources res = getResources();
+        mGridColor = Themes.getAttrColor(context, R.attr.workspaceAccentColor);
         mGridVisualizationRoundingRadius =
                 res.getDimensionPixelSize(R.dimen.grid_visualization_rounding_radius);
         // TextLauncher: WorkspaceProfile.gridVisualizationPaddingX / Y.
@@ -144,7 +155,7 @@ public class CellLayout extends android.widget.FrameLayout {
                 res.getDimensionPixelSize(R.dimen.grid_visualization_vertical_cell_spacing);
 
         // Initialize the data structures used for the drag visualization.
-        mEaseOutInterpolator = com.android.app.animation.Interpolators.DECELERATE_QUINT; // Quint ease out
+        mEaseOutInterpolator = Interpolators.DECELERATE_QUINT; // Quint ease out
         mDragCell[0] = mDragCell[1] = -1;
         mDragCellSpan[0] = mDragCellSpan[1] = -1;
         for (int i = 0; i < mDragOutlines.length; i++) {
@@ -159,7 +170,7 @@ public class CellLayout extends android.widget.FrameLayout {
         final float fromAlphaValue = 0;
         final float toAlphaValue = (float)res.getInteger(R.integer.config_dragOutlineMaxAlpha);
 
-        java.util.Arrays.fill(mDragOutlineAlphas, fromAlphaValue);
+        Arrays.fill(mDragOutlineAlphas, fromAlphaValue);
 
         for (int i = 0; i < mDragOutlineAnims.length; i++) {
             final InterruptibleInOutAnimator anim =
@@ -190,14 +201,14 @@ public class CellLayout extends android.widget.FrameLayout {
     // Used as an index into the above 3 arrays; indicates which is the most current value.
     private int mDragOutlineCurrent = 0;
 
-    private android.animation.TimeInterpolator mEaseOutInterpolator;
+    private TimeInterpolator mEaseOutInterpolator;
     private final int[] mDragCell = new int[2];
     private final int[] mDragCellSpan = new int[2];
     private boolean mDragging = false;
     private boolean mPlayDragHaptics = false;
     private boolean mVisualizeDropLocation = true;
-    private final android.graphics.RectF mVisualizeGridRect = new android.graphics.RectF();
-    private final android.graphics.Paint mVisualizeGridPaint = new android.graphics.Paint();
+    private final RectF mVisualizeGridRect = new RectF();
+    private final Paint mVisualizeGridPaint = new Paint();
     private int mGridVisualizationRoundingRadius;
     private int mGridColor = 0;
     // TextLauncher: from the device profile in CellLayout.visualizeGrid.
@@ -232,9 +243,9 @@ public class CellLayout extends android.widget.FrameLayout {
                 mVisualizeGridRect.inset(paddingX, paddingY);
 
                 mVisualizeGridPaint.setAlpha(255);
-                mVisualizeGridPaint.setStyle(android.graphics.Paint.Style.STROKE);
-                mVisualizeGridPaint.setColor(android.graphics.Color.argb((int) (alpha),
-                        android.graphics.Color.red(mGridColor), android.graphics.Color.green(mGridColor), android.graphics.Color.blue(mGridColor)));
+                mVisualizeGridPaint.setStyle(Paint.Style.STROKE);
+                mVisualizeGridPaint.setColor(Color.argb((int) (alpha),
+                        Color.red(mGridColor), Color.green(mGridColor), Color.blue(mGridColor)));
 
                 canvas.save();
                 canvas.translate(getMarginForGivenCellParams(params), 0);
@@ -260,7 +271,7 @@ public class CellLayout extends android.widget.FrameLayout {
                 // until msdllib is added.
                 if (mOwnerView != null) {
                     mOwnerView.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK);
+                            HapticFeedbackConstants.SEGMENT_FREQUENT_TICK);
                 }
             }
             mDragCell[0] = cellX;
@@ -356,7 +367,7 @@ public class CellLayout extends android.widget.FrameLayout {
     }
 
     /** TextLauncher: the view that draws this layout's content. */
-    public void setOwnerView(android.view.View owner) {
+    public void setOwnerView(View owner) {
         mOwnerView = owner;
     }
 

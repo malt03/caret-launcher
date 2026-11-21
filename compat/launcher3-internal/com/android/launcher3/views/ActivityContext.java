@@ -21,9 +21,12 @@
 package com.android.launcher3.views;
 
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.view.View;
 
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.dagger.ActivityComponent;
+import com.android.launcher3.dragndrop.DragController;
 
 /** Stand-in for Launcher3's ActivityContext. Only what copied code uses. */
 public interface ActivityContext {
@@ -39,9 +42,9 @@ public interface ActivityContext {
     /** ActivityContext.lookupContext: TextLauncher's activity holds the ActivityContext. */
     static ActivityContext lookupContext(Context context) {
         Context c = context;
-        while (c instanceof android.content.ContextWrapper) {
+        while (c instanceof ContextWrapper) {
             if (c instanceof Provider) return ((Provider) c).getActivityContext();
-            c = ((android.content.ContextWrapper) c).getBaseContext();
+            c = ((ContextWrapper) c).getBaseContext();
         }
         throw new IllegalArgumentException("Cannot find ActivityContext in parent tree");
     }
@@ -60,14 +63,14 @@ public interface ActivityContext {
         return true;
     }
 
-    default android.view.View.OnClickListener getItemOnClickListener() {
+    default View.OnClickListener getItemOnClickListener() {
         return v -> {
             // No op.
         };
     }
 
     /** Launcher3's ActivityContext.getDragController. */
-    default com.android.launcher3.dragndrop.DragController getDragController() {
+    default DragController getDragController() {
         return null;
     }
 

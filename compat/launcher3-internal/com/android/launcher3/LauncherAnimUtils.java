@@ -24,6 +24,8 @@ import android.util.FloatProperty;
 import android.util.Property;
 import android.view.View;
 
+import com.android.launcher3.util.MultiScalePropertyFactory;
+
 /**
  * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1). Only the members that copied code uses, copied from
  * LauncherAnimUtils.java.
@@ -86,12 +88,12 @@ public class LauncherAnimUtils {
      * of all the ones set, to have a smooth experience even in the case of overlapping scaling
      * animation.
      */
-    public static final com.android.launcher3.util.MultiScalePropertyFactory<Workspace<?>> WORKSPACE_SCALE_PROPERTY_FACTORY =
-            new com.android.launcher3.util.MultiScalePropertyFactory<Workspace<?>>("workspace_scale_property");
+    public static final MultiScalePropertyFactory<Workspace<?>> WORKSPACE_SCALE_PROPERTY_FACTORY =
+            new MultiScalePropertyFactory<Workspace<?>>("workspace_scale_property");
 
     /** Property to set the scale of hotseat. */
-    public static final com.android.launcher3.util.MultiScalePropertyFactory<Hotseat> HOTSEAT_SCALE_PROPERTY_FACTORY =
-            new com.android.launcher3.util.MultiScalePropertyFactory<Hotseat>("hotseat_scale_property");
+    public static final MultiScalePropertyFactory<Hotseat> HOTSEAT_SCALE_PROPERTY_FACTORY =
+            new MultiScalePropertyFactory<Hotseat>("hotseat_scale_property");
 
     public static final int SCALE_INDEX_FOLDER_ANIM = 5;
 

@@ -24,17 +24,34 @@ import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_OUTSIDE;
 import static android.view.MotionEvent.ACTION_UP;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import com.android.app.animation.Interpolators;
 import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.CellLayout;
 import com.android.launcher3.InsettableFrameLayout;
+import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.dragndrop.DragController;
+import com.android.launcher3.dragndrop.DragLayerAccess;
+import com.android.launcher3.dragndrop.DragView;
+import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.util.TouchController;
 
 /**
@@ -69,7 +86,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
      * mapped through the parent, whose coordinates are the same as this layer's.
      */
     private View mappingRootFor(View view) {
-        for (android.view.ViewParent p = view.getParent(); p instanceof View; p = p.getParent()) {
+        for (ViewParent p = view.getParent(); p instanceof View; p = p.getParent()) {
             if (p == this) return this;
         }
         return view == this ? this : (View) getParent();
@@ -250,11 +267,11 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     public static final int ANIMATION_END_DISAPPEAR = 0;
     public static final int ANIMATION_END_REMAIN_VISIBLE = 2;
 
-    private com.android.launcher3.dragndrop.DragController mDragController;
-    private android.animation.Animator mDropAnim = null;
-    private com.android.launcher3.dragndrop.DragView mDropView = null;
+    private DragController mDragController;
+    private Animator mDropAnim = null;
+    private DragView mDropView = null;
 
-    public void setDragController(com.android.launcher3.dragndrop.DragController dragController) {
+    public void setDragController(DragController dragController) {
         mDragController = dragController;
     }
 
@@ -263,14 +280,14 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
      * the child's parent (a {@link com.android.launcher3.CellLayout.Children}) lays it out at
      * paddingLeft + lp.x, paddingTop + lp.y.
      */
-    public void animateViewIntoPosition(com.android.launcher3.dragndrop.DragView dragView,
+    public void animateViewIntoPosition(DragView dragView,
             final View child, int duration, View anchorView) {
-        com.android.launcher3.celllayout.CellLayoutLayoutParams lp =
-                (com.android.launcher3.celllayout.CellLayoutLayoutParams) child.getLayoutParams();
+        CellLayoutLayoutParams lp =
+                (CellLayoutLayoutParams) child.getLayoutParams();
         View childParent = (View) child.getParent();
-        if (childParent instanceof com.android.launcher3.CellLayout.Children) {
-            com.android.launcher3.CellLayout.Children container =
-                    (com.android.launcher3.CellLayout.Children) childParent;
+        if (childParent instanceof CellLayout.Children) {
+            CellLayout.Children container =
+                    (CellLayout.Children) childParent;
             container.measureChild(child);
             container.layoutChild(child);
         }
@@ -293,12 +310,12 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
         float toScale = scale;
 
-        if (child instanceof com.android.launcher3.dragndrop.DraggableView) {
+        if (child instanceof DraggableView) {
             // This code is fairly subtle. Please verify drag and drop is pixel-perfect in a number
             // of scenarios before modifying (from all apps, from workspace, different grid-sizes,
             // shortcuts from in and out of Launcher etc).
-            com.android.launcher3.dragndrop.DraggableView d =
-                    (com.android.launcher3.dragndrop.DraggableView) child;
+            DraggableView d =
+                    (DraggableView) child;
             Rect destRect = new Rect();
             d.getWorkspaceVisualDragBounds(destRect);
 
@@ -322,7 +339,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
                 onCompleteRunnable, ANIMATION_END_DISAPPEAR, duration, anchorView);
     }
 
-    public void animateViewIntoPosition(final com.android.launcher3.dragndrop.DragView view,
+    public void animateViewIntoPosition(final DragView view,
             final int toX, final int toY, float finalAlpha,
             float finalScaleX, float finalScaleY, Runnable onCompleteRunnable,
             int animationEndStyle, int duration, View anchorView) {
@@ -336,9 +353,9 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
      * interpolators, duration) are put in a plain AnimatorSet; the anchor scroll compensation is
      * left out since the home grid does not scroll horizontally.
      */
-    public void animateView(final com.android.launcher3.dragndrop.DragView view, final Rect to,
+    public void animateView(final DragView view, final Rect to,
             final float finalAlpha, final float finalScaleX, final float finalScaleY, int duration,
-            final android.view.animation.Interpolator motionInterpolator,
+            final Interpolator motionInterpolator,
             final Runnable onCompleteRunnable, final int animationEndStyle, View anchorView) {
         view.cancelAnimation();
         view.requestLayout();
@@ -347,37 +364,37 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
         // Calculate the duration of the animation based on the object's distance
         final float dist = (float) Math.hypot(to.left - from[0], to.top - from[1]);
-        final android.content.res.Resources res = getResources();
-        final float maxDist = (float) res.getInteger(com.android.launcher3.R.integer.config_dropAnimMaxDist);
+        final Resources res = getResources();
+        final float maxDist = (float) res.getInteger(R.integer.config_dropAnimMaxDist);
 
         // If duration < 0, this is a cue to compute the duration based on the distance
         if (duration < 0) {
-            duration = res.getInteger(com.android.launcher3.R.integer.config_dropAnimMaxDuration);
+            duration = res.getInteger(R.integer.config_dropAnimMaxDuration);
             if (dist < maxDist) {
-                duration *= com.android.app.animation.Interpolators.DECELERATE_1_5
+                duration *= Interpolators.DECELERATE_1_5
                         .getInterpolation(dist / maxDist);
             }
             duration = Math.max(duration,
-                    res.getInteger(com.android.launcher3.R.integer.config_dropAnimMinDuration));
+                    res.getInteger(R.integer.config_dropAnimMinDuration));
         }
 
         // Fall back to cubic ease out interpolator for the animation if none is specified
-        android.animation.TimeInterpolator interpolator = motionInterpolator == null
-                ? com.android.app.animation.Interpolators.DECELERATE_1_5 : motionInterpolator;
+        TimeInterpolator interpolator = motionInterpolator == null
+                ? Interpolators.DECELERATE_1_5 : motionInterpolator;
 
-        android.animation.AnimatorSet anim = new android.animation.AnimatorSet();
+        AnimatorSet anim = new AnimatorSet();
         anim.playTogether(
-                android.animation.ObjectAnimator.ofFloat(view, View.SCALE_X, finalScaleX),
-                android.animation.ObjectAnimator.ofFloat(view, View.SCALE_Y, finalScaleY),
-                android.animation.ObjectAnimator.ofFloat(view, View.ALPHA, finalAlpha),
-                android.animation.ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, to.top),
-                android.animation.ObjectAnimator.ofFloat(view, View.TRANSLATION_X, to.left));
+                ObjectAnimator.ofFloat(view, View.SCALE_X, finalScaleX),
+                ObjectAnimator.ofFloat(view, View.SCALE_Y, finalScaleY),
+                ObjectAnimator.ofFloat(view, View.ALPHA, finalAlpha),
+                ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, to.top),
+                ObjectAnimator.ofFloat(view, View.TRANSLATION_X, to.left));
         anim.setDuration(duration);
         anim.setInterpolator(interpolator);
         if (onCompleteRunnable != null) {
-            anim.addListener(new android.animation.AnimatorListenerAdapter() {
+            anim.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationEnd(android.animation.Animator animation) {
+                public void onAnimationEnd(Animator animation) {
                     onCompleteRunnable.run();
                 }
             });
@@ -385,8 +402,8 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         playDropAnimation(view, anim, animationEndStyle);
     }
 
-    public void playDropAnimation(final com.android.launcher3.dragndrop.DragView view,
-            android.animation.Animator animator, int animationEndStyle) {
+    public void playDropAnimation(final DragView view,
+            Animator animator, int animationEndStyle) {
         // Clean up the previous animations
         if (mDropAnim != null) mDropAnim.cancel();
 
@@ -394,16 +411,16 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         mDropView = view;
         // Create and start the animation
         mDropAnim = animator;
-        mDropAnim.addListener(new android.animation.AnimatorListenerAdapter() {
+        mDropAnim.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationEnd(android.animation.Animator animation) {
+            public void onAnimationEnd(Animator animation) {
                 mDropAnim = null;
             }
         });
         if (animationEndStyle == ANIMATION_END_DISAPPEAR) {
-            mDropAnim.addListener(new android.animation.AnimatorListenerAdapter() {
+            mDropAnim.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationEnd(android.animation.Animator animation) {
+                public void onAnimationEnd(Animator animation) {
                     clearAnimatedView();
                 }
             });
@@ -411,15 +428,15 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         mDropAnim.start();
     }
 
-    public com.android.launcher3.dragndrop.DragView clearAnimatedView() {
+    public DragView clearAnimatedView() {
         if (mDropAnim != null) {
             mDropAnim.cancel();
         }
         mDropAnim = null;
         if (mDropView != null) {
-            com.android.launcher3.dragndrop.DragLayerAccess.onDeferredEndDrag(mDragController, mDropView);
+            DragLayerAccess.onDeferredEndDrag(mDragController, mDropView);
         }
-        com.android.launcher3.dragndrop.DragView ret = mDropView;
+        DragView ret = mDropView;
         mDropView = null;
         invalidate();
         return ret;
@@ -442,7 +459,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     }
 
     @Override
-    public LayoutParams generateLayoutParams(android.util.AttributeSet attrs) {
+    public LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new LayoutParams(getContext(), attrs);
     }
 
@@ -466,7 +483,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         public int x, y;
         public boolean customPosition = false;
 
-        public LayoutParams(Context c, android.util.AttributeSet attrs) {
+        public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
         }
 
