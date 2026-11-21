@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Forritsupplýsingar"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Flýtileiðavalmynd"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Bæta á heimaskjá"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Sótt forrit er óvirkt í öryggisstillingu"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Flýtileið er ekki tiltæk"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Forritið er ekki í boði"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Uppfæra þarf forritið"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Forritið fyrir þetta tákn er ekki uppfært. Þú getur uppfært það handvirkt til að kveikja aftur á þessari flýtileið eða fjarlægt táknið."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Uppfæra"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Fjarlægja"</string>
 </resources>

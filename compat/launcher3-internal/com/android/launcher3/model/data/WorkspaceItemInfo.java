@@ -45,11 +45,10 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
     public Intent intent = new Intent();
 
     /**
-     * TextLauncher: the app shortcut this item was last updated from, so that the app's home model
-     * can keep it (Launcher3 looks the shortcut up again by its key).
+     * If isDisabled(), this field may contain a message that describes why the item is disabled.
+     * TextLauncher: as in Launcher3 (android-17.0.0_r1), nothing sets it.
      */
-    @Nullable
-    public ShortcutInfo shortcutInfo;
+    public CharSequence disabledMessage;
 
     public WorkspaceItemInfo() {
     }
@@ -58,8 +57,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         super(info);
         title = info.title;
         intent = new Intent(info.intent);
-        // TextLauncher: no status or person keys; the shortcut this item was made from instead.
-        shortcutInfo = info.shortcutInfo;
+        // TextLauncher: no status or person keys.
     }
 
     public WorkspaceItemInfo(ShortcutInfo shortcutInfo, Context context) {
@@ -83,8 +81,6 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
             @NonNull final Context context) {
         // {@link ShortcutInfo#getActivity} can change during an update. Recreate the intent
         intent = ShortcutKey.makeIntent(shortcutInfo);
-        // TextLauncher: keeps the shortcut for the app's home model.
-        this.shortcutInfo = shortcutInfo;
         title = shortcutInfo.getShortLabel();
 
         CharSequence label = shortcutInfo.getLongLabel();
@@ -97,7 +93,28 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
             contentDescription = null;
             Log.e(TAG, "Failed to get content description", e);
         }
-        // TextLauncher: disabled shortcuts and person keys are not tracked.
+        if (shortcutInfo.isEnabled()) {
+            runtimeStatusFlags &= ~FLAG_DISABLED_BY_PUBLISHER;
+        } else {
+            Log.w(TAG, "updateFromDeepShortcutInfo: Updated shortcut has been disabled. "
+                    + " package=" + shortcutInfo.getPackage()
+                    + " disabledReason=" + shortcutInfo.getDisabledReason());
+            runtimeStatusFlags |= FLAG_DISABLED_BY_PUBLISHER;
+        }
+
+        if (shortcutInfo.getDisabledReason() == ShortcutInfo.DISABLED_REASON_VERSION_LOWER) {
+            runtimeStatusFlags |= FLAG_DISABLED_VERSION_LOWER;
+        } else {
+            runtimeStatusFlags &= ~FLAG_DISABLED_VERSION_LOWER;
+        }
+        // TextLauncher: no person keys.
+    }
+
+    /**
+     * {@code true} if the shortcut is disabled due to its app being a lower version.
+     */
+    public boolean isDisabledVersionLower() {
+        return (runtimeStatusFlags & FLAG_DISABLED_VERSION_LOWER) != 0;
     }
 
     /** Returns the WorkspaceItemInfo id associated with the deep shortcut. */

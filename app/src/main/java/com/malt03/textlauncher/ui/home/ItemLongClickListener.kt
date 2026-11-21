@@ -132,8 +132,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
             iconShift.y = mIconLastTouchPos.y - activityContext.deviceProfile.workspaceProfile.iconSizePx
 
             val draggableView = DraggableView.ofType(DraggableView.DRAGGABLE_ICON)
-            // TextLauncher: the home model keeps the shortcut as a ShortcutItemInfo.
-            val itemInfo = home.homeItemFor(sv.finalInfo)
+            val itemInfo = sv.finalInfo
             itemInfo.container = LauncherSettings.Favorites.CONTAINER_SHORTCUTS
             val dv =
                 home.homeWorkspace.beginDragShared(

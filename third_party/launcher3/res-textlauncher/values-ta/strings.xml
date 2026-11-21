@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ஆப்ஸ் தகவல்"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"ஷார்ட்கட் மெனு"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"முகப்புத் திரையில் சேர்"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"இறக்கிய ஆப்ஸ் பாதுகாப்பு முறையில் முடக்கப்பட்டது"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"ஷார்ட்கட் இல்லை"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"ஆப்ஸ் இல்லை"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"ஆப்ஸைப் புதுப்பியுங்கள்"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"இந்த ஐகானுக்கான ஆப்ஸ் புதுப்பிக்கப்படவில்லை. இந்த ஷார்ட்கட்டை மீண்டும் இயக்கவோ ஐகானை அகற்றவோ நீங்களாகவே புதுப்பிக்கலாம்."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"புதுப்பி"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"அகற்று"</string>
 </resources>

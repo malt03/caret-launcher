@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Հավելվածի մասին"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Դյուրանցման ընտրացանկ"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Ավելացնել հիմնական էկրանին"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Ներբեռնված ծրագիրն անջատված է Անվտանգ ռեժիմում"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Դյուրանցումն անհասանելի է"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Հավելվածը հասանելի չէ"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Պահանջվում է թարմացնել հավելվածը"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Հավելվածը հնացել է։ Թարմացրեք այն ձեռքով, որպեսզի շարունակեք օգտագործել դյուրանցումը, կամ հեռացրեք հավելվածի պատկերակը։"</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Թարմացնել"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Հեռացնել"</string>
 </resources>

@@ -24,16 +24,37 @@ import android.content.Context;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
+import com.android.launcher3.model.data.ItemInfo;
+
+import java.util.function.Predicate;
+
 /**
  * Stand-in for Launcher3's Workspace (android-17.0.0_r1). In TextLauncher it holds the home grid.
  * Members are copied from Workspace.java as copied code needs them.
  */
-public class Workspace<T> extends FrameLayout {
+public abstract class Workspace<T> extends FrameLayout {
     public static final int REORDER_TIMEOUT = 650;
 
     public Workspace(Context context) {
         super(context);
     }
+
+    /** TextLauncher: no state transitions between pages and overview, so never switching. */
+    public boolean isFinishedSwitchingState() {
+        return true;
+    }
+
+    /**
+     * Removes items that match the {@param matcher}. When applications are removed
+     * as a part of an update, this is called to ensure that other widgets and application
+     * shortcuts are not removed.
+     *
+     * TextLauncher: the home screen removes them from its model and its grid.
+     */
+    public abstract void persistRemoveItemsByMatcher(Predicate<ItemInfo> matcher,
+            @Nullable final String reason);
 
     public void setPivotToScaleWithSelf(View sibling) {
         sibling.setPivotY(getPivotY() + getTop()

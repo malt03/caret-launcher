@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"應用程式資訊"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"快速鍵選單"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"新增至主畫面"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"在安全模式中無法使用「已下載的應用程式」功能"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"目前無法使用捷徑"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"應用程式目前無法使用"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"必須更新應用程式"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"這個圖示代表的應用程式未更新。手動更新即可重新啟用這個捷徑，你也可以移除圖示。"</string>
+    <string name="dialog_update" msgid="2178028071796141234">"更新"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"移除"</string>
 </resources>

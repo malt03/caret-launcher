@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Impormasyon ng app"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Menu ng Shortcut"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Idagdag sa home screen"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Naka-disable ang na-download na app sa Safe mode"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Hindi available ang shortcut"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Hindi available ang app"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Kinakailangang i-update ang app"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Hindi updated ang app para sa icon na ito. Puwede kang manual na mag-update para ma-enable ulit ang shortcut na ito, o alisin ang icon."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"I-update"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Alisin"</string>
 </resources>

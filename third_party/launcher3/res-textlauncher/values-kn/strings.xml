@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ಆ್ಯಪ್ ಮಾಹಿತಿ"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"ಶಾರ್ಟ್‌ಕಟ್ ಮೆನು"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ಗೆ ಸೇರಿಸಿ"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾದ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸುರಕ್ಷಿತ ಮೋಡ್‌ನಲ್ಲಿ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"ಶಾರ್ಟ್‌ಕಟ್ ಲಭ್ಯವಿಲ್ಲ"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"ಅಪ್ಲಿಕೇಶನ್ ಲಭ್ಯವಿಲ್ಲ"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್ ಅಗತ್ಯವಿದೆ"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"ಈ ಐಕಾನ್‌ಗಾಗಿ ಆ್ಯಪ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿಲ್ಲ. ಈ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಮರು-ಸಕ್ರಿಯಗೊಳಿಸಲು ನೀವು ಹಸ್ತಚಾಲಿತವಾಗಿ ಅಪ್‌ಡೇಟ್ ಮಾಡಬಹುದು ಅಥವಾ ಐಕಾನ್ ಅನ್ನು ತೆಗೆದುಹಾಕಬಹುದು."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"ತೆಗೆದುಹಾಕಿ"</string>
 </resources>

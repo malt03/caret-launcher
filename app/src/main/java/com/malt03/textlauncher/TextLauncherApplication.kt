@@ -39,7 +39,7 @@ class TextLauncherApplication : Application() {
         ioExecutor.execute { searchStore.loadBlocking() }
         appRepository = AppRepository(this)
         shortcutRepository = ShortcutRepository(this)
-        homeModel = HomeModel(database, ioExecutor, shortcutRepository::updatePinnedStateBlocking)
+        homeModel = HomeModel(database, ioExecutor, shortcutRepository)
         iconSettings = IconSettings(this)
         iconLoader = AppIconLoader(this, iconSettings)
     }

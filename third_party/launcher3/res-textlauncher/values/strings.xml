@@ -9,4 +9,11 @@
     <string name="app_info_drop_target_label">App info</string>
     <string name="action_deep_shortcut">Shortcut Menu</string>
     <string name="action_add_to_workspace">Add to home screen</string>
+    <string name="safemode_shortcut_error">Downloaded app disabled in Safe mode</string>
+    <string name="shortcut_not_available">Shortcut isn\'t available</string>
+    <string name="activity_not_available">App isn\'t available</string>
+    <string name="dialog_update_title">App update required</string>
+    <string name="dialog_update_message">The app for this icon isn\'t updated. You can update manually to re-enable this shortcut, or remove the icon.</string>
+    <string name="dialog_update">Update</string>
+    <string name="dialog_remove">Remove</string>
 </resources>

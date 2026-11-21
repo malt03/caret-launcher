@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"अ‍ॅप माहिती"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"शॉर्टकट मेनू"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"होम स्क्रीनवर जोडा"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"डाउनलोड केलेला अ‍ॅप सुरक्षित मोड मध्‍ये अक्षम केला"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"शॉर्टकट उपलब्ध नाही"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"अ‍ॅप उपलब्ध नाही"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"अ‍ॅप अपडेट करणे आवश्‍यक आहे"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"या आयकनसाठी अ‍ॅप अपडेट केलेले नाही. हा शॉटकर्ट पुन्हा सुरू करण्यासाठी तुम्ही मॅन्युअली अपडेट करू शकता किंवा आयकन काढून टाका."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"अपडेट करा"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"काढून टाका"</string>
 </resources>

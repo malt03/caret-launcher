@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ព័ត៌មាន​កម្មវិធី"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"ម៉ឺនុយផ្លូវ​កាត់"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"បញ្ចូល​ទៅក្នុង​អេក្រង់​ដើម"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"បាន​បិទ​កម្មវិធី​ដែល​បាន​ទាញ​យក​ក្នុង​របៀប​សុវត្ថិភាព"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"ផ្លូវកាត់មិនអាចប្រើបានទេ"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"មិន​មាន​កម្មវិធី"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"តម្រូវឱ្យមាន​កំណែកម្មវិធីថ្មី"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"កម្មវិធីសម្រាប់​រូបតំណាងនេះ​មិនត្រូវបានដំឡើងកំណែ​ទេ។ អ្នកអាច​ដំឡើងកំណែ​ដោយផ្ទាល់ ដើម្បីបើក​ផ្លូវកាត់នេះឡើងវិញ ឬលុបរូបតំណាងនេះ។"</string>
+    <string name="dialog_update" msgid="2178028071796141234">"ដំឡើងកំណែ"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"លុប"</string>
 </resources>

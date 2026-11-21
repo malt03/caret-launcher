@@ -1,29 +1,26 @@
 package com.malt03.textlauncher.data
 
 import android.content.ComponentName
-import android.content.Context
-import android.content.pm.ShortcutInfo
+import android.content.pm.ApplicationInfo
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
 import com.android.launcher3.model.data.WorkspaceItemInfo
 
 /**
- * The home model is made of Launcher3's ItemInfos, as BgDataModel's is: [AppItemInfo] and
- * [ShortcutItemInfo] (WorkspaceItemInfo), Launcher3's FolderInfo, whose contents are the items in
- * the folder, and [WidgetItemInfo]. Each keeps its id, container, cell, span and rank in the
- * ItemInfo fields. [homeKey] is the key an app or shortcut is saved by ([AppEntry.key] or
- * [HomeShortcutKey.key]).
+ * The home model is made of Launcher3's ItemInfos, as BgDataModel's is: apps ([AppItemInfo]), app
+ * shortcuts (WorkspaceItemInfo of ITEM_TYPE_DEEP_SHORTCUT, identified by ShortcutKey.fromItemInfo
+ * as in Launcher3), Launcher3's FolderInfo, whose contents are the items in the folder, and
+ * [WidgetItemInfo]. Each keeps its id, container, cell, span and rank in the ItemInfo fields.
  */
-interface HomeItemInfo {
-    val homeKey: String
-}
 
 /**
- * An app (WorkspaceItemInfo of ITEM_TYPE_APPLICATION). Loaded from its key; [entry] is set once the
- * installed app is found (LoaderTask's lookup of the activity).
+ * An app (WorkspaceItemInfo of ITEM_TYPE_APPLICATION), saved by [homeKey] ([AppEntry.key]).
+ * Loaded from its key; [entry] is set once the installed app is found (LoaderTask's lookup of the
+ * activity).
  */
-class AppItemInfo(override val homeKey: String) : WorkspaceItemInfo(), HomeItemInfo {
+class AppItemInfo(val homeKey: String) : WorkspaceItemInfo() {
     var entry: AppEntry? = null
         private set
 
@@ -36,41 +33,28 @@ class AppItemInfo(override val homeKey: String) : WorkspaceItemInfo(), HomeItemI
         if (bitmap != null) this.bitmap = bitmap
     }
 
+    /**
+     * The installed app, and whether it is suspended (AppInfo and WorkspaceItemProcessor:
+     * FLAG_DISABLED_SUSPENDED).
+     */
     fun bind(entry: AppEntry) {
         this.entry = entry
         user = entry.user
         title = entry.label
+        runtimeStatusFlags = if (entry.info.applicationInfo.flags and ApplicationInfo.FLAG_SUSPENDED != 0) {
+            runtimeStatusFlags or FLAG_DISABLED_SUSPENDED
+        } else {
+            runtimeStatusFlags and FLAG_DISABLED_SUSPENDED.inv()
+        }
     }
 
     /** ItemInfo.mComponentName */
     override fun getComponent(): ComponentName? = entry?.component ?: AppEntry.componentOf(homeKey)
 }
 
-/**
- * An app shortcut placed on the home screen (WorkspaceItemInfo of ITEM_TYPE_DEEP_SHORTCUT,
- * docs/spec.md 5.3). Loaded from its key; [shortcut] is set once the app's shortcut is found
- * (LoaderTask's pinned shortcut lookup).
- */
-class ShortcutItemInfo(override val homeKey: String) : WorkspaceItemInfo(), HomeItemInfo {
-    var shortcut: ShortcutInfo? = null
-        private set
-
-    init {
-        itemType = LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
-    }
-
-    constructor(homeKey: String, shortcut: ShortcutInfo, context: Context, bitmap: BitmapInfo?) : this(homeKey) {
-        update(shortcut, context)
-        if (bitmap != null) this.bitmap = bitmap
-    }
-
-    /** WorkspaceItemInfo(ShortcutInfo, Context) and ShortcutsChangedTask: the app's shortcut. */
-    fun update(shortcut: ShortcutInfo, context: Context) {
-        this.shortcut = shortcut
-        user = shortcut.userHandle
-        updateFromDeepShortcutInfo(shortcut, context)
-    }
-}
+/** Whether the item is an app shortcut (ITEM_TYPE_DEEP_SHORTCUT). */
+val ItemInfo.isDeepShortcut: Boolean
+    get() = itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
 
 /** A widget (LauncherAppWidgetInfo). Kept in the model; not shown yet (Tex-t2ea). */
 class WidgetItemInfo(val appWidgetId: Int, val provider: String) : ItemInfo() {

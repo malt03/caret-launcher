@@ -1,6 +1,6 @@
 ---
 id: Tex-ditl
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T11:44:41Z
@@ -33,3 +33,11 @@ tags: [refactor, home]
 - [ ] ItemClickHandler が third_party のコピー（または derived=）になっている
 - [ ] メニューからの追加・ドラッグ、起動、フォルダ、再起動後の保持が今と同じ
 
+
+## Notes
+
+**2026-11-21T11:57:58Z**
+
+ホームのショートカットを上流と同じく WorkspaceItemInfo（ITEM_TYPE_DEEP_SHORTCUT）のまま持ち、ShortcutKey.fromItemInfo で見分けるようにした（ShortcutItemInfo と、WorkspaceItemInfo に足した shortcutInfo の欄、メニューの項目の変換をなくした）。保存の形式は変えていない。ショートカットの実体は読み込み時と変更時に問い合わせ、updateFromDeepShortcutInfo で題名・無効の状態・アイコンを更新する。問い合わせられないときは、覚えているアイコンか既定のアイコン（IconCache.getDefaultIcon）で表示を続ける。ItemInfoWithIcon / WorkspaceItemInfo の無効フラグと disabledMessage（上流でも設定されない）を上流どおりに戻した。touch/ItemClickHandler を、アプリペア・ウィジェット・インストール中・プライベートスペースを削って derived= の互換クラスにし、ホーム・フォルダ・メニューのタップをそれで処理する（起動は Launcher.startActivitySafely をアプリが実装）。停止中のアプリは AppItemInfo.bind で FLAG_DISABLED_SUSPENDED を立て、ホームと検索結果で灰色にする。ShortcutKey・ItemInfoMatcher・IntSet・IntArray は上流のままコピーした。
+エミュレータでの確認: テスト用のアプリ（スクラッチで作った APK。確認後にアンインストール）のショートカットをホームに置き、アプリ側で無効にすると灰色になり、タップで「ショートカットは使用できません」が出る。有効に戻すと元に戻る。pm suspend したアプリはホームと検索結果で灰色になり、タップでシステムの「このアプリは使用できません」が出る。デフォルトのホームでない状態（ショートカットを問い合わせられない）で開くと、ショートカットは既定のアイコンで表示が残る。メニューの行のタップ、+ での追加、行のドラッグ、フォルダ、再起動後の保持も確認。
+残り: アイコンのディスクのキャッシュがないので、問い合わせられないときに出るのは覚えているアイコンではなく既定のアイコンになる（上流は IconCache の DB に残っている）。別のチケットにする

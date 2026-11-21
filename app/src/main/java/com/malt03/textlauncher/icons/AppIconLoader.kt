@@ -18,8 +18,6 @@ import com.android.launcher3.icons.GraphicsUtils
 import com.android.launcher3.icons.IconShape
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.graphics.ThemeManager
-import com.android.launcher3.icons.FastBitmapDrawable
-import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.AppEntry
 import java.util.concurrent.Executors
@@ -146,6 +144,29 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         }
     }
 
+    /**
+     * IconCache.getDefaultIcon: the icon of an item whose own icon is not known, such as an app
+     * shortcut that could not be looked up. Calls [onLoaded] on the main thread.
+     */
+    fun loadDefault(onLoaded: (BitmapInfo) -> Unit) {
+        cache.get(DEFAULT_KEY)?.let { onLoaded(it); return }
+        val waiting = pending[DEFAULT_KEY]
+        if (waiting != null) {
+            waiting += onLoaded
+            return
+        }
+        pending[DEFAULT_KEY] = mutableListOf(onLoaded)
+        val requestedGeneration = generation
+        executor.execute {
+            val info = factory.createBadgedIconBitmap(context.packageManager.defaultActivityIcon, BaseIconFactory.IconOptions())
+            mainHandler.post {
+                if (requestedGeneration != generation) return@post
+                cache.put(DEFAULT_KEY, info)
+                pending.remove(DEFAULT_KEY)?.forEach { it(info) }
+            }
+        }
+    }
+
     /** The cached icon of an app, the badge of its shortcuts (IconCache.getShortcutInfoBadge). */
     fun badgeFor(app: AppEntry?): BitmapInfo? = app?.let { cache.get(it.key) }
 
@@ -191,12 +212,6 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         }
     }
 
-    /** BubbleTextView.applyIconAndLabel: icons on the home screen ask for the themed version. */
-    fun newDrawable(info: BitmapInfo): FastBitmapDrawable = itemInfo(info).newIcon(context, BitmapInfo.FLAG_THEMED)
-
-    /** The ItemInfo that Launcher3's views and the copied folder code take for an app. */
-    fun itemInfo(info: BitmapInfo): WorkspaceItemInfo = WorkspaceItemInfo().apply { bitmap = info }
-
     private fun onSettingsChanged() {
         val themed = settings.isThemed
         val shapePath = settings.shape.pathString
@@ -227,6 +242,8 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     }
 
     private companion object {
+        private const val DEFAULT_KEY = "default:"
+
         const val SHAPE_PATH_SIZE = 100f
     }
 }

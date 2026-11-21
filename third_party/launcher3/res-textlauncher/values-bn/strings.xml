@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"অ্যাপের তথ্য"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"শর্টকাট মেনু"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"হোম স্ক্রিনে যোগ করুন"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"ডাউনলোড করা অ্যাপ্লিকেশান নিরাপদ মোডে অক্ষম রয়েছে"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"শর্টকাটগুলি অনুপলব্ধ"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"অ্যাপ্লিকেশান অনুপলব্ধ"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"অ্যাপটি আপডেট করা প্রয়োজন"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"এই আইকনের জন্য অ্যাপটি আপডেট করা নেই। এই শর্টকার্ট আবার চালু করতে, আপনি ম্যানুয়ালি আপডেট করতে বা সরিয়ে দিতে পারবেন।"</string>
+    <string name="dialog_update" msgid="2178028071796141234">"আপডেট করুন"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"সরান"</string>
 </resources>

@@ -21,11 +21,15 @@
 package com.android.launcher3;
 
 import android.content.Context;
+import android.content.Intent;
+import android.view.View;
 
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.logging.StatsLogManager;
+import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.MultiPropertyFactory;
+import com.android.launcher3.util.RunnableList;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
 
@@ -70,6 +74,13 @@ public abstract class Launcher implements ActivityContext {
     public ScrimView getScrimView() {
         return mScrimView;
     }
+
+    /**
+     * Starts the item's activity: an app or an app shortcut.
+     * TextLauncher: the home screen starts it (Launcher.startActivitySafely and
+     * ActivityContext.startActivitySafely).
+     */
+    public abstract RunnableList startActivitySafely(View v, Intent intent, ItemInfo item);
 
     /** TextLauncher: the app adds items to its home screen (LauncherAccessibilityDelegate). */
     public abstract LauncherAccessibilityDelegate getAccessibilityDelegate();

@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Appinfo"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Genvejsmenu"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Føj til startskærm"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Downloadet app er deaktiveret i sikker tilstand"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Genvejen er ikke tilgængelig"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Appen er ikke tilgængelig"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Appen skal opdateres"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Appen, der tilhører dette ikon, er ikke opdateret. Du kan opdatere appen manuelt for at genaktivere denne genvej, eller du kan fjerne ikonet."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Opdater"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Fjern"</string>
 </resources>

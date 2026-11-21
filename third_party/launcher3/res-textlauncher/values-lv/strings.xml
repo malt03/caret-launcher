@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Par lietotni"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Saīsnes izvēlne"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Pievienot sākuma ekrānam"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Lejupielādētā lietotne ir atspējota drošajā režīmā."</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Saīsne nav pieejama."</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Lietotne nav pieejama."</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Lietotne ir jāatjaunina"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Šai ikonai paredzētā lietotne nav atjaunināta. Varat to atjaunināt manuāli, lai atkārtoti iespējotu šo saīsni, vai noņemt ikonu."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Atjaunināt"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Noņemt"</string>
 </resources>

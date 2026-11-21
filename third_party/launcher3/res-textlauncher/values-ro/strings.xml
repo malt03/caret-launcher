@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Informații despre aplicații"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Meniu de comenzi rapide"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Adaugă pe ecranul de pornire"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Aplicația descărcată este dezactivată în modul de siguranță"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Comanda rapidă nu este disponibilă"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Aplicația nu este disponibilă"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Este necesară actualizarea aplicației"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Aplicația pentru această pictogramă nu este actualizată. Poți să actualizezi manual ca să reactivezi comanda rapidă sau să elimini pictograma."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Actualizează"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Elimină"</string>
 </resources>

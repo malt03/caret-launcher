@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ആപ്പ് വിവരങ്ങൾ"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"കുറുക്കുവഴി മെനു"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"ഹോം സ്‌ക്രീനിലേക്ക് ചേർക്കുക"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"ഡൗൺലോഡുചെയ്‌ത അപ്ലിക്കേഷൻ സുരക്ഷാ മോഡിൽ പ്രവർത്തനരഹിതമാക്കി"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"കുറുക്കുവഴി ലഭ്യമല്ല"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"അപ്ലിക്കേഷൻ ലഭ്യമല്ല"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"ആപ്പ് അപ്‌ഡേറ്റ് ചെയ്യേണ്ടതുണ്ട്"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"ഈ ഐക്കണിനുള്ള ആപ്പ് അപ്‌ഡേറ്റ് ചെയ്തിട്ടില്ല. ഈ കുറുക്കുവഴി വീണ്ടും പ്രവർത്തനക്ഷമമാക്കാൻ നിങ്ങൾക്ക് നേരിട്ട് അപ്‌ഡേറ്റ് ചെയ്യാം അല്ലെങ്കിൽ ഐക്കൺ നീക്കം ചെയ്യാം."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"അപ്ഡേറ്റ് ചെയ്യുക"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"നീക്കം ചെയ്യുക"</string>
 </resources>

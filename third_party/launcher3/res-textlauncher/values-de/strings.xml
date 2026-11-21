@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"App-Info"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Menü für Tastenkombinationen"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Zum Startbildschirm hinzufügen"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Heruntergeladene App im abgesicherten Modus deaktiviert"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Verknüpfung nicht verfügbar"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"App nicht verfügbar"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"App-Update erforderlich"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Die App für dieses Symbol wurde noch nicht aktualisiert. Du kannst sie manuell aktualisieren, um die Verknüpfung wieder zu aktivieren, oder das Symbol entfernen."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Aktualisieren"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Entfernen"</string>
 </resources>

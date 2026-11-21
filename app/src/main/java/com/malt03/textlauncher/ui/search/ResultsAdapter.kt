@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.android.launcher3.BubbleTextView
-import com.android.launcher3.icons.FastBitmapDrawable
 import com.google.android.material.color.MaterialColors
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
@@ -60,14 +59,14 @@ class ResultsAdapter(
         holder.entry = entry
         // A drag hides the icon it starts from (PopupContainer's pre-drag condition).
         icon.setIconVisible(true)
-        icon.iconDrawable = null
+        // BubbleTextView.applyFromWorkspaceItem: the icon (drawn disabled for a suspended app),
+        // the label and the tag.
         val itemInfo = AppItemInfo(entry, iconLoader.cached(entry))
-        icon.tag = itemInfo
-        icon.text = entry.label
+        icon.applyFromWorkspaceItem(itemInfo)
         iconLoader.load(entry) { info ->
             if (holder.entry == entry) {
                 itemInfo.bitmap = info
-                icon.iconDrawable = iconLoader.newDrawable(info)
+                icon.applyFromWorkspaceItem(itemInfo)
             }
         }
         icon.setOnClickListener { onClick(entry, icon) }
@@ -97,12 +96,4 @@ class ResultIconView(context: Context, grid: GridSpec) : BubbleTextView(context,
         ellipsize = TextUtils.TruncateAt.END
         setShadowLayer(4 * density, 0f, 0f, 0x88000000.toInt())
     }
-
-    /** BubbleTextView.setIcon; null clears the icon while the next one loads. */
-    var iconDrawable: FastBitmapDrawable?
-        get() = icon
-        set(value) {
-            if (value == null) setCompoundDrawables(null, null, null, null)
-            setIcon(value)
-        }
 }

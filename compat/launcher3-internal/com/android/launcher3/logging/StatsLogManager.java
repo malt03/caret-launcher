@@ -20,6 +20,8 @@
 
 package com.android.launcher3.logging;
 
+import android.content.Context;
+
 import com.android.launcher3.model.data.ItemInfo;
 
 /**
@@ -35,6 +37,7 @@ public class StatsLogManager {
     }
 
     public enum LauncherEvent implements EventEnum {
+        LAUNCHER_FOLDER_OPEN(551),
         LAUNCHER_TAP_TO_ADD_DEEP_SHORTCUT(2446);
 
         private final int mId;
@@ -57,6 +60,11 @@ public class StatsLogManager {
 
         default void log(EventEnum event) {
         }
+    }
+
+    /** Returns the logger of the context; TextLauncher's logs nothing. */
+    public static StatsLogManager newInstance(Context context) {
+        return new StatsLogManager();
     }
 
     public StatsLogger logger() {

@@ -1,19 +1,18 @@
 package com.malt03.textlauncher.ui.home
 
-import android.content.pm.ShortcutInfo
 import android.view.View
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.touch.ItemClickHandler
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
-import com.malt03.textlauncher.data.ShortcutItemInfo
+import com.malt03.textlauncher.data.isDeepShortcut
 
 /**
- * ItemInflater and ItemClickHandler of the home screen: makes the views of the home model's items,
- * with their icons (loaded as Launcher3's IconCache does for LoaderTask), and handles their
- * clicks.
+ * ItemInflater of the home screen: makes the views of the home model's items, with their icons
+ * (loaded as Launcher3's IconCache does for LoaderTask). Clicks go to Launcher3's ItemClickHandler.
  */
 internal class HomeItemInflater(private val home: HomeController) {
     private val context = home.context
@@ -21,45 +20,34 @@ internal class HomeItemInflater(private val home: HomeController) {
     private val grid = home.grid
 
     /** The app whose icon badges an app shortcut (IconCache.getShortcutInfoBadge). */
-    fun badgeAppOf(shortcut: ShortcutInfo): AppEntry? =
-        app.appRepository.apps?.let { app.shortcutRepository.appOf(shortcut, it) }
+    fun badgeAppOf(info: ItemInfo): AppEntry? =
+        app.appRepository.apps?.let { app.shortcutRepository.appOf(info, it) }
 
-    /** The icon of an app or shortcut that was found (LoaderTask); nothing for one that was not. */
+    /**
+     * The icon of an app that was found (LoaderTask). An app shortcut's icon is loaded with the
+     * shortcut ([HomeLoader]), so its item already has it.
+     */
     fun loadIcon(info: WorkspaceItemInfo, onLoaded: (BitmapInfo) -> Unit) {
-        when (info) {
-            is AppItemInfo -> info.entry?.let { app.iconLoader.load(it, onLoaded) }
-            is ShortcutItemInfo -> info.shortcut?.let { app.iconLoader.loadShortcut(info.homeKey, it, badgeAppOf(it), onLoaded) }
-        }
+        if (info is AppItemInfo) info.entry?.let { app.iconLoader.load(it, onLoaded) }
     }
 
-    /** BubbleTextView.applyFromWorkspaceItem: the icon, now or once it is loaded. */
+    /**
+     * BubbleTextView.applyFromWorkspaceItem: the icon, now or once it is loaded, drawn disabled
+     * when the item is.
+     */
     fun bindIcon(info: WorkspaceItemInfo, view: AppIconView) {
+        view.applyFromWorkspaceItem(info)
         loadIcon(info) { bitmap ->
             info.bitmap = bitmap
-            view.iconDrawable = app.iconLoader.newDrawable(bitmap)
-        }
-    }
-
-    /** ItemClickHandler.onClick: starts the app or the app shortcut. */
-    fun onClick(info: WorkspaceItemInfo, view: View) {
-        val host = home.host
-        when (info) {
-            is AppItemInfo -> info.entry?.let { host.launch(it, view) }
-            is ShortcutItemInfo -> info.shortcut?.let { host.startShortcut(it.`package`, it.id, view, info.user) }
-            // A shortcut row of the long-press menu (onClickAppShortcut).
-            else -> {
-                val id = info.deepShortcutId ?: return
-                val packageName = info.targetPackage ?: return
-                host.startShortcut(packageName, id, view, info.user)
-            }
+            view.applyFromWorkspaceItem(info)
         }
     }
 
     /** ItemInflater.inflateItem: the item's view, or null for an item that cannot be shown. */
-    fun inflateItem(item: ItemInfo): View? = when (item) {
-        is AppItemInfo -> if (item.entry != null) createItemView(item) else null
-        is ShortcutItemInfo -> if (item.shortcut != null) createItemView(item) else null
-        is FolderInfo -> createFolderView(item)
+    fun inflateItem(item: ItemInfo): View? = when {
+        item is AppItemInfo -> if (item.entry != null) createItemView(item) else null
+        item is WorkspaceItemInfo && item.isDeepShortcut -> createItemView(item)
+        item is FolderInfo -> createFolderView(item)
         else -> null // TODO(Tex-t2ea): widgets
     }
 
@@ -68,7 +56,7 @@ internal class HomeItemInflater(private val home: HomeController) {
             bindIcon(info, this)
             // ItemInflater: the item's focus listener is Launcher.getFocusHandler.
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
-            setOnClickListener { onClick(info, this) }
+            setOnClickListener(ItemClickHandler.INSTANCE)
             setOnLongClickListener {
                 home.itemLongClickListener.onHomeItemLongPress(this)
                 true
@@ -87,8 +75,7 @@ internal class HomeItemInflater(private val home: HomeController) {
                     updatePreviewItems { it === item }
                 }
             }
-            // ItemClickHandler.onClickFolderIcon
-            setOnClickListener { with(folder) { if (!isOpen && !isDestroyed) animateOpen() } }
+            setOnClickListener(ItemClickHandler.INSTANCE)
             setOnLongClickListener {
                 home.itemLongClickListener.onHomeFolderLongPress(this)
                 true

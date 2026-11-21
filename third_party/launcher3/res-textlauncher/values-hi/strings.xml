@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"ऐप्लिकेशन की जानकारी"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"शॉर्टकट मेन्यू"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"होम स्क्रीन पर जोड़ें"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"डाउनलोड किए गए ऐप्लिकेशन सुरक्षित मोड में अक्षम है"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"शॉर्टकट उपलब्ध नहीं है"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"ऐप्लिकेशन उपलब्ध नहीं है"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"ऐप्लिकेशन को अपडेट करना ज़रूरी है"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"इस आइकॉन का ऐप्लिकेशन अपडेट नहीं है. इस शॉर्टकट को फिर से चालू करने या आइकॉन को हटाने के लिए, ऐप्लिकेशन को मैन्युअल रूप से अपडेट किया जा सकता है."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"अपडेट करें"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"हटाएं"</string>
 </resources>

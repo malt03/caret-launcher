@@ -3,6 +3,7 @@ package com.malt03.textlauncher.data
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.pm.LauncherApps.ShortcutQuery
+import android.content.ComponentName
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +11,10 @@ import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
+import com.android.launcher3.LauncherSettings
+import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.shortcuts.ShortcutRequest
 
 /**
@@ -76,6 +81,27 @@ class ShortcutRepository(private val context: Context) {
 
     fun keyOf(shortcut: ShortcutInfo): String = HomeShortcutKey(shortcut.`package`, shortcut.id, userSerial).key
 
+    /** The key a shortcut on the home screen is saved by, from ShortcutKey.fromItemInfo. */
+    fun keyOf(info: ItemInfo): String {
+        val key = ShortcutKey.fromItemInfo(info)
+        return HomeShortcutKey(key.packageName, key.id, userSerial).key
+    }
+
+    /**
+     * The home screen's item for a saved shortcut key, before the shortcut is looked up
+     * (LoaderTask: the WorkspaceItemInfo is made from the saved intent). Null for a key of another
+     * user, which TextLauncher does not show (docs/spec.md 2.1).
+     */
+    fun newItem(key: String): WorkspaceItemInfo? {
+        val parsed = HomeShortcutKey.parse(key) ?: return null
+        val user = userOf(parsed) ?: return null
+        return WorkspaceItemInfo().apply {
+            itemType = LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
+            intent = ShortcutKey.makeIntent(parsed.id, parsed.packageName)
+            this.user = user
+        }
+    }
+
     fun userOf(key: HomeShortcutKey): UserHandle? = if (key.userSerial == userSerial) user else null
 
     /**
@@ -99,9 +125,17 @@ class ShortcutRepository(private val context: Context) {
     }
 
     /** The app a shortcut belongs to: its activity, or else its package's first app. */
-    fun appOf(shortcut: ShortcutInfo, apps: List<AppEntry>): AppEntry? =
-        shortcut.activity?.let { activity -> apps.firstOrNull { it.key == AppEntry.keyOf(activity, userSerial) } }
-            ?: apps.firstOrNull { it.component.packageName == shortcut.`package` && it.user == user }
+    fun appOf(shortcut: ShortcutInfo, apps: List<AppEntry>): AppEntry? = appOf(shortcut.`package`, shortcut.activity, apps)
+
+    /** The app a shortcut on the home screen belongs to, from its intent (ShortcutKey.makeIntent). */
+    fun appOf(info: ItemInfo, apps: List<AppEntry>): AppEntry? {
+        val packageName = info.intent.`package` ?: return null
+        return appOf(packageName, info.intent.component, apps)
+    }
+
+    private fun appOf(packageName: String, activity: ComponentName?, apps: List<AppEntry>): AppEntry? =
+        activity?.let { a -> apps.firstOrNull { it.key == AppEntry.keyOf(a, userSerial) } }
+            ?: apps.firstOrNull { it.component.packageName == packageName && it.user == user }
 
     /**
      * BgDataModel.updateShortcutPinnedState: updates the deep shortcuts state in system to match

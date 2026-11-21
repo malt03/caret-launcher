@@ -5,7 +5,6 @@ import android.content.Context
 import android.view.View
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.folder.FolderIcon
-import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -32,14 +31,6 @@ class AppIconView(context: Context, iconSizePx: Int) : BubbleTextView(context, i
     init {
         setCenterVertically(true)
     }
-
-    /** BubbleTextView.setIcon; null clears the icon while the next one loads. */
-    var iconDrawable: FastBitmapDrawable?
-        get() = icon
-        set(value) {
-            if (value == null) setCompoundDrawables(null, null, null, null)
-            setIcon(value)
-        }
 
     /** No label (docs/spec.md 5.2), so only the icon is centered. */
     override fun getCellSpecMaxTextLineCount(): Int = 0

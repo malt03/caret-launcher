@@ -1,6 +1,5 @@
 package com.malt03.textlauncher.ui.home
 
-import android.content.pm.ShortcutInfo
 import android.graphics.Rect
 import android.os.UserHandle
 import android.view.View
@@ -8,6 +7,7 @@ import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import androidx.core.widget.NestedScrollView
+import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
@@ -26,8 +26,7 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
-import com.malt03.textlauncher.data.HomeItemInfo
-import com.malt03.textlauncher.data.ShortcutItemInfo
+import com.malt03.textlauncher.data.isDeepShortcut
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
@@ -81,7 +80,11 @@ class HomeController(
     }
 
     /** Launcher3's Workspace stand-in: holds the home grid and shrinks while a folder is open. */
-    val workspace = Workspace<Any>(context).apply {
+    val workspace = object : Workspace<Any>(context) {
+        override fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>, reason: String?) {
+            if (loader.removeItems(matcher::test)) loader.rebuild()
+        }
+    }.apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
 
@@ -203,7 +206,8 @@ class HomeController(
      */
     internal fun addToWorkspace(item: ItemInfo): Boolean {
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
-        val info = homeItemFor(item as? WorkspaceItemInfo ?: return false)
+        val info = (item as? WorkspaceItemInfo ?: return false).clone()
+        if (info.isDeepShortcut) info.bitmap = badgedShortcutIcon(info)
         // TextLauncher: Launcher3 goes to the NORMAL state first.
         host.showHome()
         val cell = IntArray(2)
@@ -215,19 +219,12 @@ class HomeController(
     }
 
     /**
-     * A shortcut from the long-press menu as the home model keeps it: a [ShortcutItemInfo] with its
-     * icon badged (WorkspaceItemInfo.clone in LauncherAccessibilityDelegate.addToWorkspace).
+     * IconCache.getShortcutIcon: an app shortcut's icon, badged with its app's icon. Launcher3
+     * loads it on its model thread; here the cached icon, or the given one with the badge added.
      */
-    internal fun homeItemFor(info: WorkspaceItemInfo): WorkspaceItemInfo {
-        if (info is HomeItemInfo) return info
-        val shortcut = info.shortcutInfo ?: return info
-        return ShortcutItemInfo(app.shortcutRepository.keyOf(shortcut), shortcut, context, badgedShortcutIcon(info, shortcut))
-    }
-
-    /** IconCache.getShortcutIcon: the shortcut's icon, badged with its app's icon. */
-    internal fun badgedShortcutIcon(info: WorkspaceItemInfo, shortcut: ShortcutInfo): BitmapInfo =
-        app.iconLoader.cachedShortcut(app.shortcutRepository.keyOf(shortcut))
-            ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(itemInflater.badgeAppOf(shortcut)))
+    internal fun badgedShortcutIcon(info: WorkspaceItemInfo): BitmapInfo =
+        model.keyOf(info)?.let(app.iconLoader::cachedShortcut)
+            ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(itemInflater.badgeAppOf(info)))
 
     /**
      * Launcher.bindInflatedItems with createNewAppBounceAnimation: an item added from the menu

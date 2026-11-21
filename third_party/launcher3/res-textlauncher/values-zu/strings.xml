@@ -4,4 +4,11 @@
     <string name="app_info_drop_target_label" msgid="692894985365717661">"Ulwazi nge-app"</string>
     <string name="action_deep_shortcut" msgid="4766835855579976045">"Imenyu Yezinqamuleli"</string>
     <string name="action_add_to_workspace" msgid="215894119683164916">"Faka kusikrini sasekhaya"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Uhlelo lokusebenza olulandiwe lukhutshaziwe kumodi ephephile"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Isinqamuleli asitholakali"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Uhlelo lokusebenza alutholakali"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Kudingeka isibuyekezo se-app"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"I-app yalesi sithonjana ibuyekeziwe. Ungabuyekeza mathupha ukuze uphinde unike amandla lesi sinqamuleli, noma ususe isithonjana."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Vuselela"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Susa"</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.view.View
 import com.android.launcher3.DeviceProfile
@@ -11,6 +12,11 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
+import com.android.launcher3.shortcuts.ShortcutKey
+import com.android.launcher3.touch.ItemClickHandler
+import com.android.launcher3.util.RunnableList
+import com.malt03.textlauncher.data.AppItemInfo
+import com.malt03.textlauncher.data.isDeepShortcut
 import java.util.function.Consumer
 
 /**
@@ -43,13 +49,22 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun getDeviceProfile(): DeviceProfile = deviceProfile
     override fun getActivityComponent(): ActivityComponent = activityComponent
 
+    /** ItemClickHandler, for the items in folders and the long-press menu's app shortcuts. */
+    override fun getItemOnClickListener(): View.OnClickListener = ItemClickHandler.INSTANCE
+
     /**
-     * ItemClickHandler for the items in folders and the long-press menu's app shortcuts
-     * (onClickAppShortcut).
+     * Launcher.startActivitySafely for ItemClickHandler: starts the app, or the app shortcut with
+     * LauncherApps.startShortcut (ActivityContext.startShortcutIntentSafely).
      */
-    override fun getItemOnClickListener(): View.OnClickListener = View.OnClickListener { v ->
-        val info = v.tag as? WorkspaceItemInfo ?: return@OnClickListener
-        home.itemInflater.onClick(info, v)
+    override fun startActivitySafely(v: View, intent: Intent, item: ItemInfo?): RunnableList? {
+        when {
+            item is AppItemInfo -> item.entry?.let { home.host.launch(it, v) }
+            item != null && item.isDeepShortcut -> {
+                val key = ShortcutKey.fromItemInfo(item)
+                home.host.startShortcut(key.packageName, key.id, v, item.user)
+            }
+        }
+        return null
     }
     override fun asContext() = context
 
@@ -69,7 +84,7 @@ internal class HomeActivityContext(private val home: HomeController) :
      */
     override fun updateAndBindWorkspaceItem(si: WorkspaceItemInfo, info: ShortcutInfo) {
         si.updateFromDeepShortcutInfo(info, context)
-        si.bitmap = home.badgedShortcutIcon(si, info)
+        si.bitmap = home.badgedShortcutIcon(si)
     }
 
     /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */
