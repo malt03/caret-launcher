@@ -99,8 +99,13 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root.onKeyboardHidden = ::onKeyboardHidden
 
         // docs/spec.md 1.4: the back gesture itself does nothing on the home screen.
+        // Launcher.getOnBackAnimationCallback: a drag is canceled first (docs/spec.md 5.4).
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                if (home.isDragging) {
+                    home.cancelDrag()
+                    return
+                }
                 if (home.closeTopFloatingView()) return
                 if (home.isFolderOpen) home.closeFolder()
             }

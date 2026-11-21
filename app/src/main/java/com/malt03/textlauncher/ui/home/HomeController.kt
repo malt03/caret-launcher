@@ -313,6 +313,8 @@ class HomeController(
         dragController.cancelDrag()
     }
 
+    val isDragging: Boolean get() = dragController.isDragging
+
     fun closeFolder() {
         folderPopup?.dismiss()
         folderPopup = null

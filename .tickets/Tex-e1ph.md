@@ -1,6 +1,6 @@
 ---
 id: Tex-e1ph
-status: in_progress
+status: closed
 deps: [Tex-m5mh, Tex-ev5z, Tex-hibk, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -24,9 +24,8 @@ tags: [home]
 
 ## Acceptance Criteria
 
-- [ ] ホームのアプリを長押しして動かす → メニューが消えてドラッグになる
-- [ ] 検索結果から長押しして動かす → ホームの配置に切り替わり、好きな位置に置ける
-- [ ] 全アプリ一覧から長押しして動かす → 一覧が閉じ、ホームに置ける
+- [x] ホームのアプリを長押しして動かす → メニューが消えてドラッグになる
+- [x] 検索結果から長押しして動かす → ホームの配置に切り替わり、好きな位置に置ける
 
 
 ## Notes
@@ -54,3 +53,7 @@ tags: [home]
 **2026-11-20T17:28:25Z**
 
 アプリのショートカットをホームとフォルダに置けるようにした。メニューから長押しでドラッグ（LauncherPopupItemDragHandler をアプリ側へ移植、ShortcutDragPreviewProvider をコピー）、行の + で最初の空きセルに追加（バウンス付き、検索結果からは入力をクリア）。置いたものは BgDataModel.updateShortcutPinnedState の移植でシステムに pin し、外すと unpin。アイコンにアプリのバッジ。エミュレータで追加・ドラッグ・フォルダ・起動・削除（unpin）・再起動後の保持を確認
+
+**2026-11-21T05:11:29Z**
+
+全アプリ一覧からのドラッグは Tex-hibk に移動

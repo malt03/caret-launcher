@@ -1,6 +1,6 @@
 ---
 id: Tex-ebnm
-status: in_progress
+status: closed
 deps: [Tex-9ipm, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -24,9 +24,9 @@ tags: [home]
 
 ## Acceptance Criteria
 
-- [ ] ホームのアプリをタップすると起動する
-- [ ] フォルダのアイコンに中のアプリのプレビューが出る
-- [ ] フォルダをタップすると中身が開き、そこから起動できる
+- [x] ホームのアプリをタップすると起動する
+- [x] フォルダのアイコンに中のアプリのプレビューが出る
+- [x] フォルダをタップすると中身が開き、そこから起動できる
 
 
 ## Notes
@@ -50,3 +50,7 @@ tags: [home]
 **2026-11-20T13:46:43Z**
 
 フォルダの開閉アニメーションを Launcher3 からのコピーに置き換え（FolderAnimationSpringBuilderManager など folder/ 一式、PreviewBackground、ShapeDelegate）。Folder・FolderIcon・BubbleTextView・Launcher などは互換クラスにし、OpenFolder・FolderIconView・AppIconView が継承する。閉じ終わりのずれがないこと、受け皿の円とフォルダ作成をエミュレータで確認
+
+**2026-11-21T05:11:29Z**
+
+前提の Tex-9ipm の確認が済んだので閉じる

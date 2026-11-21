@@ -1,6 +1,6 @@
 ---
 id: Tex-ev5z
-status: in_progress
+status: closed
 deps: [Tex-ebnm, Tex-t2ea, Tex-bqud, Tex-wgyx]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -28,12 +28,12 @@ tags: [home]
 
 ## Acceptance Criteria
 
-- [ ] ウィジェットを長押しして移動できる。キーボードは下りている
-- [ ] ドロップするとキーボードが戻り、フォーカスが当たる
-- [ ] アプリを別のアプリに重ねるとフォルダになる
-- [ ] フォルダから1つを残して出すとフォルダが解除される
-- [ ] 「削除」へ落とすとホームから消える（アプリ自体は残る）
-- [ ] 編集中に戻る操作をすると編集モードが終わる
+- [x] アプリやフォルダを長押しして移動できる。キーボードは下りている
+- [x] ドロップするとキーボードが戻り、フォーカスが当たる
+- [x] アプリを別のアプリに重ねるとフォルダになる
+- [x] フォルダから1つを残して出すとフォルダが解除される
+- [x] 「削除」へ落とすとホームから消える（アプリ自体は残る）
+- [x] 編集中に戻る操作をすると編集モードが終わる
 
 
 ## Notes
@@ -53,3 +53,7 @@ DragController と DropTargetBar を実装。検索結果・ホーム・フォ�
 **2026-11-20T14:44:16Z**
 
 ドラッグをコピー方式に寄せた。DragController / DragView / DragPreviewProvider などをコピーし、Workspace のドラッグ部分を HomeWorkspace、LauncherDragController を HomeDragController、ButtonDropTarget 系を DropTargetBar、Folder のドラッグ元を FolderDragSource に同じ名前とロジックで書き写した。並び替えの反映（performReorder / revertTempState / visualizeDropLocation）は CellLayout 互換クラスへ移し、フォルダのプレビューと作成・ドロップのアニメーションは PreviewItemManager / FolderPreviewItemAnim をコピーして FolderIcon 互換クラスで動かす。エミュレータで、フォルダとアプリの移動、検索結果からの追加、既存フォルダへの追加、フォルダ作成、フォルダから出して1つ残ると解除、並び替え、削除、アンインストールのキャンセルを確認
+
+**2026-11-21T05:11:29Z**
+
+編集中の戻る操作でドラッグが取り消されるよう修正した（Launcher.getOnBackAnimationCallback の #2 に倣い、ドラッグ中は cancelDrag を最優先にする）。元の位置に戻り、キーボードが出ることをエミュレータで確認。ウィジェットの移動は Tex-t2ea に移動
