@@ -1,6 +1,6 @@
 ---
 id: Tex-sfxe
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:12Z
@@ -22,3 +22,9 @@ third_party/launcher3/UPSTREAM.md と docs/launcher3-porting.md の記載が古�
 - [ ] res-textlauncher の全ファイルが UPSTREAM.md に載っている
 - [ ] 互換クラスの置き場所と DeviceProfile の説明が今のコードと合っている
 
+
+## Notes
+
+**2026-11-21T09:28:38Z**
+
+res-textlauncher の color・drawable・layout の 25 ファイルが上流と一致することを確かめ、UPSTREAM.md の upstream ブロックに載せた。update-upstream.sh に res_dir（上流の res/ をここでは res-textlauncher/ に置く）を足したので、更新スクリプトの対象になった。互換クラスの置き場所と DeviceProfile の説明を直した

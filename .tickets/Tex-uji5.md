@@ -1,6 +1,6 @@
 ---
 id: Tex-uji5
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:12Z
@@ -18,3 +18,9 @@ compat/launcher3（別モジュール）に置く必要があるのは、iconloa
 
 - [ ] 分け方の決まりが docs/launcher3-porting.md に書いてあり、全ファイルがそれに従っている
 
+
+## Notes
+
+**2026-11-21T09:28:38Z**
+
+Utilities は iconloaderlib から使われていないので compat/launcher3-internal へ移した。分け方（iconloaderlib からも使うものだけ compat/launcher3）を docs/launcher3-porting.md の「置き場所と記録」に書いた

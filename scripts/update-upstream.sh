@@ -7,6 +7,7 @@
 # Reads the ```upstream block of <dir>/UPSTREAM.md, fetches the old and the new tag, and
 # three-way merges every listed file with `git merge-file` (ours = this repo, base = old tag,
 # theirs = new tag). Files with conflicts keep conflict markers and are listed at the end.
+# With `res_dir=<dir>` in the block, upstream paths under res/ are kept under <dir>/ here.
 set -euo pipefail
 
 dir=${1:?third_party dir}
@@ -17,6 +18,7 @@ block=$(awk '/^```upstream$/{f=1;next} /^```$/{f=0} f' "$manifest")
 repo=$(printf '%s\n' "$block" | sed -n 's/^repo=//p')
 old_tag=$(printf '%s\n' "$block" | sed -n 's/^tag=//p')
 paths=$(printf '%s\n' "$block" | sed -n 's/^path=//p')
+res_dir=$(printf '%s\n' "$block" | sed -n 's/^res_dir=//p')
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
@@ -32,7 +34,9 @@ list_files() { # $1 = root, $2 = path
 for p in $paths; do
     files=$( { list_files "$work/base" "$p"; list_files "$work/theirs" "$p"; } | sort -u )
     for f in $files; do
-        base="$work/base/$f"; theirs="$work/theirs/$f"; ours="$dir/$f"
+        base="$work/base/$f"; theirs="$work/theirs/$f"; local=$f
+        if [ -n "$res_dir" ]; then local=${f/#res\//$res_dir/}; fi
+        ours="$dir/$local"
         if [ -f "$base" ] && [ -f "$theirs" ]; then
             if [ -f "$ours" ]; then
                 if ! git merge-file -q -L ours -L "$old_tag" -L "$new_tag" "$ours" "$base" "$theirs"; then

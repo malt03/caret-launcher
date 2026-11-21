@@ -103,6 +103,9 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
   - 元にしたタグ
   - こちらで手を入れたかどうか
 - Gradle では、`third_party/` 以下をライブラリモジュールとしてビルドする
+- 互換層（代わりのクラス）は `compat/` に置き、どこから使われるかで分ける
+  - `compat/launcher3/`：`third_party/systemui/`（`iconloaderlib`）からも使うもの。今は `Flags` と `UserType` だけ。`iconloaderlib` は `:launcher3` より下のモジュールなので、別モジュール `:launcher3-compat` にする
+  - `compat/launcher3-internal/`：それ以外のすべて。`third_party/launcher3/` と同じ `:launcher3` モジュールに含めてビルドする。コピーしたクラスやリソース（`R`）を使えるようにするためである
 
 ## 手を入れるときのルール
 
