@@ -32,9 +32,9 @@ import android.view.View;
 import android.view.animation.Interpolator;
 
 import com.android.app.animation.Interpolators;
-import com.android.launcher3.CellLayout;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
+import com.android.launcher3.ShortcutAndWidgetContainer;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.views.BaseDragLayer;
 
@@ -56,28 +56,22 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         mDragController = dragController;
     }
 
-    /**
-     * TextLauncher: DragLayer reads the child's position from its ShortcutAndWidgetContainer. Here
-     * the child's parent (a {@link com.android.launcher3.CellLayout.Children}) lays it out at
-     * paddingLeft + lp.x, paddingTop + lp.y.
-     */
-    public void animateViewIntoPosition(DragView dragView,
-            final View child, int duration, View anchorView) {
-        CellLayoutLayoutParams lp =
-                (CellLayoutLayoutParams) child.getLayoutParams();
-        View childParent = (View) child.getParent();
-        if (childParent instanceof CellLayout.Children) {
-            CellLayout.Children container =
-                    (CellLayout.Children) childParent;
-            container.measureChild(child);
-            container.layoutChild(child);
-        }
+    public void animateViewIntoPosition(DragView dragView, final View child, int duration,
+            View anchorView) {
+
+        ShortcutAndWidgetContainer childParent = (ShortcutAndWidgetContainer) child.getParent();
+        CellLayoutLayoutParams lp =  (CellLayoutLayoutParams) child.getLayoutParams();
+        childParent.measureChild(child);
+        childParent.layoutChild(child);
 
         float coord[] = new float[2];
         float childScale = child.getScaleX();
 
-        coord[0] = childParent.getPaddingLeft() + lp.x + (child.getMeasuredWidth() * (1 - childScale) / 2);
-        coord[1] = childParent.getPaddingTop() + lp.y + (child.getMeasuredHeight() * (1 - childScale) / 2);
+        // TextLauncher: the home grid's padding is CellLayout's, so its cells start inside it.
+        coord[0] = childParent.getPaddingLeft() + lp.x
+                + (child.getMeasuredWidth() * (1 - childScale) / 2);
+        coord[1] = childParent.getPaddingTop() + lp.y
+                + (child.getMeasuredHeight() * (1 - childScale) / 2);
 
         // Since the child hasn't necessarily been laid out, we force the lp to be updated with
         // the correct coordinates (above) and use these to determine the final location

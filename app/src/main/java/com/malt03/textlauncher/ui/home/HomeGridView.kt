@@ -3,13 +3,11 @@ package com.malt03.textlauncher.ui.home
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Point
 import android.view.View
-import android.view.ViewGroup
 import com.android.launcher3.CellLayout
-import com.android.launcher3.keyboard.ViewGroupFocusHelper
+import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
-import com.android.launcher3.dragndrop.DraggableView
+import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.malt03.textlauncher.data.HomeItem
 import com.malt03.textlauncher.ui.GridSpec
 import kotlin.math.ceil
@@ -19,12 +17,12 @@ import kotlin.math.max
  * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count, icons without
  * labels, and no row limit. It sits in a vertical scroll container.
  *
- * It does the job of Launcher3's ShortcutAndWidgetContainer for the [CellLayout] stand-in, which
- * holds the copied reorder, drop location and cell drawing code; the drag and drop logic itself
- * is in [HomeWorkspace].
+ * It is the [CellLayout] stand-in's ShortcutAndWidgetContainer; the CellLayout holds the copied
+ * reorder, drop location and cell drawing code, and the drag and drop logic itself is in
+ * [HomeWorkspace].
  */
 @SuppressLint("ViewConstructor")
-class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), CellLayout.Children {
+class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetContainer(context) {
     val cellLayout = CellLayout(context, this, grid.iconSizePx).also { it.setOwnerView(this) }
 
     /**
@@ -60,9 +58,6 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         clipChildren = false
         clipToPadding = false
     }
-
-    /** Like Launcher3's CellLayout: show the icons' pressed state right away. */
-    override fun shouldDelayChildPressedState(): Boolean = false
 
     /** CellLayout.addViewToCellLayout: the cells are marked as occupied. */
     fun addItemView(view: View, item: HomeItem) {
@@ -109,10 +104,6 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         setMeasuredDimension(width, max(contentRows * cellHeight + paddingTop + paddingBottom, viewportHeight))
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        for (child in itemViews()) layoutChild(child)
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         // CellLayout.onDraw: the drop location, then delegated cell drawings (folder circles).
@@ -128,38 +119,12 @@ class HomeGridView(context: Context, val grid: GridSpec) : ViewGroup(context), C
         cellLayout.drawDelegatedOverItems(canvas)
     }
 
-    // ---- CellLayout.Children (ShortcutAndWidgetContainer) ----
-
-    override fun setupLp(child: View) {
-        val lp = child.layoutParams as CellLayoutLayoutParams
-        lp.setup(cellWidth, cellHeight, layoutDirection == LAYOUT_DIRECTION_RTL, grid.columns, cellLayout.countY, NO_BORDER)
-    }
-
-    override fun measureChild(child: View) {
-        setupLp(child)
-        val lp = child.layoutParams as CellLayoutLayoutParams
-        child.measure(
-            MeasureSpec.makeMeasureSpec(lp.width, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(lp.height, MeasureSpec.EXACTLY),
-        )
-    }
-
+    /**
+     * ShortcutAndWidgetContainer.layoutChild. TextLauncher: this view's padding is CellLayout's
+     * padding, so the cells start inside it.
+     */
     override fun layoutChild(child: View) {
         val lp = child.layoutParams as CellLayoutLayoutParams
         child.layout(paddingLeft + lp.x, paddingTop + lp.y, paddingLeft + lp.x + lp.width, paddingTop + lp.y + lp.height)
-    }
-
-    /** ShortcutAndWidgetContainer.getChildAt(cellX, cellY), by the committed cells. */
-    override fun getChildAtCell(cellX: Int, cellY: Int): View? = itemViews().firstOrNull { child ->
-        val lp = child.layoutParams as CellLayoutLayoutParams
-        cellX in lp.cellX until lp.cellX + lp.cellHSpan && cellY in lp.cellY until lp.cellY + lp.cellVSpan
-    }
-
-    /** CellLayout.canCreateFolder */
-    override fun canCreateFolder(child: View): Boolean =
-        child is DraggableView && child.viewType == DraggableView.DRAGGABLE_ICON
-
-    private companion object {
-        val NO_BORDER = Point(0, 0)
     }
 }

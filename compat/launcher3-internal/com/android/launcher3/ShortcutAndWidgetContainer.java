@@ -20,12 +20,131 @@
 
 package com.android.launcher3;
 
+import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.View;
+import android.view.ViewGroup;
+
+import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 
 /**
- * Stand-in for Launcher3's ShortcutAndWidgetContainer. TextLauncher's folders have no CellLayout
- * pages (FolderPagedView.getPageAt returns null), so this is never reached at runtime.
+ * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
+ * and lays out the items of a {@link CellLayout}. Members are copied from
+ * ShortcutAndWidgetContainer.java for icons and folders only (no widgets, no QSB, no translation
+ * provider, no wallpaper drop command). TextLauncher's home grid extends this.
  */
-public class ShortcutAndWidgetContainer {
-    public void setupLp(View child) { }
+public abstract class ShortcutAndWidgetContainer extends ViewGroup {
+
+    private int mCellWidth;
+    private int mCellHeight;
+    private Point mBorderSpace = new Point();
+
+    private int mCountX;
+    private int mCountY;
+
+    private boolean mInvertIfRtl = false;
+
+    public ShortcutAndWidgetContainer(Context context) {
+        super(context);
+    }
+
+    public void setCellDimensions(int cellWidth, int cellHeight, int countX, int countY,
+            Point borderSpace) {
+        mCellWidth = cellWidth;
+        mCellHeight = cellHeight;
+        mCountX = countX;
+        mCountY = countY;
+        mBorderSpace = borderSpace;
+    }
+
+    public View getChildAt(int cellX, int cellY) {
+        final int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            View child = getChildAt(i);
+            CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+
+            if ((lp.getCellX() <= cellX) && (cellX < lp.getCellX() + lp.cellHSpan)
+                    && (lp.getCellY() <= cellY) && (cellY < lp.getCellY() + lp.cellVSpan)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    public void setupLp(View child) {
+        CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+        lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                mBorderSpace);
+    }
+
+    // Set whether or not to invert the layout horizontally if the layout is in RTL mode.
+    public void setInvertIfRtl(boolean invert) {
+        mInvertIfRtl = invert;
+    }
+
+    /**
+     * TextLauncher: the icons center themselves in their cells (iconCenterVertically), so no cell
+     * padding is set on them.
+     */
+    public void measureChild(View child) {
+        CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+        lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                mBorderSpace);
+        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(lp.width, MeasureSpec.EXACTLY);
+        int childheightMeasureSpec = MeasureSpec.makeMeasureSpec(lp.height, MeasureSpec.EXACTLY);
+        child.measure(childWidthMeasureSpec, childheightMeasureSpec);
+    }
+
+    public boolean invertLayoutHorizontally() {
+        return mInvertIfRtl && Utilities.isRtl(getResources());
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            final View child = getChildAt(i);
+            if (child.getVisibility() != GONE) {
+                layoutChild(child);
+            }
+        }
+    }
+
+    /**
+     * Core logic to layout a child for this ViewGroup.
+     */
+    public void layoutChild(View child) {
+        CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+        int childLeft = lp.x;
+        int childTop = lp.y;
+        child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
+    }
+
+    @Override
+    public boolean shouldDelayChildPressedState() {
+        return false;
+    }
+
+    @Override
+    public void requestChildFocus(View child, View focused) {
+        super.requestChildFocus(child, focused);
+        if (child != null) {
+            Rect r = new Rect();
+            child.getDrawingRect(r);
+            requestRectangleOnScreen(r);
+        }
+    }
+
+    @Override
+    public void cancelLongPress() {
+        super.cancelLongPress();
+
+        // Cancel long press for all children
+        final int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            final View child = getChildAt(i);
+            child.cancelLongPress();
+        }
+    }
 }

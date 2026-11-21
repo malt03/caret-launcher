@@ -20,6 +20,7 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.dragndrop.DraggableView.DRAGGABLE_ICON;
 import static com.android.launcher3.util.MultiTranslateDelegate.INDEX_REORDER_PREVIEW_OFFSET;
 
 import android.animation.Animator;
@@ -48,6 +49,7 @@ import com.android.launcher3.celllayout.ItemConfiguration;
 import com.android.launcher3.celllayout.ReorderAlgorithm;
 import com.android.launcher3.celllayout.ReorderParameters;
 import com.android.launcher3.celllayout.ReorderPreviewAnimation;
+import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.util.CellAndSpan;
 import com.android.launcher3.util.GridOccupancy;
 import com.android.launcher3.util.MSDLPlayerWrapper;
@@ -66,37 +68,11 @@ import java.util.Stack;
  * (celllayout/ReorderAlgorithm.java, celllayout/ViewCluster.kt).
  *
  * Never attached: TextLauncher's grid view owns one, keeps its geometry in sync, lists its
- * children through {@link Children} and draws its delegated cell drawings. It is a View only
+ * children through its {@link ShortcutAndWidgetContainer} and draws its delegated cell drawings. It is a View only
  * because copied code reads View members of CellLayout (clipChildren and so on). Method bodies are copied from CellLayout.java; changes are
  * marked with "TextLauncher:".
  */
 public class CellLayout extends FrameLayout {
-
-    /** TextLauncher: replaces CellLayout's ShortcutAndWidgetContainer. */
-    public interface Children {
-        int getChildCount();
-
-        View getChildAt(int index);
-
-        int indexOfChild(View child);
-
-        /** ShortcutAndWidgetContainer.setupLp */
-        void setupLp(View child);
-
-        /** ShortcutAndWidgetContainer.measureChild */
-        void measureChild(View child);
-
-        /** ShortcutAndWidgetContainer.layoutChild */
-        void layoutChild(View child);
-
-        /** ShortcutAndWidgetContainer.getChildAt(cellX, cellY) */
-        View getChildAtCell(int cellX, int cellY);
-
-        /** Workspace / CellLayout.canCreateFolder: whether the child can take a folder drop. */
-        boolean canCreateFolder(View child);
-
-        void requestLayout();
-    }
 
     private static final boolean DESTRUCTIVE_REORDER = false;
 
@@ -116,7 +92,7 @@ public class CellLayout extends FrameLayout {
     public static final float DEFAULT_SCALE = 1f;
     public static final float REORDER_PREVIEW_MAGNITUDE = 0.12f;
 
-    private final Children mShortcutsAndWidgets;
+    private final ShortcutAndWidgetContainer mShortcutsAndWidgets;
 
     private int mCountX;
     private int mCountY;
@@ -141,7 +117,7 @@ public class CellLayout extends FrameLayout {
 
     private final int mIconSizePx;
 
-    public CellLayout(Context context, Children children, int iconSizePx) {
+    public CellLayout(Context context, ShortcutAndWidgetContainer children, int iconSizePx) {
         super(context);
         mIconSizePx = iconSizePx;
         mShortcutsAndWidgets = children;
@@ -361,9 +337,8 @@ public class CellLayout extends FrameLayout {
         return new ReorderAlgorithm(this);
     }
 
-    /** TextLauncher: no child container; see {@link ShortcutAndWidgetContainer}. */
     public ShortcutAndWidgetContainer getShortcutsAndWidgets() {
-        return null;
+        return mShortcutsAndWidgets;
     }
 
     /** TextLauncher: the view that draws this layout's content. */
@@ -439,6 +414,8 @@ public class CellLayout extends FrameLayout {
                 }
             }
         }
+        mShortcutsAndWidgets.setCellDimensions(mCellWidth, mCellHeight, mCountX, mCountY,
+                mBorderSpace);
     }
 
     /** TextLauncher: cell geometry in pixels. */
@@ -449,6 +426,8 @@ public class CellLayout extends FrameLayout {
         mBorderSpace.set(borderSpaceX, borderSpaceY);
         mPaddingLeft = paddingLeft;
         mPaddingTop = paddingTop;
+        mShortcutsAndWidgets.setCellDimensions(mCellWidth, mCellHeight, mCountX, mCountY,
+                mBorderSpace);
     }
 
     public int getCountX() {
@@ -484,7 +463,7 @@ public class CellLayout extends FrameLayout {
     }
 
     public View getChildAt(int cellX, int cellY) {
-        return mShortcutsAndWidgets.getChildAtCell(cellX, cellY);
+        return mShortcutsAndWidgets.getChildAt(cellX, cellY);
     }
 
     // TextLauncher: icons are centered in their cell, so the visual center is the cell center.
@@ -535,7 +514,8 @@ public class CellLayout extends FrameLayout {
     }
 
     private boolean canCreateFolder(View child) {
-        return child != null && mShortcutsAndWidgets.canCreateFolder(child);
+        return child instanceof DraggableView
+                && ((DraggableView) child).getViewType() == DRAGGABLE_ICON;
     }
 
     public boolean isNearestDropLocationOccupied(int pixelX, int pixelY, int spanX, int spanY,
@@ -992,8 +972,7 @@ public class CellLayout extends FrameLayout {
 
     public boolean animateChildToPosition(final View child, int cellX, int cellY, int duration,
             int delay, boolean permanent, boolean adjustOccupied) {
-        // TextLauncher: the grid view stands in for ShortcutAndWidgetContainer.
-        Children clc = mShortcutsAndWidgets;
+        ShortcutAndWidgetContainer clc = getShortcutsAndWidgets();
 
         if (clc.indexOfChild(child) != -1 && (child instanceof Reorderable item)) {
             final CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
