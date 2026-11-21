@@ -1,6 +1,6 @@
 ---
 id: Tex-9vav
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:13Z
@@ -25,3 +25,7 @@ LauncherActivity が、検索結果の表示（RecyclerView、並び替え、1 �
 **2026-11-21T09:43:49Z**
 
 検索結果のセルは LinearLayout に AppIconView と別の TextView を並べている。上流の全アプリ一覧と同じく、ラベル付きの BubbleTextView（DISPLAY_ALL_APPS）1 つにできるか確かめる（Tex-htxz で BubbleTextView がアイコンを描くようになった）
+
+**2026-11-21T10:14:15Z**
+
+検索結果の表示を ui/search/SearchResults（上流の ActivityAllAppsContainerView の検索部分と AdapterHolder、AllAppsSearchBarController が頼む並べ替え）に分けた。LauncherActivity には、入力があれば結果、なければホームを出す切り替えと、キーボード・戻る・フォーカスの方針だけが残る。結果のセルは上流の全アプリ一覧と同じく、ラベル付きの BubbleTextView 1 つ（ResultIconView）にした。上流の BaseIcon と同じく singleLine ではなく lines=1 にしている（singleLine だと横スクロールでフォーカス枠がずれる）。エミュレータで、見た目が前と同じこと、1 位の枠、矢印キーでの移動、長押しからホームへの配置を確認

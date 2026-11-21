@@ -17,20 +17,12 @@ import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import androidx.core.view.doOnLayout
-import androidx.recyclerview.widget.GridLayoutManager
-import com.malt03.textlauncher.R
-import androidx.recyclerview.widget.RecyclerView
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
-import com.malt03.textlauncher.search.Ranker
-import com.malt03.textlauncher.search.SearchCandidate
 import com.malt03.textlauncher.ui.home.HomeController
-import com.android.launcher3.keyboard.FocusedItemDecorator
-import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.views.ActivityContext
-import com.malt03.textlauncher.ui.search.ResultsAdapter
+import com.malt03.textlauncher.ui.search.SearchResults
 
 /**
  * The home screen. The search field always has focus and the keyboard is always shown
@@ -40,14 +32,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     private val app get() = application as TextLauncherApplication
 
     private lateinit var root: LauncherRootLayout
-    private lateinit var results: RecyclerView
-    private lateinit var resultsAdapter: ResultsAdapter
-
-    /** The search results' focus outline (ActivityAllAppsContainerView.AdapterHolder.setup). */
-    private lateinit var resultsFocusHelper: ViewGroupFocusHelper
-
-    /** The result [focusTopResult] put the focus outline on. */
-    private var autoFocusedResult: View? = null
+    private lateinit var results: SearchResults
 
     /** AppsSearchContainerLayout.mSearchQueryBuilder */
     private val searchQueryBuilder = SpannableStringBuilder().also { Selection.setSelection(it, 0) }
@@ -63,7 +48,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         home.onAppsChanged()
     }
     private val iconsListener: () -> Unit = {
-        resultsAdapter.notifyItemRangeChanged(0, resultsAdapter.itemCount)
+        results.onIconsChanged()
         home.rebuild()
     }
 
@@ -78,35 +63,17 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root = LauncherRootLayout(this)
         setContentView(root)
 
-        val grid = GridSpec.from(this)
-        resultsAdapter = ResultsAdapter(
+        results = SearchResults(
+            this,
             app.iconLoader,
-            grid,
+            app.searchStore,
+            GridSpec.from(this),
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
-            onLongClick = { entry, iconView ->
-                home.onSearchResultLongPress(entry, iconView)
-                true
-            },
+            onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
         )
-        results = NoPressDelayRecyclerView(this).apply {
-            layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, true)
-            val sidePadding = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
-            setPadding(sidePadding, 0, sidePadding, 0)
-            clipToPadding = false
-            adapter = resultsAdapter
-            overScrollMode = View.OVER_SCROLL_NEVER
-            itemAnimator = null
-            visibility = View.GONE
-        }
-        // ActivityAllAppsContainerView.AdapterHolder.setup: the search list draws the outline
-        // with a ViewGroupFocusHelper, which the icons get as their focus listener.
-        resultsFocusHelper = ViewGroupFocusHelper(results)
-        val focusedItemDecorator = FocusedItemDecorator(resultsFocusHelper)
-        results.addItemDecoration(focusedItemDecorator)
-        resultsAdapter.iconFocusListener = focusedItemDecorator.focusListener
         home = HomeController(app, root, this)
         root.contentArea.addView(home.workspace)
-        root.contentArea.addView(results)
+        root.contentArea.addView(results.view)
 
         val editText = root.searchBar.editText
         editText.addTextChangedListener(object : TextWatcher {
@@ -241,56 +208,15 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     private fun currentQuery(): String = root.searchBar.editText.text?.toString().orEmpty()
 
+    /** docs/spec.md 2.5: the results replace the home screen while there is a query. */
     private fun refreshResults() {
         val query = Normalizer.normalize(currentQuery())
         if (query.isEmpty()) {
-            results.visibility = View.GONE
+            results.hide()
             home.scrollView.visibility = View.VISIBLE
-            resultsAdapter.submit(emptyList())
-            focusTopResult()
-            return
-        }
-        val store = app.searchStore
-        val candidates = apps.map { entry ->
-            SearchCandidate(
-                item = entry,
-                key = entry.key,
-                label = entry.label,
-                normalizedTargets = (listOf(entry.label) + store.termsOf(entry.key)).map(Normalizer::normalize),
-            )
-        }
-        val ranked = Ranker.rank(query, candidates) { key -> store.scoreOf(query, key) }.map { it.item }
-        resultsAdapter.submit(ranked)
-        results.scrollToPosition(0)
-        results.visibility = View.VISIBLE
-        home.scrollView.visibility = View.GONE
-        focusTopResult()
-    }
-
-    /**
-     * Pixel Launcher's search (not in AOSP Launcher3): when the results change, the one Enter
-     * launches gets the focus outline, while the keyboard focus stays in the search field.
-     * The outline is Launcher3's ([resultsFocusHelper]), so arrow keys move it from there.
-     */
-    private fun focusTopResult() {
-        if (results.visibility != View.VISIBLE) {
-            setAutoFocusedResult(null)
-            return
-        }
-        // The new results are bound on the next layout.
-        results.doOnLayout {
-            if (results.visibility == View.VISIBLE) {
-                setAutoFocusedResult(results.findViewHolderForAdapterPosition(0)?.itemView)
-            }
-        }
-    }
-
-    private fun setAutoFocusedResult(view: View?) {
-        val previous = autoFocusedResult
-        autoFocusedResult = view
-        when {
-            view != null -> resultsFocusHelper.onFocusChange(view, true)
-            previous != null -> resultsFocusHelper.onFocusChange(previous, false)
+        } else {
+            results.show(query, apps)
+            home.scrollView.visibility = View.GONE
         }
     }
 
@@ -322,9 +248,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     override fun getActivityContext(): ActivityContext = home.activityContext
 
     private fun launchTopResult() {
-        val top = resultsAdapter.items.firstOrNull() ?: return
-        val view = results.findViewHolderForAdapterPosition(0)?.itemView
-        launch(top, view, fromSearch = true)
+        val top = results.topResult ?: return
+        launch(top, results.topResultView, fromSearch = true)
     }
 
     /** Launcher.startShortcut, for an app shortcut in the long-press menu or on the home screen. */

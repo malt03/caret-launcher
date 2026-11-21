@@ -13,6 +13,7 @@ import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import androidx.core.widget.NestedScrollView
 import com.android.launcher3.AbstractFloatingView
+import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DeviceProfile
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
@@ -338,7 +339,7 @@ class HomeController(
     // ---- starting drags (ItemLongClickListener) ----
 
     /** A long press on an app in the search results: its menu, and a drag once it moves. */
-    fun onSearchResultLongPress(entry: AppEntry, iconView: AppIconView) {
+    fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) {
         // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
         val info = AppItemInfo(entry, (iconView.tag as? AppItemInfo)?.bitmap)
         homeWorkspace.beginDragShared(
