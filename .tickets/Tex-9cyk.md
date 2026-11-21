@@ -1,7 +1,7 @@
 ---
 id: Tex-9cyk
 status: open
-deps: [Tex-17s1, Tex-f4yo]
+deps: [Tex-17s1, Tex-f4yo, Tex-dpqn]
 links: []
 created: 2026-11-20T11:16:26Z
 type: task
@@ -35,3 +35,7 @@ tags: [drawer]
 **2026-11-21**
 
 Tex-hibk の時点では、一覧を開いている間に検索フィールドをタップすると一覧を閉じる（LauncherActivity の searchBar.onFocusChanged）。一覧内の検索を作るときに置き換える。
+
+**2026-11-22**
+
+実機で確認したユーザーの要望: 一覧を開いた状態でフィールドにフォーカスを当てると、今は一覧が閉じる。一覧内でアプリを検索する挙動にしたい（このチケットの内容どおり）。ハンドル付きシート（Tex-dpqn。検索フィールドはシートの外、画面の一番上）の見た目に変わるので、その後に作る。
