@@ -1,6 +1,6 @@
 ---
 id: Tex-6ct1
-status: open
+status: closed
 deps: [Tex-f33r, Tex-alrp]
 links: []
 created: 2026-11-21T09:18:13Z
@@ -25,3 +25,9 @@ HomeController（776 行）が、Launcher3 でいう次のクラスの役割を 
 - [ ] 分けた先が上流のクラスと対応しており、各ファイルの説明に対応する上流のクラスが書いてある
 - [ ] ホームの全操作が今と同じ
 
+
+## Notes
+
+**2026-11-21T10:18:04Z**
+
+HomeController（776 行 → 326 行）を Launcher3 のクラスの境目で分けた: HomeActivityContext（Launcher の ActivityContext）、HomeLoader（LoaderTask・PackageUpdatedTask・ShortcutsChangedTask）、HomeItemInflater（ItemInflater・ItemClickHandler）、ItemLongClickListener（ItemLongClickListener・PopupControllerForAppIcon・LauncherPopupItemDragHandler）、SpringLoadedListener（SPRING_LOADED）。HomeController には Launcher の役割（setupViews、bindItems / addInScreen、addToWorkspace、ModelWriter、LauncherDelegate）だけが残る。各ファイルの説明に対応する上流のクラスを書き、docs/launcher3-porting.md にも並べた。エミュレータで読み込み、フォルダ、長押しメニュー、検索文字列の編集、移動、再起動後の保持を確認

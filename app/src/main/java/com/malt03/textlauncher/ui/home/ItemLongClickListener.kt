@@ -1,0 +1,153 @@
+package com.malt03.textlauncher.ui.home
+
+import android.graphics.Point
+import android.view.MotionEvent
+import android.view.View
+import com.android.launcher3.BubbleTextView
+import com.android.launcher3.DragSource
+import com.android.launcher3.LauncherSettings
+import com.android.launcher3.dragndrop.DragOptions
+import com.android.launcher3.dragndrop.DraggableView
+import com.android.launcher3.graphics.DragPreviewProvider
+import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.popup.PopupContainer
+import com.android.launcher3.popup.PopupContainerWithArrow
+import com.android.launcher3.popup.PopupItemDragHandler
+import com.android.launcher3.popup.SystemShortcut
+import com.android.launcher3.shortcuts.DeepShortcutView
+import com.android.launcher3.shortcuts.ShortcutDragPreviewProvider
+import com.android.launcher3.views.ActivityContext
+import com.malt03.textlauncher.R
+import com.malt03.textlauncher.data.AppEntry
+import com.malt03.textlauncher.data.AppItemInfo
+
+/**
+ * ItemLongClickListener with PopupControllerForAppIcon and LauncherPopupItemDragHandler: a long
+ * press on an item shows its menu (docs/spec.md 5.3), and moving the finger starts the drag.
+ */
+internal class ItemLongClickListener(private val home: HomeController) {
+    private val context = home.context
+    private val activityContext get() = home.activityContext
+
+    /** ActivityAllAppsContainerView as a DragSource: nothing to do when an app from search drops. */
+    private val searchDragSource = DragSource { _, _, _ -> }
+
+    /** A long press on an app in the search results: its menu, and a drag once it moves. */
+    fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) {
+        // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
+        val info = AppItemInfo(entry, (iconView.tag as? AppItemInfo)?.bitmap)
+        home.homeWorkspace.beginDragShared(
+            iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
+            startLongPressAction(iconView, info),
+        )
+    }
+
+    fun onHomeItemLongPress(view: AppIconView) {
+        val info = view.tag as? WorkspaceItemInfo ?: return
+        home.homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(view, info))
+    }
+
+    fun onHomeFolderLongPress(view: FolderIconView) {
+        home.homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
+    }
+
+    /**
+     * BubbleTextView.startLongPressAction with PopupControllerForAppIcon.show: shows the item's
+     * long-press menu (docs/spec.md 5.3) and returns the menu's pre-drag condition. Moving more
+     * than deep_shortcuts_start_drag_threshold closes the menu and starts the drag.
+     */
+    fun startLongPressAction(originalView: View, item: WorkspaceItemInfo): () -> DragOptions.PreDragCondition? = {
+        if (PopupContainer.getOpen(activityContext) != null) {
+            // There is already an items container open, so don't open this one.
+            originalView.clearFocus()
+            null
+        } else {
+            // TextLauncher: the launcher's own options (docs/spec.md 5.3) instead of
+            // ActivityContext.getSupportedShortcuts.
+            val systemShortcuts = buildList<SystemShortcut<*>> {
+                if (item is AppItemInfo) item.entry?.let { add(EditSearchTerms(it, item, originalView)) }
+                add(SystemShortcut.AppInfo(activityContext, item, originalView))
+            }
+            val container = PopupContainerWithArrow.create<ActivityContext>(
+                context = context,
+                originalView = originalView,
+                itemInfo = item,
+            )
+            // PopupContainerWithArrow.configureForLauncher
+            container.setPopupItemDragHandler(LauncherPopupItemDragHandler(container))
+            home.dragController.addDragListener(container)
+            val deepShortcutCount = activityContext.activityComponent.popupDataProvider.getShortcutCountForItem(item)
+            container.populateAndShowRows(deepShortcutCount, systemShortcuts)
+            container.requestFocus()
+            container.createPreDragCondition()
+        }
+    }
+
+    /** The long-press menu's "Edit search terms" (docs/spec.md 4), a TextLauncher option. */
+    private inner class EditSearchTerms(
+        private val entry: AppEntry,
+        item: ItemInfo,
+        originalView: View,
+    ) : SystemShortcut<ActivityContext>(
+        com.android.launcher3.R.drawable.gm_edit_24, R.string.menu_search_terms, activityContext, item, originalView,
+    ) {
+        override fun onClick(view: View) {
+            dismissTaskMenuView()
+            home.host.editSearchTerms(entry)
+        }
+    }
+
+    /**
+     * LauncherPopupItemDragHandler (popup/PopupItemDragHandler.kt): drags an app shortcut out of
+     * the long-press menu onto the home screen.
+     */
+    private inner class LauncherPopupItemDragHandler(
+        private val mContainer: PopupContainerWithArrow<*>,
+    ) : PopupItemDragHandler {
+        private val mIconLastTouchPos: Point = Point()
+
+        override fun onTouch(v: View, ev: MotionEvent): Boolean {
+            // Touched a shortcut, update where it was touched so we can drag from there on
+            // long click.
+            when (ev.action) {
+                MotionEvent.ACTION_DOWN,
+                MotionEvent.ACTION_MOVE -> mIconLastTouchPos[ev.x.toInt()] = ev.y.toInt()
+            }
+            return false
+        }
+
+        override fun onLongClick(v: View): Boolean {
+            // TextLauncher: no ItemLongClickListener.canStartDrag; nothing locks the home screen.
+            // Return early if not the correct view
+            if (v.parent !is DeepShortcutView) return false
+
+            // Long clicked on a shortcut.
+            val sv = v.parent as DeepShortcutView
+            sv.setWillDrawIcon(false)
+
+            // Move the icon to align with the center-top of the touch point
+            val iconShift = Point()
+            iconShift.x = mIconLastTouchPos.x - sv.iconCenter.x
+            iconShift.y = mIconLastTouchPos.y - activityContext.deviceProfile.workspaceProfile.iconSizePx
+
+            val draggableView = DraggableView.ofType(DraggableView.DRAGGABLE_ICON)
+            val itemInfo = sv.finalInfo
+            itemInfo.container = LauncherSettings.Favorites.CONTAINER_SHORTCUTS
+            val dv =
+                home.homeWorkspace.beginDragShared(
+                    sv.iconView,
+                    draggableView,
+                    mContainer,
+                    itemInfo,
+                    ShortcutDragPreviewProvider(sv.iconView, iconShift),
+                    DragOptions(),
+                )
+            dv.animateShift(-iconShift.x, -iconShift.y)
+
+            // TODO: support dragging from within folder without having to close it
+            home.closeFolders()
+            return false
+        }
+    }
+}

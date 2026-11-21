@@ -90,6 +90,8 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 - 縦スクロールするホームの入れ物（中のセルの並び替えは Launcher3 のロジックを使う）
 - データの保存
 
+アプリ側のホーム画面のクラスは、受け持つ役割の Launcher3 のクラスに合わせて分け、各ファイルの説明に対応するクラスを書く（`HomeController` が Launcher、`HomeActivityContext`、`HomeLoader`（LoaderTask など）、`HomeItemInflater`（ItemInflater と ItemClickHandler）、`ItemLongClickListener`、`SpringLoadedListener`、`HomeWorkspace`、`HomeDragController`、`DropTargetBar`）。検索結果は `SearchResults`（ActivityAllAppsContainerView の検索部分）に置く。
+
 ---
 
 ## 置き場所と記録
