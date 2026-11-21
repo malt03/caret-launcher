@@ -11,6 +11,7 @@ import com.android.launcher3.folder.FolderIcon
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.data.AppEntry
@@ -98,6 +99,16 @@ class AppIconView(context: Context, iconSizePx: Int) : BubbleTextView(context, i
 
     /** No label (docs/spec.md 5.2), so only the icon is centered. */
     override fun getCellSpecMaxTextLineCount(): Int = 0
+
+    override fun setItemInfo(itemInfo: ItemInfoWithIcon) {
+        super.setItemInfo(itemInfo)
+        this.itemInfo = itemInfo as? WorkspaceItemInfo
+    }
+
+    /** BubbleTextView.applyLabel without the text (docs/spec.md 5.2): only the description. */
+    override fun applyLabel(info: ItemInfo) {
+        contentDescription = info.contentDescription ?: info.title
+    }
 }
 
 /**
@@ -114,9 +125,6 @@ class FolderIconView(
     interface Callbacks {
         /** The folder's items changed; the home model is saved from [FolderIconView.contents]. */
         fun onContentChanged(view: FolderIconView)
-
-        /** Folder.notifyDrop: something was dropped on this icon. */
-        fun onNotifyDrop(view: FolderIconView) = Unit
     }
 
     /** The apps and shortcuts in the folder, in order. */
@@ -133,6 +141,4 @@ class FolderIconView(
     override fun onContentAdded(item: ItemInfo, rank: Int) = callbacks.onContentChanged(this)
 
     override fun onContentRemoved(items: List<ItemInfo>) = callbacks.onContentChanged(this)
-
-    override fun onNotifyDrop() = callbacks.onNotifyDrop(this)
 }

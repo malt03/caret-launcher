@@ -49,7 +49,6 @@ import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.views.ActivityContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -59,9 +58,8 @@ import java.util.function.Predicate;
  * PreviewItemManager; the members below are copied from FolderIcon.java, changes are marked with
  * "TextLauncher:".
  *
- * TextLauncher: folders have no names and no notification dots (docs/spec.md 5.2), and no
- * {@link Folder} view is bound to the icon: the open folder is built each time it opens. The
- * calls FolderIcon makes on its Folder go to {@link FolderContent}.
+ * TextLauncher: folders have no names and no notification dots (docs/spec.md 5.2). As in
+ * Launcher3, a {@link Folder} is bound to the icon ({@link Folder#bindToIcon}).
  */
 public abstract class FolderIcon extends View implements DraggableView, Reorderable {
     protected ActivityContext mActivity;
@@ -84,7 +82,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
 
-    private final FolderContent mFolder = new FolderContent();
+    Folder mFolder;
 
     // TextLauncher: FolderIcon(Context) and inflateIcon in one.
     public FolderIcon(Context context, ActivityContext activity) {
@@ -132,9 +130,12 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return mScaleForReorderBounce;
     }
 
-    /** TextLauncher: stands in for the Folder that Launcher3 binds to the icon. */
-    public FolderContent getFolder() {
+    public Folder getFolder() {
         return mFolder;
+    }
+
+    public void setFolder(Folder folder) {
+        mFolder = folder;
     }
 
     private boolean willAcceptItem(ItemInfo item) {
@@ -401,82 +402,12 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     }
 
     /**
-     * TextLauncher: called when an item was added to the folder's contents, after the icon has
-     * updated. The app saves its home model here.
+     * TextLauncher: called by {@link Folder#addFolderContent} when an item was added to the
+     * folder's contents, after the icon has updated. The app saves its home model here (Launcher3's
+     * Folder writes the database).
      */
     protected void onContentAdded(ItemInfo item, int rank) { }
 
     /** TextLauncher: called when items were removed from the folder's contents. */
     protected void onContentRemoved(List<ItemInfo> items) { }
-
-    /**
-     * TextLauncher: Folder.notifyDrop. The app's folder drag source learns here that its item was
-     * dropped back onto this icon (Folder.mItemAddedBackToSelfViaIcon).
-     */
-    protected void onNotifyDrop() { }
-
-    /**
-     * TextLauncher: the calls FolderIcon makes on its Folder. Folder.addFolderContent and
-     * removeFolderContent are copied without the database and the open folder's views.
-     */
-    public class FolderContent {
-        private boolean mIsOpen = false;
-
-        public boolean isDestroyed() {
-            return false;
-        }
-
-        public boolean isOpen() {
-            return mIsOpen;
-        }
-
-        /** TextLauncher: set by the app's open folder. */
-        public void setOpen(boolean open) {
-            mIsOpen = open;
-        }
-
-        /** Folder.hideItem hides the item's view in the open folder; the folder is closed here. */
-        public void hideItem(ItemInfo info) { }
-
-        public void showItem(ItemInfo info) { }
-
-        /** Folder.notifyDrop: an item was dropped on the icon. */
-        public void notifyDrop() {
-            onNotifyDrop();
-        }
-
-        public void addFolderContent(ItemInfo item) {
-            addFolderContent(item, mInfo.getContents().size(), true);
-        }
-
-        /** Add an app or shortcut for a specified rank */
-        public void addFolderContent(ItemInfo item, int rank, boolean animate) {
-            if (!willAcceptItemType(item.itemType)) {
-                throw new RuntimeException("tried to add an illegal type into a folder");
-            }
-
-            rank = (int) Utilities.boundToRange(rank, 0, mInfo.getContents().size());
-            mInfo.getContents().add(rank, item);
-            updateRanks();
-
-            onItemsChanged(animate);
-            onContentAdded(item, rank);
-        }
-
-        /** TextLauncher: Folder.updateItemLocationsInDatabaseBatch's ranks, without the DB. */
-        private void updateRanks() {
-            List<ItemInfo> contents = mInfo.getContents();
-            for (int i = 0; i < contents.size(); i++) contents.get(i).rank = i;
-        }
-
-        /** Remove all matching app or shortcut. Does not change the DB. */
-        public void removeFolderContent(boolean animate, ItemInfo... items) {
-            List<ItemInfo> itemArray = Arrays.asList(items);
-            mInfo.getContents().removeAll(itemArray);
-            updateRanks();
-
-            onItemsChanged(animate);
-            onContentRemoved(itemArray);
-        }
-    }
 }

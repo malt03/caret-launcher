@@ -47,6 +47,10 @@ public final class Utilities {
         return res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
     }
 
+    public static int boundToRange(int value, int lowerBound, int upperBound) {
+        return Math.max(lowerBound, Math.min(value, upperBound));
+    }
+
     public static float boundToRange(float value, float lowerBound, float upperBound) {
         return Math.max(lowerBound, Math.min(value, upperBound));
     }

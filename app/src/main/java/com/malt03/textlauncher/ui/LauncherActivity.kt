@@ -113,7 +113,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
-                if (!s.isNullOrEmpty()) home.closeFolder()
+                if (!s.isNullOrEmpty()) home.closeFolders()
                 refreshResults()
             }
         })
@@ -129,10 +129,6 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
                     return
                 }
                 if (home.closeTopFloatingView()) return
-                if (home.isFolderOpen) {
-                    home.closeFolder()
-                    return
-                }
                 // docs/spec.md 1.4: a search result has keyboard focus and the keyboard is down, so the
                 // back gesture reaches here; it clears the query like closing the keyboard does.
                 if (!root.searchBar.editText.hasFocus()) {
@@ -158,7 +154,6 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         // Home button while already on the home screen.
         home.cancelDrag()
         home.closeFloatingViews(animate = false)
-        home.closeFolder()
         clearQuery()
         focusSearch()
     }
@@ -181,7 +176,6 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         // docs/spec.md 1.2: the query is cleared every time the launcher comes back.
         home.cancelDrag()
         home.closeFloatingViews(animate = false)
-        home.closeFolder()
         clearQuery()
     }
 
@@ -239,8 +233,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         // keyboard.
         if (!root.searchBar.editText.hasFocus()) return
         // The keyboard takes the back gesture while it is shown, so closing it also closes what
-        // Launcher3 closes on back: the long-press menu, or else the open folder.
-        if (!home.closeTopFloatingView()) home.closeFolder()
+        // Launcher3 closes on back: the top floating view (the long-press menu or the folder).
+        home.closeTopFloatingView()
         clearQuery()
         focusSearch()
     }

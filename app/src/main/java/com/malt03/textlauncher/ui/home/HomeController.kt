@@ -24,6 +24,8 @@ import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DraggableView
+import com.android.launcher3.folder.Folder
+import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.ItemInfo
@@ -81,7 +83,10 @@ class HomeController(
 
     private inner class HomeActivityContext : ActivityContext, DeepShortcutView.WorkspaceHost {
         private val deviceProfile = DeviceProfile(
-            DeviceProfile.FolderProfile(gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx),
+            DeviceProfile.FolderProfile(
+                gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx,
+                folderCellSizePx, folderCellSizePx,
+            ),
             // No labels (docs/spec.md 5.2): the icons are centered in their cells.
             DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
             DeviceProfile.DeviceProperties(context.resources.displayMetrics.heightPixels),
@@ -93,14 +98,12 @@ class HomeController(
         override fun getActivityComponent(): ActivityComponent = activityComponent
 
         /**
-         * ItemClickHandler for the items the long-press menu shows: app shortcuts
+         * ItemClickHandler for the items in folders and the long-press menu's app shortcuts
          * (onClickAppShortcut).
          */
         override fun getItemOnClickListener(): View.OnClickListener = View.OnClickListener { v ->
             val info = v.tag as? WorkspaceItemInfo ?: return@OnClickListener
-            val id = info.deepShortcutId ?: return@OnClickListener
-            val packageName = info.targetPackage ?: return@OnClickListener
-            host.startShortcut(packageName, id, v, info.user)
+            onItemClick(info, v)
         }
         override fun getDragLayer(): BaseDragLayer<*> = root.overlay
         override fun asContext() = context
@@ -129,7 +132,7 @@ class HomeController(
         override fun addToWorkspace(item: ItemInfo): Boolean {
             val info = item as? WorkspaceItemInfo ?: return false
             // TextLauncher: Launcher3 goes to the NORMAL state first.
-            closeFolder()
+            closeFolders()
             host.showHome()
             val cell = findSpaceOnHome()
             val view = workspaceHost.addItem(info, cell[0], cell[1])
@@ -160,8 +163,21 @@ class HomeController(
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var loaded = false
-    private var folderPopup: OpenFolder? = null
-    private var folderDragSource: FolderDragSource? = null
+    /** The open folder's cells: the icon with Launcher3's folder cell padding around it. */
+    private val folderCellSizePx get() = gridSpec.iconSizePx + (24 * context.resources.displayMetrics.density).toInt()
+
+    /** Folder's LauncherDelegate: what the folder asks of the workspace and the model. */
+    private val launcherDelegate = object : LauncherDelegate(launcher) {
+        override fun beginDragShared(child: View, source: DragSource, options: DragOptions) {
+            val item = child.tag as? WorkspaceItemInfo ?: return
+            homeWorkspace.beginDragShared(
+                child, source, item, DragPreviewProvider(child), options, startLongPressAction(child, item),
+            )
+        }
+
+        override fun replaceFolderWithFinalItem(folder: Folder): Boolean =
+            replaceFolderWithFinalItem(folder.folderIcon as FolderIconView)
+    }
 
     /** The app shortcuts on the home screen and in folders, by [HomeShortcutKey] key. */
     private var shortcuts: Map<String, ShortcutInfo> = emptyMap()
@@ -316,12 +332,10 @@ class HomeController(
 
     val isDragging: Boolean get() = dragController.isDragging
 
-    fun closeFolder() {
-        folderPopup?.dismiss()
-        folderPopup = null
+    /** Closes the open folder (typing in the search field, adding an item from the menu). */
+    fun closeFolders() {
+        AbstractFloatingView.closeOpenViews(activityContext, true, AbstractFloatingView.TYPE_FOLDER)
     }
-
-    val isFolderOpen: Boolean get() = folderPopup != null
 
     // ---- starting drags (ItemLongClickListener) ----
 
@@ -341,16 +355,6 @@ class HomeController(
 
     private fun onHomeFolderLongPress(view: FolderIconView) {
         homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
-    }
-
-    /** Folder.startDrag for an item in the open folder. */
-    private fun onFolderItemLongPress(folderIcon: FolderIconView, item: WorkspaceItemInfo, view: AppIconView) {
-        val source = FolderDragSource(folderIcon, dragController, ::replaceFolderWithFinalItem)
-        folderDragSource = source
-        source.startDrag()
-        homeWorkspace.beginDragShared(
-            view, source, item, DragPreviewProvider(view), DragOptions(), startLongPressAction(view, item),
-        )
     }
 
     /**
@@ -447,7 +451,7 @@ class HomeController(
             dv.animateShift(-iconShift.x, -iconShift.y)
 
             // TODO: support dragging from within folder without having to close it
-            closeFolder()
+            closeFolders()
             return false
         }
     }
@@ -473,7 +477,7 @@ class HomeController(
 
         override fun onDragStart(dragObject: DragObject, options: DragOptions) {
             editing = true
-            closeFolder()
+            AbstractFloatingView.closeOpenViews(activityContext, true, AbstractFloatingView.TYPE_FOLDER)
             root.animateWallpaperScrim(true)
             host.onEditModeChanged(true)
             grid.headroomRows = dragObject.dragInfo.spanY + 1
@@ -496,7 +500,7 @@ class HomeController(
      * an id). Apps from search results and shortcuts from the menu are not there yet, so the
      * button cancels the drag.
      */
-    private fun canRemove(d: DragObject): Boolean = d.dragSource === homeWorkspace || d.dragSource is FolderDragSource
+    private fun canRemove(d: DragObject): Boolean = d.dragSource === homeWorkspace || d.dragSource is Folder
 
     // ---- items ----
 
@@ -534,6 +538,12 @@ class HomeController(
         when (info) {
             is AppItemInfo -> host.launch(info.entry, view)
             is ShortcutItemInfo -> host.startShortcut(info.shortcut.`package`, info.shortcut.id, view, info.user)
+            // A shortcut row of the long-press menu (onClickAppShortcut).
+            else -> {
+                val id = info.deepShortcutId ?: return
+                val packageName = info.targetPackage ?: return
+                host.startShortcut(packageName, id, view, info.user)
+            }
         }
     }
 
@@ -565,6 +575,8 @@ class HomeController(
 
     private fun createFolderView(folder: HomeItem.Folder): FolderIconView =
         FolderIconView(context, activityContext, folderCallbacks).apply {
+            // FolderIcon.inflateIcon: the icon's Folder.
+            HomeFolder(context, activityContext, launcherDelegate, gridSpec.iconSizePx).bindToIcon(this)
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             val items = folder.itemKeys.mapNotNull(::itemInfoFor)
             setContents(items)
@@ -575,7 +587,8 @@ class HomeController(
                     updatePreviewItems { it === item }
                 }
             }
-            setOnClickListener { openFolder(this) }
+            // ItemClickHandler.onClickFolderIcon
+            setOnClickListener { with(getFolder()) { if (!isOpen && !isDestroyed) animateOpen() } }
             setOnLongClickListener {
                 onHomeFolderLongPress(this)
                 true
@@ -589,25 +602,6 @@ class HomeController(
             folder.itemKeys += view.contents.map { (it as HomeItemInfo).homeKey }
             model.save()
         }
-
-        override fun onNotifyDrop(view: FolderIconView) {
-            folderDragSource?.takeIf { it.folderIcon === view }?.notifyDrop()
-        }
-    }
-
-    private fun openFolder(folderView: FolderIconView) {
-        closeFolder()
-        folderView.folder.setOpen(true)
-        folderPopup = OpenFolder(
-            root.overlay, folderView, folderView.contents, gridSpec, activityContext, launcher,
-            bindIcon = ::bindIcon,
-            onClick = ::onItemClick,
-            onLongPress = { item, view -> onFolderItemLongPress(folderView, item, view) },
-            onDismiss = {
-                folderView.folder.setOpen(false)
-                folderPopup = null
-            },
-        )
     }
 
     /**
@@ -649,8 +643,10 @@ class HomeController(
 
     // ---- model changes ----
 
-    /** LauncherDelegate.replaceFolderWithFinalItem */
-    private fun replaceFolderWithFinalItem(folderView: FolderIconView) {
+    /** LauncherDelegate.replaceFolderWithFinalItem. Returns whether the folder was destroyed. */
+    private fun replaceFolderWithFinalItem(folderView: FolderIconView): Boolean {
+        // TextLauncher: the folder may report again after it was already replaced.
+        if (folderView.parent == null) return true
         // Add the last remaining child to the workspace in place of the folder
         val onCompleteRunnable = Runnable {
             val folder = folderView.tag as? HomeItem.Folder ?: return@Runnable
@@ -683,6 +679,7 @@ class HomeController(
         } else {
             onCompleteRunnable.run()
         }
+        return true
     }
 
     /** Removes apps that are no longer installed. Returns true when something changed. */

@@ -88,10 +88,14 @@ public class DeviceProfile {
         private final int mNumColumns;
         private final int mNumRows;
         private final int mChildIconSizePx;
+        private final int mCellWidthPx;
+        private final int mCellHeightPx;
 
         public FolderProfile(int folderIconSizePx, int folderIconOffsetYPx, int numColumns, int numRows,
-                int childIconSizePx) {
+                int childIconSizePx, int cellWidthPx, int cellHeightPx) {
             mChildIconSizePx = childIconSizePx;
+            mCellWidthPx = cellWidthPx;
+            mCellHeightPx = cellHeightPx;
             mFolderIconSizePx = folderIconSizePx;
             mFolderIconOffsetYPx = folderIconOffsetYPx;
             mNumColumns = numColumns;
@@ -117,6 +121,15 @@ public class DeviceProfile {
         /** The size of the app icons in an open folder. */
         public int getChildIconSizePx() {
             return mChildIconSizePx;
+        }
+
+        /** The size of a cell in an open folder. */
+        public int getCellWidthPx() {
+            return mCellWidthPx;
+        }
+
+        public int getCellHeightPx() {
+            return mCellHeightPx;
         }
     }
 }

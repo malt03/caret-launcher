@@ -20,9 +20,19 @@
 
 package com.android.launcher3.folder;
 
-import com.android.launcher3.Launcher;
+import android.view.MotionEvent;
+import android.view.View;
 
-/** Stand-in for Launcher3's folder.LauncherDelegate. Only the launcher accessor. */
+import com.android.launcher3.DragSource;
+import com.android.launcher3.Launcher;
+import com.android.launcher3.dragndrop.DragOptions;
+import com.android.launcher3.views.BaseDragLayer;
+
+/**
+ * Stand-in for Launcher3's folder.LauncherDelegate (android-17.0.0_r1): what a folder asks of the
+ * launcher. TextLauncher: the workspace and model work is the app's, which overrides
+ * {@link #beginDragShared} and {@link #replaceFolderWithFinalItem} (package-private in Launcher3).
+ */
 public class LauncherDelegate {
     private final Launcher mLauncher;
 
@@ -30,7 +40,25 @@ public class LauncherDelegate {
         mLauncher = launcher;
     }
 
+    /** Workspace.beginDragShared for an item dragged out of the folder. */
+    public void beginDragShared(View child, DragSource source, DragOptions options) { }
+
     public Launcher getLauncher() {
         return mLauncher;
+    }
+
+    /**
+     * Turns a folder left with one item (or none) back into that item. Returns whether the folder
+     * was destroyed.
+     */
+    public boolean replaceFolderWithFinalItem(Folder folder) {
+        return false;
+    }
+
+    boolean interceptOutsideTouch(MotionEvent ev, BaseDragLayer dl, Folder folder) {
+        // TextLauncher: no accessible drags.
+        // TODO: add ww log if need to gather tap outside to close folder
+        folder.close(true);
+        return true;
     }
 }
