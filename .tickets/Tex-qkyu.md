@@ -1,6 +1,6 @@
 ---
 id: Tex-qkyu
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T16:03:46Z
@@ -25,7 +25,14 @@ tags: [home, drag]
 
 ## Acceptance Criteria
 
-- [ ] ドラッグを始めると、Launcher3 と同じ比率とアニメーションでホームが縮小し、上部のボタンと重ならない
-- [ ] 縮小中もスクロールでき、落とした位置が見た目どおりのセルになる
-- [ ] ドロップ・キャンセルで元の大きさに戻る
+- [x] ドラッグを始めると、Launcher3 と同じ比率とアニメーションでホームが縮小し、上部のボタンと重ならない
+- [x] 縮小中もスクロールでき、落とした位置が見た目どおりのセルになる
+- [x] ドロップ・キャンセルで元の大きさに戻る
 
+## 結果（2026-11-22）
+
+- SpringLoadedState.getWorkspaceScaleAndTranslation（centerSpringLoadedStateVertically はリリース設定になく無効なので、上寄せの方）と DeviceProfile.getWorkspaceSpringLoadScale を SpringLoadedListener に移した。ページの高さは、スクロールの入れ物の見えている範囲。ホットシートの代わりは検索フィールドで、spring_loaded_hotseat_top_margin（76dp）を上に空ける
+- 動きは WorkspaceStateTransitionAnimation と同じく 150ms、拡大縮小と位置は ZOOM_OUT。スケールは WORKSPACE_SCALE_PROPERTY_FACTORY の SCALE_INDEX_WORKSPACE_STATE（フォルダのアニメーションのスケールと掛け合わさる）
+- CellLayout の互換クラスに mBackground（bg_celllayout、drawable-v28 版）、setSpringLoadedProgress、setIsDragOverlapping を移し、ホームの入れ物（Workspace）がその背景を描く。ドラッグがホームの上にある間は state_active の枠
+- 壁紙の暗さは DragLayer の workspace drag scrim の値（wallpaper_popup_scrim = system_neutral1_900、0.2）にした。奥行き（ぼかし 15%）は Tex-dpqn のぼかしと一緒に入れる
+- エミュレータで確認: ホームのアイテムを長押しで動かすと、削除ボタンの下に縮小して背景と枠が出る。落とした位置が見た目どおりのセルになり、元の大きさに戻る

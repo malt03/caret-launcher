@@ -46,11 +46,11 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     val scrim = ScrimView(context)
 
     /**
-     * Darkens only the wallpaper while editing, behind everything else. Stands in for the depth
-     * (wallpaper blur) of Launcher3's spring-loaded state, which keeps the drop targets readable.
+     * DragLayer's workspace drag scrim: darkens the wallpaper while editing, behind the home
+     * screen ([animateWallpaperScrim]).
      */
     private val wallpaperScrim = View(context).apply {
-        setBackgroundColor(Color.BLACK)
+        setBackgroundColor(context.getColor(com.android.launcher3.R.color.wallpaper_popup_scrim))
         alpha = 0f
     }
     private var dropTargetBar: View? = null
@@ -61,6 +61,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      * DeviceProfile.getDropTargetBarHeight: the bar with its margins, which the home grid makes
      * room for while dragging (the top of Launcher3's spring-loaded workspace).
      */
+    /**
+     * DeviceProfile.getCellLayoutSpringLoadShrunkTop without the top inset: the drop target bar
+     * with its top and bottom margins, below which the home screen shrinks while editing.
+     */
+    val dropTargetBarShrunkHeight = dropTargetBarTopMargin + dropTargetBarSize +
+        resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bottom_margin)
+
     val dropTargetBarHeight = dropTargetBarSize + dropTargetBarTopMargin +
         resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bottom_margin) +
         resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_button_workspace_edge_gap)
@@ -148,7 +155,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      * (docs/spec.md 6.6); it lets go once the keyboard is up.
      */
     var holdFieldAboveKeyboard = false
-    private var statusBarTop = 0
+    var statusBarTop = 0
+        private set
     private var navBottom = 0
 
     /** The part of the window the keyboard covers; the drag layer ends above it. */
@@ -292,12 +300,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Fades the wallpaper scrim in or out with the spring-loaded state: Launcher3 animates the
-     * depth over SpringLoadedState.getTransitionDuration (150ms, both ways) with LINEAR.
+     * DragLayer's workspace drag scrim (graphics/Scrim, wallpaper_popup_scrim) with the
+     * spring-loaded state: SpringLoadedState.getWorkspaceBackgroundAlpha (0.2), animated over
+     * SpringLoadedState.getTransitionDuration (150ms, both ways) with LINEAR
+     * (WorkspaceStateTransitionAnimation.setScrim).
      */
     fun animateWallpaperScrim(visible: Boolean) {
-        // TextLauncher: a little lighter than the folder scrim (0.2, or 0.32 in the dark theme).
-        val finalAlpha = if (!visible) 0f else if (Utilities.isDarkTheme(context)) EDIT_SCRIM_ALPHA_DARK else EDIT_SCRIM_ALPHA
+        val finalAlpha = if (visible) SPRING_LOADED_BACKGROUND_ALPHA else 0f
         wallpaperScrim.animate().cancel()
         wallpaperScrim.animate().alpha(finalAlpha)
             .setDuration(SPRING_LOADED_TRANSITION_MS)
@@ -311,8 +320,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             Interpolators.clampToProgress(Interpolators.LINEAR, 0.1f, 0.5f)
 
         const val SPRING_LOADED_TRANSITION_MS = 150L
-        const val EDIT_SCRIM_ALPHA = 0.15f
-        const val EDIT_SCRIM_ALPHA_DARK = 0.24f
+        /** SpringLoadedState.getWorkspaceBackgroundAlpha */
+        const val SPRING_LOADED_BACKGROUND_ALPHA = 0.2f
     }
 
     /**

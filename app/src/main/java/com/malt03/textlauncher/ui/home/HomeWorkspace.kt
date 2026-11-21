@@ -236,6 +236,8 @@ class HomeWorkspace(
 
     override fun onDragEnd() {
         setAutoScroll(0)
+        // Workspace.onDragEnd: setCurrentDragOverlappingLayout(null)
+        layout.setIsDragOverlapping(false)
     }
 
     // ---- DropTarget ----
@@ -590,6 +592,8 @@ class HomeWorkspace(
         }
         mDragTargetLayout = layout
         mDragTargetLayout?.onDragEnter()
+        // Workspace.setCurrentDragOverlappingLayout
+        this.layout.setIsDragOverlapping(layout != null)
         cleanupReorder(true)
         cleanupFolderCreation()
         setCurrentDropOverCell(-1, -1)

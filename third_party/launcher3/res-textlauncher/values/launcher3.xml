@@ -231,4 +231,14 @@
     <style name="AppTheme.Dark" />
     <style name="AppTheme.Dark.DarkMainColor" />
     <style name="AppTheme.Dark.DarkText" />
+    <!-- The home screen while editing (states/SpringLoadedState.java, CellLayout's background,
+         DragLayer's workspace drag scrim): attrs.xml, values-v31/colors.xml, dimens.xml.
+         drawable-v28/bg_celllayout.xml is copied as is (minSdk 33 always uses it), and
+         color/cell_layout_bg_color.xml is copied as is. -->
+    <attr name="workspaceSurfaceColor" format="color" />
+    <color name="workspace_surface_color">@android:color/system_accent1_100</color>
+    <color name="wallpaper_popup_scrim">@android:color/system_neutral1_900</color>
+    <dimen name="spring_loaded_panel_border">2dp</dimen>
+    <dimen name="spring_loaded_hotseat_top_margin">76dp</dimen>
+    <dimen name="dynamic_grid_spring_loaded_min_next_space_visible">48dp</dimen>
 </resources>

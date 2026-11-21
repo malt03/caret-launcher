@@ -40,6 +40,7 @@
         <item name="isWorkspaceDarkText">false</item>
         <item name="workspaceTextColor">@color/workspace_text_color_light</item>
         <item name="workspaceShadowColor">#B0000000</item>
+        <item name="workspaceSurfaceColor">@color/workspace_surface_color</item>
     </style>
     <style name="AppTheme.DarkMainColor" parent="AppTheme" />
     <style name="AppTheme.DarkText" parent="AppTheme">

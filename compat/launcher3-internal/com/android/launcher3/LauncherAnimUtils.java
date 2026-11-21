@@ -95,6 +95,7 @@ public class LauncherAnimUtils {
     public static final MultiScalePropertyFactory<Hotseat> HOTSEAT_SCALE_PROPERTY_FACTORY =
             new MultiScalePropertyFactory<Hotseat>("hotseat_scale_property");
 
+    public static final int SCALE_INDEX_WORKSPACE_STATE = 2;
     public static final int SCALE_INDEX_FOLDER_ANIM = 5;
 
     public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);

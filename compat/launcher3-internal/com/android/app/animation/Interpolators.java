@@ -118,4 +118,25 @@ public class Interpolators {
         }
         return interpolator.getInterpolation((progress - lowerBound) / (upperBound - lowerBound));
     }
+
+    public static final Interpolator ZOOM_OUT = new Interpolator() {
+
+        private static final float FOCAL_LENGTH = 0.35f;
+
+        @Override
+        public float getInterpolation(float v) {
+            return zInterpolate(v);
+        }
+
+        /**
+         * This interpolator emulates the rate at which the perceived scale of an object changes
+         * as its distance from a camera increases. When this interpolator is applied to a scale
+         * animation on a view, it evokes the sense that the object is shrinking due to moving away
+         * from the camera.
+         */
+        private float zInterpolate(float input) {
+            return (1.0f - FOCAL_LENGTH / (FOCAL_LENGTH + input)) /
+                    (1.0f - FOCAL_LENGTH / (FOCAL_LENGTH + 1.0f));
+        }
+    };
 }

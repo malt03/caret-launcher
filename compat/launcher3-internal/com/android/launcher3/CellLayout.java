@@ -36,6 +36,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.ArrayMap;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -117,6 +118,17 @@ public class CellLayout extends FrameLayout {
 
     private final int mIconSizePx;
 
+    private static final int[] BACKGROUND_STATE_ACTIVE = new int[] { android.R.attr.state_active };
+    private static final int[] BACKGROUND_STATE_DEFAULT = EMPTY_STATE_SET;
+
+    /**
+     * The page's background while editing (bg_celllayout). TextLauncher: the CellLayout is not on
+     * screen, so the view that shows the visible page (the home screen's workspace) draws it.
+     */
+    private final Drawable mBackground;
+    protected float mSpringLoadedProgress = 0f;
+    private boolean mIsDragOverlapping = false;
+
     public CellLayout(Context context, ShortcutAndWidgetContainer children, int iconSizePx) {
         super(context);
         mIconSizePx = iconSizePx;
@@ -126,6 +138,10 @@ public class CellLayout extends FrameLayout {
         mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context);
 
         Resources res = getResources();
+
+        mBackground = getContext().getDrawable(R.drawable.bg_celllayout);
+        mBackground.setAlpha(0);
+
         mGridColor = Themes.getAttrColor(context, R.attr.workspaceAccentColor);
         mGridVisualizationRoundingRadius =
                 res.getDimensionPixelSize(R.dimen.grid_visualization_rounding_radius);
@@ -1087,5 +1103,50 @@ public class CellLayout extends FrameLayout {
             return true;
         }
         return false;
+    }
+
+    /** TextLauncher: the page background, for the view that draws the visible page. */
+    public Drawable getPageBackground() {
+        return mBackground;
+    }
+
+    public void setIsDragOverlapping(boolean isDragOverlapping) {
+        if (mIsDragOverlapping != isDragOverlapping) {
+            mIsDragOverlapping = isDragOverlapping;
+            mBackground.setState(mIsDragOverlapping
+                    ? BACKGROUND_STATE_ACTIVE : BACKGROUND_STATE_DEFAULT);
+            invalidate();
+        }
+    }
+
+    public boolean getIsDragOverlapping() {
+        return mIsDragOverlapping;
+    }
+
+    /**
+     * Indicates the progress of the Workspace entering the SpringLoaded state; allows the
+     * CellLayout to update various visuals for this state.
+     *
+     * <p>TextLauncher: no grid visualization (mVisualizeCells is for debugging in Launcher3).
+     *
+     * @param progress
+     */
+    public void setSpringLoadedProgress(float progress) {
+        if (Float.compare(progress, mSpringLoadedProgress) != 0) {
+            mSpringLoadedProgress = progress;
+            updateBgAlpha();
+        }
+    }
+
+    /**
+     * See setSpringLoadedProgress
+     * @return progress
+     */
+    public float getSpringLoadedProgress() {
+        return mSpringLoadedProgress;
+    }
+
+    protected void updateBgAlpha() {
+        mBackground.setAlpha((int) (mSpringLoadedProgress * 255));
     }
 }
