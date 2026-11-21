@@ -2,7 +2,7 @@
 
 方針: [docs/launcher3-porting.md](../../docs/launcher3-porting.md)
 
-`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。
+`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。`derived=` の行は、上流のファイルから使わない部分を削り、変更に `TextLauncher:` の印を付けて作った互換クラスで、同じく3方向マージで更新する（`DeepShortcutView` は Launcher への依存だけが違い、`PopupContainer` と `PopupContainerWithArrow` は上流から削っただけ）。
 
 ```upstream
 repo=https://android.googlesource.com/platform/packages/apps/Launcher3
@@ -76,6 +76,11 @@ path=src/com/android/launcher3/keyboard/ItemFocusIndicatorHelper.java
 path=src/com/android/launcher3/keyboard/FocusIndicatorHelper.java
 path=src/com/android/launcher3/keyboard/FocusedItemDecorator.java
 path=src/com/android/launcher3/keyboard/ViewGroupFocusHelper.java
+path=src/com/android/launcher3/views/BubbleTextHolder.java
+path=src/com/android/launcher3/views/FloatingIconViewCompanion.java
+derived=src/com/android/launcher3/shortcuts/DeepShortcutView.java compat/launcher3-internal/com/android/launcher3/shortcuts/DeepShortcutView.java
+derived=src/com/android/launcher3/popup/PopupContainer.kt compat/launcher3-internal/com/android/launcher3/popup/PopupContainer.kt
+derived=src/com/android/launcher3/popup/PopupContainerWithArrow.kt compat/launcher3-internal/com/android/launcher3/popup/PopupContainerWithArrow.kt
 path=res/color/drop_target_text.xml
 path=res/color/popup_shade_first.xml
 path=res/color/popup_shade_second.xml

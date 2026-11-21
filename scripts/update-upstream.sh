@@ -8,6 +8,8 @@
 # three-way merges every listed file with `git merge-file` (ours = this repo, base = old tag,
 # theirs = new tag). Files with conflicts keep conflict markers and are listed at the end.
 # With `res_dir=<dir>` in the block, upstream paths under res/ are kept under <dir>/ here.
+# `derived=<upstream path> <path from the repository root>` merges a stand-in that was made from
+# an upstream file (by deleting what TextLauncher does not use and marking changes) the same way.
 set -euo pipefail
 
 dir=${1:?third_party dir}
@@ -19,6 +21,7 @@ repo=$(printf '%s\n' "$block" | sed -n 's/^repo=//p')
 old_tag=$(printf '%s\n' "$block" | sed -n 's/^tag=//p')
 paths=$(printf '%s\n' "$block" | sed -n 's/^path=//p')
 res_dir=$(printf '%s\n' "$block" | sed -n 's/^res_dir=//p')
+derived=$(printf '%s\n' "$block" | sed -n 's/^derived=//p')
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
@@ -53,6 +56,17 @@ for p in $paths; do
         fi
     done
 done
+
+while read -r up ours; do
+    [ -n "$up" ] || continue
+    base="$work/base/$up"; theirs="$work/theirs/$up"
+    if [ ! -f "$theirs" ]; then
+        notes+=("removed upstream, stand-in kept: $ours"); continue
+    fi
+    if ! git merge-file -q -L ours -L "$old_tag" -L "$new_tag" "$ours" "$base" "$theirs"; then
+        conflicts+=("$ours")
+    fi
+done <<< "$derived"
 
 sed -i.bak "s/^tag=$old_tag\$/tag=$new_tag/" "$manifest" && rm "$manifest.bak"
 

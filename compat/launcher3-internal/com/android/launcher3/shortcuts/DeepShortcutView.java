@@ -51,6 +51,7 @@ import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainerWithArrow;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
+import com.android.launcher3.views.BubbleTextHolder;
 import com.android.launcher3.folder.Folder;
 
 /**
@@ -59,7 +60,7 @@ import com.android.launcher3.folder.Folder;
  * TextLauncher: what DeepShortcutView asks Launcher for (adding to the workspace, the badged
  * item) goes to the activity context's {@link WorkspaceHost}.
  */
-public class DeepShortcutView extends FrameLayout {
+public class DeepShortcutView extends FrameLayout implements BubbleTextHolder {
 
     /** TextLauncher: the Launcher calls DeepShortcutView makes. */
     public interface WorkspaceHost {
@@ -150,6 +151,7 @@ public class DeepShortcutView extends FrameLayout {
         mBubbleText.setBackground(drawable);
     }
 
+    @Override
     public BubbleTextView getBubbleText() {
         return mBubbleText;
     }

@@ -140,7 +140,7 @@ Launcher3 と `frameworks/libs/systemui` は Apache License 2.0 である。
    - 前回のタグの元ファイル（base）
    - 新しいタグの元ファイル（theirs）
    - 今のこちらのファイル（ours）
-2. `git merge-file ours base theirs` で、上流の変更をこちらに取り込む
+2. `git merge-file ours base theirs` で、上流の変更をこちらに取り込む。`UPSTREAM.md` の `derived=` に挙げた互換クラス（上流のファイルから削って作ったもの）も同じくマージする。削った部分で上流が変わると衝突として出るので、取り込むかどうかを判断する
 3. 衝突した箇所を手で直す
 4. 新しく必要になった依存は互換層に足し、機能フラグの値も新しいリリースに合わせ直す
 5. ビルドとテストを通し、エミュレータと実機で手触りを確かめる
