@@ -21,7 +21,7 @@ tags: [drawer]
 
 ## Launcher3 からの移植
 
-- 一覧内の検索に入るときのアニメーションは allapps/SearchTransitionController.java を参考にする
+- 一覧と検索結果の切り替えにアニメーションは付けない（docs/spec.md 6.5）
 
 ## Acceptance Criteria
 
