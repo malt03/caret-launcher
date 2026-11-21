@@ -435,6 +435,26 @@ public class CellLayout extends FrameLayout {
                 mBorderSpace);
     }
 
+    /**
+     * Finds the upper-left coordinate of the first rectangle in the grid that can
+     * hold a cell of the specified dimensions. If intersectX and intersectY are not -1,
+     * then this method will only return coordinates for rectangles that contain the cell
+     * (intersectX, intersectY)
+     *
+     * @param cellXY The array that will contain the position of a vacant cell if such a cell
+     *               can be found.
+     * @param spanX The horizontal span of the cell we want to find.
+     * @param spanY The vertical span of the cell we want to find.
+     *
+     * @return True if a vacant cell of the specified dimension was found, false otherwise.
+     */
+    public boolean findCellForSpan(int[] cellXY, int spanX, int spanY) {
+        if (cellXY == null) {
+            cellXY = new int[2];
+        }
+        return mOccupied.findVacantCell(cellXY, spanX, spanY);
+    }
+
     public int getCountX() {
         return mCountX;
     }

@@ -135,7 +135,8 @@ class HomeController(
             val info = item as? WorkspaceItemInfo ?: return false
             // TextLauncher: Launcher3 goes to the NORMAL state first.
             host.showHome()
-            val cell = findSpaceOnHome()
+            val cell = IntArray(2)
+            findSpaceOnWorkspace(info, cell)
             val view = workspaceHost.addItem(info, cell[0], cell[1])
             model.save()
             animateNewItem(view)
@@ -603,22 +604,16 @@ class HomeController(
     }
 
     /**
-     * LauncherAccessibilityDelegate.findSpaceOnWorkspace: the first free cell, row by row. The
-     * grid grows downward, so there always is one.
+     * LauncherAccessibilityDelegate.findSpaceOnWorkspace: the first free cell of the grid.
+     * TextLauncher: one grid that grows downward, so a new row below the last stands in for an
+     * extra empty screen.
      */
-    private fun findSpaceOnHome(): IntArray {
-        val occupied = HashSet<Long>()
-        for (item in model.items) {
-            for (x in item.cellX until item.cellX + item.spanX) {
-                for (y in item.cellY until item.cellY + item.spanY) occupied += y.toLong() * gridSpec.columns + x
-            }
-        }
-        var y = 0
-        while (true) {
-            for (x in 0 until gridSpec.columns) {
-                if (y.toLong() * gridSpec.columns + x !in occupied) return intArrayOf(x, y)
-            }
-            y++
+    private fun findSpaceOnWorkspace(info: ItemInfo, outCoordinates: IntArray) {
+        val layout = grid.cellLayout
+        val found = layout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
+        if (!found) {
+            outCoordinates[0] = 0
+            outCoordinates[1] = layout.countY
         }
     }
 

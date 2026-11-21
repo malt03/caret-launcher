@@ -15,6 +15,7 @@ import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
 import com.android.launcher3.OnAlarmListener
+import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
@@ -719,7 +720,7 @@ class HomeWorkspace(
             // reorder, then we schedule a reorder
             val listener = ReorderAlarmListener(minSpanX, minSpanY, item.spanX, item.spanY, d, child)
             mReorderAlarm.setOnAlarmListener(listener)
-            mReorderAlarm.setAlarm(REORDER_TIMEOUT)
+            mReorderAlarm.setAlarm(Workspace.REORDER_TIMEOUT.toLong())
         }
     }
 
@@ -881,8 +882,6 @@ class HomeWorkspace(
         const val DRAG_MODE_ADD_TO_FOLDER = 2
         const val DRAG_MODE_REORDER = 3
 
-        /** Workspace.REORDER_TIMEOUT */
-        const val REORDER_TIMEOUT = 650L
 
         const val AUTO_SCROLL_ZONE_DP = 56
         const val AUTO_SCROLL_STEP_DP = 12
