@@ -407,16 +407,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         val blur = if (isBlurEnabled) (mapDepthToBlur(depth) * maxBlurRadius).toInt() else 0
         if (blur != appliedWindowBlur) {
             appliedWindowBlur = blur
-            // TextLauncher: the window's blur behind (FLAG_BLUR_BEHIND), which blurs the wallpaper
-            // window under it; Launcher3 sets the background blur radius on its surface.
-            val attributes = window.attributes
-            if (blur > 0) {
-                attributes.flags = attributes.flags or android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-            } else {
-                attributes.flags = attributes.flags and android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
-            }
-            attributes.blurBehindRadius = blur
-            window.attributes = attributes
+            // TextLauncher: Launcher3 sets the background blur radius on its surface; an app sets it
+            // on its window, which draws it with each frame (the window is translucent for this).
+            window.setBackgroundBlurRadius(blur)
         }
         val contentBlur = if (isBlurEnabled) mapDepthToBlur(sheetDepth) * maxBlurRadius else 0f
         if (contentBlur != appliedContentBlur) {

@@ -245,8 +245,10 @@
          drawable/bg_rounded_corner_bottom_sheet_handle.xml) and the depth's blur:
          attrs.xml, colors.xml, dimens.xml, quickstep/res/values/config.xml. -->
     <attr name="bottomSheetDragHandleColor" format="color" />
-    <color name="blur_shade_panel_fg">#66D9E2FF</color>
-    <color name="blur_shade_panel_bg">#1AFFFFFF</color>
+    <!-- TextLauncher: Pixel Launcher's values (the framework's shade_panel colors, which follow the
+         dark theme) instead of AOSP's #66D9E2FF and #1AFFFFFF. -->
+    <color name="blur_shade_panel_fg">@color/shade_panel_fg_color</color>
+    <color name="blur_shade_panel_bg">@color/shade_panel_bg_color</color>
     <dimen name="bottom_sheet_handle_area_height">36dp</dimen>
     <dimen name="bottom_sheet_handle_width">32dp</dimen>
     <dimen name="bottom_sheet_handle_height">4dp</dimen>

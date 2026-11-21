@@ -1,6 +1,8 @@
 <resources>
     <style name="Theme.TextLauncher" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowShowWallpaper">true</item>
+        <!-- Window.setBackgroundBlurRadius only blurs behind a translucent window (the depth). -->
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TextLauncher: Pixel Launcher's blur_shade_panel_fg is the framework's color/shade_panel_fg
+  (hidden; res/color/shade_panel_fg_color.xml in the Android 17 framework), written out here.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@android:color/system_accent1_100" android:alpha="0.32" />
+</selector>
