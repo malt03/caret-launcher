@@ -37,10 +37,10 @@ class TextLauncherApplication : Application() {
         database = LauncherDatabase(this)
         searchStore = SearchStore(database, ioExecutor)
         ioExecutor.execute { searchStore.loadBlocking() }
-        appRepository = AppRepository(this)
-        shortcutRepository = ShortcutRepository(this)
-        homeModel = HomeModel(database, ioExecutor, shortcutRepository)
         iconSettings = IconSettings(this)
         iconLoader = AppIconLoader(this, iconSettings)
+        appRepository = AppRepository(this, iconLoader)
+        shortcutRepository = ShortcutRepository(this)
+        homeModel = HomeModel(database, ioExecutor, shortcutRepository, iconLoader.iconCache)
     }
 }

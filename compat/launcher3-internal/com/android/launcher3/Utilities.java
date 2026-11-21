@@ -25,7 +25,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 import android.view.ViewConfiguration;
 
 import java.util.Objects;
@@ -41,6 +45,29 @@ public final class Utilities {
         Configuration configuration = context.getResources().getConfiguration();
         int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return nightMode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
+
+    /**
+     * Trims the string, removing all whitespace at the beginning and end of the string.
+     * Non-breaking whitespaces are also removed.
+     */
+    @NonNull
+    public static String trim(CharSequence s) {
+        if (s == null) {
+            return "";
+        }
+        return s.toString().replaceAll(TRIM_PATTERN, "").trim();
+    }
+
+    /**
+     * Utility method to post a runnable on the handler, skipping the synchronization barriers.
+     */
+    public static void postAsyncCallback(Handler handler, Runnable callback) {
+        Message msg = Message.obtain(handler, callback);
+        msg.setAsynchronous(true);
+        handler.sendMessage(msg);
     }
 
     public static boolean isRtl(Resources res) {

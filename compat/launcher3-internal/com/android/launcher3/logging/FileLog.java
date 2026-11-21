@@ -26,6 +26,10 @@ import android.util.Log;
 public final class FileLog {
     private FileLog() {}
 
+    public static void d(String tag, String msg, Exception e) {
+        Log.d(tag, msg, e);
+    }
+
     public static void e(String tag, String msg, Exception e) {
         Log.e(tag, msg, e);
     }

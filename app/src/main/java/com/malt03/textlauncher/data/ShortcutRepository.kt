@@ -3,7 +3,6 @@ package com.malt03.textlauncher.data
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.pm.LauncherApps.ShortcutQuery
-import android.content.ComponentName
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
@@ -123,19 +122,6 @@ class ShortcutRepository(private val context: Context) {
             }
         return result
     }
-
-    /** The app a shortcut belongs to: its activity, or else its package's first app. */
-    fun appOf(shortcut: ShortcutInfo, apps: List<AppEntry>): AppEntry? = appOf(shortcut.`package`, shortcut.activity, apps)
-
-    /** The app a shortcut on the home screen belongs to, from its intent (ShortcutKey.makeIntent). */
-    fun appOf(info: ItemInfo, apps: List<AppEntry>): AppEntry? {
-        val packageName = info.intent.`package` ?: return null
-        return appOf(packageName, info.intent.component, apps)
-    }
-
-    private fun appOf(packageName: String, activity: ComponentName?, apps: List<AppEntry>): AppEntry? =
-        activity?.let { a -> apps.firstOrNull { it.key == AppEntry.keyOf(a, userSerial) } }
-            ?: apps.firstOrNull { it.component.packageName == packageName && it.user == user }
 
     /**
      * BgDataModel.updateShortcutPinnedState: updates the deep shortcuts state in system to match

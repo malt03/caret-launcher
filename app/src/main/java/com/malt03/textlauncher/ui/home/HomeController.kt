@@ -19,14 +19,12 @@ import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
-import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
-import com.malt03.textlauncher.data.isDeepShortcut
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
@@ -207,7 +205,6 @@ class HomeController(
     internal fun addToWorkspace(item: ItemInfo): Boolean {
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
         val info = (item as? WorkspaceItemInfo ?: return false).clone()
-        if (info.isDeepShortcut) info.bitmap = badgedShortcutIcon(info)
         // TextLauncher: Launcher3 goes to the NORMAL state first.
         host.showHome()
         val cell = IntArray(2)
@@ -219,12 +216,17 @@ class HomeController(
     }
 
     /**
-     * IconCache.getShortcutIcon: an app shortcut's icon, badged with its app's icon. Launcher3
-     * loads it on its model thread; here the cached icon, or the given one with the badge added.
+     * Launcher.bindWorkspaceItemsChanged: the views of [info], on the grid or in a folder's preview,
+     * show its new details.
      */
-    internal fun badgedShortcutIcon(info: WorkspaceItemInfo): BitmapInfo =
-        model.keyOf(info)?.let(app.iconLoader::cachedShortcut)
-            ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(itemInflater.badgeAppOf(info)))
+    internal fun bindItemChanged(info: WorkspaceItemInfo) {
+        for (view in grid.itemViews()) {
+            when (view) {
+                is AppIconView -> if (view.tag === info) view.applyFromWorkspaceItem(info)
+                is FolderIconView -> if (view.contents.any { it === info }) view.updatePreviewItems { it === info }
+            }
+        }
+    }
 
     /**
      * Launcher.bindInflatedItems with createNewAppBounceAnimation: an item added from the menu

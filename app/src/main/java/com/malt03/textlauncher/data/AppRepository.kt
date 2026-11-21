@@ -8,12 +8,13 @@ import android.os.Looper
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
+import com.malt03.textlauncher.icons.AppIconLoader
 import java.util.concurrent.Executors
 
 /**
  * Loads launchable apps of the personal profile only (docs/spec.md 2.1) and keeps them up to date.
  */
-class AppRepository(private val context: Context) {
+class AppRepository(private val context: Context, private val iconLoader: AppIconLoader) {
     private val launcherApps = context.getSystemService(LauncherApps::class.java)
     private val userManager = context.getSystemService(UserManager::class.java)
     private val user: UserHandle = Process.myUserHandle()
@@ -25,11 +26,15 @@ class AppRepository(private val context: Context) {
     var apps: List<AppEntry>? = null
         private set
 
+    /** LauncherAppsCallbackImpl: the package's icons are updated first (PackageUpdatedTask). */
     private val callback = object : LauncherApps.Callback() {
-        override fun onPackageRemoved(packageName: String, user: UserHandle) = reloadIfMine(user)
-        override fun onPackageAdded(packageName: String, user: UserHandle) = reloadIfMine(user)
-        override fun onPackageChanged(packageName: String, user: UserHandle) = reloadIfMine(user)
-        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadIfMine(user)
+        override fun onPackageRemoved(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = true)
+        override fun onPackageAdded(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = false)
+        override fun onPackageChanged(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = false)
+        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) {
+            // OP_UPDATE
+            if (isMine(user)) packageNames.forEach { updatePackage(it, user, removed = false) }
+        }
         override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadIfMine(user)
         override fun onPackagesSuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
         override fun onPackagesUnsuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
@@ -52,8 +57,14 @@ class AppRepository(private val context: Context) {
 
     fun find(key: String): AppEntry? = apps?.firstOrNull { it.key == key }
 
+    private fun isMine(changedUser: UserHandle): Boolean = changedUser == user
+
     private fun reloadIfMine(changedUser: UserHandle) {
-        if (changedUser == user) reload()
+        if (isMine(changedUser)) reload()
+    }
+
+    private fun updatePackage(packageName: String, changedUser: UserHandle, removed: Boolean) {
+        if (isMine(changedUser)) iconLoader.updatePackage(packageName, changedUser, removed, ::reload)
     }
 
     fun reload() {

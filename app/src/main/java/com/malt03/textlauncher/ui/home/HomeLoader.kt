@@ -4,6 +4,7 @@ import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
 import com.android.launcher3.LauncherSettings
+import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -78,13 +79,11 @@ internal class HomeLoader(private val home: HomeController) {
             if (info is AppItemInfo) app.appRepository.find(info.homeKey)?.let(info::bind)
         }
         val entries = items.mapNotNull { (it as? AppItemInfo)?.entry }
-        // The shortcuts' badges are their apps' icons.
-        val badgeApps = shortcuts.keys.mapNotNull { home.itemInflater.badgeAppOf(it) }
-        // IconCache.getShortcutIcon without the shortcut: the cached icon, or else the default one.
+        // A shortcut that was not looked up keeps the icon saved with it (IconRequestInfo
+        // .loadIconFromDb), or else gets the default one.
         val unknown = items.filterIsInstance<WorkspaceItemInfo>()
             .filter { it.isDeepShortcut && it !in shortcuts && it.bitmap.isLowRes }
-        for (info in unknown) model.keyOf(info)?.let(app.iconLoader::cachedShortcut)?.let { info.bitmap = it }
-        app.iconLoader.loadAll(entries + badgeApps) {
+        app.iconLoader.loadAll(entries, DESKTOP_ICON_FLAG) {
             if (generation != rebuildGeneration) return@loadAll
             loadShortcutIcons(shortcuts) {
                 if (generation != rebuildGeneration) return@loadShortcutIcons
@@ -92,6 +91,12 @@ internal class HomeLoader(private val home: HomeController) {
                     if (generation != rebuildGeneration) return@loadDefault
                     for (info in unknown) if (info.bitmap.isLowRes) info.bitmap = default
                     home.bindItems(model.items)
+                    if (shortcuts.isNotEmpty() && model.hasShortcutsWithoutIcons) {
+                        model.hasShortcutsWithoutIcons = false
+                        model.save()
+                    }
+                    // LoaderTask: the icon cache is brought up to date after the first binding.
+                    app.appRepository.apps?.let { app.iconLoader.updateIconCacheOnce(it, shortcuts.values) }
                 }
             }
         }
@@ -113,8 +118,7 @@ internal class HomeLoader(private val home: HomeController) {
     }
 
     private fun loadShortcutIcon(info: WorkspaceItemInfo, shortcut: ShortcutInfo, onLoaded: () -> Unit) {
-        val key = model.keyOf(info) ?: return onLoaded()
-        app.iconLoader.loadShortcut(key, shortcut, home.itemInflater.badgeAppOf(info)) { bitmap ->
+        app.iconLoader.loadShortcut(info, shortcut) { bitmap ->
             info.bitmap = bitmap
             onLoaded()
         }
@@ -145,22 +149,19 @@ internal class HomeLoader(private val home: HomeController) {
                     rebuild()
                     return@post
                 }
-                app.iconLoader.forgetShortcuts(found.keys)
-                for (view in home.grid.itemViews()) {
-                    when (view) {
-                        is AppIconView -> {
-                            val info = view.tag as? WorkspaceItemInfo ?: continue
-                            if (!info.isDeepShortcut) continue
-                            val shortcut = found[model.keyOf(info)] ?: continue
-                            info.updateFromDeepShortcutInfo(shortcut, context)
-                            loadShortcutIcon(info, shortcut) { view.applyFromWorkspaceItem(info) }
-                        }
-                        is FolderIconView -> for (info in view.contents) {
-                            if (!info.isDeepShortcut) continue
-                            val shortcut = found[model.keyOf(info)] ?: continue
-                            info.updateFromDeepShortcutInfo(shortcut, context)
-                            loadShortcutIcon(info, shortcut) { view.updatePreviewItems { it === info } }
-                        }
+                // ShortcutsChangedTask: the items get their new details and are saved with them.
+                val changed = mutableListOf<Pair<WorkspaceItemInfo, ShortcutInfo>>()
+                for (info in model.allItems()) {
+                    if (info !is WorkspaceItemInfo || !info.isDeepShortcut) continue
+                    val shortcut = found[model.keyOf(info)] ?: continue
+                    info.updateFromDeepShortcutInfo(shortcut, context)
+                    changed += info to shortcut
+                }
+                var remaining = changed.size
+                for ((info, shortcut) in changed) {
+                    loadShortcutIcon(info, shortcut) {
+                        home.bindItemChanged(info)
+                        if (--remaining == 0) model.save()
                     }
                 }
             }

@@ -30,6 +30,10 @@ import android.os.UserHandle;
 public class ApplicationInfoWrapper {
     private final ApplicationInfo mInfo;
 
+    public ApplicationInfoWrapper(ApplicationInfo appInfo) {
+        mInfo = appInfo;
+    }
+
     public ApplicationInfoWrapper(Context context, String packageName, UserHandle user) {
         ApplicationInfo info = null;
         try {

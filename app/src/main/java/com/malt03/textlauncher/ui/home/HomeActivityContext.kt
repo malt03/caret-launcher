@@ -79,12 +79,15 @@ internal class HomeActivityContext(private val home: HomeController) :
 
     /**
      * LauncherModel.updateAndBindWorkspaceItem for DeepShortcutView.getFinalInfo: the shortcut's
-     * title, and its icon badged with its app's icon (IconCache.getShortcutIcon). TextLauncher: done
-     * right away; the item is not on the home screen yet, so there is nothing to bind.
+     * title, and its icon badged with its app's icon (IconCache.getShortcutIcon), saved and bound.
      */
     override fun updateAndBindWorkspaceItem(si: WorkspaceItemInfo, info: ShortcutInfo) {
         si.updateFromDeepShortcutInfo(info, context)
-        si.bitmap = home.badgedShortcutIcon(si)
+        home.app.iconLoader.loadShortcut(si, info) { bitmap ->
+            si.bitmap = bitmap
+            home.model.save()
+            home.bindItemChanged(si)
+        }
     }
 
     /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */

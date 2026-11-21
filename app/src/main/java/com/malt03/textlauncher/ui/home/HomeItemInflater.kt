@@ -1,12 +1,12 @@
 package com.malt03.textlauncher.ui.home
 
 import android.view.View
+import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.touch.ItemClickHandler
-import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
 
@@ -19,16 +19,12 @@ internal class HomeItemInflater(private val home: HomeController) {
     private val app = home.app
     private val grid = home.grid
 
-    /** The app whose icon badges an app shortcut (IconCache.getShortcutInfoBadge). */
-    fun badgeAppOf(info: ItemInfo): AppEntry? =
-        app.appRepository.apps?.let { app.shortcutRepository.appOf(info, it) }
-
     /**
      * The icon of an app that was found (LoaderTask). An app shortcut's icon is loaded with the
      * shortcut ([HomeLoader]), so its item already has it.
      */
     fun loadIcon(info: WorkspaceItemInfo, onLoaded: (BitmapInfo) -> Unit) {
-        if (info is AppItemInfo) info.entry?.let { app.iconLoader.load(it, onLoaded) }
+        if (info is AppItemInfo) info.entry?.let { app.iconLoader.load(it, DESKTOP_ICON_FLAG, onLoaded) }
     }
 
     /**

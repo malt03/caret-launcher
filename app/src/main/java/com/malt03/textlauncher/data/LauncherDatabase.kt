@@ -23,11 +23,15 @@ class LauncherDatabase(context: Context, name: String? = NAME) :
             "CREATE TABLE home_items (id INTEGER PRIMARY KEY, type INTEGER NOT NULL, " +
                 "container INTEGER NOT NULL, cell_x INTEGER NOT NULL, cell_y INTEGER NOT NULL, " +
                 "span_x INTEGER NOT NULL, span_y INTEGER NOT NULL, rank INTEGER NOT NULL, " +
-                "app_key TEXT, widget_id INTEGER, provider TEXT)"
+                "app_key TEXT, widget_id INTEGER, provider TEXT, icon BLOB)"
         )
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        // LauncherSettings.Favorites.ICON: the icon of an app shortcut, for when it cannot be
+        // looked up.
+        if (oldVersion < 2) db.execSQL("ALTER TABLE home_items ADD COLUMN icon BLOB")
+    }
 
     // ---- search terms ----
 
@@ -88,7 +92,7 @@ class LauncherDatabase(context: Context, name: String? = NAME) :
         val rows = mutableListOf<HomeRow>()
         readableDatabase.query(
             "home_items",
-            arrayOf("id", "type", "container", "cell_x", "cell_y", "span_x", "span_y", "rank", "app_key", "widget_id", "provider"),
+            arrayOf("id", "type", "container", "cell_x", "cell_y", "span_x", "span_y", "rank", "app_key", "widget_id", "provider", "icon"),
             null, null, null, null, "container, rank",
         ).use { c ->
             while (c.moveToNext()) {
@@ -99,6 +103,7 @@ class LauncherDatabase(context: Context, name: String? = NAME) :
                     appKey = if (c.isNull(8)) null else c.getString(8),
                     widgetId = if (c.isNull(9)) null else c.getInt(9),
                     provider = if (c.isNull(10)) null else c.getString(10),
+                    icon = if (c.isNull(11)) null else c.getBlob(11),
                 )
             }
         }
@@ -114,6 +119,7 @@ class LauncherDatabase(context: Context, name: String? = NAME) :
                     put("cell_x", row.cellX); put("cell_y", row.cellY)
                     put("span_x", row.spanX); put("span_y", row.spanY); put("rank", row.rank)
                     put("app_key", row.appKey); put("widget_id", row.widgetId); put("provider", row.provider)
+                    put("icon", row.icon)
                 })
             }
         }
@@ -131,7 +137,7 @@ class LauncherDatabase(context: Context, name: String? = NAME) :
 
     companion object {
         private const val NAME = "launcher.db"
-        private const val VERSION = 1
+        private const val VERSION = 2
     }
 }
 
@@ -148,6 +154,8 @@ data class HomeRow(
     val appKey: String?,
     val widgetId: Int?,
     val provider: String?,
+    /** An app shortcut's icon as GraphicsUtils.createDefaultFlatBitmap makes it, or null. */
+    val icon: ByteArray? = null,
 ) {
     companion object {
         const val CONTAINER_HOME = -1L

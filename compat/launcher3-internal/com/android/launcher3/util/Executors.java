@@ -22,10 +22,12 @@ package com.android.launcher3.util;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 
 /**
- * Stand-in for Launcher3's Executors. Only MODEL_EXECUTOR's handler, which DragView uses for spring
- * icons (not used in TextLauncher: drags are started with allowSpringDrawable = false).
+ * Stand-in for Launcher3's Executors. Only MODEL_EXECUTOR: the thread of the long-press menu's
+ * shortcut lookups and of the IconCache, whose handler DragView also uses for spring icons (not
+ * used in TextLauncher: drags are started with allowSpringDrawable = false).
  */
 public class Executors {
     public static final LooperExecutor MODEL_EXECUTOR = new LooperExecutor("launcher-loader");
@@ -45,6 +47,10 @@ public class Executors {
                 mHandler = new Handler(thread.getLooper());
             }
             return mHandler;
+        }
+
+        public Looper getLooper() {
+            return getHandler().getLooper();
         }
     }
 }
