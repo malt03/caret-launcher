@@ -8,7 +8,7 @@ import com.android.launcher3.CellLayout
 import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.keyboard.ViewGroupFocusHelper
-import com.malt03.textlauncher.data.HomeItem
+import com.android.launcher3.model.data.ItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import kotlin.math.ceil
 import kotlin.math.max
@@ -60,7 +60,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     }
 
     /** CellLayout.addViewToCellLayout: the cells are marked as occupied. */
-    fun addItemView(view: View, item: HomeItem) {
+    fun addItemView(view: View, item: ItemInfo) {
         view.tag = item
         val lp = CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY)
         // The grid grows with its items; make room before marking the cells.
@@ -82,8 +82,6 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     }
 
     fun itemViews(): List<View> = (0 until childCount).map { getChildAt(it) }
-
-    fun viewFor(item: HomeItem): View? = itemViews().firstOrNull { it.tag === item }
 
     /** Rows in use, counting where the reorder preview has moved items to. */
     private fun usedRows(): Int = itemViews().maxOfOrNull {

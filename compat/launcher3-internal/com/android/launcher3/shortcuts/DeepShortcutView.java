@@ -20,6 +20,8 @@
 
 package com.android.launcher3.shortcuts;
 
+import static com.android.launcher3.AbstractFloatingView.TYPE_FOLDER;
+
 import static com.android.launcher3.Flags.blurOnMoreSurfaces;
 import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_NOT_PINNABLE;
 
@@ -40,6 +42,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.android.launcher3.BubbleTextView;
+import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.model.data.ItemInfo;
@@ -48,6 +51,7 @@ import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainerWithArrow;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
+import com.android.launcher3.folder.Folder;
 
 /**
  * Stand-in for Launcher3's DeepShortcutView (android-17.0.0_r1): a row in the long-press menu.
@@ -194,16 +198,12 @@ public class DeepShortcutView extends FrameLayout {
         }
     }
 
-    /**
-     * TextLauncher: Launcher3 reads the item from the original icon's tag; here the popup holds
-     * it.
-     */
     private boolean isPinnable(PopupContainerWithArrow container) {
-        if (!(container.getOriginalIcon() instanceof BubbleTextView)) {
+        if (!(container.getOriginalIcon() instanceof BubbleTextView bbtv)) {
             return false;
         }
         boolean isPinnable = false;
-        if (container.getItemInfo() instanceof ItemInfoWithIcon infoWithIcon) {
+        if (bbtv.getTag() instanceof ItemInfoWithIcon infoWithIcon) {
             isPinnable = (infoWithIcon.runtimeStatusFlags & FLAG_NOT_PINNABLE) == 0;
         }
         return isPinnable;
@@ -224,8 +224,13 @@ public class DeepShortcutView extends FrameLayout {
             // TextLauncher: no stats logging.
             host.addToWorkspace(getFinalInfo());
             // If we have an open folder, don't animate the popup closing.
-            // TextLauncher: the open folder is not an AbstractFloatingView; the host closes it.
-            container.close(true);
+            // TextLauncher: the activity context instead of the Launcher.
+            Folder folder = AbstractFloatingView.getOpenView(
+                    ActivityContext.lookupContext(getContext()), TYPE_FOLDER);
+            container.close(folder == null);
+            if (folder != null) {
+                folder.close(true);
+            }
         });
     }
 

@@ -1,6 +1,6 @@
 ---
 id: Tex-f33r
-status: open
+status: closed
 deps: [Tex-dnjc]
 links: []
 created: 2026-11-21T09:18:13Z
@@ -24,3 +24,10 @@ tags: [refactor]
 - [ ] itemInfoOf と AppIconView.itemInfo がない
 - [ ] 置く・動かす・フォルダの作成と出し入れ・削除・ショートカット・アプリの削除による整理・再起動後の保持が今と同じ
 
+
+## Notes
+
+**2026-11-21T10:06:18Z**
+
+HomeItem をなくし、ホームのモデルを Launcher3 の ItemInfo にした。AppItemInfo / ShortcutItemInfo / WidgetItemInfo は data/HomeItemInfo.kt に移し、キーから読み込んで、見つかったアプリやショートカットを後から結び付ける（LoaderTask と同じ順）。HomeModel は ItemInfo のリスト（フォルダの中身は FolderInfo.contents）を DB の行と読み書きし、id・container・cell・span・rank は ItemInfo の欄に持つ。View の tag は ItemInfo になり、itemInfoOf、AppIconView.itemInfo、フォルダの中身の写し、DeepShortcutView.isPinnable の改変、DeepShortcutView の追加ボタンでフォルダを閉じる改変（上流の getOpenView に戻した）をなくした。Folder.willAccept を上流から互換クラスへ入れた。検索結果からのドラッグは上流の makeWorkspaceItem と同じく新しい ItemInfo を作る。エミュレータで、既存の保存データの読み込み、フォルダの開閉、フォルダからの取り出しと解除、検索結果からの配置、フォルダの作成、削除、アンインストールの取り消し、再起動後の保持を確認。
+未再現の観察: アンインストールのダイアログを強制終了で閉じた直後の不規則なドラッグ（指を離す前に別のコマンドで動かした）で、同じアプリの View が2つになった。モデルには1つしか残らず、同じ ItemInfo が onDropExternal 経由で2回足された可能性がある（HomeWorkspace.onDrop は mDragInfo が null だと外からのドロップとして扱う。上流と同じ形）。同じ手順を何度か繰り返したが再現しなかった

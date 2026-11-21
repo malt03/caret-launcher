@@ -63,7 +63,7 @@ import java.util.function.Predicate;
  */
 public abstract class FolderIcon extends View implements DraggableView, Reorderable {
     protected ActivityContext mActivity;
-    protected FolderInfo mInfo = new FolderInfo();
+    protected FolderInfo mInfo;
 
     static final int DROP_IN_ANIMATION_DURATION = 400;
 
@@ -85,9 +85,11 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     Folder mFolder;
 
     // TextLauncher: FolderIcon(Context) and inflateIcon in one.
-    public FolderIcon(Context context, ActivityContext activity) {
+    public FolderIcon(Context context, ActivityContext activity, FolderInfo folderInfo) {
         super(context);
         mActivity = activity;
+        mInfo = folderInfo;
+        setTag(folderInfo);
         mPreviewLayoutRule = new ClippedFolderIconLayoutRule();
         mPreviewItemManager = new PreviewItemManager(this);
         mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());

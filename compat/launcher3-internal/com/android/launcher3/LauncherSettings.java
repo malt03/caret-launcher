@@ -26,6 +26,7 @@ import com.android.launcher3.icons.cache.CacheLookupFlag;
 public class LauncherSettings {
     /** Values from LauncherSettings.Favorites (android-17.0.0_r1). */
     public static final class Favorites {
+        public static final int CONTAINER_DESKTOP = -100;
         public static final int CONTAINER_SHORTCUTS = -107;
 
         public static final int ITEM_TYPE_APPLICATION = 0;

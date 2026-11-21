@@ -67,6 +67,13 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         View.OnLongClickListener, DragController.DragListener {
     private static final Rect sTempRect = new Rect();
 
+    /**
+     * Checks if {@code o} is an {@link ItemInfo} type that can be placed in folders.
+     */
+    public static boolean willAccept(Object o) {
+        return o instanceof ItemInfo info && willAcceptItemType(info.itemType);
+    }
+
     public final ActivityContext mActivityContext;
     private final LauncherDelegate mLauncherDelegate;
     public FolderInfo mInfo;

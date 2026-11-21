@@ -13,7 +13,7 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.home.AppIconView
-import com.malt03.textlauncher.ui.home.AppItemInfo
+import com.malt03.textlauncher.data.AppItemInfo
 
 /**
  * App cells in the style of Launcher3's all-apps grid: icon with the app name below
@@ -81,7 +81,7 @@ class ResultsAdapter(
         // A drag hides the icon it starts from (PopupContainer's pre-drag condition).
         holder.icon.visibility = View.VISIBLE
         val itemInfo = AppItemInfo(entry, iconLoader.cached(entry))
-        holder.icon.itemInfo = itemInfo
+        holder.icon.tag = itemInfo
         iconLoader.load(entry) { info ->
             if (holder.entry == entry) {
                 itemInfo.bitmap = info

@@ -28,6 +28,7 @@ import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.icons.BitmapInfo
+import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupContainer
@@ -42,7 +43,9 @@ import com.android.launcher3.views.BaseDragLayer
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
-import com.malt03.textlauncher.data.HomeItem
+import com.malt03.textlauncher.data.AppItemInfo
+import com.malt03.textlauncher.data.HomeItemInfo
+import com.malt03.textlauncher.data.ShortcutItemInfo
 import com.malt03.textlauncher.data.HomeShortcutKey
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
@@ -119,7 +122,6 @@ class HomeController(
          */
         override fun makeWorkspaceItem(info: WorkspaceItemInfo, detail: ShortcutInfo): WorkspaceItemInfo {
             val key = app.shortcutRepository.keyOf(detail)
-            shortcuts = shortcuts + (key to detail)
             val bitmap = app.iconLoader.cachedShortcut(key)
                 ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(badgeAppOf(detail)))
             return ShortcutItemInfo(key, detail, context, bitmap)
@@ -132,7 +134,6 @@ class HomeController(
         override fun addToWorkspace(item: ItemInfo): Boolean {
             val info = item as? WorkspaceItemInfo ?: return false
             // TextLauncher: Launcher3 goes to the NORMAL state first.
-            closeFolders()
             host.showHome()
             val cell = findSpaceOnHome()
             val view = workspaceHost.addItem(info, cell[0], cell[1])
@@ -179,8 +180,6 @@ class HomeController(
             replaceFolderWithFinalItem(folder.folderIcon as FolderIconView)
     }
 
-    /** The app shortcuts on the home screen and in folders, by [HomeShortcutKey] key. */
-    private var shortcuts: Map<String, ShortcutInfo> = emptyMap()
     private val shortcutsListener: () -> Unit = ::onShortcutsChanged
 
     /** ActivityAllAppsContainerView as a DragSource: nothing to do when an app from search drops. */
@@ -230,9 +229,11 @@ class HomeController(
             mainHandler.post {
                 if (generation != rebuildGeneration) return@post
                 if (found != null) {
-                    shortcuts = found
                     // LoaderTask: "Pinned shortcut not found"
                     pruneMissing { it in shortcutKeys && it !in found }
+                    for (info in model.allItems()) {
+                        if (info is ShortcutItemInfo) found[info.homeKey]?.let { info.update(it, context) }
+                    }
                 }
                 bindItems(generation)
             }
@@ -241,19 +242,16 @@ class HomeController(
 
     private var rebuildGeneration = 0
 
+    /** LoaderTask's binding: the apps' activities and the icons, then the views. */
     private fun bindItems(generation: Int) {
-        val keys = model.items.flatMap {
-            when (it) {
-                is HomeItem.App -> listOf(it.appKey)
-                is HomeItem.Shortcut -> listOf(it.shortcutKey)
-                is HomeItem.Folder -> it.itemKeys
-                is HomeItem.Widget -> emptyList()
-            }
+        val items = model.allItems()
+        for (info in items) {
+            if (info is AppItemInfo) app.appRepository.find(info.homeKey)?.let(info::bind)
         }
-        val entries = keys.filterNot(HomeShortcutKey::isShortcutKey).mapNotNull { app.appRepository.find(it) }
-        val shortcutsToLoad = keys.mapNotNull { key -> shortcuts[key]?.let { key to it } }
+        val entries = items.mapNotNull { (it as? AppItemInfo)?.entry }
+        val shortcutsToLoad = items.filterIsInstance<ShortcutItemInfo>().filter { it.shortcut != null }
         // The shortcuts' badges are their apps' icons.
-        val badgeApps = shortcutsToLoad.mapNotNull { badgeAppOf(it.second) }
+        val badgeApps = shortcutsToLoad.mapNotNull { badgeAppOf(it.shortcut!!) }
         app.iconLoader.loadAll(entries + badgeApps) {
             if (generation != rebuildGeneration) return@loadAll
             loadShortcutIcons(shortcutsToLoad) {
@@ -264,14 +262,14 @@ class HomeController(
         }
     }
 
-    private fun loadShortcutIcons(shortcuts: List<Pair<String, ShortcutInfo>>, onLoaded: () -> Unit) {
+    private fun loadShortcutIcons(shortcuts: List<ShortcutItemInfo>, onLoaded: () -> Unit) {
         var remaining = shortcuts.size
         if (remaining == 0) {
             onLoaded()
             return
         }
-        for ((key, shortcut) in shortcuts) {
-            app.iconLoader.loadShortcut(key, shortcut, badgeAppOf(shortcut)) {
+        for (info in shortcuts) {
+            loadIcon(info) {
                 remaining--
                 if (remaining == 0) onLoaded()
             }
@@ -294,7 +292,6 @@ class HomeController(
         app.ioExecutor.execute {
             val found = app.shortcutRepository.loadBlocking(keys) ?: return@execute
             mainHandler.post {
-                shortcuts = shortcuts + found
                 if (pruneMissing { it in keys && it !in found }) {
                     rebuild()
                     return@post
@@ -303,7 +300,7 @@ class HomeController(
                 for (view in grid.itemViews()) {
                     when (view) {
                         is AppIconView -> {
-                            val info = view.itemInfo as? ShortcutItemInfo ?: continue
+                            val info = view.tag as? ShortcutItemInfo ?: continue
                             info.update(found[info.homeKey] ?: continue, context)
                             bindIcon(info, view)
                         }
@@ -341,7 +338,8 @@ class HomeController(
 
     /** A long press on an app in the search results: its menu, and a drag once it moves. */
     fun onSearchResultLongPress(entry: AppEntry, iconView: AppIconView) {
-        val info = iconView.itemInfo as? AppItemInfo ?: return
+        // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
+        val info = AppItemInfo(entry, (iconView.tag as? AppItemInfo)?.bitmap)
         homeWorkspace.beginDragShared(
             iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
             startLongPressAction(iconView, info),
@@ -349,7 +347,7 @@ class HomeController(
     }
 
     private fun onHomeItemLongPress(view: AppIconView) {
-        val info = view.itemInfo ?: return
+        val info = view.tag as? WorkspaceItemInfo ?: return
         homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(view, info))
     }
 
@@ -371,7 +369,7 @@ class HomeController(
             // TextLauncher: the launcher's own options (docs/spec.md 5.3) instead of
             // ActivityContext.getSupportedShortcuts.
             val systemShortcuts = buildList<SystemShortcut<*>> {
-                if (item is AppItemInfo) add(EditSearchTerms(item.entry, item, originalView))
+                if (item is AppItemInfo) item.entry?.let { add(EditSearchTerms(it, item, originalView)) }
                 add(SystemShortcut.AppInfo(activityContext, item, originalView))
             }
             val container = PopupContainerWithArrow.create<ActivityContext>(
@@ -504,24 +502,14 @@ class HomeController(
 
     // ---- items ----
 
-    /** The ItemInfo of an app or shortcut key, or null when it is gone. */
-    private fun itemInfoFor(key: String): WorkspaceItemInfo? =
-        if (HomeShortcutKey.isShortcutKey(key)) {
-            shortcuts[key]?.let { ShortcutItemInfo(key, it, context, app.iconLoader.cachedShortcut(key)) }
-        } else {
-            app.appRepository.find(key)?.let { AppItemInfo(it, app.iconLoader.cached(it)) }
-        }
-
-    private fun homeItemFor(key: String): HomeItem =
-        if (HomeShortcutKey.isShortcutKey(key)) HomeItem.Shortcut(model.newId(), key) else HomeItem.App(model.newId(), key)
-
     private fun badgeAppOf(shortcut: ShortcutInfo): AppEntry? =
         app.appRepository.apps?.let { app.shortcutRepository.appOf(shortcut, it) }
 
+    /** The icon of an app or shortcut that was found (LoaderTask); nothing for one that was not. */
     private fun loadIcon(info: WorkspaceItemInfo, onLoaded: (BitmapInfo) -> Unit) {
         when (info) {
-            is AppItemInfo -> app.iconLoader.load(info.entry, onLoaded)
-            is ShortcutItemInfo -> app.iconLoader.loadShortcut(info.homeKey, info.shortcut, badgeAppOf(info.shortcut), onLoaded)
+            is AppItemInfo -> info.entry?.let { app.iconLoader.load(it, onLoaded) }
+            is ShortcutItemInfo -> info.shortcut?.let { app.iconLoader.loadShortcut(info.homeKey, it, badgeAppOf(it), onLoaded) }
         }
     }
 
@@ -536,8 +524,8 @@ class HomeController(
     /** ItemClickHandler.onClick: starts the app or the app shortcut. */
     private fun onItemClick(info: WorkspaceItemInfo, view: View) {
         when (info) {
-            is AppItemInfo -> host.launch(info.entry, view)
-            is ShortcutItemInfo -> host.startShortcut(info.shortcut.`package`, info.shortcut.id, view, info.user)
+            is AppItemInfo -> info.entry?.let { host.launch(it, view) }
+            is ShortcutItemInfo -> info.shortcut?.let { host.startShortcut(it.`package`, it.id, view, info.user) }
             // A shortcut row of the long-press menu (onClickAppShortcut).
             else -> {
                 val id = info.deepShortcutId ?: return
@@ -549,12 +537,13 @@ class HomeController(
 
     // ---- views ----
 
-    private fun addViewFor(item: HomeItem, itemInfo: WorkspaceItemInfo? = null): View? {
+    /** ItemInflater.inflateItem and Workspace.addInScreen: the item's view on the grid. */
+    private fun addViewFor(item: ItemInfo): View? {
         val view: View = when (item) {
-            is HomeItem.App -> createItemView(itemInfo ?: itemInfoFor(item.appKey) ?: return null)
-            is HomeItem.Shortcut -> createItemView(itemInfo ?: itemInfoFor(item.shortcutKey) ?: return null)
-            is HomeItem.Folder -> createFolderView(item)
-            is HomeItem.Widget -> return null // TODO(Tex-t2ea): widgets
+            is AppItemInfo -> if (item.entry != null) createItemView(item) else return null
+            is ShortcutItemInfo -> if (item.shortcut != null) createItemView(item) else return null
+            is FolderInfo -> createFolderView(item)
+            else -> return null // TODO(Tex-t2ea): widgets
         }
         grid.addItemView(view, item)
         return view
@@ -562,7 +551,6 @@ class HomeController(
 
     private fun createItemView(info: WorkspaceItemInfo): AppIconView =
         AppIconView(context, gridSpec.iconSizePx).apply {
-            itemInfo = info
             bindIcon(info, this)
             // ItemInflater: the item's focus listener is Launcher.getFocusHandler.
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
@@ -573,14 +561,12 @@ class HomeController(
             }
         }
 
-    private fun createFolderView(folder: HomeItem.Folder): FolderIconView =
-        FolderIconView(context, activityContext, folderCallbacks).apply {
-            // FolderIcon.inflateIcon: the icon's Folder.
+    /** FolderIcon.inflateIcon */
+    private fun createFolderView(folderInfo: FolderInfo): FolderIconView =
+        FolderIconView(context, activityContext, folderInfo, folderCallbacks).apply {
             HomeFolder(context, activityContext, launcherDelegate, gridSpec.iconSizePx).bindToIcon(this)
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
-            val items = folder.itemKeys.mapNotNull(::itemInfoFor)
-            setContents(items)
-            for (item in items) {
+            for (item in contents) {
                 loadIcon(item) { bitmap ->
                     if (item.bitmap === bitmap) return@loadIcon
                     item.bitmap = bitmap
@@ -588,7 +574,7 @@ class HomeController(
                 }
             }
             // ItemClickHandler.onClickFolderIcon
-            setOnClickListener { with(getFolder()) { if (!isOpen && !isDestroyed) animateOpen() } }
+            setOnClickListener { with(folder) { if (!isOpen && !isDestroyed) animateOpen() } }
             setOnLongClickListener {
                 onHomeFolderLongPress(this)
                 true
@@ -596,12 +582,7 @@ class HomeController(
         }
 
     private val folderCallbacks = object : FolderIconView.Callbacks {
-        override fun onContentChanged(view: FolderIconView) {
-            val folder = view.tag as? HomeItem.Folder ?: return
-            folder.itemKeys.clear()
-            folder.itemKeys += view.contents.map { (it as HomeItemInfo).homeKey }
-            model.save()
-        }
+        override fun onContentChanged(view: FolderIconView) = model.save()
     }
 
     /**
@@ -649,27 +630,25 @@ class HomeController(
         if (folderView.parent == null) return true
         // Add the last remaining child to the workspace in place of the folder
         val onCompleteRunnable = Runnable {
-            val folder = folderView.tag as? HomeItem.Folder ?: return@Runnable
-            val itemCount = folderView.folderInfo.contents.size
+            val info = folderView.folderInfo
+            val itemCount = info.contents.size
             if (itemCount <= 1) {
-                var newItem: HomeItem? = null
-                var finalItem: WorkspaceItemInfo? = null
+                var finalItem: ItemInfo? = null
                 if (itemCount == 1) {
                     // Move the item from the folder to the workspace, in the position of the folder
-                    finalItem = folderView.folderInfo.contents.removeAt(0) as WorkspaceItemInfo
-                    newItem = homeItemFor((finalItem as HomeItemInfo).homeKey).also {
-                        it.cellX = folder.cellX
-                        it.cellY = folder.cellY
-                    }
+                    finalItem = info.contents.removeAt(0)
+                    finalItem.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+                    finalItem.cellX = info.cellX
+                    finalItem.cellY = info.cellY
                 }
                 // Remove the folder
                 grid.removeView(folderView)
-                model.items.remove(folder)
-                if (newItem != null) {
+                model.items.remove(info)
+                if (finalItem != null) {
                     // We add the child after removing the folder to prevent both from existing at
                     // the same time in the CellLayout.
-                    model.items += newItem
-                    addViewFor(newItem, finalItem)
+                    model.items += finalItem
+                    addViewFor(finalItem)
                 }
                 model.save()
             }
@@ -696,23 +675,26 @@ class HomeController(
         var changed = false
         for (item in model.items.toList()) {
             when (item) {
-                is HomeItem.App -> if (isMissing(item.appKey)) {
+                is HomeItemInfo -> if (isMissing(item.homeKey)) {
                     model.items.remove(item); changed = true
                 }
-                is HomeItem.Shortcut -> if (isMissing(item.shortcutKey)) {
-                    model.items.remove(item); changed = true
-                }
-                is HomeItem.Folder -> {
-                    if (item.itemKeys.removeAll { isMissing(it) }) changed = true
-                    when (item.itemKeys.size) {
-                        0 -> model.items.remove(item)
+                is FolderInfo -> {
+                    if (item.contents.removeAll { isMissing((it as HomeItemInfo).homeKey) }) changed = true
+                    when (item.contents.size) {
+                        0 -> {
+                            model.items.remove(item); changed = true
+                        }
                         1 -> {
                             model.items.remove(item)
-                            model.items += homeItemFor(item.itemKeys.first()).also { it.cellX = item.cellX; it.cellY = item.cellY }
+                            val last = item.contents.removeAt(0)
+                            last.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+                            last.cellX = item.cellX
+                            last.cellY = item.cellY
+                            model.items += last
+                            changed = true
                         }
                     }
                 }
-                is HomeItem.Widget -> Unit
             }
         }
         if (changed) model.save()
@@ -722,7 +704,9 @@ class HomeController(
     /** HomeWorkspace's model side (Launcher, ModelWriter). */
     private inner class WorkspaceHost : HomeWorkspace.Host {
         override fun addFolder(cellX: Int, cellY: Int): FolderIconView {
-            val folder = HomeItem.Folder(model.newId(), mutableListOf())
+            val folder = FolderInfo()
+            folder.id = model.newId()
+            folder.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
             folder.cellX = cellX
             folder.cellY = cellY
             model.items += folder
@@ -730,22 +714,22 @@ class HomeController(
         }
 
         override fun addItem(info: WorkspaceItemInfo, cellX: Int, cellY: Int): View {
-            val item = homeItemFor((info as HomeItemInfo).homeKey)
-            item.cellX = cellX
-            item.cellY = cellY
-            model.items += item
-            return addViewFor(item, info)!!
+            info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+            info.cellX = cellX
+            info.cellY = cellY
+            model.items += info
+            return addViewFor(info)!!
         }
 
         override fun removeWorkspaceItem(view: View) {
             if (view.parent === grid) grid.removeView(view)
-            (view.tag as? HomeItem)?.let { model.items.remove(it) }
+            (view.tag as? ItemInfo)?.let { model.items.remove(it) }
             model.save()
         }
 
         override fun onItemsMoved() {
             for (child in grid.itemViews()) {
-                val item = child.tag as? HomeItem ?: continue
+                val item = child.tag as? ItemInfo ?: continue
                 val lp = child.layoutParams as CellLayoutLayoutParams
                 item.cellX = lp.cellX
                 item.cellY = lp.cellY
@@ -753,12 +737,6 @@ class HomeController(
                 item.spanY = lp.cellVSpan
             }
             model.save()
-        }
-
-        override fun itemInfoOf(view: View): ItemInfo? = when (view) {
-            is AppIconView -> view.itemInfo
-            is FolderIconView -> view.folderInfo
-            else -> null
         }
     }
 

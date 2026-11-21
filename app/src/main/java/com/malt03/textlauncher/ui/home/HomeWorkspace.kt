@@ -20,6 +20,7 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DragView
 import com.android.launcher3.dragndrop.DraggableView
+import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.PreviewBackground
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.icons.FastBitmapDrawable
@@ -63,9 +64,6 @@ class HomeWorkspace(
 
         /** ModelWriter.modifyItemInDatabase: the cells of the items on the grid changed. */
         fun onItemsMoved()
-
-        /** The ItemInfo of a view on the grid (Launcher3 keeps it in the view's tag). */
-        fun itemInfoOf(view: View): ItemInfo?
     }
 
     /** CellLayout.CellInfo */
@@ -328,7 +326,7 @@ class HomeWorkspace(
             return false
         }
 
-        val aboveShortcut = willAccept(dropOverView)
+        val aboveShortcut = Folder.willAccept(dropOverView.tag)
         val willBecomeShortcut = FolderInfo.willAcceptItemType(info.itemType)
 
         return aboveShortcut && willBecomeShortcut
@@ -373,11 +371,11 @@ class HomeWorkspace(
         if (v == null || hasntMoved || !mCreateUserFolderOnDrop) return false
         mCreateUserFolderOnDrop = false
 
-        val aboveShortcut = willAccept(v)
+        val aboveShortcut = Folder.willAccept(v.tag)
         val willBecomeShortcut = FolderInfo.willAcceptItemType(sourceInfo.itemType)
 
         if (aboveShortcut && willBecomeShortcut) {
-            val destInfo = host.itemInfoOf(v) ?: return false
+            val destInfo = v.tag as? ItemInfo ?: return false
             // if the drag started here, we need to remove it from the workspace
             if (!external) {
                 mDragInfo?.let { host.removeWorkspaceItem(it.cell) }
@@ -830,12 +828,6 @@ class HomeWorkspace(
      */
     private fun findNearestArea(pixelX: Int, pixelY: Int, spanX: Int, spanY: Int, layout: CellLayout, recycle: IntArray): IntArray =
         layout.findNearestAreaIgnoreOccupied(pixelX, pixelY, spanX, spanY, recycle)
-
-    /** Folder.willAccept(view.getTag()): apps can go into folders. */
-    private fun willAccept(view: View): Boolean {
-        val info = host.itemInfoOf(view) ?: return false
-        return FolderInfo.willAcceptItemType(info.itemType)
-    }
 
     // ---- auto scroll (TextLauncher) ----
 

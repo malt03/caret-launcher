@@ -30,7 +30,7 @@ import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.dragndrop.DragLayer
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.ui.home.AppItemInfo
+import com.malt03.textlauncher.data.AppItemInfo
 import com.android.launcher3.R as L3R
 
 /**
@@ -567,8 +567,8 @@ class DropTargetBar(
 
         /** SecondaryDropTarget.supportsDrop for UNINSTALL: apps that are not system apps. */
         override fun supportsDrop(info: DragObject): Boolean {
-            val app = info.dragInfo as? AppItemInfo ?: return false
-            return app.entry.info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0
+            val entry = (info.dragInfo as? AppItemInfo)?.entry ?: return false
+            return entry.info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0
         }
 
         override fun onDrop(d: DragObject, options: DragOptions) {
@@ -591,12 +591,12 @@ class DropTargetBar(
 
         /** SecondaryDropTarget.performDropAction for UNINSTALL. */
         private fun performDropAction(info: ItemInfo): ComponentName? {
-            val app = info as? AppItemInfo ?: return null
-            val component = app.entry.component
+            val entry = (info as? AppItemInfo)?.entry ?: return null
+            val component = entry.component
             return try {
                 val intent = Intent(Intent.ACTION_DELETE, Uri.fromParts("package", component.packageName, component.className))
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-                    .putExtra(Intent.EXTRA_USER, app.entry.user)
+                    .putExtra(Intent.EXTRA_USER, entry.user)
                 context.startActivity(intent)
                 component
             } catch (e: Exception) {
@@ -626,10 +626,10 @@ class DropTargetBar(
 
             fun onLauncherResume() {
                 val d = dragObject ?: return
-                val app = d.dragInfo as? AppItemInfo
+                val entry = (d.dragInfo as? AppItemInfo)?.entry
                 val launcherApps = context.getSystemService(LauncherApps::class.java)
-                val installed = app != null && runCatching {
-                    launcherApps.getApplicationInfo(app.entry.component.packageName, 0, app.entry.user)
+                val installed = entry != null && runCatching {
+                    launcherApps.getApplicationInfo(entry.component.packageName, 0, entry.user)
                 }.isSuccess
                 if (!installed) {
                     d.dragSource = original
