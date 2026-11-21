@@ -1,6 +1,6 @@
 ---
 id: Tex-neft
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-21T09:18:12Z
@@ -26,3 +26,7 @@ tags: [refactor]
 5. 分割: Tex-9vav、Tex-6ct1（Tex-f33r の後）、Tex-mfcm
 全アプリ一覧の表示（Tex-hibk）は Tex-6ct1 と Tex-9vav の後、ウィジェット（Tex-t2ea）は Tex-f33r の後にする。
 同じファイルを触るタスクが多いので、並行のセッションには分けず、このセッションで順に進める。
+
+**2026-11-21T10:20:30Z**
+
+15 件をすべて閉じた。third_party のコピーは上流と一致したまま（98 ファイル。res/color は先に curl で確認）。互換クラスは上流にソースがない 5 ファイル以外すべてにライセンスヘッダーがある。整理の途中で見つけた未再現の不具合は Tex-ijxl に切り出した
