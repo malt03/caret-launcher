@@ -373,9 +373,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     val sheetHandleAreaHeight: Int get() = allAppsSheet.handleAreaHeight
 
     /**
-     * AllAppsTransitionController.setProgress: the sheet comes up from below the screen to right
-     * under the field as the field goes from [closedBarTop] to [openBarTop] (the keyboard goes
-     * down). The home screen stays, shrunk to workspace_content_scale and blurred with the depth
+     * AllAppsTransitionController.setProgress: the field goes from [closedBarTop] to [openBarTop]
+     * (the keyboard goes down), and the sheet follows right under it, coming out from behind the
+     * keyboard. The home screen stays, shrunk to workspace_content_scale and blurred with the depth
      * (AllAppsSwipeController.applyNormalToAllAppsAnimConfig: ALL_APPS_SHEET_DEPTH for the
      * workspace scale and the depth).
      */
@@ -385,9 +385,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         barContainer.translationY = barTop - barContainer.top
         val shown = progress > 0f
         allAppsSheet.visibility = if (shown) VISIBLE else GONE
-        // The sheet's vertical progress: from below the screen (shift range) to open.
-        val openTop = allAppsSheet.top.toFloat()
-        allAppsSheet.translationY = (height - openTop) * (1f - progress)
+        // TextLauncher: the sheet is always right under the field, so it comes out from behind
+        // the keyboard as the field goes up (docs/spec.md 6.4). It is laid out open, where the
+        // field is at the top of the screen.
+        allAppsSheet.translationY = barTop - openBarTop
         val sheetDepth = ALL_APPS_SHEET_DEPTH.getInterpolation(progress)
         val scale = 1f - (1f - workspaceContentScale) * sheetDepth
         contentArea.scaleX = scale
