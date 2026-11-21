@@ -216,4 +216,6 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:importantForAccessibility">no</item>
     </style>
+    <!-- All apps open and close gestures (touch/BaseSwipeDetector.java). -->
+    <dimen name="base_swift_detector_fling_release_velocity">1dp</dimen>
 </resources>

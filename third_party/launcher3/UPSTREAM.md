@@ -86,6 +86,10 @@ path=src/com/android/launcher3/util/IntArray.java
 path=src/com/android/launcher3/icons/CacheableShortcutInfo.kt
 path=src/com/android/launcher3/util/CancellableTask.kt
 path=src/com/android/launcher3/FastScrollRecyclerView.java
+path=src/com/android/launcher3/MotionEventsUtils.java
+path=src/com/android/launcher3/touch/BaseSwipeDetector.java
+path=src/com/android/launcher3/touch/SingleAxisSwipeDetector.java
+path=src/com/android/launcher3/touch/OverScroll.java
 path=src/com/android/launcher3/views/RecyclerViewFastScroller.java
 path=src/com/android/launcher3/graphics/FastScrollThumbDrawable.java
 path=src/com/android/launcher3/allapps/AllAppsFastScrollHelper.java
@@ -140,7 +144,7 @@ path=res/layout/system_shortcut_spacer.xml
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバー用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 

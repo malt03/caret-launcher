@@ -2,7 +2,6 @@ package com.malt03.textlauncher.ui
 
 import android.app.ActivityOptions
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.graphics.Rect
 import android.os.Bundle
@@ -13,6 +12,8 @@ import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.text.method.TextKeyListener
 import android.view.KeyEvent
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
@@ -21,6 +22,12 @@ import androidx.core.view.WindowCompat
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
+import com.android.launcher3.AbstractFloatingView
+import com.android.launcher3.Flags
+import com.android.launcher3.util.MSDLPlayerWrapper
+import com.google.android.msdl.data.model.MSDLToken
+import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
+import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
 import com.malt03.textlauncher.ui.allapps.AllAppsView
 import com.malt03.textlauncher.ui.home.HomeController
 import com.android.launcher3.views.ActivityContext
@@ -31,19 +38,16 @@ import com.malt03.textlauncher.ui.search.SearchResults
  * (docs/spec.md 1).
  */
 class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityContext.Provider {
-    companion object {
-        /**
-         * Debug builds only: opens the all apps list with the home intent, until the gestures that
-         * open it (Tex-17s1) are there.
-         */
-        const val EXTRA_SHOW_ALL_APPS = "com.malt03.textlauncher.extra.SHOW_ALL_APPS"
-    }
 
     private val app get() = application as TextLauncherApplication
 
     private lateinit var root: LauncherRootLayout
     private lateinit var results: SearchResults
     private lateinit var allApps: AllAppsView
+    private lateinit var allAppsTransition: AllAppsTransitionController
+
+    /** LauncherState NORMAL / ALL_APPS: whether the all apps list is open or going to be. */
+    private var isAllAppsOpen = false
 
     /** AppsSearchContainerLayout.mSearchQueryBuilder */
     private val searchQueryBuilder = SpannableStringBuilder().also { Selection.setSelection(it, 0) }
@@ -89,6 +93,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root.contentArea.addView(results.view)
         allApps = AllAppsView(this, home.activityContext, app.iconLoader, GridSpec.from(this))
         root.allAppsView = allApps
+        allAppsTransition = AllAppsTransitionController(root)
+        root.allAppsTouchInterceptor = AllAppsSwipeController(this, root, allAppsTransition, allAppsSwipeCallbacks)::onTouch
 
         val editText = root.searchBar.editText
         editText.addTextChangedListener(object : TextWatcher {
@@ -102,7 +108,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root.searchBar.onEnter = { launchTopResult() }
         // TextLauncher: tapping the field closes the all apps list until the search in it
         // (docs/spec.md 6.5, Tex-9cyk) is there.
-        root.searchBar.onFocusChanged = { hasFocus -> if (hasFocus && root.isAllAppsOpen) closeAllApps() }
+        root.searchBar.onFocusChanged = { hasFocus ->
+            if (hasFocus && isAllAppsOpen && !allAppsTransition.isAnimating) closeAllApps(animate = true)
+        }
         root.onKeyboardHidden = ::onKeyboardHidden
 
         // docs/spec.md 1.4: the back gesture itself does nothing on the home screen.
@@ -115,8 +123,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
                 }
                 if (home.closeTopFloatingView()) return
                 // docs/spec.md 6.6: back closes the all apps list.
-                if (root.isAllAppsOpen) {
-                    closeAllApps()
+                if (root.isAllAppsShown) {
+                    closeAllApps(animate = true)
                     return
                 }
                 // docs/spec.md 1.4: a search result has keyboard focus and the keyboard is down, so the
@@ -146,8 +154,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         home.closeFloatingViews(animate = false)
         clearQuery()
         // docs/spec.md 6.6: the home button closes the all apps list.
-        closeAllApps()
-        if (isDebuggable() && intent.getBooleanExtra(EXTRA_SHOW_ALL_APPS, false)) openAllApps()
+        closeAllApps(animate = false)
         focusSearch()
     }
 
@@ -171,7 +178,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         home.closeFloatingViews(animate = false)
         clearQuery()
         // docs/spec.md 6.6: coming back after launching an app from the list, it is closed.
-        closeAllApps()
+        closeAllApps(animate = false)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -181,7 +188,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     private fun focusSearch() {
         // docs/spec.md 6.4: with the all apps list open, the field has no focus or keyboard.
-        if (isEditMode || root.isAllAppsOpen) return
+        if (isEditMode || root.isAllAppsShown) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
@@ -225,7 +232,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
-        if (isEditMode || root.isAllAppsOpen || isLaunching || !isResumedState || !hasWindowFocus()) return
+        if (isEditMode || root.isAllAppsShown || isLaunching || !isResumedState || !hasWindowFocus()) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
         // keyboard.
         if (!root.searchBar.editText.hasFocus()) return
@@ -237,27 +244,98 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     }
 
     /**
-     * docs/spec.md 6.4: the all apps list fills the screen under the search field, which has no
-     * focus and no keyboard. TextLauncher: without the transition yet (Tex-17s1).
+     * The all apps swipe (docs/spec.md 6.1, 6.2, 6.6), as AllAppsSwipeController.canInterceptTouch
+     * and the state changes of LauncherStateManager.
      */
-    private fun openAllApps() {
-        if (isEditMode || root.isAllAppsOpen) return
+    private val allAppsSwipeCallbacks = object : AllAppsSwipeController.Callbacks {
+        override fun canSwipe(): Boolean =
+            !isEditMode && !home.isDragging && AbstractFloatingView.getTopOpenView(home.activityContext) == null
+
+        override fun canOpenFrom(ev: MotionEvent): Boolean {
+            if (isInSearchBar(ev)) return true
+            // docs/spec.md 6.1: the home screen scrolled to its bottom, or not scrolling at all.
+            return currentQuery().isEmpty() && ev.y < root.closedBarTop && !home.scrollView.canScrollVertically(1)
+        }
+
+        override fun canCloseFrom(ev: MotionEvent): Boolean =
+            isInSearchBar(ev) || (ev.y > root.searchBarArea.y + root.searchBarArea.height && allApps.shouldContainerScroll(ev, root))
+
+        override fun onThresholdCrossed(opening: Boolean) {
+            // AllAppsTransitionController.setStateWithAnimation: the haptic for going to all apps.
+            if (Flags.msdlFeedback()) {
+                MSDLPlayerWrapper.INSTANCE.get(this@LauncherActivity).playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+            } else {
+                root.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
+            }
+            // docs/spec.md 6.2: the keyboard goes down as the field comes up.
+            if (opening) prepareAllAppsOpen()
+        }
+
+        override fun onSettling(open: Boolean) {
+            if (open) prepareAllAppsOpen() else prepareAllAppsClose()
+        }
+
+        override fun onSettled(open: Boolean) {
+            if (open) isAllAppsOpen = true else onAllAppsClosed(focus = true)
+        }
+    }
+
+    private fun isInSearchBar(ev: MotionEvent): Boolean {
+        val bar = root.searchBarArea
+        return ev.y >= bar.y && ev.y < bar.y + bar.height
+    }
+
+    /**
+     * docs/spec.md 6.4: the field has no focus and the keyboard goes down; the query is cleared
+     * (the list replaces it).
+     */
+    private fun prepareAllAppsOpen() {
+        isAllAppsOpen = true
         home.closeFloatingViews(animate = false)
         clearQuery()
-        root.isAllAppsOpen = true
         root.requestFocus()
         WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
     }
 
-    /** docs/spec.md 6.6: closed, the field goes back above the keyboard with the focus. */
-    private fun closeAllApps(focus: Boolean = true) {
-        if (!root.isAllAppsOpen) return
-        root.isAllAppsOpen = false
+    /** docs/spec.md 6.6: closing, the field gets the focus and the keyboard comes back with it. */
+    private fun prepareAllAppsClose() {
+        isAllAppsOpen = false
+        root.holdFieldAboveKeyboard = true
+        val editText = root.searchBar.editText
+        editText.requestFocus()
+        WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
+    }
+
+    /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
+    @Suppress("unused")
+    private fun openAllApps() {
+        if (isEditMode || isAllAppsOpen) return
+        prepareAllAppsOpen()
+        allAppsTransition.animateTo(open = true) {}
+    }
+
+    /**
+     * docs/spec.md 6.6: closes the list; the field goes back above the keyboard with the focus
+     * ([focus]). Without [animate], at once (the home button, leaving the launcher).
+     */
+    private fun closeAllApps(animate: Boolean, focus: Boolean = true) {
+        if (!root.isAllAppsShown && !isAllAppsOpen) return
+        if (animate) {
+            prepareAllAppsClose()
+            allAppsTransition.animateTo(open = false) { onAllAppsClosed(focus) }
+        } else {
+            allAppsTransition.cancelAnimation()
+            isAllAppsOpen = false
+            allAppsTransition.progress = 0f
+            onAllAppsClosed(focus)
+        }
+    }
+
+    private fun onAllAppsClosed(focus: Boolean) {
+        isAllAppsOpen = false
         allApps.reset()
         if (focus) focusSearch()
     }
-
-    private fun isDebuggable(): Boolean = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 
     private fun currentQuery(): String = root.searchBar.editText.text?.toString().orEmpty()
 
@@ -285,7 +363,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         isEditMode = editing
         if (editing) {
             // docs/spec.md 6.4: a drag from the all apps list closes it and shows the home screen.
-            closeAllApps(focus = false)
+            closeAllApps(animate = false, focus = false)
             clearQuery()
             root.requestFocus()
             WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())

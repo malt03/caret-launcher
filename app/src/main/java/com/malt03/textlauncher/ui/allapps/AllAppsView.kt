@@ -6,6 +6,7 @@ import android.graphics.Point
 import android.os.LocaleList
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -125,11 +126,24 @@ class AllAppsView(
         }
     }
 
-    /** ActivityAllAppsContainerView.reset: the list goes back to the top. */
+    /**
+     * ActivityAllAppsContainerView.reset: the list goes back to the top. TextLauncher: the cells
+     * are bound again, which shows an icon a drag left hidden (BaseAllAppsAdapter.onBindViewHolder
+     * makes the view visible), as the search results do.
+     */
     fun reset() {
         touchHandler?.endFastScrolling()
         recyclerView.scrollToTop()
+        adapter.notifyItemRangeChanged(0, adapter.itemCount)
     }
+
+    /**
+     * ActivityAllAppsContainerView.shouldContainerScroll: a swipe down here may close the list (the
+     * list is at its top, and the touch is not on the scrollbar's thumb). [ev] is in [eventSource]'s
+     * coordinates.
+     */
+    fun shouldContainerScroll(ev: MotionEvent, eventSource: View): Boolean =
+        recyclerView.scrollbar == null || recyclerView.shouldContainerScroll(ev, eventSource)
 
     /** ActivityAllAppsContainerView.onInterceptTouchEvent: the fast scroller takes its touches. */
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {

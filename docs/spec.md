@@ -355,12 +355,11 @@
   - touch slop を越え、かつ縦の移動量が横より大きくなったら、親がタッチを横取りする（EditText 側には `ACTION_CANCEL` が届く）
   - 1行の EditText は縦にスクロールしないので競合しない。タップによるフォーカス、横方向のカーソル移動、長押しの選択はそのまま EditText に届く
 - ホームの配置の、端に着いた後の引っ張りの検出：
-  - スクロールする View の親で `NestedScrollingParent3` を実装する
-  - `onNestedScroll` の `dyUnconsumed` を使う。`type == TYPE_TOUCH` のときだけ拾い、フリングは無視する
-  - 全アプリ一覧の一番上での引っ張りも同じ仕組みで拾う
+  - 指を置いた時点でホームがもう下にスクロールできないときだけ、上向きのスワイプを全アプリ一覧の開閉として拾う（Launcher3 の `AllAppsSwipeController.canInterceptTouch` と同じく、タッチの始まりで決める）。フリングで一番下に着いただけでは、そのタッチは開閉にならない
+  - 全アプリ一覧の一番上での引っ張りも同じく、指を置いた時点で一覧が一番上にあるとき（`shouldContainerScroll`）だけ拾う
 - 開閉の動き：
-  - 引っ掛かりは、閾値までの移動量に減衰をかけて表現する
-  - 戻る動きと開き切る動きは `SpringAnimation` を使う
+  - 引っ掛かりは、閾値（48dp）までの移動量に減衰（Launcher3 の `OverScroll.dampedScroll`）をかけて表現する。閾値を越えたら、検索フィールドは 150ms で指に追いつく
+  - 戻る動きと開き切る動きは、Launcher3 と同じく離したときの速度から長さを決めるアニメーション（`BaseSwipeDetector.calculateDuration`、`scrollInterpolatorForVelocity`）にする
   - キーボードの開閉は `WindowInsetsAnimationCompat` で同期させる
 - ハプティック：Launcher3 と同じく、`msdllib` の `SWIPE_THRESHOLD_INDICATOR` を鳴らす（[Launcher3 からの取り込み方針](launcher3-porting.md) の「ハプティックを鳴らす場所」）
 - 「壁紙とスタイル」との連携（[7.3](#73-テーマアイコンとアイコン形状)）：

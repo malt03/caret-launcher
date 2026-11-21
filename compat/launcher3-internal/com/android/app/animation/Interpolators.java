@@ -54,4 +54,68 @@ public class Interpolators {
     public static final Interpolator DECELERATE_1_5 = new DecelerateInterpolator(1.5f);
     public static final Interpolator DECELERATE_2 = new DecelerateInterpolator(2);
     public static final Interpolator DECELERATE_QUINT = new DecelerateInterpolator(2.5f);
+
+    public static final Interpolator SCROLL = new Interpolator() {
+        @Override
+        public float getInterpolation(float t) {
+            t -= 1.0f;
+            return t*t*t*t*t + 1;
+        }
+    };
+
+    public static final Interpolator SCROLL_CUBIC = new Interpolator() {
+        @Override
+        public float getInterpolation(float t) {
+            t -= 1.0f;
+            return t*t*t + 1;
+        }
+    };
+
+    private static final float FAST_FLING_PX_MS = 10;
+
+    public static Interpolator scrollInterpolatorForVelocity(float velocity) {
+        return Math.abs(velocity) > FAST_FLING_PX_MS ? SCROLL : SCROLL_CUBIC;
+    }
+
+    /**
+     * Returns a function that runs the given interpolator such that the entire progress is set
+     * between the given bounds. That is, we set the interpolation to 0 until lowerBound and reach
+     * 1 by upperBound.
+     */
+    public static Interpolator clampToProgress(Interpolator interpolator, float lowerBound,
+            float upperBound) {
+        if (upperBound < lowerBound) {
+            throw new IllegalArgumentException(
+                    String.format("upperBound (%f) must be greater than lowerBound (%f)",
+                            upperBound, lowerBound));
+        }
+        return t -> clampToProgress(interpolator, t, lowerBound, upperBound);
+    }
+
+    /**
+     * Returns the progress value's progress between the lower and upper bounds. That is, the
+     * progress will be 0f from 0f to lowerBound, and reach 1f by upperBound.
+     *
+     * Between lowerBound and upperBound, the progress value will be interpolated using the provided
+     * interpolator.
+     */
+    public static float clampToProgress(
+            Interpolator interpolator, float progress, float lowerBound, float upperBound) {
+        if (upperBound < lowerBound) {
+            throw new IllegalArgumentException(
+                    String.format("upperBound (%f) must be greater than lowerBound (%f)",
+                            upperBound, lowerBound));
+        }
+
+        if (progress == lowerBound && progress == upperBound) {
+            return progress == 0f ? 0 : 1;
+        }
+        if (progress < lowerBound) {
+            return 0;
+        }
+        if (progress > upperBound) {
+            return 1;
+        }
+        return interpolator.getInterpolation((progress - lowerBound) / (upperBound - lowerBound));
+    }
 }
