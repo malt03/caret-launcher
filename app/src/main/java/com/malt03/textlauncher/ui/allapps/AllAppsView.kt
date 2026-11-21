@@ -71,7 +71,7 @@ class AllAppsView(
 
         // TextLauncher: the cells are made like the search results' (all_apps_icon.xml).
         adapter.setIconFactory { parent: ViewGroup ->
-            ResultIconView(parent.context, grid).apply {
+            ResultIconView(parent.context, grid, onSurface = true).apply {
                 layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
             }
         }

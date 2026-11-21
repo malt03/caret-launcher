@@ -1,6 +1,6 @@
 ---
 id: Tex-226d
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T16:03:46Z
@@ -31,7 +31,13 @@ tags: [search, theme]
 
 ## Acceptance Criteria
 
-- [ ] 暗い壁紙では、ライトモードでも検索結果の文字が白（影付き）になる
-- [ ] 明るい壁紙では黒（影なし）になる
-- [ ] 壁紙を変えると、ランチャーに戻ったときに文字色が変わる
+- [x] 暗い壁紙では、ライトモードでも検索結果の文字が白（影付き）になる
+- [x] 明るい壁紙では黒（影なし）になる
+- [x] 壁紙を変えると、ランチャーに戻ったときに文字色が変わる
 
+## 結果（2026-11-22）
+
+- WallpaperColorHints と WallpaperThemeManager を互換クラスにし、Themes.getActivityThemeRes をそのまま移した。LauncherActivity は Launcher.onCreate と同じく super.onCreate の直後にテーマを選び、isWorkspaceDarkText でシステムバーのアイコンの明暗を決める
+- テーマ（AppTheme と DarkText・DarkMainColor・Dark の各派生）はアプリの res/values/themes.xml に、上流の LauncherTheme の値で書いた。ドロップ先のボタンの色（workspaceAccentColor など）も DarkText で上流どおり切り替わる
+- 検索結果のアプリ名は workspaceTextColor と影（BaseIcon.Workspace.Shadows の shadowRadius 2.0、workspaceShadowColor）。上流のアイコンの二重の影（DoubleShadowBubbleTextView の ambient/key）は持たない
+- エミュレータで確認: ライトモードで暗い壁紙 → 白い文字に影、明るい壁紙（テクスチャの羽根）に変える → ランチャーが作り直され、黒い文字で影なし、ステータスバーのアイコンも暗くなる

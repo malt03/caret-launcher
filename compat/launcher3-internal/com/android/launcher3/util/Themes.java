@@ -20,14 +20,42 @@
 
 package com.android.launcher3.util;
 
+import static android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT;
+import static android.app.WallpaperColors.HINT_SUPPORTS_DARK_THEME;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 
 import com.android.launcher3.R;
+import com.android.launcher3.Utilities;
 import com.android.launcher3.icons.GraphicsUtils;
 
 /** Stand-in for Launcher3's Themes. Members copied from util/Themes.java as needed. */
 public class Themes {
+    public static int getActivityThemeRes(Context context) {
+        return getActivityThemeRes(context, WallpaperColorHints.get(context).getHints());
+    }
+
+    public static int getActivityThemeRes(Context context, int wallpaperColorHints) {
+        boolean supportsDarkText = (wallpaperColorHints & HINT_SUPPORTS_DARK_TEXT) != 0;
+        boolean isMainColorDark = (wallpaperColorHints & HINT_SUPPORTS_DARK_THEME) != 0;
+
+        if (Utilities.isDarkTheme(context)) {
+            return supportsDarkText ? R.style.AppTheme_Dark_DarkText
+                    : isMainColorDark ? R.style.AppTheme_Dark_DarkMainColor : R.style.AppTheme_Dark;
+        } else {
+            return supportsDarkText ? R.style.AppTheme_DarkText
+                    : isMainColorDark ? R.style.AppTheme_DarkMainColor : R.style.AppTheme;
+        }
+    }
+
+    public static boolean getAttrBoolean(Context context, int attr) {
+        TypedArray ta = context.obtainStyledAttributes(new int[]{attr});
+        boolean value = ta.getBoolean(0, false);
+        ta.recycle();
+        return value;
+    }
+
     public static int getColorAccent(Context context) {
         return getAttrColor(context, android.R.attr.colorAccent);
     }

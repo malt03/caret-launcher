@@ -1,6 +1,6 @@
 ---
 id: Tex-99qy
-status: open
+status: closed
 deps: [Tex-226d]
 links: [Tex-dpqn]
 created: 2026-11-21T16:03:47Z
@@ -26,6 +26,10 @@ tags: [drawer, search]
 
 ## Acceptance Criteria
 
-- [ ] 一覧のアプリ名に影がなく、Launcher3 と同じ見た目になる
-- [ ] 検索結果は、壁紙の上で読める色と影になる（文字色のチケットと合わせて）
+- [x] 一覧のアプリ名に影がなく、Launcher3 と同じ見た目になる
+- [x] 検索結果は、壁紙の上で読める色と影になる（文字色のチケットと合わせて）
 
+## 結果（2026-11-22）
+
+- 全アプリ一覧のセルは BaseIcon.AllApps に合わせ、materialColorOnSurface の文字で影なしにした。検索結果のセルは Tex-226d の壁紙の上の文字にした（ResultIconView の onSurface で切り替え）
+- シートが真っ白に見える件は Tex-dpqn で直す

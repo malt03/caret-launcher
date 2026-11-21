@@ -25,6 +25,8 @@ import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Flags
 import com.android.launcher3.util.MSDLPlayerWrapper
+import com.android.launcher3.util.Themes
+import com.android.launcher3.util.WallpaperThemeManager
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
@@ -75,7 +77,16 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Launcher.onCreate: the theme follows the wallpaper's color hints.
+        WallpaperThemeManager(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Launcher.onCreate: SystemUiController.UI_STATE_BASE_WINDOW, dark system bar icons over a
+        // wallpaper that suits dark text.
+        val darkText = Themes.getAttrBoolean(this, com.android.launcher3.R.attr.isWorkspaceDarkText)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = darkText
+            isAppearanceLightNavigationBars = darkText
+        }
 
         root = LauncherRootLayout(this)
         setContentView(root)
