@@ -3,22 +3,25 @@ package com.malt03.textlauncher.ui.home
 import android.content.pm.ShortcutInfo
 import android.view.View
 import com.android.launcher3.DeviceProfile
+import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherModel
+import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
-import com.android.launcher3.shortcuts.DeepShortcutView
-import com.android.launcher3.views.ActivityContext
-import com.android.launcher3.views.BaseDragLayer
-import com.malt03.textlauncher.data.ShortcutItemInfo
+import java.util.function.Consumer
 
 /**
- * Launcher as the ActivityContext of the copied folder, drag and long-press menu code: the device
- * profile, the drag layer and controller, the item click handler, and what the menu's shortcut rows
- * ask of the launcher (DeepShortcutView.WorkspaceHost).
+ * Launcher of the home screen, which is also the ActivityContext of the copied code as in
+ * Launcher3: the device profile, the drag layer and controller, the item click handler, and the
+ * model and accessibility delegate the long-press menu's shortcut rows use.
  */
-internal class HomeActivityContext(private val home: HomeController) : ActivityContext, DeepShortcutView.WorkspaceHost {
+internal class HomeActivityContext(private val home: HomeController) :
+    Launcher(home.root.overlay, home.workspace, home.root.hotseat, home.root.scrim),
+    LauncherModel,
+    LauncherAccessibilityDelegate {
     private val context = home.context
     private val gridSpec = home.gridSpec
 
@@ -48,7 +51,6 @@ internal class HomeActivityContext(private val home: HomeController) : ActivityC
         val info = v.tag as? WorkspaceItemInfo ?: return@OnClickListener
         home.itemInflater.onClick(info, v)
     }
-    override fun getDragLayer(): BaseDragLayer<*> = home.root.overlay
     override fun asContext() = context
 
     /** Edit mode hides the keyboard once the drag starts (docs/spec.md 5.4), not at the long press. */
@@ -56,17 +58,24 @@ internal class HomeActivityContext(private val home: HomeController) : ActivityC
 
     override fun getDragController(): DragController = home.dragController
 
+    override fun getAccessibilityDelegate(): LauncherAccessibilityDelegate = this
+
+    override fun getModel(): LauncherModel = this
+
     /**
-     * DeepShortcutView.getFinalInfo: the shortcut as it goes on the home screen, badged with
-     * its app's icon (IconCache.getShortcutInfoBadge).
+     * LauncherModel.updateAndBindWorkspaceItem for DeepShortcutView.getFinalInfo: the shortcut's
+     * title, and its icon badged with its app's icon (IconCache.getShortcutIcon). TextLauncher: done
+     * right away; the item is not on the home screen yet, so there is nothing to bind.
      */
-    override fun makeWorkspaceItem(info: WorkspaceItemInfo, detail: ShortcutInfo): WorkspaceItemInfo {
-        val app = home.app
-        val key = app.shortcutRepository.keyOf(detail)
-        val bitmap = app.iconLoader.cachedShortcut(key)
-            ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(home.itemInflater.badgeAppOf(detail)))
-        return ShortcutItemInfo(key, detail, context, bitmap)
+    override fun updateAndBindWorkspaceItem(si: WorkspaceItemInfo, info: ShortcutInfo) {
+        si.updateFromDeepShortcutInfo(info, context)
+        si.bitmap = home.badgedShortcutIcon(si, info)
     }
 
-    override fun addToWorkspace(item: ItemInfo): Boolean = home.addToWorkspace(item)
+    /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */
+    override fun addToWorkspace(item: ItemInfo, accessibility: Boolean, finishCallback: Consumer<Boolean>?): Boolean {
+        val added = home.addToWorkspace(item)
+        finishCallback?.accept(added)
+        return added
+    }
 }

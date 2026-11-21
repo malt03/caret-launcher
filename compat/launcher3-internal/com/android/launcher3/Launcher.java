@@ -20,19 +20,27 @@
 
 package com.android.launcher3;
 
-import com.android.launcher3.util.MultiPropertyFactory;
+import android.content.Context;
+
+import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragLayer;
+import com.android.launcher3.logging.StatsLogManager;
+import com.android.launcher3.util.MultiPropertyFactory;
+import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
 
 /**
- * Stand-in for Launcher3's Launcher: the parts of the home screen that the folder animation
- * changes (FolderSpringAnimatorSet.addWorkspaceAnimators).
+ * Stand-in for Launcher3's Launcher (android-17.0.0_r1). As in Launcher3, the launcher is the
+ * ActivityContext of the home screen, so copied code can use {@link #getLauncher(Context)} and
+ * {@code instanceof Launcher}. TextLauncher's home screen extends this; the launcher is not an
+ * Activity here, and only the members copied code uses are declared.
  */
-public class Launcher {
+public abstract class Launcher implements ActivityContext {
     private final DragLayer mDragLayer;
     private final Workspace<?> mWorkspace;
     private final Hotseat mHotseat;
     private final ScrimView mScrimView;
+    private final StatsLogManager mStatsLogManager = new StatsLogManager();
 
     public Launcher(DragLayer dragLayer, Workspace<?> workspace, Hotseat hotseat,
             ScrimView scrimView) {
@@ -42,6 +50,11 @@ public class Launcher {
         mScrimView = scrimView;
     }
 
+    public static Launcher getLauncher(Context context) {
+        return (Launcher) ActivityContext.lookupContext(context);
+    }
+
+    @Override
     public DragLayer getDragLayer() {
         return mDragLayer;
     }
@@ -57,6 +70,17 @@ public class Launcher {
     public ScrimView getScrimView() {
         return mScrimView;
     }
+
+    /** TextLauncher: the app adds items to its home screen (LauncherAccessibilityDelegate). */
+    public abstract LauncherAccessibilityDelegate getAccessibilityDelegate();
+
+    /** TextLauncher: no logging; see {@link StatsLogManager}. */
+    public StatsLogManager getStatsLogManager() {
+        return mStatsLogManager;
+    }
+
+    /** TextLauncher: the app's home model (LauncherModel). */
+    public abstract LauncherModel getModel();
 
     /** No wallpaper zoom: it needs a system permission. */
     public DepthController getDepthController() {

@@ -44,6 +44,16 @@ public class ItemInfoWithIcon extends ItemInfo {
     /** A bitmap version of the icon. */
     public BitmapInfo bitmap = BitmapInfo.LOW_RES_INFO;
 
+    public ItemInfoWithIcon() {
+    }
+
+    protected ItemInfoWithIcon(ItemInfoWithIcon info) {
+        super(info);
+        bitmap = info.bitmap;
+        runtimeStatusFlags = info.runtimeStatusFlags;
+        user = info.user;
+    }
+
     public CacheLookupFlag getMatchingLookupFlag() {
         return bitmap.getMatchingLookupFlag();
     }

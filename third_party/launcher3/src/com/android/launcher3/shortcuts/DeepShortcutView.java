@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
- * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
- */
 
 package com.android.launcher3.shortcuts;
 
 import static com.android.launcher3.AbstractFloatingView.TYPE_FOLDER;
-
 import static com.android.launcher3.Flags.blurOnMoreSurfaces;
 import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_NOT_PINNABLE;
 
@@ -41,38 +36,27 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.BubbleTextView;
+import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
-import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
+import com.android.launcher3.folder.Folder;
+import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainerWithArrow;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.BubbleTextHolder;
-import com.android.launcher3.folder.Folder;
 
 /**
- * Stand-in for Launcher3's DeepShortcutView (android-17.0.0_r1): a row in the long-press menu.
- * The members are copied from DeepShortcutView.java; changes are marked with "TextLauncher:".
- * TextLauncher: what DeepShortcutView asks Launcher for (adding to the workspace, the badged
- * item) goes to the activity context's {@link WorkspaceHost}.
+ * A {@link android.widget.FrameLayout} that contains an icon and a {@link BubbleTextView} for text.
+ * This lets us animate the child BubbleTextView's background (transparent ripple) separately from
+ * the {@link DeepShortcutView} background color.
  */
 public class DeepShortcutView extends FrameLayout implements BubbleTextHolder {
-
-    /** TextLauncher: the Launcher calls DeepShortcutView makes. */
-    public interface WorkspaceHost {
-        /**
-         * Launcher.getModel().updateAndBindWorkspaceItem: the item to place on the home screen for
-         * the shortcut, with its badged icon.
-         */
-        WorkspaceItemInfo makeWorkspaceItem(WorkspaceItemInfo info, ShortcutInfo detail);
-
-        /** LauncherAccessibilityDelegate.addToWorkspace */
-        boolean addToWorkspace(ItemInfo item);
-    }
 
     private static final Point sTempPoint = new Point();
 
@@ -194,9 +178,9 @@ public class DeepShortcutView extends FrameLayout implements BubbleTextHolder {
         mBubbleText.setOnClickListener(container.getItemClickListener());
         mBubbleText.setOnLongClickListener(container.getItemDragHandler());
         mBubbleText.setOnTouchListener(container.getItemDragHandler());
-        if (ac instanceof WorkspaceHost host && isPinnable(container)) {
+        if (ac instanceof Launcher launcher && isPinnable(container)) {
             setupAddButton();
-            setAddButtonClickListener(host, info, container);
+            setAddButtonClickListener(launcher, info, container);
         }
     }
 
@@ -220,15 +204,23 @@ public class DeepShortcutView extends FrameLayout implements BubbleTextHolder {
                 mBubbleText.getPaddingBottom());
     }
 
-    private void setAddButtonClickListener(WorkspaceHost host, WorkspaceItemInfo info,
-            PopupContainerWithArrow container) {
+    private void setAddButtonClickListener(Launcher launcher, WorkspaceItemInfo info,
+            PopupContainerWithArrow<Launcher> container) {
+        LauncherAccessibilityDelegate launcherAccessibilityDelegate =
+                launcher.getAccessibilityDelegate();
+        StatsLogManager statsLogManager = launcher.getStatsLogManager();
         mAddButton.setOnClickListener(v -> {
-            // TextLauncher: no stats logging.
-            host.addToWorkspace(getFinalInfo());
+            launcherAccessibilityDelegate.addToWorkspace(info,
+                    /*accessibility=*/ false,
+                    /*finishCallback=*/ (success) -> {
+                        statsLogManager
+                                .logger()
+                                .withItemInfo(info)
+                                .log(StatsLogManager.LauncherEvent
+                                        .LAUNCHER_TAP_TO_ADD_DEEP_SHORTCUT);
+                    });
             // If we have an open folder, don't animate the popup closing.
-            // TextLauncher: the activity context instead of the Launcher.
-            Folder folder = AbstractFloatingView.getOpenView(
-                    ActivityContext.lookupContext(getContext()), TYPE_FOLDER);
+            Folder folder = AbstractFloatingView.getOpenView(launcher, TYPE_FOLDER);
             container.close(folder == null);
             if (folder != null) {
                 folder.close(true);
@@ -248,9 +240,12 @@ public class DeepShortcutView extends FrameLayout implements BubbleTextHolder {
      * Returns the shortcut info that is suitable to be added on the homescreen
      */
     public WorkspaceItemInfo getFinalInfo() {
-        // TextLauncher: the host makes the badged copy.
-        ActivityContext ac = ActivityContext.lookupContext(getContext());
-        return ((WorkspaceHost) ac).makeWorkspaceItem(mInfo, mDetail);
+        final WorkspaceItemInfo badged = new WorkspaceItemInfo(mInfo);
+        // Queue an update task on the worker thread. This ensures that the badged
+        // shortcut eventually gets its icon updated.
+        Launcher.getLauncher(getContext()).getModel()
+                .updateAndBindWorkspaceItem(badged, mDetail);
+        return badged;
     }
 
     public View getIconView() {

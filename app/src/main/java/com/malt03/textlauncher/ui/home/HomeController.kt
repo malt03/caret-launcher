@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.content.pm.ShortcutInfo
 import android.graphics.Rect
 import android.os.UserHandle
 import android.view.View
@@ -11,7 +12,6 @@ import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
-import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
@@ -19,12 +19,15 @@ import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
+import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
+import com.malt03.textlauncher.data.HomeItemInfo
+import com.malt03.textlauncher.data.ShortcutItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
@@ -37,7 +40,7 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
  * items' views (Workspace.addInScreen, ModelWriter) and answers what the parts ask of the launcher.
  * The parts are named after their Launcher3 counterparts:
  *
- * - [HomeActivityContext]: Launcher as the ActivityContext of the copied code
+ * - [HomeActivityContext]: Launcher itself (the stand-in), the ActivityContext of the copied code
  * - [HomeLoader]: LoaderTask, PackageUpdatedTask and ShortcutsChangedTask
  * - [HomeItemInflater]: ItemInflater and ItemClickHandler
  * - [ItemLongClickListener]: ItemLongClickListener, PopupControllerForAppIcon and
@@ -69,9 +72,6 @@ class HomeController(
     val grid = HomeGridView(context, GridSpec.from(context))
     internal val gridSpec = grid.grid
 
-    /** Launcher3's ActivityContext for the copied folder, drag and long-press menu code. */
-    val activityContext: ActivityContext = HomeActivityContext(this)
-
     val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
         isFillViewport = true
         overScrollMode = View.OVER_SCROLL_NEVER
@@ -84,7 +84,13 @@ class HomeController(
     val workspace = Workspace<Any>(context).apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
-    private val launcher = Launcher(root.overlay, workspace, root.hotseat, root.scrim)
+
+    /**
+     * Launcher3's Launcher stand-in, which is the ActivityContext of the copied folder, drag and
+     * long-press menu code.
+     */
+    internal val launcher = HomeActivityContext(this)
+    val activityContext: ActivityContext get() = launcher
 
     internal val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
     private val workspaceHost = WorkspaceHost()
@@ -196,7 +202,8 @@ class HomeController(
      * cell, bound with Launcher.bindInflatedItems' bounce.
      */
     internal fun addToWorkspace(item: ItemInfo): Boolean {
-        val info = item as? WorkspaceItemInfo ?: return false
+        // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
+        val info = homeItemFor(item as? WorkspaceItemInfo ?: return false)
         // TextLauncher: Launcher3 goes to the NORMAL state first.
         host.showHome()
         val cell = IntArray(2)
@@ -206,6 +213,21 @@ class HomeController(
         animateNewItem(view)
         return true
     }
+
+    /**
+     * A shortcut from the long-press menu as the home model keeps it: a [ShortcutItemInfo] with its
+     * icon badged (WorkspaceItemInfo.clone in LauncherAccessibilityDelegate.addToWorkspace).
+     */
+    internal fun homeItemFor(info: WorkspaceItemInfo): WorkspaceItemInfo {
+        if (info is HomeItemInfo) return info
+        val shortcut = info.shortcutInfo ?: return info
+        return ShortcutItemInfo(app.shortcutRepository.keyOf(shortcut), shortcut, context, badgedShortcutIcon(info, shortcut))
+    }
+
+    /** IconCache.getShortcutIcon: the shortcut's icon, badged with its app's icon. */
+    internal fun badgedShortcutIcon(info: WorkspaceItemInfo, shortcut: ShortcutInfo): BitmapInfo =
+        app.iconLoader.cachedShortcut(app.shortcutRepository.keyOf(shortcut))
+            ?: info.bitmap.withBadgeInfo(app.iconLoader.badgeFor(itemInflater.badgeAppOf(shortcut)))
 
     /**
      * Launcher.bindInflatedItems with createNewAppBounceAnimation: an item added from the menu

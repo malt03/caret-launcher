@@ -46,6 +46,28 @@ public class ItemInfo {
     public CharSequence contentDescription;
     public UserHandle user = Process.myUserHandle();
 
+    public ItemInfo() {
+    }
+
+    protected ItemInfo(ItemInfo info) {
+        copyFrom(info);
+    }
+
+    /** TextLauncher: the fields this stand-in has. */
+    public void copyFrom(ItemInfo info) {
+        id = info.id;
+        title = info.title;
+        cellX = info.cellX;
+        cellY = info.cellY;
+        spanX = info.spanX;
+        spanY = info.spanY;
+        rank = info.rank;
+        itemType = info.itemType;
+        container = info.container;
+        user = info.user;
+        contentDescription = info.contentDescription;
+    }
+
     public ItemInfo makeShallowCopy() {
         ItemInfo info = new ItemInfo();
         info.id = id;

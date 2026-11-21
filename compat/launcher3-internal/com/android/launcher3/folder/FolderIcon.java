@@ -37,6 +37,7 @@ import com.android.app.animation.Interpolators;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
+import com.android.launcher3.Launcher;
 import com.android.launcher3.Reorderable;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
@@ -196,9 +197,9 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         // Typically, the animateView corresponds to the DragView; however, if this is being done
         // after a configuration activity (ie. for a Shortcut being dragged from AllApps) we
         // will not have a view to animate
-        // TextLauncher: the activity context is not a Launcher; its drag layer is the DragLayer.
-        if (animateView != null) {
-            DragLayer dragLayer = (DragLayer) mActivity.getDragLayer();
+        if (animateView != null && mActivity instanceof Launcher) {
+            final Launcher launcher = (Launcher) mActivity;
+            DragLayer dragLayer = launcher.getDragLayer();
             Rect to = finalRect;
             if (to == null) {
                 to = new Rect();

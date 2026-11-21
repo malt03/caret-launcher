@@ -27,6 +27,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.shortcuts.ShortcutKey;
@@ -43,7 +44,22 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
     @NonNull
     public Intent intent = new Intent();
 
+    /**
+     * TextLauncher: the app shortcut this item was last updated from, so that the app's home model
+     * can keep it (Launcher3 looks the shortcut up again by its key).
+     */
+    @Nullable
+    public ShortcutInfo shortcutInfo;
+
     public WorkspaceItemInfo() {
+    }
+
+    public WorkspaceItemInfo(WorkspaceItemInfo info) {
+        super(info);
+        title = info.title;
+        intent = new Intent(info.intent);
+        // TextLauncher: no status or person keys; the shortcut this item was made from instead.
+        shortcutInfo = info.shortcutInfo;
     }
 
     public WorkspaceItemInfo(ShortcutInfo shortcutInfo, Context context) {
@@ -67,6 +83,8 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
             @NonNull final Context context) {
         // {@link ShortcutInfo#getActivity} can change during an update. Recreate the intent
         intent = ShortcutKey.makeIntent(shortcutInfo);
+        // TextLauncher: keeps the shortcut for the app's home model.
+        this.shortcutInfo = shortcutInfo;
         title = shortcutInfo.getShortLabel();
 
         CharSequence label = shortcutInfo.getLongLabel();
@@ -86,5 +104,10 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
     public String getDeepShortcutId() {
         return itemType == Favorites.ITEM_TYPE_DEEP_SHORTCUT
                 ? getIntent().getStringExtra(ShortcutKey.EXTRA_SHORTCUT_ID) : null;
+    }
+
+    @Override
+    public WorkspaceItemInfo clone() {
+        return new WorkspaceItemInfo(this);
     }
 }
