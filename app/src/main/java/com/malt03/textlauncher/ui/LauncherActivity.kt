@@ -268,8 +268,16 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             return currentQuery().isEmpty() && ev.y < root.closedBarTop && !home.scrollView.canScrollVertically(1)
         }
 
-        override fun canCloseFrom(ev: MotionEvent): Boolean =
-            isInSearchBar(ev) || (ev.y > root.searchBarArea.y + root.searchBarArea.height && allApps.shouldContainerScroll(ev, root))
+        /**
+         * ActivityAllAppsContainerView.shouldContainerScroll: the search field, the sheet's handle
+         * area, or the list at its top.
+         */
+        override fun canCloseFrom(ev: MotionEvent): Boolean {
+            if (isInSearchBar(ev)) return true
+            val handleTop = root.sheetTop
+            val handleBottom = handleTop + root.sheetHandleAreaHeight
+            return ev.y >= handleTop && (ev.y < handleBottom || allApps.shouldContainerScroll(ev, root))
+        }
 
         override fun onThresholdCrossed(opening: Boolean) {
             // AllAppsTransitionController.setStateWithAnimation: the haptic for going to all apps.

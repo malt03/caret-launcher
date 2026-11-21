@@ -7,4 +7,5 @@
     <color name="materialColorSurfaceContainer">@android:color/system_surface_container_dark</color>
     <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_dark</color>
     <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_dark</color>
+    <color name="materialColorOutlineVariant">@android:color/system_outline_variant_dark</color>
 </resources>

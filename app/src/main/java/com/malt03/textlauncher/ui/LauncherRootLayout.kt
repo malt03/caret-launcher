@@ -3,18 +3,18 @@ package com.malt03.textlauncher.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.view.animation.Interpolator
-import com.android.launcher3.util.Themes
 import android.view.MotionEvent
 import com.android.app.animation.Interpolators
-import com.android.launcher3.Utilities
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
+import com.malt03.textlauncher.ui.allapps.AllAppsSheet
 import com.malt03.textlauncher.ui.allapps.AllAppsView
 import com.android.launcher3.Hotseat
 import com.android.launcher3.dragndrop.DragLayer
@@ -73,35 +73,55 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_button_workspace_edge_gap)
 
     /**
-     * The all apps list (docs/spec.md 6), set by the activity. It rides on [allAppsSheet] under
-     * the search field, which [allAppsProgress] moves from above the keyboard to the top of the
-     * screen (AllAppsTransitionController's panel).
+     * The all apps list (docs/spec.md 6), set by the activity. It is on [allAppsSheet], which
+     * [allAppsProgress] brings up from below the screen to right under the search field, as the
+     * field goes from above the keyboard to the top of the screen (AllAppsTransitionController).
      */
     var allAppsView: AllAppsView? = null
         set(value) {
-            field?.let(::removeView)
+            check(field == null)
             field = value
             value?.let {
                 it.setBottomInset(navBottom)
-                addView(it, indexOfChild(barContainer))
+                allAppsSheet.setList(it)
             }
             applyAllAppsProgress()
         }
 
+    /** The all apps bottom sheet with its handle. */
+    private val allAppsSheet = AllAppsSheet(context)
+
     /**
-     * The all apps bottom sheet (ActivityAllAppsContainerView.mBottomSheetBackground, with
-     * Flags.allAppsSheetForHandheld). TextLauncher: without the background blur, so in the color
-     * Launcher3 falls back to.
+     * BaseDepthControllerImpl: the depth of the spring-loaded state (SpringLoadedState.DEPTH_15_PERCENT
+     * while editing), which blurs the wallpaper. The all apps sheet's depth comes with
+     * [allAppsProgress].
      */
-    private val allAppsSheet = View(context).apply {
-        val radius = Themes.getDialogCornerRadius(context)
-        background = GradientDrawable().apply {
-            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
-            setColor(context.getColor(
-                if (Utilities.isDarkTheme(context)) android.R.color.system_accent2_800 else android.R.color.system_accent2_200,
-            ))
+    var springLoadedDepth = 0f
+        set(value) {
+            field = value
+            applyDepth()
         }
+
+    /** WindowBlurState: whether windows can be blurred now (CrossWindowBlurListeners). */
+    private var isBlurEnabled = false
+    private val blurListener = java.util.function.Consumer<Boolean> { enabled ->
+        isBlurEnabled = enabled
+        allAppsSheet.setBlurEnabled(enabled)
+        applyDepth()
     }
+    private val maxBlurRadius = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.max_depth_blur_radius_enhanced)
+
+    /**
+     * BottomSheetProfile.getBottomSheetDepth: the depth that zooms the wallpaper to
+     * config_wallpaperMaxScale times workspace_content_scale (1.1 and 0.97 on phones).
+     */
+    private val allAppsDepth: Float = run {
+        val maxWallpaperScale = 1.1f
+        val contentScale = resources.getFloat(com.android.launcher3.R.dimen.workspace_content_scale)
+        // Utilities.mapToRange(maxWallpaperScale * contentScale, maxWallpaperScale, 1f, 0f, 1f, LINEAR)
+        (maxWallpaperScale * contentScale - maxWallpaperScale) / (1f - maxWallpaperScale)
+    }
+    private val workspaceContentScale = resources.getFloat(com.android.launcher3.R.dimen.workspace_content_scale)
 
     /**
      * AllAppsTransitionController's progress, from 0 (closed: the field is above the keyboard) to 1
@@ -169,6 +189,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         addView(wallpaperScrim)
         addView(contentArea)
         addView(allAppsSheet)
+        allAppsSheet.visibility = GONE
         barContainer.addView(searchBar)
         addView(barContainer)
         addView(scrim)
@@ -258,13 +279,10 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             MeasureSpec.makeMeasureSpec(barHeight, MeasureSpec.EXACTLY),
         )
         measureContentArea(width, contentBottom() - statusBarTop)
-        allAppsView?.measure(
-            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec((height - statusBarTop - barContainer.measuredHeight).coerceAtLeast(0), MeasureSpec.EXACTLY),
-        )
+        // The sheet, open, is right under the field at the top of the screen.
         allAppsSheet.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec((height - statusBarTop).coerceAtLeast(0), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec((height - sheetOpenTop()).coerceAtLeast(0), MeasureSpec.EXACTLY),
         )
         overlay.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
@@ -285,12 +303,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         val height = bottom - top
         val barTop = height - navBottom - barContainer.measuredHeight
         barContainer.layout(0, barTop, width, barTop + barContainer.measuredHeight)
-        // The list and the sheet are laid out open and moved with the field (applyAllAppsProgress).
-        allAppsView?.let {
-            val listTop = statusBarTop + barContainer.measuredHeight
-            it.layout(0, listTop, width, listTop + it.measuredHeight)
-        }
-        allAppsSheet.layout(0, statusBarTop, width, statusBarTop + allAppsSheet.measuredHeight)
+        // The sheet is laid out open and moved with the progress (applyAllAppsProgress).
+        val sheetTop = sheetOpenTop()
+        allAppsSheet.layout(0, sheetTop, width, sheetTop + allAppsSheet.measuredHeight)
         searchBar.layout(barMarginH, barMarginV, width - barMarginH, barMarginV + barHeight)
         layoutContentArea(force = true)
         applyAllAppsProgress()
@@ -315,9 +330,11 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     }
 
     private companion object {
-        /** AllAppsSwipeController.ALL_APPS_SCRIM_RESPONDER */
-        val ALL_APPS_SCRIM_RESPONDER: Interpolator =
-            Interpolators.clampToProgress(Interpolators.LINEAR, 0.1f, 0.5f)
+        /** AllAppsSwipeController.ALL_APPS_SHEET_DEPTH */
+        val ALL_APPS_SHEET_DEPTH: Interpolator = android.view.animation.PathInterpolator(0f, 0f, .2f, 1f)
+
+        /** BaseDepthControllerImpl.mapDepthToBlur */
+        fun mapDepthToBlur(depth: Float): Float = Interpolators.clampToProgress(Interpolators.LINEAR, depth, 0f, 0.3f)
 
         const val SPRING_LOADED_TRANSITION_MS = 150L
         /** SpringLoadedState.getWorkspaceBackgroundAlpha */
@@ -342,25 +359,83 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** The top of the field's container when the list is open: at the top of the screen. */
     val openBarTop: Float get() = statusBarTop.toFloat()
 
+    /** The top of the open sheet: right under the field at the top of the screen. */
+    private fun sheetOpenTop(): Int = statusBarTop + barContainer.measuredHeight
+
+    /** The top of the sheet's handle area on the screen, while it is shown. */
+    val sheetTop: Float get() = allAppsSheet.top + allAppsSheet.translationY
+
+    /** bottom_sheet_handle_area_height */
+    val sheetHandleAreaHeight: Int get() = allAppsSheet.handleAreaHeight
+
     /**
-     * AllAppsTransitionController.setProgress: the field moves from [closedBarTop] to [openBarTop]
-     * with the sheet and the list under it, and the home screen fades out as the scrim of
-     * Launcher3 fades in (AllAppsSwipeController.ALL_APPS_SCRIM_RESPONDER).
+     * AllAppsTransitionController.setProgress: the sheet comes up from below the screen to right
+     * under the field as the field goes from [closedBarTop] to [openBarTop] (the keyboard goes
+     * down). The home screen stays, shrunk to workspace_content_scale and blurred with the depth
+     * (AllAppsSwipeController.applyNormalToAllAppsAnimConfig: ALL_APPS_SHEET_DEPTH for the
+     * workspace scale and the depth).
      */
     private fun applyAllAppsProgress() {
         val progress = allAppsProgress
         val barTop = closedBarTop + (openBarTop - closedBarTop) * progress
         barContainer.translationY = barTop - barContainer.top
         val shown = progress > 0f
-        val shift = barTop - statusBarTop
         allAppsSheet.visibility = if (shown) VISIBLE else GONE
-        allAppsSheet.translationY = shift
-        allAppsView?.let {
-            it.visibility = if (shown) VISIBLE else GONE
-            it.translationY = shift
+        // The sheet's vertical progress: from below the screen (shift range) to open.
+        val openTop = allAppsSheet.top.toFloat()
+        allAppsSheet.translationY = (height - openTop) * (1f - progress)
+        val sheetDepth = ALL_APPS_SHEET_DEPTH.getInterpolation(progress)
+        val scale = 1f - (1f - workspaceContentScale) * sheetDepth
+        contentArea.scaleX = scale
+        contentArea.scaleY = scale
+        applyDepth()
+    }
+
+    /**
+     * BaseDepthControllerImpl.applyDepthAndBlur: the depth blurs what is behind the window (the
+     * wallpaper; mapDepthToBlur up to max_depth_blur_radius_enhanced). The home screen, which is
+     * in this window, is blurred with the all apps sheet's depth (AllAppsState.shouldBlurWorkspace).
+     */
+    private fun applyDepth() {
+        val window = (context as? android.app.Activity)?.window ?: return
+        val sheetDepth = allAppsDepth * ALL_APPS_SHEET_DEPTH.getInterpolation(allAppsProgress)
+        val depth = maxOf(springLoadedDepth, sheetDepth)
+        val blur = if (isBlurEnabled) (mapDepthToBlur(depth) * maxBlurRadius).toInt() else 0
+        if (blur != appliedWindowBlur) {
+            appliedWindowBlur = blur
+            // TextLauncher: the window's blur behind (FLAG_BLUR_BEHIND), which blurs the wallpaper
+            // window under it; Launcher3 sets the background blur radius on its surface.
+            val attributes = window.attributes
+            if (blur > 0) {
+                attributes.flags = attributes.flags or android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+            } else {
+                attributes.flags = attributes.flags and android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
+            }
+            attributes.blurBehindRadius = blur
+            window.attributes = attributes
         }
-        contentArea.alpha = 1f - ALL_APPS_SCRIM_RESPONDER.getInterpolation(progress)
-        contentArea.visibility = if (progress >= 1f) INVISIBLE else VISIBLE
+        val contentBlur = if (isBlurEnabled) mapDepthToBlur(sheetDepth) * maxBlurRadius else 0f
+        if (contentBlur != appliedContentBlur) {
+            appliedContentBlur = contentBlur
+            contentArea.setRenderEffect(
+                if (contentBlur > 0f) RenderEffect.createBlurEffect(contentBlur, contentBlur, Shader.TileMode.CLAMP) else null,
+            )
+        }
+    }
+
+    private var appliedWindowBlur = -1
+    private var appliedContentBlur = -1f
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        context.getSystemService(android.view.WindowManager::class.java)
+            .addCrossWindowBlurEnabledListener(context.mainExecutor, blurListener)
+    }
+
+    override fun onDetachedFromWindow() {
+        context.getSystemService(android.view.WindowManager::class.java)
+            .removeCrossWindowBlurEnabledListener(blurListener)
+        super.onDetachedFromWindow()
     }
 
     /** The visual top of the search field container when closed, with the keyboard translation. */
