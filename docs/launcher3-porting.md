@@ -76,7 +76,7 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 | 開閉のジェスチャー | `touch/AllAppsSwipeController.java`、`touch/AbstractStateChangeTouchController.java` | 指の動きから進み具合への変換、離したときの速度による開く/戻るの判定、フリックの閾値 |
 | 開閉のバネ | `anim/SpringAnimationBuilder.java`、`anim/FlingSpringAnim.java` | バネの強さと減衰、フリックの速度の引き継ぎ方 |
 | 検索フィールドの振る舞い | `allapps/search/AllAppsSearchBarController.java` | 入力の監視、Enter で先頭の結果を起動、入力のクリア |
-| 一覧と検索結果の切り替え | `allapps/SearchTransitionController.java` | ホームと検索結果の切り替え、一覧内の検索に入るときのアニメーション |
+| 一覧と検索結果の切り替え | `allapps/SearchTransitionController.java` | 一覧内の検索に入るときのアニメーション。ホームと検索結果の切り替えにはアニメーションを付けない（docs/spec.md 2.5） |
 
 「一瞬引っ掛かってからクッと持ち上がる」動き（docs/spec.md 6.2）は Launcher3 にない。速度の判定とバネは Launcher3 に合わせ、引っ掛かりの部分だけを足す。
 

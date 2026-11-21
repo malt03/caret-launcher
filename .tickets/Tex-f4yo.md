@@ -24,7 +24,7 @@ tags: [search]
 ## Launcher3 からの移植
 
 - Enter で先頭の結果を起動する流れは allapps/search/AllAppsSearchBarController.java を参考にする
-- ホームと検索結果の切り替えのアニメーションは allapps/SearchTransitionController.java を参考にする
+- ~~ホームと検索結果の切り替えのアニメーションは allapps/SearchTransitionController.java を参考にする~~ → 付けない（docs/spec.md 2.5）
 
 ## Acceptance Criteria
 
@@ -51,3 +51,7 @@ tags: [search]
 **2026-11-21T05:11:29Z**
 
 学習による並び替えをエミュレータで確認。「か」でカメラが 1 位の状態から、カレンダーを起動すると入れ替わった。切り替えアニメーションは仕様にないため作らない
+
+**2026-11-21T05:27:16Z**
+
+訂正: 切り替えアニメーションを作らないのは、入力に即座に反応させたいため（仕様にないからではない）。docs/spec.md 2.5 に追記した
