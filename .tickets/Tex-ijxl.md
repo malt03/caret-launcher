@@ -2,7 +2,7 @@
 id: Tex-ijxl
 status: open
 deps: []
-links: []
+links: [Tex-a8os, Tex-4z1w]
 created: 2026-11-21T10:20:30Z
 type: bug
 priority: 3
@@ -18,3 +18,9 @@ Tex-f33r の確認中に一度だけ起きた。アンインストールのダ�
 
 - [ ] 再現手順が分かり、直すか、起きないことを確かめる
 
+
+## Notes
+
+**2026-11-22T00:59:09Z**
+
+2026-11-22 のレビューで原因の候補が2つ見つかった: Tex-a8os（フォルダーからのドラッグ中にモデルでフォルダーが畳まれ、最後のアイテムが二重に足される）と Tex-4z1w（残った mDragInfo のせいでドロップが onDropExternal に回り二重に足される）

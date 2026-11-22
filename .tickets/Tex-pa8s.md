@@ -1,6 +1,6 @@
 ---
 id: Tex-pa8s
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-11-20T11:16:25Z
