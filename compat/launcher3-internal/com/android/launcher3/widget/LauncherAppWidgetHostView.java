@@ -21,6 +21,7 @@
 package com.android.launcher3.widget;
 
 import android.appwidget.AppWidgetHostView;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.graphics.Rect;
 import android.view.MotionEvent;
@@ -35,6 +36,9 @@ import com.android.launcher3.dragndrop.DraggableView;
  * (CheckLongPressHelper, intercepting the widget's own touches) is its long click, which starts
  * the drag; while it is dragged, the view itself is in the DragView (DRAGGABLE_WIDGET).
  *
+ * The default padding AppWidgetHostView gives a widget is not set: the launcher spaces the
+ * widgets itself (NavigableAppWidgetHostView.setAppWidget).
+ *
  * TextLauncher: no scroll handling for scrollable widgets (docs/spec.md 5.2), no auto advance,
  * no focus outline and no custom events; widgets are not scaled (getScaleToFit is always 1).
  */
@@ -42,6 +46,9 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
         implements DraggableView, View.OnLongClickListener {
 
     private final CheckLongPressHelper mLongPressHelper;
+
+    /** NavigableAppWidgetHostView.mDisableSetPadding */
+    private boolean mDisableSetPadding = false;
 
     public LauncherAppWidgetHostView(Context context) {
         super(context);
@@ -71,6 +78,24 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
     public void cancelLongPress() {
         super.cancelLongPress();
         mLongPressHelper.cancelLongPress();
+    }
+
+    /** NavigableAppWidgetHostView.setAppWidget */
+    @Override
+    public void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
+        // Prevent default padding being set on the view based on provider info. Launcher manages
+        // its own widget spacing
+        mDisableSetPadding = true;
+        super.setAppWidget(appWidgetId, info);
+        mDisableSetPadding = false;
+    }
+
+    /** NavigableAppWidgetHostView.setPadding */
+    @Override
+    public void setPadding(int left, int top, int right, int bottom) {
+        if (!mDisableSetPadding) {
+            super.setPadding(left, top, right, bottom);
+        }
     }
 
     /** NavigableAppWidgetHostView.getScaleToFit */

@@ -147,13 +147,10 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
     fun updateSizeRanges(view: AppWidgetHostView, spanX: Int, spanY: Int) {
         val widgetId = view.appWidgetId
         if (widgetId <= 0) return
-        val density = context.resources.displayMetrics.density
-        val sizePx = getWidgetSizePx(spanX, spanY)
-        val size = SizeF(sizePx.width / density, sizePx.height / density)
+        val sizeOptions = getWidgetSizeOptions(spanX, spanY)
         Executors.UI_HELPER_EXECUTOR.handler.post {
             val widgetManager = AppWidgetManager.getInstance(context)
             if (widgetManager.getAppWidgetInfo(widgetId) == null) return@post
-            val sizeOptions = getWidgetSizeOptions(size)
             val widgetOptions = widgetManager.getAppWidgetOptions(widgetId)
             @Suppress("DEPRECATION")
             if (sizeOptions.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES) !=
@@ -164,7 +161,17 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
         }
     }
 
-    /** WidgetSizeHandler.getWidgetSizeOptions for the one profile. */
+    /**
+     * WidgetSizeHandler.getWidgetSizeOptions: the options with the widget's size, for the given
+     * spans, in dp.
+     */
+    fun getWidgetSizeOptions(spanX: Int, spanY: Int): Bundle {
+        val density = context.resources.displayMetrics.density
+        val sizePx = getWidgetSizePx(spanX, spanY)
+        return getWidgetSizeOptions(SizeF(sizePx.width / density, sizePx.height / density))
+    }
+
+    /** WidgetSizeHandler.getWidgetSizeOptionsInternal for the one profile. */
     private fun getWidgetSizeOptions(size: SizeF): Bundle = Bundle().apply {
         putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, size.width.toInt())
         putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, size.height.toInt())
@@ -240,6 +247,15 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         if (info == null) {
             cancel(appWidgetId)
             return
+        }
+        if (requestCode == REQUEST_PICK_APPWIDGET) {
+            // PendingAddWidgetInfo.bindOptions: Launcher3 binds the widget with its size options,
+            // so it knows its size before it is configured and drawn. TextLauncher: the system's
+            // picker binds it, so the options are set as soon as it comes back.
+            val spans = home.widgetSizes.initSpans(info)
+            appWidgetManager.updateAppWidgetOptions(
+                appWidgetId, home.widgetSizes.getWidgetSizeOptions(spans.spanX, spans.spanY),
+            )
         }
         if (requestCode == REQUEST_PICK_APPWIDGET && needsConfigure(info)) {
             // WidgetAddFlowHandler.startConfigActivity
