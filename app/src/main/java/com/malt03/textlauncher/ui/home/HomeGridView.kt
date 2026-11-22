@@ -11,6 +11,7 @@ import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.model.data.ItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count and icons without
@@ -86,6 +87,12 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
 
     fun itemViews(): List<View> = (0 until childCount).map { getChildAt(it) }
 
+    /** The bottom of the lowest row with an item in it. */
+    private fun usedRows(): Int = itemViews().maxOfOrNull {
+        val lp = it.layoutParams as CellLayoutLayoutParams
+        lp.cellY + lp.cellVSpan
+    } ?: 0
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
@@ -98,7 +105,17 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         cellLayout.setGridSize(grid.columns, rows)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
         for (child in itemViews()) measureChild(child)
-        setMeasuredDimension(width, rows * cellHeight + paddingTop + paddingBottom)
+        // TextLauncher: while the keyboard covers part of the page, it scrolls only as far as the
+        // items go; the empty rows below stay under the keyboard. The scroll container stretches
+        // this to the visible height (fillViewport, measured again EXACTLY), which shows the whole
+        // page with the keyboard down and while editing.
+        val pageContentHeight = rows * cellHeight + paddingTop + paddingBottom
+        val height = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) {
+            MeasureSpec.getSize(heightMeasureSpec)
+        } else {
+            min(pageContentHeight, usedRows() * cellHeight + paddingTop + paddingBottom)
+        }
+        setMeasuredDimension(width, height)
     }
 
     override fun onDraw(canvas: Canvas) {
