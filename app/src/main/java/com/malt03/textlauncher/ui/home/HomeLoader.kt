@@ -3,11 +3,13 @@ package com.malt03.textlauncher.ui.home
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.util.GridOccupancy
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.HomeShortcutKey
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -72,8 +74,43 @@ internal class HomeLoader(private val home: HomeController) {
         }
     }
 
+    /** The page's rows changed (a grid change, InvariantDeviceProfile.onConfigChanged): load again. */
+    fun onGridSizeChanged() {
+        if (loaded) rebuild()
+    }
+
+    /**
+     * LoaderCursor.checkItemPlacement for the home items: those out of the grid's bounds, or on
+     * cells an earlier item has, are deleted (markDeleted and commitDeleted). TextLauncher: the
+     * grid is the one page, so nothing is checked before it has been measured; that measure loads
+     * again ([onGridSizeChanged]).
+     */
+    private fun checkItemPlacement() {
+        val countX = home.gridSpec.columns
+        val countY = home.grid.pageRows
+        if (countY <= 0) return
+        val occupancy = GridOccupancy(countX + 1, countY + 1)
+        val deleted = model.items.filter { item ->
+            if (item.cellX < 0 || item.cellY < 0 || item.cellX + item.spanX > countX || item.cellY + item.spanY > countY) {
+                Log.e(TAG, "Error loading shortcut $item into cell (${item.cellX},${item.cellY}) out of screen bounds ($countX x $countY)")
+                true
+            } else if (occupancy.isRegionVacant(item.cellX, item.cellY, item.spanX, item.spanY)) {
+                occupancy.markCells(item, true)
+                false
+            } else {
+                Log.e(TAG, "Error loading shortcut $item into cell (${item.cellX},${item.cellY},${item.spanX},${item.spanY}) already occupied")
+                true
+            }
+        }
+        if (deleted.isNotEmpty()) {
+            model.items.removeAll(deleted)
+            model.save()
+        }
+    }
+
     /** LoaderTask's binding: the apps' activities and the icons, then the views. */
     private fun bindItems(generation: Int, shortcuts: Map<WorkspaceItemInfo, ShortcutInfo>) {
+        checkItemPlacement()
         val items = model.allItems()
         for (info in items) {
             if (info is AppItemInfo) app.appRepository.find(info.homeKey)?.let(info::bind)
@@ -214,5 +251,10 @@ internal class HomeLoader(private val home: HomeController) {
         }
         if (changed) model.save()
         return changed
+    }
+
+    private companion object {
+        /** LoaderCursor.TAG */
+        const val TAG = "LoaderCursor"
     }
 }

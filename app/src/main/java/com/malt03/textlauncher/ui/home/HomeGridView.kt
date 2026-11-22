@@ -93,15 +93,24 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         lp.cellY + lp.cellVSpan
     } ?: 0
 
+    /**
+     * The page's rows (Launcher3's numRows), or 0 before the page is measured: as many as fit
+     * (TextLauncher: Launcher3 takes numRows from the grid option and fits the cells, which here
+     * would be too tall without labels).
+     */
+    val pageRows: Int
+        get() {
+            val available = pageHeight - paddingTop - paddingBottom
+            return if (available > 0) max(available / minCellHeight, 1) else 0
+        }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
-        // The page's rows: as many as fit (TextLauncher: Launcher3 takes numRows from the grid
-        // option and fits the cells, which here would be too tall without labels), and the cells
-        // share the page's height (DeviceProfile: cellHeight from the workspace height and rows).
-        val available = pageHeight - paddingTop - paddingBottom
-        val rows = if (available > 0) max(available / minCellHeight, 1) else 1
-        cellHeight = if (available > 0) available / rows else minCellHeight
+        // The cells share the page's height (DeviceProfile: cellHeight from the workspace height
+        // and rows).
+        val rows = max(pageRows, 1)
+        cellHeight = if (pageRows > 0) (pageHeight - paddingTop - paddingBottom) / rows else minCellHeight
         cellLayout.setGridSize(grid.columns, rows)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
         for (child in itemViews()) measureChild(child)

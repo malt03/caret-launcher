@@ -137,7 +137,13 @@ class HomeController(
     init {
         val padding = (8 * context.resources.displayMetrics.density).toInt()
         grid.setPadding(padding, padding, padding, padding)
-        root.onPageHeightChanged = { grid.pageHeight = it }
+        root.onPageHeightChanged = {
+            val rows = grid.pageRows
+            grid.pageHeight = it
+            // InvariantDeviceProfile's grid changed: the model is loaded again, and items that no
+            // longer fit are dropped (LoaderCursor.checkItemPlacement).
+            if (grid.pageRows != rows) loader.onGridSizeChanged()
+        }
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
@@ -206,6 +212,14 @@ class HomeController(
 
     /** Launcher.bindItems: the views of the home model's items, from scratch. */
     internal fun bindItems(items: List<ItemInfo>) {
+        // ModelCallbacks.startBinding: the floating views (but the rebind-safe ones) close and the
+        // drag is cancelled, as the views they belong to are going away.
+        AbstractFloatingView.closeOpenViews(
+            activityContext,
+            true,
+            AbstractFloatingView.TYPE_ALL and AbstractFloatingView.TYPE_REBIND_SAFE.inv(),
+        )
+        dragController.cancelDrag()
         grid.removeAllViews()
         for (item in items) addInScreen(item)
     }
