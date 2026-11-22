@@ -55,6 +55,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     }
     private var dropTargetBar: View? = null
     private val dropTargetBarSize = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.dynamic_grid_drop_target_size)
+    private val dropTargetBarMarginH = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bar_margin_horizontal)
     private val dropTargetBarTopMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_top_margin)
 
     /**
@@ -98,6 +99,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     var allAppsPanel: AllAppsSheet? = null
         private set
     private val panelMargin = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
+
+    /**
+     * Called with the part of the all apps panel under the search field's top, which the list
+     * leaves out at its bottom (the panel goes down behind the field and the keyboard).
+     */
+    var onAllAppsPanelBottomInsetChanged: ((Int) -> Unit)? = null
+    private var allAppsPanelBottomInset = -1
 
     /** Lays out two panels: the all apps list on the left, returned, and the home screen on the right. */
     fun enableTwoPanels(): AllAppsSheet {
@@ -327,7 +335,14 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             onPageHeightChanged?.invoke(page)
         }
         measureContentArea(width, contentBottom() - statusBarTop)
-        measureAllAppsPanel(width, contentBottom() - statusBarTop)
+        measureAllAppsPanel(width)
+        // docs/spec.md 5.5: with two panels, the drop target bar is over the home screen's panel
+        // (from its left edge: a centered view would be moved by half the left margin).
+        (dropTargetBar?.layoutParams as? BaseDragLayer.LayoutParams)?.apply {
+            leftMargin = contentLeft(width) + dropTargetBarMarginH
+            gravity = android.view.Gravity.TOP or
+                if (allAppsPanel != null) android.view.Gravity.START else android.view.Gravity.CENTER_HORIZONTAL
+        }
         // The sheet, open, is right under the field at the top of the screen.
         allAppsSheet.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
@@ -498,14 +513,16 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * The all apps panel fills the left half above the search field, inside the field's side
-     * margin, with the same gap at its top and between the panels.
+     * The all apps panel is the left half, inside the search field's side margin, with the same gap
+     * below the status bar. Like Launcher3's all apps sheet on a large screen, it goes down to the
+     * bottom of the screen with square bottom corners: it comes out from behind the search field
+     * and the keyboard, as the list does on a phone (docs/spec.md 6.4).
      */
-    private fun measureAllAppsPanel(width: Int, height: Int) {
+    private fun measureAllAppsPanel(width: Int) {
         val panel = allAppsPanel ?: return
         panel.measure(
             MeasureSpec.makeMeasureSpec((width / 2 - panelMargin * 2).coerceAtLeast(0), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec((height - panelMargin).coerceAtLeast(0), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec((measuredHeight - statusBarTop - panelMargin).coerceAtLeast(0), MeasureSpec.EXACTLY),
         )
     }
 
@@ -519,22 +536,26 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         measureContentArea(width, bottom - statusBarTop)
         contentArea.layout(left, statusBarTop, width, bottom)
         allAppsPanel?.let {
-            measureAllAppsPanel(width, bottom - statusBarTop)
-            it.layout(panelMargin, statusBarTop + panelMargin, panelMargin + it.measuredWidth, bottom)
+            measureAllAppsPanel(width)
+            it.layout(panelMargin, statusBarTop + panelMargin, panelMargin + it.measuredWidth, height)
+            val inset = (height - bottom).coerceAtLeast(0)
+            if (inset != allAppsPanelBottomInset) {
+                allAppsPanelBottomInset = inset
+                onAllAppsPanelBottomInsetChanged?.invoke(inset)
+            }
         }
     }
 
     /** Launcher3's DropTargetBar sits in the drag layer, below the status bar (DropTargetBar.setupInsets). */
     fun attachDropTargetBar(bar: View) {
         dropTargetBar = bar
-        val horizontalMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bar_margin_horizontal)
         overlay.addView(
             bar, 0,
             BaseDragLayer.LayoutParams(LayoutParams.MATCH_PARENT, dropTargetBarSize).apply {
                 gravity = android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.TOP
                 topMargin = statusBarTop + dropTargetBarTopMargin
-                leftMargin = horizontalMargin
-                rightMargin = horizontalMargin
+                leftMargin = dropTargetBarMarginH
+                rightMargin = dropTargetBarMarginH
                 // The margins above already include the status bar.
                 ignoreInsets = true
             },

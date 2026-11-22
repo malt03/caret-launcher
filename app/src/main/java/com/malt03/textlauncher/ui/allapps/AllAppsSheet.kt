@@ -22,27 +22,25 @@ import com.android.launcher3.util.Themes
  *
  * TextLauncher: the search field is not on the sheet; it sits right above it (docs/spec.md 6.4).
  *
- * [isPanel]: the left panel of two panels (docs/spec.md 5.5), which is always shown: no handle, as
- * there is nothing to drag, and rounded at every corner, as it does not come from the bottom.
+ * [isPanel]: the left panel of two panels (docs/spec.md 5.5), which is always shown: the same sheet
+ * as Launcher3's on a large screen, but without the handle, as there is nothing to drag.
  */
 @SuppressLint("ViewConstructor")
 class AllAppsSheet(context: Context, private val isPanel: Boolean = false) : FrameLayout(context) {
     private val radius = Themes.getDialogCornerRadius(context)
     private val sheetBackground = GradientDrawable().apply {
-        cornerRadii = if (isPanel) {
-            FloatArray(8) { radius }
-        } else {
-            // mBottomSheetCornerRadii: the top corners only.
-            floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
-        }
+        // mBottomSheetCornerRadii: the top corners only.
+        cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
     }
 
-    /** bottom_sheet_handle_area_height: the list starts below it. */
-    val handleAreaHeight = if (isPanel) 0 else resources.getDimensionPixelSize(R.dimen.bottom_sheet_handle_area_height)
+    /**
+     * bottom_sheet_handle_area_height: the list starts below it. The panel keeps the space without
+     * the handle, so its list starts where the sheet's does.
+     */
+    val handleAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_handle_area_height)
 
     init {
         background = sheetBackground
-        clipToOutline = isPanel
         // bottom_sheet_handle with bg_rounded_corner_bottom_sheet_handle.
         if (!isPanel) addView(
             View(context).apply {

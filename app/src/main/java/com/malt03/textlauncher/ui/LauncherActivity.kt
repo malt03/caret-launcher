@@ -16,6 +16,8 @@ import android.view.KeyEvent
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -127,6 +129,11 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             root.enableTwoPanels().apply {
                 setList(allApps)
                 setSearchResults(results.view)
+            }
+            // The list and the results end at the search field's top; the panel goes on behind it.
+            root.onAllAppsPanelBottomInsetChanged = { inset ->
+                allApps.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = inset }
+                results.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = inset }
             }
         } else {
             root.contentArea.addView(results.view)
