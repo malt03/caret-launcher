@@ -167,6 +167,12 @@ private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
         return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
     }
 
+    /** Utilities.dpiFromPx */
+    public static float dpiFromPx(float size, int densityDpi) {
+        float densityRatio = (float) densityDpi / android.util.DisplayMetrics.DENSITY_DEFAULT;
+        return (size / densityRatio);
+    }
+
     public static float squaredHypot(float x, float y) {
         return x * x + y * y;
     }

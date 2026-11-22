@@ -2,6 +2,7 @@ package com.malt03.textlauncher.ui
 
 import android.app.ActivityOptions
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.pm.LauncherApps
 import android.graphics.Rect
 import android.os.Bundle
@@ -24,6 +25,9 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Flags
+import com.android.launcher3.states.RotationHelper
+import com.android.launcher3.states.RotationHelper.REQUEST_LOCK
+import com.android.launcher3.states.RotationHelper.REQUEST_NONE
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.util.Themes
 import com.android.launcher3.util.WallpaperThemeManager
@@ -75,6 +79,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         allApps.setApps(apps)
     }
 
+    /** Launcher.mRotationHelper */
+    private val rotationHelper = RotationHelper(this)
+
+    /** InvariantDeviceProfile: the grid of the display the activity was created on. */
+    private lateinit var gridSpec: GridSpec
+
     /** True between launching an app and coming back; keyboard changes are expected then. */
     private var isLaunching = false
     private var isResumedState = false
@@ -92,6 +102,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             isAppearanceLightNavigationBars = darkText
         }
 
+        gridSpec = GridSpec.from(this)
         root = LauncherRootLayout(this)
         setContentView(root)
 
@@ -99,20 +110,20 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             this,
             app.iconLoader,
             app.searchStore,
-            GridSpec.from(this),
+            gridSpec,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
             onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
         )
         home = HomeController(app, root, this)
         root.contentArea.addView(home.workspace)
         root.contentArea.addView(results.view)
-        allApps = AllAppsView(this, home.activityContext, app.iconLoader, GridSpec.from(this))
+        allApps = AllAppsView(this, home.activityContext, app.iconLoader, gridSpec)
         root.allAppsView = allApps
         allAppsResults = SearchResults(
             this,
             app.iconLoader,
             app.searchStore,
-            GridSpec.from(this),
+            gridSpec,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
             onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
             inAllApps = true,
@@ -166,9 +177,21 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
         app.appRepository.addListener(appsListener)
         app.iconLoader.addChangeListener(iconsListener)
+        // Launcher.onCreate
+        rotationHelper.initialize()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        rotationHelper.onConfigurationChanged(newConfig)
+        // InvariantDeviceProfile.onConfigChanged: another display (a foldable's) or a new display
+        // size has another grid; Launcher.onIdpChanged reloads with it. TextLauncher: the activity
+        // is created again, and loading migrates the items into the new grid.
+        if (GridSpec.from(this) != gridSpec) recreate()
     }
 
     override fun onDestroy() {
+        rotationHelper.destroy()
         app.appRepository.removeListener(appsListener)
         app.iconLoader.removeChangeListener(iconsListener)
         home.destroy()
@@ -427,6 +450,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     override fun onEditModeChanged(editing: Boolean) {
         isEditMode = editing
+        // Launcher.onStateSetStart: the rotation is locked while the workspace icons are dragged
+        // (SPRING_LOADED), and the lock is cleared going back to NORMAL.
+        rotationHelper.setCurrentStateRequest(if (editing) REQUEST_LOCK else REQUEST_NONE)
         if (editing) {
             // docs/spec.md 6.4: a drag from the all apps list closes it and shows the home screen.
             closeAllApps(animate = false, focus = false)

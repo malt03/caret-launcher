@@ -257,4 +257,7 @@
     <dimen name="max_depth_blur_radius_enhanced">30dp</dimen>
     <item name="workspace_content_scale" format="float" type="dimen">0.97</item>
     <color name="materialColorOutlineVariant">@android:color/system_outline_variant_light</color>
+    <!-- dimens.xml, for util/window/WindowManagerProxy.java's window bounds estimate. -->
+    <dimen name="taskbar_size">0dp</dimen>
+    <dimen name="max_width_and_height_of_small_display_cutout">136px</dimen>
 </resources>

@@ -35,6 +35,8 @@ internal class HomeLoader(private val home: HomeController) {
             mainHandler.post {
                 model.setLoaded(items)
                 loaded = true
+                // LoaderTask (ModelDbController): the grid is migrated before the items are read.
+                if (GridSizeMigration.migrateGridIfNeeded(context, home.gridSpec, model.items)) model.save()
                 pruneMissingApps()
                 rebuild()
             }
@@ -74,21 +76,13 @@ internal class HomeLoader(private val home: HomeController) {
         }
     }
 
-    /** The page's rows changed (a grid change, InvariantDeviceProfile.onConfigChanged): load again. */
-    fun onGridSizeChanged() {
-        if (loaded) rebuild()
-    }
-
     /**
      * LoaderCursor.checkItemPlacement for the home items: those out of the grid's bounds, or on
-     * cells an earlier item has, are deleted (markDeleted and commitDeleted). TextLauncher: the
-     * grid is the one page, so nothing is checked before it has been measured; that measure loads
-     * again ([onGridSizeChanged]).
+     * cells an earlier item has, are deleted (markDeleted and commitDeleted).
      */
     private fun checkItemPlacement() {
         val countX = home.gridSpec.columns
-        val countY = home.grid.pageRows
-        if (countY <= 0) return
+        val countY = home.gridSpec.rows
         val occupancy = GridOccupancy(countX + 1, countY + 1)
         val deleted = model.items.filter { item ->
             if (item.cellX < 0 || item.cellY < 0 || item.cellX + item.spanX > countX || item.cellY + item.spanY > countY) {

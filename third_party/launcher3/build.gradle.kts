@@ -14,7 +14,7 @@ android {
     sourceSets {
         named("main") {
             // Stand-ins that need copied Launcher3 classes are compiled into this module.
-            java.setSrcDirs(listOf("src", "../../compat/launcher3-internal"))
+            java.setSrcDirs(listOf("src", "shared/src", "../../compat/launcher3-internal"))
             kotlin.setSrcDirs(listOf("src", "../../compat/launcher3-internal"))
             // Resources the copied code needs, picked out of Launcher3 res/ (see UPSTREAM.md).
             res.setSrcDirs(listOf("res-textlauncher"))

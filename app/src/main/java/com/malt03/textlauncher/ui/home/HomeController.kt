@@ -135,15 +135,9 @@ class HomeController(
     }
 
     init {
-        val padding = (8 * context.resources.displayMetrics.density).toInt()
+        val padding = gridSpec.homePaddingPx
         grid.setPadding(padding, padding, padding, padding)
-        root.onPageHeightChanged = {
-            val rows = grid.pageRows
-            grid.pageHeight = it
-            // InvariantDeviceProfile's grid changed: the model is loaded again, and items that no
-            // longer fit are dropped (LoaderCursor.checkItemPlacement).
-            if (grid.pageRows != rows) loader.onGridSizeChanged()
-        }
+        root.onPageHeightChanged = { grid.pageHeight = it }
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)

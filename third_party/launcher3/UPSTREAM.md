@@ -2,7 +2,7 @@
 
 方針: [docs/launcher3-porting.md](../../docs/launcher3-porting.md)
 
-`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。`derived=` の行は、上流のファイルから使わない部分を削り、変更に `TextLauncher:` の印を付けて作った互換クラスで、同じく3方向マージで更新する（`PopupContainer` と `PopupContainerWithArrow` は上流から削っただけ。`ItemClickHandler` はアプリペア・ウィジェット・インストール中のアイコン・プライベートスペースの部分を削った。`IconCache` は Dagger・LoaderTask の一括読み込み・ホームのファイル・インストール中のセッション・ウィジェットの分類・アーカイブされたアプリ・インスタントアプリの部分を削った。全アプリ一覧の `AlphabeticalAppsList`・`BaseAllAppsAdapter`・`AllAppsRecyclerView` は仕事用プロファイル・プライベートスペース・記録・文字の一覧の部分を削った）。
+`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。`derived=` の行は、上流のファイルから使わない部分を削り、変更に `TextLauncher:` の印を付けて作った互換クラスで、同じく3方向マージで更新する（`PopupContainer` と `PopupContainerWithArrow` は上流から削っただけ。`ItemClickHandler` はアプリペア・ウィジェット・インストール中のアイコン・プライベートスペースの部分を削った。`IconCache` は Dagger・LoaderTask の一括読み込み・ホームのファイル・インストール中のセッション・ウィジェットの分類・アーカイブされたアプリ・インスタントアプリの部分を削った。全アプリ一覧の `AlphabeticalAppsList`・`BaseAllAppsAdapter`・`AllAppsRecyclerView` は仕事用プロファイル・プライベートスペース・記録・文字の一覧の部分を削った。`WindowManagerProxy` は各向きのウィンドウの大きさの見積もり（`estimateWindowBounds`）だけを残し、Dagger・タスクバー・インセットの補正を削った。`RotationHelper` は `DisplayController` とデバイスプロファイルの通知の代わりに、Activity から構成の変化を受け取る）。
 
 ```upstream
 repo=https://android.googlesource.com/platform/packages/apps/Launcher3
@@ -17,6 +17,10 @@ path=src/com/android/launcher3/celllayout/ViewCluster.kt
 path=src/com/android/launcher3/celllayout/ReorderParameters.kt
 path=src/com/android/launcher3/celllayout/CellLayoutLayoutParams.java
 path=src/com/android/launcher3/util/GridOccupancy.java
+path=src/com/android/launcher3/util/RotationUtils.java
+path=src/com/android/launcher3/util/WindowBounds.java
+path=src/com/android/launcher3/util/window/CachedDisplayInfo.java
+path=shared/src/com/android/launcher3/testing/shared/ResourceUtils.java
 path=src/com/android/launcher3/util/CellAndSpan.java
 path=src/com/android/launcher3/folder/ClippedFolderIconLayoutRule.java
 path=src/com/android/launcher3/celllayout/ReorderPreviewAnimation.kt
@@ -108,6 +112,8 @@ derived=src/com/android/launcher3/icons/IconCache.kt compat/launcher3-internal/c
 derived=src/com/android/launcher3/allapps/AlphabeticalAppsList.java compat/launcher3-internal/com/android/launcher3/allapps/AlphabeticalAppsList.java
 derived=src/com/android/launcher3/allapps/BaseAllAppsAdapter.java compat/launcher3-internal/com/android/launcher3/allapps/BaseAllAppsAdapter.java
 derived=src/com/android/launcher3/allapps/AllAppsRecyclerView.java compat/launcher3-internal/com/android/launcher3/allapps/AllAppsRecyclerView.java
+derived=src/com/android/launcher3/util/window/WindowManagerProxy.java compat/launcher3-internal/com/android/launcher3/util/window/WindowManagerProxy.java
+derived=src/com/android/launcher3/states/RotationHelper.java compat/launcher3-internal/com/android/launcher3/states/RotationHelper.java
 path=res/color/drop_target_text.xml
 path=res/color/popup_shade_first.xml
 path=res/color/popup_shade_second.xml
@@ -146,7 +152,7 @@ path=res/layout/system_shortcut_spacer.xml
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 
@@ -177,7 +183,8 @@ path=res/layout/system_shortcut_spacer.xml
 | `util.PackageUserKey`、`model.data.AppInfo`、`model.data.PackageItemInfo`（`IconCache` が引くのに使うメンバーだけ）、`Utilities`（`trim`、`postAsyncCallback`）、`util.Themes`（`getColorAccent`）、`util.ApplicationInfoWrapper`（`ApplicationInfo` から作るコンストラクタ） | `icons/CacheableShortcutInfo.kt`、`IconCache` |
 | `com.android.launcher3.allapps.AllAppsStore`（アプリの配列と更新の通知だけ。アプリが `setApps` で渡す）、`model.data.AppInfo`（`sectionName`、`LauncherActivityInfo` からのコンストラクタ（停止中の状態だけ）、`COMPONENT_KEY_COMPARATOR`）、`pm.UserCache`（`getSerialNumberForUser` を `UserManager` に聞く）、`testing.shared.TestProtocol`（`SCROLL_FINISHED_MESSAGE` だけ。`AccessibilityManagerCompat.sendTestProtocolEventToTest` は何もしない）、`DeviceProfile.AllAppsProfile`（列数とセルの高さ）、`ActivityContext`（`getAllAppsItemLongClickListener`、`startActivitySafely` の既定）、`BubbleTextView`（`DISPLAY_ALL_APPS`、`reset`、`applyFromApplicationInfo`、`verifyHighRes`、`reapplyItemInfo` を上流から移した）、`model.data.ItemInfo`（`appTitle`） | 全アプリ一覧（`allapps/`、`FastScrollRecyclerView.java`、`views/RecyclerViewFastScroller.java`） |
 | `com.android.launcher3.util.WallpaperColorHints`（Dagger の代わりにアプリで1つ。登録はすぐメインスレッドで）、`util.WallpaperThemeManager`（ライフサイクルのコールバックは自前で書き、作り直しのフラグは保存しない）、`util.Themes`（`getActivityThemeRes`、`getAttrBoolean`）。`AppTheme` の各スタイルは `res-textlauncher` で名前だけ宣言し、中身はアプリの `res/values/themes.xml` が上書きする | 壁紙の色のヒントでテーマを選び、壁紙の上の文字（検索結果）の色と影、システムバーのアイコンの明暗を決める（`LauncherActivity`） |
-| `com.android.launcher3.util.Executors`（`MODEL_EXECUTOR` だけ） | `IconCache` のスレッド、長押しメニューのショートカットの問い合わせ（`PopupContainerWithArrow`）、`dragndrop/DragView.java` |
+| `com.android.launcher3.Utilities`（`dpiFromPx`）、`R.dimen.taskbar_size`（上流の既定の 0dp）、`max_width_and_height_of_small_display_cutout` | `util/window/WindowManagerProxy.java`（`derived=`。アプリのグリッドの大きさ `GridSpec` が、`InvariantDeviceProfile` と同じく各向きの見積もりの一番小さい大きさを使う） |
+| `com.android.launcher3.util.Executors`（`MODEL_EXECUTOR` と `UI_HELPER_EXECUTOR` だけ） | `IconCache` のスレッド、長押しメニューのショートカットの問い合わせ（`PopupContainerWithArrow`）、`dragndrop/DragView.java` |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ、`keyboard/`（`enableFocusOutline` は bp1a で有効）、全アプリ一覧（`letterFastScroller` はどのリリース設定にもなく、既定の無効） |
 | `com.android.launcher3.PagedView`（`isPageInTransition`、`getScrollForPage` だけを持つ抽象クラス。TextLauncher にページ送りの View はないので、継承するものはない） | `keyboard/ViewGroupFocusHelper.java` |
 | `com.android.launcher3.LauncherSettings`、`BuildConfig`、`dagger/`、`logging/`、`accessibility.DragViewStateAnnouncer`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（システムのドラッグ、ウィジェット、App Pair、インストール中のアプリなど）は何もしないか、通らない |

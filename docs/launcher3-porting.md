@@ -46,6 +46,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 | タップ | 削ってコピー | — | `touch/ItemClickHandler.java` から、アプリペア・ウィジェット・インストール中のアイコン・プライベートスペースの部分を削って互換クラスにする（`derived=`）。無効な項目（作成元が無効にしたショートカット、停止中のアプリなど）のタップも上流と同じ。起動そのものは `Launcher.startActivitySafely` をアプリが実装する。検索結果のタップは、学習の記録のためアプリ側で受ける |
 | ウィジェットピッカー | 要調査 | — | OS 標準の選択画面（`AppWidgetManager.ACTION_APPWIDGET_PICK`）と比べて決める（Tex-h3ld） |
 | グリッドの寸法 | 値を参照 | `res/xml/device_profiles.xml` | — |
+| グリッドの大きさと画面の向き | コピー、削ってコピー | `util/WindowBounds.java`、`util/window/CachedDisplayInfo.java`、`util/RotationUtils.java`、`shared/.../testing/shared/ResourceUtils.java` | `util/window/WindowManagerProxy.java`（各向きのウィンドウの大きさの見積もりだけ）と `states/RotationHelper.java`（構成の変化は Activity から受け取る）を削って互換クラスにする（`derived=`）。列数と行数はアプリの `GridSpec` が `InvariantDeviceProfile.invDistWeightedInterpolate` と同じく各向きの一番小さい大きさから決め、今のウィンドウでは変えない。グリッドが変わったときの移し替えは `GridSizeMigrationLogic` をアプリ側（`GridSizeMigration`）に書き写す（DB はグリッドごとに分けず、入りきらないものは新しいページの代わりに削除）。ドラッグ中の向きの固定は `Launcher.onStateSetStart` と同じ |
 | 「壁紙とスタイル」連携 | 取り決めだけ合わせる | — | `graphics/GridCustomizationsProxy.java`、`graphics/LauncherCustomizationProvider.kt` に倣って自前で書く |
 
 コピーせずに参考にとどめたもの（依存が深いため）は次のとおり。

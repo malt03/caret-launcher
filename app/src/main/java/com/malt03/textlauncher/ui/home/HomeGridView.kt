@@ -14,11 +14,11 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count and icons without
- * labels. Like Launcher3's workspace page, the grid fills the space above the hotseat (the search
- * field) with the keyboard down ([pageHeight]): as many rows as fit, and the cells share the space
- * (CellLayout's cell height is the page height over the rows). It sits in a vertical scroll
- * container, which scrolls it while the keyboard covers part of it.
+ * The home layout (docs/spec.md 5.1): one grid with the Launcher3 column count, the display's rows
+ * ([GridSpec.rows]) and icons without labels. Like Launcher3's workspace page, the grid fills the
+ * space above the hotseat (the search field) with the keyboard down ([pageHeight]), and the cells
+ * share the space (CellLayout's cell height is the page height over the rows). It sits in a
+ * vertical scroll container, which scrolls it while the keyboard covers part of it.
  *
  * It is the [CellLayout] stand-in's ShortcutAndWidgetContainer; the CellLayout holds the copied
  * reorder, drop location and cell drawing code, and the drag and drop logic itself is in
@@ -35,10 +35,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
      */
     val focusIndicatorHelper = ViewGroupFocusHelper(this)
 
-    private val cellPaddingV = (12 * resources.displayMetrics.density).toInt()
-
-    /** The smallest cell height: the icon with its padding (the cells have no labels). */
-    private val minCellHeight: Int get() = grid.iconSizePx + cellPaddingV * 2
+    private val minCellHeight: Int get() = grid.homeMinCellHeightPx
     var cellHeight = minCellHeight
         private set
     var cellWidth = 0
@@ -61,14 +58,13 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         setWillNotDraw(false)
         clipChildren = false
         clipToPadding = false
+        cellLayout.setGridSize(grid.columns, grid.rows)
     }
 
     /** CellLayout.addViewToCellLayout: the cells are marked as occupied. */
     fun addItemView(view: View, item: ItemInfo) {
         view.tag = item
         val lp = CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY)
-        // Items are bound before the first measure sizes the grid; make room before marking the cells.
-        cellLayout.setGridSize(grid.columns, max(cellLayout.countY, item.cellY + item.spanY))
         addView(view, lp)
         cellLayout.markCellsAsOccupiedForView(view)
         if (cellWidth > 0) measureChild(view)
@@ -93,25 +89,15 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         lp.cellY + lp.cellVSpan
     } ?: 0
 
-    /**
-     * The page's rows (Launcher3's numRows), or 0 before the page is measured: as many as fit
-     * (TextLauncher: Launcher3 takes numRows from the grid option and fits the cells, which here
-     * would be too tall without labels).
-     */
-    val pageRows: Int
-        get() {
-            val available = pageHeight - paddingTop - paddingBottom
-            return if (available > 0) max(available / minCellHeight, 1) else 0
-        }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         cellWidth = (width - paddingLeft - paddingRight) / grid.columns
         // The cells share the page's height (DeviceProfile: cellHeight from the workspace height
-        // and rows).
-        val rows = max(pageRows, 1)
-        cellHeight = if (pageRows > 0) (pageHeight - paddingTop - paddingBottom) / rows else minCellHeight
-        cellLayout.setGridSize(grid.columns, rows)
+        // and rows). TextLauncher: in a window shorter than the display's grid (the split screen),
+        // the cells keep their smallest height and the page scrolls, as under the keyboard;
+        // Launcher3 scales the whole profile down instead (DeviceProfile.getMultiWindowProfile).
+        val rows = grid.rows
+        cellHeight = max((pageHeight - paddingTop - paddingBottom) / rows, minCellHeight)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
         for (child in itemViews()) measureChild(child)
         // TextLauncher: while the keyboard covers part of the page, it scrolls only as far as the
