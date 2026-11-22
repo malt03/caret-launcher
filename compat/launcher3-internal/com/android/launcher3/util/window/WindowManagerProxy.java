@@ -36,7 +36,6 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
-import android.os.Build;
 import android.util.ArrayMap;
 import android.view.Display;
 import android.view.DisplayCutout;
@@ -92,10 +91,9 @@ public class WindowManagerProxy {
         // TextLauncher: SystemWindowManagerProxy takes every state of the internal display (both
         // panels of a foldable) from WindowManager.getPossibleMaximumWindowMetrics, which the
         // system answers only for the recents provider. An app gets the built-in displays,
-        // including the ones not in use now, from DisplayManager (API 36.1); before it, only the
-        // display in use is known, as in the base WindowManagerProxy.
+        // including the ones not in use now, from DisplayManager (API 36.1).
         Display current = getDisplay(displayInfoContext);
-        if (current.getDisplayId() == DEFAULT_DISPLAY && isAtLeastBaklava1()) {
+        if (current.getDisplayId() == DEFAULT_DISPLAY) {
             DisplayManager displayManager =
                     displayInfoContext.getSystemService(DisplayManager.class);
             int densityDpi = displayInfoContext.getResources().getConfiguration().densityDpi;
@@ -108,12 +106,6 @@ public class WindowManagerProxy {
             }
         }
         return result;
-    }
-
-    /** Build.VERSION_CODES_FULL.BAKLAVA_1: DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS. */
-    private static boolean isAtLeastBaklava1() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
-                && Build.VERSION.SDK_INT_FULL >= Build.VERSION_CODES_FULL.BAKLAVA_1;
     }
 
     /**

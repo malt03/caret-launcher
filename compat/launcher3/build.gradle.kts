@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.malt03.textlauncher.compat.launcher3"
     compileSdk { version = release(37) }
-    defaultConfig { minSdk = 33 }
+    defaultConfig { minSdk = 37 }
     sourceSets {
         named("main") { kotlin.setSrcDirs(listOf("src/main/java")) }
     }

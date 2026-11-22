@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.google.android.msdl"
     compileSdk { version = release(37) }
-    defaultConfig { minSdk = 33 }
+    defaultConfig { minSdk = 37 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

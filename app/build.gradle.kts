@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.malt03.textlauncher"
-        minSdk = 33
+        minSdk = 37
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
