@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"ဤသင်္ကေတအတွက် အက်ပ်ကို အပ်ဒိတ်လုပ်မထားပါ။ ဤဖြတ်လမ်းလင့်ခ်ကို ပြန်ဖွင့်ရန် ကိုယ်တိုင်အပ်ဒိတ်လုပ်နိုင်သည် (သို့) သင်္ကေတကို ဖယ်ရှားနိုင်သည်။"</string>
     <string name="dialog_update" msgid="2178028071796141234">"အပ်ဒိတ်လုပ်ရန်"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"ဖယ်ရှားရန်"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"နောက်ခံနှင့် ပုံစံ"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ဝိဂျက်များ"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"အက်ပ်စာရင်း"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ဤပင်မစာမျက်နှာတွင် နေရာလွတ် မရှိတော့ပါ"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"သင့်စီမံခန့်ခွဲသူက ပိတ်လိုက်ပါသည်"</string>
 </resources>

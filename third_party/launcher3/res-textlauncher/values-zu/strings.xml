@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"I-app yalesi sithonjana ibuyekeziwe. Ungabuyekeza mathupha ukuze uphinde unike amandla lesi sinqamuleli, noma ususe isithonjana."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Vuselela"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Susa"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Isithombe sangemuva nesitayela"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Amawijethi"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Uhlu lwezinhlelo zokusebenza"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Asikho isikhala kulesi sikrini sasekhaya"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Kukhutshazwe umlawuli wakho"</string>
 </resources>

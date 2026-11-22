@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetManager
 import android.view.View
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.icons.BitmapInfo
@@ -8,6 +9,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.touch.ItemClickHandler
 import com.malt03.textlauncher.data.AppItemInfo
+import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
 
 /**
@@ -44,7 +46,23 @@ internal class HomeItemInflater(private val home: HomeController) {
         item is AppItemInfo -> if (item.entry != null) createItemView(item) else null
         item is WorkspaceItemInfo && item.isDeepShortcut -> createItemView(item)
         item is FolderInfo -> createFolderView(item)
-        else -> null // TODO(Tex-t2ea): widgets
+        item is WidgetItemInfo -> createWidgetView(item)
+        else -> null
+    }
+
+    /**
+     * WidgetInflater.inflateAppWidget and ItemInflater.prepareAppWidget: the widget's view from
+     * the host, which starts a drag on a long press. A widget whose provider is gone has no view
+     * (the loader deletes it).
+     */
+    private fun createWidgetView(info: WidgetItemInfo): View? {
+        val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
+        return home.widgetHost.createView(context, info.appWidgetId, providerInfo).apply {
+            setOnLongClickListener {
+                home.itemLongClickListener.onHomeWidgetLongPress(this)
+                true
+            }
+        }
     }
 
     private fun createItemView(info: WorkspaceItemInfo): AppIconView =

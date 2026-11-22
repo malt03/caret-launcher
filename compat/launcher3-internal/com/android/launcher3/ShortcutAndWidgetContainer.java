@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.testing.shared.ResourceUtils;
+import com.android.launcher3.widget.LauncherAppWidgetHostView;
 
 /**
  * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
@@ -85,16 +87,42 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
 
     /**
      * TextLauncher: the icons center themselves in their cells (iconCenterVertically), so no cell
-     * padding is set on them.
+     * padding is set on them. Widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
+     * multi-window), and get the workspace's widget padding ([getWidgetPadding]).
      */
     public void measureChild(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
-        lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
-                mBorderSpace);
+        if (child instanceof LauncherAppWidgetHostView) {
+            lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                    1f, 1f, mBorderSpace, getWidgetPadding(getContext(), mBorderSpace));
+        } else {
+            lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                    mBorderSpace);
+        }
         int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(lp.width, MeasureSpec.EXACTLY);
         int childheightMeasureSpec = MeasureSpec.makeMeasureSpec(lp.height, MeasureSpec.EXACTLY);
         child.measure(childWidthMeasureSpec, childheightMeasureSpec);
     }
+
+    /**
+     * WorkspaceProfile's widgetPadding: when the cells have less than MIN_WIDGET_PADDING_DP
+     * between them, the widgets keep that much space from each other.
+     */
+    public static Rect getWidgetPadding(Context context, Point borderSpace) {
+        float minSpacing = ResourceUtils.pxFromDp(MIN_WIDGET_PADDING_DP,
+                context.getResources().getDisplayMetrics());
+        Rect widgetPadding = new Rect();
+        if (borderSpace.x < minSpacing || borderSpace.y < minSpacing) {
+            widgetPadding.right = Math.round(Math.max(0f, minSpacing - borderSpace.x));
+            widgetPadding.left = widgetPadding.right;
+            widgetPadding.bottom = Math.round(Math.max(0f, minSpacing - borderSpace.y));
+            widgetPadding.top = widgetPadding.bottom;
+        }
+        return widgetPadding;
+    }
+
+    /** WorkspaceProfile.MIN_WIDGET_PADDING_DP */
+    private static final float MIN_WIDGET_PADDING_DP = 6f;
 
     public boolean invertLayoutHorizontally() {
         return mInvertIfRtl && Utilities.isRtl(getResources());

@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Aplikace pro tuto ikonu není nainstalována. Můžete ji ručně aktualizovat, aby zkratka znovu fungovala, případně můžete ikonu odstranit."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Aktualizovat"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Odstranit"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Tapety a styl"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widgety"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Seznam aplikací"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Na této ploše není místo"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Zakázáno administrátorem"</string>
 </resources>

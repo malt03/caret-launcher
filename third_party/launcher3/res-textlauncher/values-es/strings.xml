@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"La aplicación de este icono no está actualizada. Puedes actualizarla manualmente para volver a habilitar este acceso directo o puedes eliminar el icono."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Actualizar"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Quitar"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Fondo de pantalla y estilo"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widgets"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Lista de aplicaciones"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"No queda espacio en esta pantalla de inicio"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Inhabilitado por el administrador"</string>
 </resources>

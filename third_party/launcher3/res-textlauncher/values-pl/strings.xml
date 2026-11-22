@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Aplikacja z tą ikoną nie jest aktualizowana. Możesz zaktualizować ją ręcznie, aby ponownie uruchomić ten skrót, lub usunąć ikonę."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Aktualizuj"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Usuń"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Tapeta i styl"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widżety"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Lista aplikacji"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Brak miejsca na tym ekranie głównym"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Funkcja wyłączona przez administratora"</string>
 </resources>

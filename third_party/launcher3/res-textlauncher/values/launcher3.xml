@@ -260,4 +260,10 @@
     <!-- dimens.xml, for util/window/WindowManagerProxy.java's window bounds estimate. -->
     <dimen name="taskbar_size">0dp</dimen>
     <dimen name="max_width_and_height_of_small_display_cutout">136px</dimen>
+    <!-- The empty space's long-press menu icons (drawable/ic_apps.xml, ic_palette.xml,
+         ic_widget.xml): values/dimens.xml -->
+    <dimen name="options_menu_icon_size">24dp</dimen>
+    <!-- The wallpaper picker the menu opens (WorkspaceLongPressOptions): values/config.xml.
+         Empty: the system picks the activity for ACTION_SET_WALLPAPER. -->
+    <string name="wallpaper_picker_package" translatable="false"></string>
 </resources>

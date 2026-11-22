@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"កម្មវិធីសម្រាប់​រូបតំណាងនេះ​មិនត្រូវបានដំឡើងកំណែ​ទេ។ អ្នកអាច​ដំឡើងកំណែ​ដោយផ្ទាល់ ដើម្បីបើក​ផ្លូវកាត់នេះឡើងវិញ ឬលុបរូបតំណាងនេះ។"</string>
     <string name="dialog_update" msgid="2178028071796141234">"ដំឡើងកំណែ"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"លុប"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"ផ្ទាំងរូបភាព និងរចនាបថ"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ធាតុ​ក្រាហ្វិក"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"បញ្ជីកម្មវិធី"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"គ្មានកន្លែង​នៅលើ​អេក្រង់ដើមនេះទេ"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"បានបិទដំណើរការដោយអ្នកគ្រប់គ្រងរបស់អ្នក"</string>
 </resources>

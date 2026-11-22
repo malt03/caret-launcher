@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"ഈ ഐക്കണിനുള്ള ആപ്പ് അപ്‌ഡേറ്റ് ചെയ്തിട്ടില്ല. ഈ കുറുക്കുവഴി വീണ്ടും പ്രവർത്തനക്ഷമമാക്കാൻ നിങ്ങൾക്ക് നേരിട്ട് അപ്‌ഡേറ്റ് ചെയ്യാം അല്ലെങ്കിൽ ഐക്കൺ നീക്കം ചെയ്യാം."</string>
     <string name="dialog_update" msgid="2178028071796141234">"അപ്ഡേറ്റ് ചെയ്യുക"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"നീക്കം ചെയ്യുക"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"വാൾപേപ്പറും സ്‌റ്റൈലും"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"വിജറ്റുകൾ"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"ആപ്പുകളുടെ ലിസ്‌റ്റ്"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ഈ ഹോം സ്ക്രീനിൽ ഇടമില്ല"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"അഡ്മിൻ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നു"</string>
 </resources>

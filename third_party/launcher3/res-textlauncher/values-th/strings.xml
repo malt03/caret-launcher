@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"แอปสำหรับไอคอนนี้ยังไม่ได้อัปเดต คุณอัปเดตด้วยตนเองได้โดยเปิดใช้ทางลัดนี้อีกครั้งหรือนำไอคอนออก"</string>
     <string name="dialog_update" msgid="2178028071796141234">"อัปเดต"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"นำออก"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"วอลเปเปอร์และสไตล์"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"วิดเจ็ต"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"รายชื่อแอป"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ไม่มีที่ว่างในหน้าจอหลักนี้"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"ปิดใช้โดยผู้ดูแลระบบ"</string>
 </resources>

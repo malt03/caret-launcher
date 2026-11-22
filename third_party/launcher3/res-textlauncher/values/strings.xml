@@ -16,4 +16,9 @@
     <string name="dialog_update_message">The app for this icon isn\'t updated. You can update manually to re-enable this shortcut, or remove the icon.</string>
     <string name="dialog_update">Update</string>
     <string name="dialog_remove">Remove</string>
+    <string name="styles_wallpaper_button_text">Wallpaper &amp; style</string>
+    <string name="widget_button_text">Widgets</string>
+    <string name="all_apps_button_label">Apps list</string>
+    <string name="out_of_space">No room on this home screen</string>
+    <string name="msg_disabled_by_admin">Disabled by your admin</string>
 </resources>

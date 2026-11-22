@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetManager
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +11,7 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.util.GridOccupancy
+import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.HomeShortcutKey
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -25,6 +27,13 @@ internal class HomeLoader(private val home: HomeController) {
     private val model = home.model
     private val mainHandler = Handler(Looper.getMainLooper())
     private var loaded = false
+
+    /**
+     * Launcher.isWorkspaceLoading's opposite: the items are bound to the views, so the grid knows
+     * which cells are taken.
+     */
+    var isLoaded = false
+        private set
     private var rebuildGeneration = 0
     private val shortcutsListener: () -> Unit = ::onShortcutsChanged
 
@@ -104,6 +113,7 @@ internal class HomeLoader(private val home: HomeController) {
 
     /** LoaderTask's binding: the apps' activities and the icons, then the views. */
     private fun bindItems(generation: Int, shortcuts: Map<WorkspaceItemInfo, ShortcutInfo>) {
+        pruneMissingWidgets()
         checkItemPlacement()
         val items = model.allItems()
         for (info in items) {
@@ -122,6 +132,10 @@ internal class HomeLoader(private val home: HomeController) {
                     if (generation != rebuildGeneration) return@loadDefault
                     for (info in unknown) if (info.bitmap.isLowRes) info.bitmap = default
                     home.bindItems(model.items)
+                    if (!isLoaded) {
+                        isLoaded = true
+                        home.widgetAddFlow.onLoaded()
+                    }
                     if (shortcuts.isNotEmpty() && model.hasShortcutsWithoutIcons) {
                         model.hasShortcutsWithoutIcons = false
                         model.save()
@@ -194,6 +208,22 @@ internal class HomeLoader(private val home: HomeController) {
                         home.bindItemChanged(info)
                         if (--remaining == 0) model.save()
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * WidgetInflater: a widget whose provider is not installed anymore is deleted, and its id given
+     * back.
+     */
+    private fun pruneMissingWidgets() {
+        val widgetManager = AppWidgetManager.getInstance(context)
+        removeItems { item ->
+            (item is WidgetItemInfo && widgetManager.getAppWidgetInfo(item.appWidgetId) == null).also { missing ->
+                if (missing) {
+                    Log.d(TAG, "Deleting widget that isn't installed anymore: $item")
+                    home.widgetHost.deleteAppWidgetId((item as WidgetItemInfo).appWidgetId)
                 }
             }
         }

@@ -55,6 +55,7 @@ path=src/com/android/launcher3/DragSource.java
 path=src/com/android/launcher3/util/TouchController.java
 path=src/com/android/launcher3/util/RunnableList.java
 path=src/com/android/launcher3/util/TouchUtil.java
+path=src/com/android/launcher3/CheckLongPressHelper.java
 path=src/com/android/launcher3/util/ViewEx.kt
 path=src/com/android/launcher3/graphics/DragPreviewProvider.java
 path=src/com/android/launcher3/Alarm.java
@@ -119,6 +120,9 @@ path=res/color/popup_shade_first.xml
 path=res/color/popup_shade_second.xml
 path=res/color/popup_shade_third.xml
 path=res/drawable/bg_letter_list_text.xml
+path=res/drawable/ic_apps.xml
+path=res/drawable/ic_palette.xml
+path=res/drawable/ic_widget.xml
 path=res/drawable-v28/bg_celllayout.xml
 path=res/color/cell_layout_bg_color.xml
 path=res/drawable/deep_shortcuts_text_placeholder.xml
@@ -152,7 +156,7 @@ path=res/layout/system_shortcut_spacer.xml
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、空き領域の長押しメニューとウィジェットの追加の `styles_wallpaper_button_text`・`widget_button_text`・`all_apps_button_label`・`out_of_space`・`msg_disabled_by_admin`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 
@@ -191,3 +195,4 @@ path=res/layout/system_shortcut_spacer.xml
 | `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`popup.PopupItemDragHandler`、`SystemShortcut`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）は持たない。`PopupItemDragHandler` はインターフェースだけを置き、`LauncherPopupItemDragHandler` はアプリ側（`ItemLongClickListener`）に移した。`shortcuts/DeepShortcutView.java` はそのままコピーし、追加ボタンとバッジ付きのコピーは `Launcher` の互換クラス（`getAccessibilityDelegate().addToWorkspace`、`getModel().updateAndBindWorkspaceItem`）を通してアプリが受ける。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
 | `com.android.launcher3.util.MSDLPlayerWrapper`（Dagger の代わりに `INSTANCE.get(context)` でアプリに1つのプレイヤーを返す。履歴の dump は持たない） | ドラッグのハプティック（`CellLayout`、`HomeWorkspace`、`DropTargetBar`。`msdllib` は `third_party/systemui/msdllib/`） |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |
+| `com.android.launcher3.widget.LauncherAppWidgetHostView`（`AppWidgetHostView` を継承し、長押しの判定とドラッグの種類・範囲だけ。`getScaleToFit` は常に 1）、`ShortcutAndWidgetContainer.measureChild` のウィジェットの余白（`WorkspaceProfile.widgetPadding`）、`model.data.ItemInfo`（`minSpanX`、`minSpanY`）、`Utilities`（`pointInView`）、`com.android.window.flags.Flags`（`showHomeBehindDesktop`） | `graphics/DragPreviewProvider.java`、`CheckLongPressHelper.java`、アプリのウィジェット |

@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Selle ikooni rakendust pole värskendatud. Otsetee uuesti lubamiseks võite rakendust käsitsi värskendada või ikooni eemaldada."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Värskenda"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Eemalda"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Taustapilt ja stiil"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Vidinad"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Rakenduste loend"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Sellel avakuval pole ruumi"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Keelas administraator"</string>
 </resources>

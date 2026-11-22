@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"ამ ხატულის აპი განახლებული არ არის. შეგიძლიათ, ხელით განაახლოთ ამ მალსახმობის ხელახლა გასააქტიურებლად, ან ამოშალოთ ხატულა."</string>
     <string name="dialog_update" msgid="2178028071796141234">"განახლება"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"ამოშლა"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"ფონი და სტილი"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ვიჯეტები"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"აპების სია"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ამ მთავარ ეკრანზე ადგილი არ არის"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"გათიშულია თქვენი ადმინისტრატორის მიერ"</string>
 </resources>

@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Ứng dụng cho biểu tượng này chưa được cập nhật. Bạn có thể cập nhật theo cách thủ công để bật lại phím tắt này hoặc xóa biểu tượng."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Cập nhật"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Xóa"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Hình nền và phong cách"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Tiện ích"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Danh sách ứng dụng"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Không còn khoảng trống trên màn hình chính này"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Bị tắt bởi quản trị viên của bạn"</string>
 </resources>

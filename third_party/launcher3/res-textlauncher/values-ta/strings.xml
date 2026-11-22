@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"இந்த ஐகானுக்கான ஆப்ஸ் புதுப்பிக்கப்படவில்லை. இந்த ஷார்ட்கட்டை மீண்டும் இயக்கவோ ஐகானை அகற்றவோ நீங்களாகவே புதுப்பிக்கலாம்."</string>
     <string name="dialog_update" msgid="2178028071796141234">"புதுப்பி"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"அகற்று"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"வால்பேப்பர் &amp; ஸ்டைல்"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"விட்ஜெட்கள்"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"ஆப்ஸின் பட்டியல்"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"இந்த முகப்புத் திரையில் இடமில்லை"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"உங்கள் நிர்வாகி முடக்கியுள்ளார்"</string>
 </resources>

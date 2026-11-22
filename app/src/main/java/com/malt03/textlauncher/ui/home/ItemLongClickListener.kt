@@ -60,6 +60,12 @@ internal class ItemLongClickListener(private val home: HomeController) {
         home.homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
     }
 
+    /** ItemLongClickListener.INSTANCE_WORKSPACE for a widget: the drag starts at once. */
+    fun onHomeWidgetLongPress(view: View) {
+        val info = view.tag as? ItemInfo ?: return
+        home.homeWorkspace.startDrag(view, info, DragOptions(), null)
+    }
+
     /**
      * BubbleTextView.startLongPressAction with PopupControllerForAppIcon.show: shows the item's
      * long-press menu (docs/spec.md 5.3) and returns the menu's pre-drag condition. Moving more

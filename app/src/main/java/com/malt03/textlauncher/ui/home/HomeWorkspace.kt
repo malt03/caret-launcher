@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetHostView
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Handler
@@ -28,6 +29,7 @@ import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.ActivityContext
 import com.google.android.msdl.data.model.MSDLToken
@@ -65,6 +67,9 @@ class HomeWorkspace(
 
         /** ModelWriter.modifyItemInDatabase: the cells of the items on the grid changed. */
         fun onItemsMoved()
+
+        /** WidgetSizeHandler.updateSizeRanges for a widget whose spans changed. */
+        fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int)
     }
 
     /** CellLayout.CellInfo */
@@ -483,7 +488,22 @@ class HomeWorkspace(
 
                 val foundCell = mTargetCell[0] >= 0 && mTargetCell[1] >= 0
 
+                // if the widget resizes on drop
+                if (foundCell && cell is AppWidgetHostView &&
+                    (resultSpan[0] != item.spanX || resultSpan[1] != item.spanY)
+                ) {
+                    item.spanX = resultSpan[0]
+                    item.spanY = resultSpan[1]
+                    host.updateWidgetSize(cell, resultSpan[0], resultSpan[1])
+                }
+
                 if (foundCell) {
+                    // Workspace.onDrop (hasMovedLayouts): a widget is in the DragView while it is
+                    // dragged, and goes back on the grid at its new cell (addInScreen).
+                    if (cell is LauncherAppWidgetHostView && cell.parent !== grid) {
+                        d.dragView.detachContentView(/* reattachToPreviousParent= */ false)
+                        grid.addView(cell, cell.layoutParams)
+                    }
                     // update the item's position after drop
                     val lp = cell.layoutParams as CellLayoutLayoutParams
                     lp.tmpCellX = mTargetCell[0]
@@ -495,12 +515,18 @@ class HomeWorkspace(
                     lp.isLockedToGrid = true
                     host.onItemsMoved()
                 } else {
+                    if (cell is LauncherAppWidgetHostView) {
+                        d.dragView.detachContentView(/* reattachToPreviousParent= */ true)
+                    }
                     // If we can't find a drop location, we return the item to its original position
                     val lp = cell.layoutParams as CellLayoutLayoutParams
                     mTargetCell[0] = lp.cellX
                     mTargetCell[1] = lp.cellY
                     layout.markCellsAsOccupiedForView(cell)
                 }
+            } else if (cell is LauncherAppWidgetHostView) {
+                // When drag is cancelled, reattach content view back to its original parent.
+                d.dragView.detachContentView(/* reattachToPreviousParent= */ true)
             }
 
             val parent = layout
@@ -869,6 +895,10 @@ class HomeWorkspace(
                 host.removeWorkspaceItem(dragInfo.cell)
             }
         } else if (dragInfo != null) {
+            // When drag is cancelled, reattach content view back to its original parent.
+            if (dragInfo.cell is LauncherAppWidgetHostView && dragInfo.cell.parent !== grid) {
+                d.dragView?.detachContentView(/* reattachToPreviousParent= */ true)
+            }
             if (dragInfo.cell.parent === grid) {
                 layout.onDropChild(dragInfo.cell)
             }

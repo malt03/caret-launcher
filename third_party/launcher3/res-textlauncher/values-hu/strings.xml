@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Az ikonhoz tartozó alkalmazás nincs frissítve. A parancsikon újbóli engedélyezéséhez frissítse az alkalmazást, vagy távolítsa ez az ikont."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Frissítés"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Eltávolítás"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Háttérkép és stílus"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Modulok"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Alkalmazások listája"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Nincs több hely ezen a kezdőképernyőn"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"A rendszergazda letiltotta"</string>
 </resources>

@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"لم يتمّ تحديث التطبيق الخاص بهذا الرمز. يمكنك تحديث التطبيق يدويًا لإعادة تفعيل هذا الاختصار أو إزالة الرمز."</string>
     <string name="dialog_update" msgid="2178028071796141234">"تحديث"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"إزالة"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"الخلفية والأسلوب"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"التطبيقات المصغّرة"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"قائمة التطبيقات"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"لا تتوفَّر مساحة على هذه الشاشة الرئيسية."</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"أوقف المشرف هذه الميزة"</string>
 </resources>

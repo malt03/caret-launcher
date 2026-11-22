@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"你尚未更新這個圖示代表的應用程式。你可以手動更新以重新啟用此快速鍵，或者移除圖示。"</string>
     <string name="dialog_update" msgid="2178028071796141234">"更新"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"移除"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"桌布和樣式"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"小工具"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"應用程式清單"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"主畫面空間已滿"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"已由你的管理員停用"</string>
 </resources>

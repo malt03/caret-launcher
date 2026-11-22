@@ -1,6 +1,6 @@
 ---
 id: Tex-skt8
-status: open
+status: closed
 deps: [Tex-t2ea, Tex-17s1]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -29,3 +29,7 @@ tags: [home]
 **2026-11-21**
 
 「アプリ一覧」は LauncherActivity.openAllApps（Tex-17s1 で用意した、ジェスチャーなしで普段と同じアニメーションで開く処理）を呼ぶ。
+
+**2026-11-22T16:04:35Z**
+
+空き領域の長押しでメニューが出る（WorkspaceTouchListener と WorkspaceLongPressOptions の移植、HomeOptionsMenu）。項目は Launcher3 の順で「壁紙とスタイル」「ウィジェット」「アプリのリスト」。2パネルでは「アプリのリスト」はない。「アプリのリスト」は普段と同じアニメーションで開くことを、「壁紙とスタイル」は ACTION_SET_WALLPAPER を開くことを確認。ただし wallpaper_picker_package が空なので、受けられるアプリが複数ある端末では選ぶ画面が出る（エミュレータでは出た）。

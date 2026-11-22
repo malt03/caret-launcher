@@ -56,9 +56,17 @@ class AppItemInfo(val homeKey: String) : WorkspaceItemInfo() {
 val ItemInfo.isDeepShortcut: Boolean
     get() = itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
 
-/** A widget (LauncherAppWidgetInfo). Kept in the model; not shown yet (Tex-t2ea). */
+/**
+ * A widget (LauncherAppWidgetInfo): its id in the home screen's widget host and its provider
+ * (LauncherAppWidgetInfo.providerName, flattened).
+ */
 class WidgetItemInfo(val appWidgetId: Int, val provider: String) : ItemInfo() {
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
     }
+
+    /** LauncherAppWidgetInfo.getTargetComponent: the provider. */
+    override fun getTargetComponent(): ComponentName? = ComponentName.unflattenFromString(provider)
+
+    override fun toString(): String = "WidgetItemInfo(id=$id appWidgetId=$appWidgetId provider=$provider cell=($cellX,$cellY) span=($spanX,$spanY))"
 }

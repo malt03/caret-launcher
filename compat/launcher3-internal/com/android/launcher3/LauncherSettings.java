@@ -35,6 +35,7 @@ public class LauncherSettings {
         public static final int ITEM_TYPE_APPWIDGET = 4;
         public static final int ITEM_TYPE_DEEP_SHORTCUT = 6;
         public static final int ITEM_TYPE_APP_GROUP = 10;
+        public static final int ITEM_TYPE_CUSTOM_VIEW = 14;
 
         public static final CacheLookupFlag DESKTOP_ICON_FLAG =
                 CacheLookupFlag.DEFAULT_LOOKUP_FLAG.withThemeIcon();

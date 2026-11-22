@@ -16,4 +16,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"このアイコンのアプリは更新されていません。手動で更新して、このショートカットを再度有効にできます。また、アイコンを削除することもできます。"</string>
     <string name="dialog_update" msgid="2178028071796141234">"更新"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"削除"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"壁紙とスタイル"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ウィジェット"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"アプリのリスト"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"このホーム画面には空きスペースがありません"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"管理者により無効にされています"</string>
 </resources>

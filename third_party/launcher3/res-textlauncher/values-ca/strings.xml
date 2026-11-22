@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"L\'aplicació d\'aquesta icona no està actualitzada. Pots actualitzar-la manualment per tornar a activar aquesta drecera o pots suprimir la icona."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Actualitza"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Suprimeix"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Estil i fons de pantalla"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widgets"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Llista d\'aplicacions"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"No queda espai en aquesta pantalla d\'inici"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Desactivada per l\'administrador"</string>
 </resources>

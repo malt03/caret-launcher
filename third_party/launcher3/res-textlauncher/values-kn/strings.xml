@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"ಈ ಐಕಾನ್‌ಗಾಗಿ ಆ್ಯಪ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿಲ್ಲ. ಈ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಮರು-ಸಕ್ರಿಯಗೊಳಿಸಲು ನೀವು ಹಸ್ತಚಾಲಿತವಾಗಿ ಅಪ್‌ಡೇಟ್ ಮಾಡಬಹುದು ಅಥವಾ ಐಕಾನ್ ಅನ್ನು ತೆಗೆದುಹಾಕಬಹುದು."</string>
     <string name="dialog_update" msgid="2178028071796141234">"ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"ತೆಗೆದುಹಾಕಿ"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"ವಾಲ್‌ಪೇಪರ್ ಮತ್ತು ಶೈಲಿ"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ವಿಜೆಟ್‌ಗಳು"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"ಆ್ಯಪ್‌ಗಳ ಪಟ್ಟಿ"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ಈ ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಸ್ಥಳಾವಕಾಶವಿಲ್ಲ"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ"</string>
 </resources>

@@ -1,6 +1,6 @@
 ---
 id: Tex-t2ea
-status: open
+status: closed
 deps: [Tex-9ipm, Tex-wgyx, Tex-h3ld, Tex-f33r]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -36,3 +36,7 @@ AppWidgetHost でウィジェットを表示・追加する。
 **2026-11-20T12:14:50Z**
 
 移植の範囲は docs/launcher3-porting.md の表で確定（Tex-wgyx）
+
+**2026-11-22T16:04:35Z**
+
+OS の選択画面（ACTION_APPWIDGET_PICK）で追加、設定画面、再起動後の保持、長押しでの移動（キーボードは下りる）、削除（ウィジェット ID も返す）を Pixel 9 Pro Fold エミュレータで確認した（2026-11-23）。リサイズ枠は Tex-yw4e に分けた。セルの縦横比でウィジェットが切れる件は Tex-vcwh。

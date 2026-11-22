@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetHostView
 import android.graphics.Rect
 import android.os.UserHandle
 import android.graphics.drawable.GradientDrawable
@@ -28,6 +29,7 @@ import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
+import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
@@ -48,6 +50,10 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
  * - [SpringLoadedListener]: the SPRING_LOADED state while dragging
  * - [HomeWorkspace], [HomeDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
+ * - [HomeWidgetHost], [HomeWidgetSizes], [HomeWidgetAddFlow]: LauncherWidgetHolder, the widget
+ *   sizes and Launcher's widget adding
+ * - [HomeOptionsMenu]: WorkspaceTouchListener and WorkspaceLongPressOptions, the empty space's
+ *   long-press menu
  */
 class HomeController(
     internal val app: TextLauncherApplication,
@@ -65,6 +71,10 @@ class HomeController(
         fun onEditModeChanged(editing: Boolean)
         /** Shows the home screen, leaving the search results (Launcher3's NORMAL state). */
         fun showHome()
+        /** The empty space's menu's "Apps list" (docs/spec.md 5.3), or null when it has none. */
+        val openAllApps: (() -> Unit)?
+        /** Whether the empty space's long press may show its menu (Launcher3's NORMAL state). */
+        fun canShowOptions(): Boolean
     }
 
     internal val context = root.context
@@ -116,9 +126,16 @@ class HomeController(
     internal val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
     private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController }, ::canRemove)
 
+    internal val widgetHost = HomeWidgetHost(context)
+    internal val widgetSizes = HomeWidgetSizes(grid)
+    internal val widgetAddFlow = HomeWidgetAddFlow(this)
+
     internal val itemInflater = HomeItemInflater(this)
     internal val itemLongClickListener = ItemLongClickListener(this)
     private val loader = HomeLoader(this)
+
+    /** Whether the home screen is loaded (Launcher.isWorkspaceLoading). */
+    internal val isLoaded: Boolean get() = loader.isLoaded
 
     /** Folder's LauncherDelegate: what the folder asks of the workspace and the model. */
     internal val launcherDelegate = object : LauncherDelegate(launcher) {
@@ -150,6 +167,8 @@ class HomeController(
         // floating views (the long-press menu) are asked first.
         root.overlay.setControllers(dragController)
         root.touchInterceptor = root.overlay::dispatchTouchEventFromParent
+        // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
+        scrollView.setOnTouchListener(HomeOptionsMenu(this))
 
         loader.start()
     }
@@ -167,6 +186,22 @@ class HomeController(
     fun onResume() {
         dropTargetBar.uninstall.onLauncherResume()
     }
+
+    /** LauncherWidgetHolder.setActivityStarted: the widgets are updated while it is started. */
+    fun onStart() {
+        widgetHost.startListening()
+    }
+
+    fun onStop() {
+        widgetHost.stopListening()
+    }
+
+    /** Launcher.onActivityResult for the widget add flow. Returns whether it was for it. */
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
+        widgetAddFlow.onActivityResult(requestCode, resultCode, data)
+
+    /** The empty space's menu's "Widgets" (WorkspaceLongPressOptions.openWidgetPicker). */
+    internal fun openWidgetPicker() = widgetAddFlow.startPick()
 
     fun cancelDrag() {
         dragController.cancelDrag()
@@ -239,6 +274,29 @@ class HomeController(
         val view = workspaceHost.addItem(info, cell[0], cell[1])
         model.save()
         animateNewItem(view)
+        return true
+    }
+
+    /**
+     * Launcher.completeAddAppWidget's model and view part: the widget in the first free cell
+     * (LauncherAccessibilityDelegate.findSpaceOnWorkspace), told its size. Returns false when there
+     * is no room. TextLauncher: Launcher3 would add a page.
+     */
+    internal fun addWidget(item: WidgetItemInfo): Boolean {
+        host.showHome()
+        val cell = IntArray(2)
+        if (!grid.cellLayout.findCellForSpan(cell, item.spanX, item.spanY)) return false
+        item.id = model.newId()
+        item.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+        item.cellX = cell[0]
+        item.cellY = cell[1]
+        model.items += item
+        val view = addInScreen(item)
+        model.save()
+        if (view is AppWidgetHostView) {
+            widgetSizes.updateSizeRanges(view, item.spanX, item.spanY)
+            view.post { view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), false) }
+        }
         return true
     }
 
@@ -348,8 +406,13 @@ class HomeController(
         override fun removeWorkspaceItem(view: View) {
             if (view.parent === grid) grid.removeView(view)
             (view.tag as? ItemInfo)?.let { model.items.remove(it) }
+            // ModelWriter.deleteWidgetInfo: the widget's id is given back.
+            (view.tag as? WidgetItemInfo)?.let { widgetHost.deleteAppWidgetId(it.appWidgetId) }
             model.save()
         }
+
+        override fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int) =
+            widgetSizes.updateSizeRanges(view, spanX, spanY)
 
         override fun onItemsMoved() {
             for (child in grid.itemViews()) {

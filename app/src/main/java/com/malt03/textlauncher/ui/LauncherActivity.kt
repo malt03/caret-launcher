@@ -244,8 +244,23 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         super.onPause()
     }
 
+    override fun onStart() {
+        super.onStart()
+        home.onStart()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // Launcher.onActivityResult: the widget add flow (docs/spec.md 5.2).
+        if (!home.onActivityResult(requestCode, resultCode, data)) {
+            @Suppress("DEPRECATION")
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
     override fun onStop() {
         super.onStop()
+        home.onStop()
         // docs/spec.md 1.2: the query is cleared every time the launcher comes back.
         home.cancelDrag()
         home.closeFloatingViews(animate = false)
@@ -400,8 +415,20 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
     }
 
+    /**
+     * The empty space's menu's "Apps list" (docs/spec.md 5.3): none with two panels, where the
+     * list is always shown (docs/spec.md 5.5).
+     */
+    override val openAllApps: (() -> Unit)? get() = if (gridSpec.isTwoPanels) null else ::openAllApps
+
+    /**
+     * Launcher3's NORMAL state for the empty space's long press: the home screen is shown, not
+     * the search results, the all apps list or edit mode.
+     */
+    override fun canShowOptions(): Boolean =
+        !isEditMode && !isAllAppsOpen && !root.isAllAppsShown && currentQuery().isEmpty()
+
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
-    @Suppress("unused")
     private fun openAllApps() {
         // docs/spec.md 5.5: with two panels, the list is always shown.
         if (isEditMode || isAllAppsOpen || gridSpec.isTwoPanels) return

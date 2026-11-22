@@ -173,6 +173,12 @@ private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
         return (size / densityRatio);
     }
 
+    /** Utilities.pointInView */
+    public static boolean pointInView(View v, float localX, float localY, float slop) {
+        return localX >= -slop && localY >= -slop && localX < (v.getWidth() + slop) &&
+                localY < (v.getHeight() + slop);
+    }
+
     public static float squaredHypot(float x, float y) {
         return x * x + y * y;
     }

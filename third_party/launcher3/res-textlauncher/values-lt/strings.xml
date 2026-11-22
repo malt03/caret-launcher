@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"Šios piktogramos programa neatnaujinta. Galite patys atnaujinti, kad iš naujo įgalintumėte šį spartųjį klavišą, arba pašalinkite piktogramą."</string>
     <string name="dialog_update" msgid="2178028071796141234">"Atnaujinti"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"Pašalinti"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Ekrano fonas ir stilius"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Valdikliai"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Programų sąrašas"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Šiame pagrindiniame ekrane nebėra vietos"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Išjungė administratorius"</string>
 </resources>

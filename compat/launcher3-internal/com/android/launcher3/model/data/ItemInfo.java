@@ -40,6 +40,10 @@ public class ItemInfo {
     public int cellY = -1;
     public int spanX = 1;
     public int spanY = 1;
+    /** Indicates the minimum X cell span. */
+    public int minSpanX = 1;
+    /** Indicates the minimum Y cell span. */
+    public int minSpanY = 1;
     public int rank = 0;
     public int itemType = 0;
     public CharSequence title;

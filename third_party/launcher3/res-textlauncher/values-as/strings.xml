@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"এই চিহ্নটোৰ এপ্‌টো আপডে’ট কৰা হোৱা নাই। আপুনি এই শ্বৰ্টকাটটো পুনৰ সক্ষম কৰিবলৈ মেনুৱেলী আপডে’ট কৰিব পাৰে অথবা চিহ্নটো আঁতৰাব পাৰে।"</string>
     <string name="dialog_update" msgid="2178028071796141234">"আপডে’ট কৰক"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"আঁতৰাওক"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"ৱালপেপাৰ আৰু শৈলী"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ৱিজেটসমূহ"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"এপৰ সূচী"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"এইখন গৃহ স্ক্ৰীনত খালী ঠাই নাই"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"আপোনাৰ প্ৰশাসকে অক্ষম কৰি ৰাখিছে"</string>
 </resources>

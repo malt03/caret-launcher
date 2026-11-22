@@ -11,4 +11,9 @@
     <string name="dialog_update_message" msgid="4176784553982226114">"ଏହି ଆଇକନ ପାଇଁ ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଏହି ସର୍ଟକଟକୁ ପୁଣି-ସକ୍ଷମ କରିବା ପାଇଁ ଆପଣ ମାନୁଆଲୀ ଅପଡେଟ କରିପାରିବେ କିମ୍ବା ଆଇକନଟିକୁ କାଢ଼ି ଦେଇପାରିବେ।"</string>
     <string name="dialog_update" msgid="2178028071796141234">"ଅପଡେଟ କରନ୍ତୁ"</string>
     <string name="dialog_remove" msgid="6510806469849709407">"କାଢ଼ି ଦିଅନ୍ତୁ"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"ୱାଲପେପର ଏବଂ ଷ୍ଟାଇଲ"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ୱିଜେଟ୍‌"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"ଆପ୍‌ ତାଲିକା"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ଏହି ହୋମ ସ୍କ୍ରିନରେ ଆଉ ଜାଗା ନାହିଁ"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"ଆପଣଙ୍କ ଆଡମିନଙ୍କ ଦ୍ୱାରା ଅକ୍ଷମ କରାଯାଇଛି"</string>
 </resources>
