@@ -134,6 +134,14 @@ class AllAppsView(
     fun reset() {
         touchHandler?.endFastScrolling()
         recyclerView.scrollToTop()
+        rebindCells()
+    }
+
+    /**
+     * The cells are bound again, which shows an icon a drag left hidden. TextLauncher: with two
+     * panels (docs/spec.md 5.5) the list stays shown, and is not reset, after a drag from it.
+     */
+    fun rebindCells() {
         adapter.notifyItemRangeChanged(0, adapter.itemCount)
     }
 

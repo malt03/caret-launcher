@@ -106,6 +106,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         root = LauncherRootLayout(this)
         setContentView(root)
 
+        val isTwoPanels = gridSpec.isTwoPanels
         results = SearchResults(
             this,
             app.iconLoader,
@@ -113,12 +114,24 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             gridSpec,
             onClick = { entry, view -> launch(entry, view, fromSearch = true) },
             onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
+            // docs/spec.md 5.5: with two panels, the results replace the all apps list on its panel.
+            inAllApps = isTwoPanels,
+            fromBottom = true,
         )
         home = HomeController(app, root, this)
         root.contentArea.addView(home.workspace)
-        root.contentArea.addView(results.view)
         allApps = AllAppsView(this, home.activityContext, app.iconLoader, gridSpec)
-        root.allAppsView = allApps
+        if (isTwoPanels) {
+            // docs/spec.md 5.5: the all apps list is always shown on the left panel, and there is
+            // no all apps sheet to open.
+            root.enableTwoPanels().apply {
+                setList(allApps)
+                setSearchResults(results.view)
+            }
+        } else {
+            root.contentArea.addView(results.view)
+            root.allAppsView = allApps
+        }
         allAppsResults = SearchResults(
             this,
             app.iconLoader,
@@ -128,10 +141,12 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
             inAllApps = true,
         )
-        root.allAppsSheet.setSearchResults(allAppsResults.view)
-        root.onBottomInsetChanged = allAppsResults::setBottomInset
         allAppsTransition = AllAppsTransitionController(root)
-        root.allAppsTouchInterceptor = AllAppsSwipeController(this, root, allAppsTransition, allAppsSwipeCallbacks)::onTouch
+        if (!isTwoPanels) {
+            root.allAppsSheet.setSearchResults(allAppsResults.view)
+            root.onBottomInsetChanged = allAppsResults::setBottomInset
+            root.allAppsTouchInterceptor = AllAppsSwipeController(this, root, allAppsTransition, allAppsSwipeCallbacks)::onTouch
+        }
 
         val editText = root.searchBar.editText
         editText.addTextChangedListener(object : TextWatcher {
@@ -381,7 +396,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
     @Suppress("unused")
     private fun openAllApps() {
-        if (isEditMode || isAllAppsOpen) return
+        // docs/spec.md 5.5: with two panels, the list is always shown.
+        if (isEditMode || isAllAppsOpen || gridSpec.isTwoPanels) return
         prepareAllAppsOpen()
         allAppsTransition.animateTo(open = true) {}
     }
@@ -416,6 +432,18 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
     /** docs/spec.md 2.5: the results replace the home screen while there is a query. */
     private fun refreshResults() {
         val query = Normalizer.normalize(currentQuery())
+        if (gridSpec.isTwoPanels) {
+            // docs/spec.md 5.5: the results replace the all apps list on the left panel, and the
+            // home screen stays on the right.
+            if (query.isEmpty()) {
+                results.hide()
+                allApps.visibility = View.VISIBLE
+            } else {
+                results.show(query, apps)
+                allApps.visibility = View.INVISIBLE
+            }
+            return
+        }
         if (isAllAppsOpen) {
             // docs/spec.md 6.5: the results replace the list on the sheet, without an animation.
             results.hide()
@@ -460,6 +488,8 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
             root.requestFocus()
             WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
         } else {
+            // docs/spec.md 5.5: the all apps panel shows the icon a drag from it hid.
+            if (gridSpec.isTwoPanels) allApps.rebindCells()
             focusSearch()
         }
     }

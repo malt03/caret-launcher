@@ -27,6 +27,9 @@ import com.malt03.textlauncher.ui.NoPressDelayRecyclerView
  * [inAllApps]: the search in the all apps list (docs/spec.md 6.5), on the sheet under the field at
  * the top of the screen: the results go from the top, in the sheet's text style. Otherwise they are
  * over the wallpaper right above the field, and go from the bottom (docs/spec.md 2.5).
+ * [fromBottom]: whether the first result is at the bottom, right above the field; the results in
+ * the all apps panel of two panels are in the sheet's text style but above the field
+ * (docs/spec.md 5.5).
  */
 class SearchResults(
     context: Context,
@@ -36,6 +39,7 @@ class SearchResults(
     onClick: (AppEntry, View) -> Unit,
     onLongClick: (AppEntry, BubbleTextView) -> Unit,
     private val inAllApps: Boolean = false,
+    fromBottom: Boolean = !inAllApps,
 ) {
     private val adapter = ResultsAdapter(iconLoader, grid, onClick, onSurface = inAllApps) { entry, view ->
         onLongClick(entry, view)
@@ -43,7 +47,7 @@ class SearchResults(
     }
 
     val view: RecyclerView = NoPressDelayRecyclerView(context).apply {
-        layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, !inAllApps)
+        layoutManager = GridLayoutManager(context, grid.columns, RecyclerView.VERTICAL, fromBottom)
         val sidePadding = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
         setPadding(sidePadding, 0, sidePadding, 0)
         clipToPadding = false

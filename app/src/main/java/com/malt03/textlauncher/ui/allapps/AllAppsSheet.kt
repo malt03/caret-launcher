@@ -21,22 +21,30 @@ import com.android.launcher3.util.Themes
  * fallback (system_accent2_200, or system_accent2_800 in the dark theme).
  *
  * TextLauncher: the search field is not on the sheet; it sits right above it (docs/spec.md 6.4).
+ *
+ * [isPanel]: the left panel of two panels (docs/spec.md 5.5), which is always shown: no handle, as
+ * there is nothing to drag, and rounded at every corner, as it does not come from the bottom.
  */
 @SuppressLint("ViewConstructor")
-class AllAppsSheet(context: Context) : FrameLayout(context) {
+class AllAppsSheet(context: Context, private val isPanel: Boolean = false) : FrameLayout(context) {
     private val radius = Themes.getDialogCornerRadius(context)
     private val sheetBackground = GradientDrawable().apply {
-        // mBottomSheetCornerRadii: the top corners only.
-        cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+        cornerRadii = if (isPanel) {
+            FloatArray(8) { radius }
+        } else {
+            // mBottomSheetCornerRadii: the top corners only.
+            floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+        }
     }
 
     /** bottom_sheet_handle_area_height: the list starts below it. */
-    val handleAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_handle_area_height)
+    val handleAreaHeight = if (isPanel) 0 else resources.getDimensionPixelSize(R.dimen.bottom_sheet_handle_area_height)
 
     init {
         background = sheetBackground
+        clipToOutline = isPanel
         // bottom_sheet_handle with bg_rounded_corner_bottom_sheet_handle.
-        addView(
+        if (!isPanel) addView(
             View(context).apply {
                 background = GradientDrawable().apply {
                     cornerRadius = resources.getDimension(R.dimen.bottom_sheet_handle_corner_radius)

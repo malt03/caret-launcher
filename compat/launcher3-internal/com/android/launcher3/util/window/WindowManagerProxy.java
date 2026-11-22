@@ -36,6 +36,7 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.util.ArrayMap;
 import android.view.Display;
 import android.view.DisplayCutout;
@@ -56,9 +57,10 @@ import java.util.List;
 /**
  * Utility class for mocking some window manager behaviours
  *
- * TextLauncher: cut down to the estimate of the display's window bounds in each rotation
+ * TextLauncher: cut down to the estimate of the displays' window bounds in each rotation
  * (InvariantDeviceProfile's supportedBounds), without Dagger, the taskbar and the window insets
- * normalization.
+ * normalization. The built-in displays come from DisplayManager, and a large screen's cutout is
+ * taken at the top in every rotation (see estimateWindowBounds).
  */
 public class WindowManagerProxy {
 
@@ -87,7 +89,53 @@ public class WindowManagerProxy {
         List<WindowBounds> bounds = estimateWindowBounds(displayInfoContext, info);
         ArrayMap<CachedDisplayInfo, List<WindowBounds>> result = new ArrayMap<>();
         result.put(info, bounds);
+        // TextLauncher: SystemWindowManagerProxy takes every state of the internal display (both
+        // panels of a foldable) from WindowManager.getPossibleMaximumWindowMetrics, which the
+        // system answers only for the recents provider. An app gets the built-in displays,
+        // including the ones not in use now, from DisplayManager (API 36.1); before it, only the
+        // display in use is known, as in the base WindowManagerProxy.
+        Display current = getDisplay(displayInfoContext);
+        if (current.getDisplayId() == DEFAULT_DISPLAY && isAtLeastBaklava1()) {
+            DisplayManager displayManager =
+                    displayInfoContext.getSystemService(DisplayManager.class);
+            int densityDpi = displayInfoContext.getResources().getConfiguration().densityDpi;
+            for (Display display : displayManager.getDisplays(
+                    DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS)) {
+                if (display.getDisplayId() == current.getDisplayId()) continue;
+                CachedDisplayInfo other = getDisplayInfo(display).normalize(this);
+                if (result.containsKey(other) || !canShowHome(other, densityDpi)) continue;
+                result.put(other, estimateWindowBounds(displayInfoContext, other));
+            }
+        }
         return result;
+    }
+
+    /** Build.VERSION_CODES_FULL.BAKLAVA_1: DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS. */
+    private static boolean isAtLeastBaklava1() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
+                && Build.VERSION.SDK_INT_FULL >= Build.VERSION_CODES_FULL.BAKLAVA_1;
+    }
+
+    /**
+     * TextLauncher: a built-in display too small for the smallest of Launcher3's display options
+     * (device_profiles.xml, "Shorter Stubby": 255dp by 400dp), such as the cover screen of a
+     * flip phone, is not a display the home screen is shown on, so it does not shrink the grid.
+     */
+    private static boolean canShowHome(CachedDisplayInfo info, int densityDpi) {
+        float smallest = dpiFromPx(Math.min(info.size.x, info.size.y), densityDpi);
+        float largest = dpiFromPx(Math.max(info.size.x, info.size.y), densityDpi);
+        return smallest >= 255 && largest >= 400;
+    }
+
+    /**
+     * TextLauncher: a CachedDisplayInfo for a display that may not be in use (its window metrics
+     * are the ones of the display in use), from the display itself.
+     */
+    @SuppressWarnings("deprecation")
+    private static CachedDisplayInfo getDisplayInfo(Display display) {
+        Point size = new Point();
+        display.getRealSize(size);
+        return new CachedDisplayInfo(size, display.getRotation(), display.getCutout());
     }
 
     /**
@@ -194,14 +242,28 @@ public class WindowManagerProxy {
                 statusBarHeight = statusBarHeightLandscape;
             }
 
-            DisplayCutout rotatedCutout = rotateCutout(
-                    displayInfo.cutout, displayInfo.size.x, displayInfo.size.y, rotation, i);
-            Rect insets = getSafeInsets(rotatedCutout);
-            if (areBottomDisplayCutoutsSmallAndAtCorners(
-                    rotatedCutout.getBoundingRectBottom(),
-                    bounds.width(),
-                    context.getResources())) {
-                insets.bottom = 0;
+            Rect insets;
+            if (isTablet) {
+                // TextLauncher: a large screen turns, so the display info may be from any
+                // rotation, and rotating the cutout's safe insets (rotateCutout) does not always
+                // give where the system puts them in another rotation: a cutout in a corner can
+                // stay on the top edge. The estimate would then depend on the rotation the
+                // launcher started in, and so would the grid. The cutout's largest safe inset is
+                // taken at the top, under the status bar, in every rotation instead, which is the
+                // same from any rotation and never larger than the real space.
+                Rect safe = getSafeInsets(displayInfo.cutout);
+                insets = new Rect(0, Math.max(Math.max(safe.left, safe.top),
+                        Math.max(safe.right, safe.bottom)), 0, 0);
+            } else {
+                DisplayCutout rotatedCutout = rotateCutout(
+                        displayInfo.cutout, displayInfo.size.x, displayInfo.size.y, rotation, i);
+                insets = getSafeInsets(rotatedCutout);
+                if (areBottomDisplayCutoutsSmallAndAtCorners(
+                        rotatedCutout.getBoundingRectBottom(),
+                        bounds.width(),
+                        context.getResources())) {
+                    insets.bottom = 0;
+                }
             }
             insets.top = Math.max(insets.top, statusBarHeight);
             insets.bottom = Math.max(insets.bottom, navBarHeight);

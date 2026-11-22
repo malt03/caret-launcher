@@ -92,6 +92,27 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     val allAppsSheet = AllAppsSheet(context)
 
     /**
+     * docs/spec.md 5.5: with two panels (DeviceProfile.isTwoPanels), the all apps list is always
+     * shown on the left half ([enableTwoPanels]), and the home screen ([contentArea]) is on the right.
+     */
+    var allAppsPanel: AllAppsSheet? = null
+        private set
+    private val panelMargin = resources.getDimensionPixelSize(R.dimen.search_bar_margin_horizontal)
+
+    /** Lays out two panels: the all apps list on the left, returned, and the home screen on the right. */
+    fun enableTwoPanels(): AllAppsSheet {
+        check(allAppsPanel == null)
+        return AllAppsSheet(context, isPanel = true).also {
+            allAppsPanel = it
+            addView(it, indexOfChild(contentArea) + 1)
+            requestLayout()
+        }
+    }
+
+    /** The left edge of [contentArea]: the right panel's with two panels. */
+    private fun contentLeft(width: Int): Int = if (allAppsPanel != null) width / 2 else 0
+
+    /**
      * The home page's height: from below the status bar to the search field with the keyboard
      * down (Launcher3's workspace above the hotseat). Called as it is measured.
      */
@@ -306,6 +327,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             onPageHeightChanged?.invoke(page)
         }
         measureContentArea(width, contentBottom() - statusBarTop)
+        measureAllAppsPanel(width, contentBottom() - statusBarTop)
         // The sheet, open, is right under the field at the top of the screen.
         allAppsSheet.measure(
             MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
@@ -470,18 +492,36 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     private fun measureContentArea(width: Int, height: Int) {
         contentArea.measure(
-            MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(width - contentLeft(width), MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(height.coerceAtLeast(0), MeasureSpec.EXACTLY),
+        )
+    }
+
+    /**
+     * The all apps panel fills the left half above the search field, inside the field's side
+     * margin, with the same gap at its top and between the panels.
+     */
+    private fun measureAllAppsPanel(width: Int, height: Int) {
+        val panel = allAppsPanel ?: return
+        panel.measure(
+            MeasureSpec.makeMeasureSpec((width / 2 - panelMargin * 2).coerceAtLeast(0), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec((height - panelMargin).coerceAtLeast(0), MeasureSpec.EXACTLY),
         )
     }
 
     private fun layoutContentArea(force: Boolean = false) {
         if (barContainer.height == 0) return
         val bottom = contentBottom()
-        val unchanged = contentArea.top == statusBarTop && contentArea.bottom == bottom && contentArea.width == width
-        if (unchanged && !force && !contentArea.isLayoutRequested) return
+        val left = contentLeft(width)
+        val unchanged = contentArea.top == statusBarTop && contentArea.bottom == bottom &&
+            contentArea.left == left && contentArea.right == width
+        if (unchanged && !force && !contentArea.isLayoutRequested && allAppsPanel?.isLayoutRequested != true) return
         measureContentArea(width, bottom - statusBarTop)
-        contentArea.layout(0, statusBarTop, width, bottom)
+        contentArea.layout(left, statusBarTop, width, bottom)
+        allAppsPanel?.let {
+            measureAllAppsPanel(width, bottom - statusBarTop)
+            it.layout(panelMargin, statusBarTop + panelMargin, panelMargin + it.measuredWidth, bottom)
+        }
     }
 
     /** Launcher3's DropTargetBar sits in the drag layer, below the status bar (DropTargetBar.setupInsets). */
