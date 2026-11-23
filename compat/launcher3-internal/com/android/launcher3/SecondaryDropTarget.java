@@ -275,8 +275,11 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
         }
 
         public void onLauncherResume() {
-            if (new ApplicationInfoWrapper(mContext, mPackageName, mDragObject.dragInfo.user)
-                    .getInfo() == null) {
+            // TextLauncher: ApplicationInfoWrapper.getInfo is not limited to the installed apps
+            // here (it keeps an app uninstalled with its data), so isInstalled says whether the
+            // uninstall went through.
+            if (!new ApplicationInfoWrapper(mContext, mPackageName, mDragObject.dragInfo.user)
+                    .isInstalled()) {
                 mDragObject.dragSource = mOriginal;
                 mOriginal.onDropCompleted(SecondaryDropTarget.this, mDragObject, true);
             } else {
