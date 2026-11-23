@@ -74,13 +74,15 @@ import java.util.Stack;
  * debug visualizations); changes are marked with "TextLauncher:".
  *
  * <p>It holds the reorder algorithm's state (celllayout/ReorderAlgorithm.java,
- * celllayout/ViewCluster.kt), applies reorder results and keeps the drop location outline. It is
- * never attached: TextLauncher's grid view creates one, keeps its geometry in sync, holds its
- * children as its {@link ShortcutAndWidgetContainer} and draws its drop location and delegated
- * cell drawings.
+ * celllayout/ViewCluster.kt), applies reorder results and keeps the drop location outline. The
+ * home screen's is never attached: TextLauncher's grid view creates one, keeps its geometry in
+ * sync, holds its children as its {@link ShortcutAndWidgetContainer} and draws its drop location
+ * and delegated cell drawings. An open folder's page (folder/FolderPagedView.java) is attached as
+ * in Launcher3: it holds its container as its child, which fills it, and draws nothing itself.
  */
-// TextLauncher: a FrameLayout instead of a ViewGroup: it is never attached or laid out, and is a
-// View only because copied code reads View members of CellLayout (clipChildren and so on).
+// TextLauncher: a FrameLayout instead of a ViewGroup: it does not measure or lay out its
+// container itself (the home screen's is not attached; a folder page's container fills it), and
+// is a View because copied code reads View members of CellLayout (clipChildren and so on).
 public class CellLayout extends FrameLayout {
     @ViewDebug.ExportedProperty(category = "launcher")
     @Thunk int mCellWidth;
@@ -178,8 +180,14 @@ public class CellLayout extends FrameLayout {
 
         mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context);
 
-        // TextLauncher: never drawn itself, so no draw and clip settings. The grid view sets the
-        // cell size and border space (setCellGeometry).
+        // A ViewGroup usually does not draw, but CellLayout needs to draw a rectangle to show
+        // the user where a dragged item will land when dropped.
+        setWillNotDraw(false);
+        setClipToPadding(false);
+        setClipChildren(false);
+
+        // TextLauncher: the grid view (or the folder) sets the cell size and border space
+        // (setCellGeometry, setCellDimensions).
         mBorderSpace = new Point();
 
         // TextLauncher: the grid view sets the grid size (setGridSize).
@@ -247,6 +255,21 @@ public class CellLayout extends FrameLayout {
                 mBorderSpace);
     }
 
+    /**
+     * Change sizes of cells
+     *
+     * @param width  the new width of the cells
+     * @param height the new height of the cells
+     */
+    public void setCellDimensions(int width, int height) {
+        // TextLauncher: no fixed cell size to keep (mFixedCellWidth / Height): the layout does not
+        // work its cell size out from its own size.
+        mCellWidth = width;
+        mCellHeight = height;
+        mShortcutsAndWidgets.setCellDimensions(mCellWidth, mCellHeight, mCountX, mCountY,
+                mBorderSpace);
+    }
+
     public void setGridSize(int x, int y) {
         mCountX = x;
         mCountY = y;
@@ -255,6 +278,11 @@ public class CellLayout extends FrameLayout {
         mShortcutsAndWidgets.setCellDimensions(mCellWidth, mCellHeight, mCountX, mCountY,
                 mBorderSpace);
         requestLayout();
+    }
+
+    // Set whether or not to invert the layout horizontally if the layout is in RTL mode.
+    public void setInvertIfRtl(boolean invert) {
+        mShortcutsAndWidgets.setInvertIfRtl(invert);
     }
 
     /** Set if the drag is overlapping the sibling cell layout. */
@@ -363,6 +391,58 @@ public class CellLayout extends FrameLayout {
 
     public int getCountY() {
         return mCountY;
+    }
+
+    /**
+     * Adds the given view to the CellLayout
+     *
+     * @param child view to add.
+     * @param index index of the CellLayout children where to add the view.
+     * @param childId id of the view.
+     * @param params represent the logic of the view on the CellLayout.
+     * @param markCells if the occupied cells should be marked or not
+     * @return if adding the view was successful
+     */
+    public boolean addViewToCellLayout(View child, int index, int childId,
+            CellLayoutLayoutParams params, boolean markCells) {
+        final CellLayoutLayoutParams lp = params;
+
+        // TextLauncher: no hotseat, whose icons hide their text.
+
+        child.setScaleX(DEFAULT_SCALE);
+        child.setScaleY(DEFAULT_SCALE);
+
+        // Generate an id for each view, this assumes we have at most 256x256 cells
+        // per workspace screen
+        if (lp.getCellX() >= 0 && lp.getCellX() <= mCountX - 1
+                && lp.getCellY() >= 0 && lp.getCellY() <= mCountY - 1) {
+            // If the horizontal or vertical span is set to -1, it is taken to
+            // mean that it spans the extent of the CellLayout
+            if (lp.cellHSpan < 0) lp.cellHSpan = mCountX;
+            if (lp.cellVSpan < 0) lp.cellVSpan = mCountY;
+
+            child.setId(childId);
+            mShortcutsAndWidgets.addView(child, index, lp);
+
+            // TextLauncher: no accessibility action on the launcher's NORMAL state.
+
+            if (markCells) markCellsAsOccupiedForView(child);
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void removeAllViews() {
+        mOccupied.clear();
+        mShortcutsAndWidgets.removeAllViews();
+    }
+
+    @Override
+    public void removeView(View view) {
+        markCellsAsUnoccupiedForView(view);
+        mShortcutsAndWidgets.removeView(view);
     }
 
     /**
@@ -1248,6 +1328,16 @@ public class CellLayout extends FrameLayout {
         mOccupied.markCells(lp.getCellX(), lp.getCellY(), lp.cellHSpan, lp.cellVSpan, false);
     }
 
+    public int getDesiredWidth() {
+        return getPaddingLeft() + getPaddingRight() + (mCountX * mCellWidth)
+                + ((mCountX - 1) * mBorderSpace.x);
+    }
+
+    public int getDesiredHeight()  {
+        return getPaddingTop() + getPaddingBottom() + (mCountY * mCellHeight)
+                + ((mCountY - 1) * mBorderSpace.y);
+    }
+
     // TextLauncher: members TextLauncher adds.
 
     /** The grid view's padding, where the cells start; CellLayout reads its own View padding. */
@@ -1272,10 +1362,17 @@ public class CellLayout extends FrameLayout {
         mOwnerView = owner;
     }
 
-    /** Redraws the owner view: this layout is never attached, so it does not draw itself. */
+    /**
+     * Redraws the owner view, which draws this layout's content when this layout is not attached
+     * (the home screen's); an attached layout (a folder page) is invalidated as a View.
+     */
     @Override
     public void invalidate() {
-        if (mOwnerView != null) mOwnerView.invalidate();
+        if (mOwnerView != null) {
+            mOwnerView.invalidate();
+        } else {
+            super.invalidate();
+        }
     }
 
     /**

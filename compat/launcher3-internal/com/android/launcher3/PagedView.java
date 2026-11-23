@@ -21,22 +21,90 @@
 package com.android.launcher3;
 
 import android.content.Context;
+import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Stand-in for Launcher3's PagedView, for keyboard/ViewGroupFocusHelper.java, which skips the
- * focus outline during page transitions and offsets it by the page scroll. TextLauncher has no
- * paged views (the home grid scrolls vertically and folders have one page), so nothing extends
- * this; it only gives the copied code the names it checks for.
+ * Stand-in for Launcher3's PagedView (android-17.0.0_r1) for a view that has one page: the open
+ * folder's content (folder/FolderPagedView.java), whose folders have one page in TextLauncher.
+ * It shows its first page inside its padding and does not scroll, so it is never in a page
+ * transition and every page's scroll is 0 (keyboard/ViewGroupFocusHelper.java checks both). The
+ * home grid scrolls vertically and is not a PagedView.
  */
 public abstract class PagedView<T> extends ViewGroup {
     public PagedView(Context context) {
-        super(context);
+        this(context, null);
     }
 
-    /** PagedView.isPageInTransition */
-    public abstract boolean isPageInTransition();
+    public PagedView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-    /** PagedView.getScrollForPage */
-    public abstract int getScrollForPage(int index);
+    /** PagedView.getCurrentPage: always the first page. */
+    public int getCurrentPage() {
+        return 0;
+    }
+
+    /** PagedView.getNextPage: the page shown next, always the first page. */
+    public int getNextPage() {
+        return 0;
+    }
+
+    public int getPageCount() {
+        return getChildCount();
+    }
+
+    public View getPageAt(int index) {
+        return getChildAt(index);
+    }
+
+    /** PagedView.setCurrentPage: there is only the first page to show. */
+    public void setCurrentPage(int currentPage) { }
+
+    /** PagedView.isPageInTransition: a single page never moves. */
+    public boolean isPageInTransition() {
+        return false;
+    }
+
+    /** PagedView.getScrollForPage: no page is scrolled to. */
+    public int getScrollForPage(int index) {
+        return 0;
+    }
+
+    /** PagedView.getDestinationPage: always the first page. */
+    public int getDestinationPage() {
+        return 0;
+    }
+
+    /**
+     * PagedView.onMeasure: the pages get this view's size inside its padding (measureChildren with
+     * MATCH_PARENT pages); there are no insets or zoomed-out sizes.
+     */
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        measureChildren(MeasureSpec.makeMeasureSpec(widthSize, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(heightSize, MeasureSpec.EXACTLY));
+        setMeasuredDimension(widthSize, heightSize);
+    }
+
+    /** PagedView.onLayout for the first page, which is not scrolled: inside the padding. */
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            int childLeft = getPaddingLeft();
+            int childTop = getPaddingTop();
+            child.layout(childLeft, childTop, childLeft + child.getMeasuredWidth(),
+                    childTop + child.getMeasuredHeight());
+        }
+    }
+
+    /** PagedView.generateDefaultLayoutParams: the pages fill the view. */
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    }
 }

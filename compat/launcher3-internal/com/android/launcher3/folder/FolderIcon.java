@@ -39,11 +39,13 @@ import android.view.ViewDebug;
 import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.Alarm;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.OnAlarmListener;
 import com.android.launcher3.R;
 import com.android.launcher3.Reorderable;
 import com.android.launcher3.Utilities;
@@ -60,6 +62,7 @@ import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.Thunk;
 import com.android.launcher3.views.ActivityContext;
+import com.android.launcher3.widget.PendingAddShortcutInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +73,7 @@ import java.util.function.Predicate;
  *
  * <p>Stand-in for Launcher3's FolderIcon (android-17.0.0_r1), made from FolderIcon.java by
  * deleting what TextLauncher does not use (the folder name and its suggestions, touch handling,
- * popups, floating icons, leave-behinds, spring loading, accessibility titles); changes are marked
+ * popups, floating icons, leave-behinds, accessibility titles); changes are marked
  * with "TextLauncher:". TextLauncher's folder icon view extends this. Folders have no names
  * (docs/spec.md 5.2). As in Launcher3, a {@link Folder} is bound to the icon
  * ({@link Folder#bindToIcon}).
@@ -86,6 +89,12 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     static final int DROP_IN_ANIMATION_DURATION = 400;
 
+    // Flag whether the folder should open itself when an item is dragged over is enabled.
+    public static final boolean SPRING_LOADING_ENABLED = true;
+
+    // Delay when drag enters until the folder opens, in miliseconds.
+    private static final int ON_OPEN_DELAY = 800;
+
     PreviewBackground mBackground = new PreviewBackground(getContext());
     private boolean mBackgroundIsVisible = true;
 
@@ -96,6 +105,8 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     private final List<ItemInfo> mCurrentPreviewItems = new ArrayList<>();
 
     boolean mAnimating = false;
+
+    private final Alarm mOpenAlarm = new Alarm(getContext().getMainLooper());
 
     private boolean mForceHideDot;
     @ViewDebug.ExportedProperty(category = "launcher", deepExport = true)
@@ -182,14 +193,26 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     }
 
     // TextLauncher: the caller passes the CellLayout (the icon's parent is the home grid, whose
-    // parent is not a CellLayout). The folder does not open while an item is held over it
-    // (SPRING_LOADING_ENABLED in Launcher3), because the open folder is not a drop target here.
+    // parent is not a CellLayout).
     public void onDragEnter(ItemInfo dragInfo, CellLayout cl) {
         if (mFolder.isDestroyed() || !willAcceptItem(dragInfo)) return;
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) getLayoutParams();
 
         mBackground.animateToAccept(cl, lp.getCellX(), lp.getCellY());
+        mOpenAlarm.setOnAlarmListener(mOnOpenListener);
+        // TextLauncher: no WorkspaceItemFactory (AppInfo); every drag carries a WorkspaceItemInfo.
+        if (SPRING_LOADING_ENABLED &&
+                ((dragInfo instanceof PendingAddShortcutInfo)
+                        || Folder.willAccept(dragInfo))) {
+            mOpenAlarm.setAlarm(ON_OPEN_DELAY);
+        }
     }
+
+    OnAlarmListener mOnOpenListener = new OnAlarmListener() {
+        public void onAlarm(Alarm alarm) {
+            mFolder.beginExternalDrag();
+        }
+    };
 
     public Drawable prepareCreateAnimation(final View destView) {
         return mPreviewItemManager.prepareCreateAnimation(destView);
@@ -218,6 +241,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     public void onDragExit() {
         mBackground.animateToRest();
+        mOpenAlarm.cancelAlarm();
     }
 
     private void onDrop(final ItemInfo item, DragObject d, Rect finalRect,
@@ -294,6 +318,9 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
                     Interpolators.DECELERATE_2,
                     () -> {
                         mPreviewItemManager.hidePreviewItem(finalIndex, false);
+                        // TextLauncher: draws the preview item again; nothing else redraws the
+                        // icon after a failed drag returns its item (Tex-9tv6).
+                        invalidate();
                         mFolder.showItem(item);
                     },
                     DragLayer.ANIMATION_END_DISAPPEAR, null);

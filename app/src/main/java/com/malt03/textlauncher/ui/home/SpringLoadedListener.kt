@@ -3,7 +3,6 @@ package com.malt03.textlauncher.ui.home
 import android.animation.ValueAnimator
 import android.util.FloatProperty
 import com.android.app.animation.Interpolators
-import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.LauncherAnimUtils.SCALE_INDEX_WORKSPACE_STATE
 import com.android.launcher3.LauncherAnimUtils.WORKSPACE_SCALE_PROPERTY_FACTORY
@@ -13,14 +12,15 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 
 /**
- * Launcher3's SPRING_LOADED state while dragging, as docs/spec.md 5.4's edit mode: folders close,
- * the keyboard goes down, and the home screen shrinks below the drop target bar
+ * Launcher3's SPRING_LOADED state while dragging, as docs/spec.md 5.4's edit mode: the keyboard
+ * goes down, and the home screen shrinks below the drop target bar
  * (SpringLoadedState.getWorkspaceScaleAndTranslation) with its page background (CellLayout's
  * spring-loaded progress) over the darkened wallpaper (getWorkspaceBackgroundAlpha), animated over
  * the state's 150ms as WorkspaceStateTransitionAnimation does.
  *
  * TextLauncher: the page is the whole home grid, which the content area shows in full while
- * editing (the keyboard is down).
+ * editing (the keyboard is down). As in Launcher3, an open folder stays open over it (a drag from
+ * the folder reorders it until the item leaves it).
  */
 internal class SpringLoadedListener(private val home: HomeController) : DragController.DragListener {
     private var editing = false
@@ -42,7 +42,6 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         editing = true
         // The transition back to NORMAL did not finish, so its callbacks do not run.
         normalCallbacks.clear()
-        AbstractFloatingView.closeOpenViews(home.activityContext, true, AbstractFloatingView.TYPE_FOLDER)
         // docs/spec.md 5.4: the home screen takes its keyboard-down size at once.
         home.root.isEditLayout = true
         home.root.animateWallpaperScrim(true)

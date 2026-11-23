@@ -34,9 +34,10 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView;
 /**
  * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
  * and lays out the items of a {@link CellLayout}. TextLauncher's home grid extends it and measures
- * its children itself. Made from ShortcutAndWidgetContainer.java by deleting what TextLauncher
- * does not have (container types, the QSB, widget scaling and centering, the translation provider,
- * the wallpaper drop command, folder leave-behinds); changes are marked with "TextLauncher:".
+ * its children itself; an open folder's page holds one, as in Launcher3. Made from
+ * ShortcutAndWidgetContainer.java by deleting what TextLauncher does not have (container types,
+ * the QSB, widget scaling and centering, the translation provider, the wallpaper drop command,
+ * folder leave-behinds); changes are marked with "TextLauncher:".
  */
 // TextLauncher: not a FolderIconParent (no folder leave-behind).
 public class ShortcutAndWidgetContainer extends ViewGroup {
@@ -77,6 +78,22 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
             }
         }
         return null;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int count = getChildCount();
+
+        int widthSpecSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSpecSize = MeasureSpec.getSize(heightMeasureSpec);
+        setMeasuredDimension(widthSpecSize, heightSpecSize);
+
+        for (int i = 0; i < count; i++) {
+            View child = getChildAt(i);
+            if (child.getVisibility() != GONE) {
+                measureChild(child);
+            }
+        }
     }
 
     public void setupLp(View child) {
