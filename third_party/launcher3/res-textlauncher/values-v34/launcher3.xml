@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TextLauncher: values from Launcher3 res/values-v34/ (colors.xml, android-17.0.0_r1) for the resources
+     res-textlauncher/values has. -->
+<resources>
+    <color name="system_on_primary_light">@android:color/system_on_primary_light</color>
+    <color name="system_on_secondary_container_light">@android:color/system_on_secondary_container_light</color>
+    <color name="system_on_surface_light">@android:color/system_on_surface_light</color>
+    <color name="system_on_surface_variant_light">@android:color/system_on_surface_variant_light</color>
+    <color name="system_outline_light">@android:color/system_outline_light</color>
+    <color name="system_primary_light">@android:color/system_primary_light</color>
+    <color name="system_secondary_light">@android:color/system_secondary_light</color>
+    <color name="system_secondary_container_light">@android:color/system_secondary_container_light</color>
+    <color name="system_surface_bright_light">@android:color/system_surface_bright_light</color>
+    <color name="system_surface_container_light">@android:color/system_surface_container_light</color>
+    <color name="system_on_primary_dark">@android:color/system_on_primary_dark</color>
+    <color name="system_on_secondary_container_dark">@android:color/system_on_secondary_container_dark</color>
+    <color name="system_on_surface_dark">@android:color/system_on_surface_dark</color>
+    <color name="system_on_surface_variant_dark">@android:color/system_on_surface_variant_dark</color>
+    <color name="system_outline_dark">@android:color/system_outline_dark</color>
+    <color name="system_primary_dark">@android:color/system_primary_dark</color>
+    <color name="system_secondary_dark">@android:color/system_secondary_dark</color>
+    <color name="system_secondary_container_dark">@android:color/system_secondary_container_dark</color>
+    <color name="system_surface_bright_dark">@android:color/system_surface_bright_dark</color>
+    <color name="system_surface_container_dark">@android:color/system_surface_container_dark</color>
+</resources>

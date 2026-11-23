@@ -362,6 +362,17 @@ path=src/com/android/launcher3/model/StringCache.kt
 path=res/xml/widget_sections.xml
 path=res/drawable/ic_conversations_widget_category.xml
 path=res/drawable/ic_note_taking_widget_category.xml
+path=res/color-v31/folder_background_light.xml
+path=res/color-v31/folder_preview_light.xml
+path=res/color-v31/popup_shade_first.xml
+path=res/color-v31/popup_shade_second.xml
+path=res/color-v31/popup_shade_third.xml
+path=res/color-night-v31/folder_background_dark.xml
+path=res/color-night-v31/folder_preview_dark.xml
+path=res/color-night-v31/popup_shade_first.xml
+path=res/color-night-v31/popup_shade_second.xml
+path=res/color-night-v31/popup_shade_third.xml
+path=res/drawable-v28/round_rect_folder.xml
 ```
 
 ## 取り込んでいないもの
@@ -369,7 +380,7 @@ path=res/drawable/ic_note_taking_widget_category.xml
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、空き領域の長押しメニューとウィジェットの追加の `styles_wallpaper_button_text`・`widget_button_text`・`all_apps_button_label`・`out_of_space`・`msg_disabled_by_admin`、ウィジェットの長押しメニューとリサイズ枠の `remove_system_shortcut_label`・`widget_settings`・`action_increase_width`・`action_decrease_width`・`resize_handle_*`・`tap_to_show_resize_buttons`・`widget_frame_name`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり、ウィジェットのリサイズ枠用の attr・色・寸法・時間・スタイル、`values/widget_picker.xml` にまとめたウィジェットピッカー（`WidgetPickerActivityTheme`、色・寸法・整数・真偽値・`default_featured_widget_apps`・`filtered_components`・`WidgetSections` の styleable）、各言語の `values-*/strings.xml` の `StringCache` の文字列・`activity_not_found`・`widget_category_conversations`・`widget_category_note_taking`・`safemode_widget_error`）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、空き領域の長押しメニューとウィジェットの追加の `styles_wallpaper_button_text`・`widget_button_text`・`all_apps_button_label`・`out_of_space`・`msg_disabled_by_admin`、ウィジェットの長押しメニューとリサイズ枠の `remove_system_shortcut_label`・`widget_settings`・`action_increase_width`・`action_decrease_width`・`resize_handle_*`・`tap_to_show_resize_buttons`・`widget_frame_name`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり、ウィジェットのリサイズ枠用の attr・色・寸法・時間・スタイル、`values/widget_picker.xml` にまとめたウィジェットピッカー（`WidgetPickerActivityTheme`、色・寸法・整数・真偽値・`default_featured_widget_apps`・`filtered_components`・`WidgetSections` の styleable）、各言語の `values-*/strings.xml` の `StringCache` の文字列・`activity_not_found`・`widget_category_conversations`・`widget_category_note_taking`・`safemode_widget_error`）。抜き出した値に上流が修飾子付きのディレクトリ（`values-v31`・`values-v34`・`values-night`・`values-land`・`values-sw600dp` など）で別の値を持つものは、同じ修飾子の `res-textlauncher/values-*/launcher3.xml` に写す（v31 以降はシステムのダイナミックカラーを指すので、写さないとテーマの色に追従しない）。`WidgetPickerActivityTheme` の夜の版は `values-night/widget_picker.xml`。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 
