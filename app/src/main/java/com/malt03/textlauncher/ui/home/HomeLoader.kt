@@ -12,6 +12,7 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.util.ApplicationInfoWrapper
+import com.android.launcher3.util.Executors.MODEL_EXECUTOR
 import com.android.launcher3.util.GridOccupancy
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.AppEntry
@@ -60,7 +61,7 @@ internal class HomeLoader(private val home: HomeController) {
             onModelLoaded()
             return
         }
-        app.ioExecutor.execute {
+        MODEL_EXECUTOR.execute {
             val items = model.loadBlocking()
             mainHandler.post {
                 if (destroyed) return@post
@@ -99,7 +100,7 @@ internal class HomeLoader(private val home: HomeController) {
         isWorkspaceLoading = true
         val generation = ++rebuildGeneration
         val shortcutKeys = model.shortcutKeys()
-        app.ioExecutor.execute {
+        MODEL_EXECUTOR.execute {
             val found = if (shortcutKeys.isEmpty()) emptyMap() else app.shortcutRepository.loadBlocking(shortcutKeys)
             mainHandler.post {
                 if (generation != rebuildGeneration) return@post
@@ -252,7 +253,7 @@ internal class HomeLoader(private val home: HomeController) {
         if (!loaded || destroyed) return
         val keys = model.shortcutKeys()
         if (keys.isEmpty()) return
-        app.ioExecutor.execute {
+        MODEL_EXECUTOR.execute {
             val found = app.shortcutRepository.loadBlocking(keys) ?: return@execute
             mainHandler.post {
                 if (destroyed) return@post

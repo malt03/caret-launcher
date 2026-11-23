@@ -28,7 +28,9 @@ import android.os.UserHandle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.LauncherSettings.Favorites;
+import com.android.launcher3.util.ContentWriter;
 
 import java.util.Optional;
 
@@ -36,7 +38,7 @@ import java.util.Optional;
  * Represents an item in the launcher.
  *
  * <p>Stand-in for Launcher3's ItemInfo (android-17.0.0_r1), made from ItemInfo.java by deleting
- * what TextLauncher does not have (the database, screens, animation types, logging protos,
+ * what TextLauncher does not have (animation types, logging protos,
  * extended containers and activity aliases); changes are marked with "TextLauncher:".
  */
 public class ItemInfo {
@@ -71,6 +73,14 @@ public class ItemInfo {
      * it will be the id of the folder.
      */
     public int container = NO_ID;
+
+    /**
+     * Indicates the screen in which the shortcut appears if the container types is
+     * {@link Favorites#CONTAINER_DESKTOP}. (i.e., ignore if the container type is
+     * {@link Favorites#CONTAINER_HOTSEAT})
+     * TextLauncher: the home screen has one page, screen 0.
+     */
+    public int screenId = -1;
 
     /**
      * Indicates the X position of the associated cell.
@@ -154,6 +164,7 @@ public class ItemInfo {
         minSpanX = info.minSpanX;
         minSpanY = info.minSpanY;
         rank = info.rank;
+        screenId = info.screenId;
         itemType = info.itemType;
         container = info.container;
         user = info.user;
@@ -192,6 +203,27 @@ public class ItemInfo {
                 : intent != null
                         ? intent.getPackage()
                         : null;
+    }
+
+    public void writeToValues(@NonNull final ContentWriter writer) {
+        writer.put(LauncherSettings.Favorites.ITEM_TYPE, itemType)
+                .put(LauncherSettings.Favorites.CONTAINER, container)
+                .put(LauncherSettings.Favorites.SCREEN, screenId)
+                .put(LauncherSettings.Favorites.CELLX, cellX)
+                .put(LauncherSettings.Favorites.CELLY, cellY)
+                .put(LauncherSettings.Favorites.SPANX, spanX)
+                .put(LauncherSettings.Favorites.SPANY, spanY)
+                .put(LauncherSettings.Favorites.RANK, rank);
+    }
+
+    /**
+     * Write the fields of this item to the DB
+     */
+    public void onAddToDatabase(@NonNull final ContentWriter writer) {
+        // TextLauncher: no extra empty screen (one page).
+
+        writeToValues(writer);
+        writer.put(LauncherSettings.Favorites.PROFILE_ID, user);
     }
 
     @NonNull

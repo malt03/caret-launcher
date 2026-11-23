@@ -32,12 +32,13 @@ import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.shortcuts.ShortcutKey;
+import com.android.launcher3.util.ContentWriter;
 
 /**
  * Represents a launchable icon on the workspaces and in folders.
  *
  * <p>Stand-in for Launcher3's WorkspaceItemInfo (android-17.0.0_r1), made from
- * WorkspaceItemInfo.java by deleting what TextLauncher does not have (the database, restore and
+ * WorkspaceItemInfo.java by deleting what TextLauncher does not have (restore and
  * install status, promise icons, archived apps, bubbles and private space); changes are marked
  * with "TextLauncher:".
  */
@@ -47,7 +48,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
      * The intent used to start the application.
      */
     @NonNull
-    // TextLauncher: never null; the app's item for an app (AppItemInfo) has no intent.
+    // TextLauncher: never null, for the items the app makes before their intents are known.
     public Intent intent = new Intent();
 
     /**
@@ -82,6 +83,18 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         itemType = Favorites.ITEM_TYPE_DEEP_SHORTCUT;
         // TextLauncher: no private space (docs/spec.md), so nothing is marked not pinnable here.
         updateFromDeepShortcutInfo(shortcutInfo, context);
+    }
+
+    @Override
+    public void onAddToDatabase(@NonNull ContentWriter writer) {
+        super.onAddToDatabase(writer);
+        writer.put(Favorites.TITLE, title)
+                .put(Favorites.INTENT, getIntent());
+        // TextLauncher: no options or status (RESTORED); the columns keep their defaults.
+
+        if (!getMatchingLookupFlag().useLowRes()) {
+            writer.putIcon(bitmap, user);
+        }
     }
 
     @Override

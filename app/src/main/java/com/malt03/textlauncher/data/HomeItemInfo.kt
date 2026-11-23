@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.pm.ApplicationInfo
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.icons.BitmapInfo
+import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE
@@ -31,6 +32,8 @@ class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
 
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
+        // AppInfo.makeLaunchIntent: the saved intent (LauncherSettings.Favorites.INTENT).
+        AppEntry.componentOf(homeKey)?.let { intent = AppInfo.makeLaunchIntent(it) }
     }
 
     constructor(entry: AppEntry, bitmap: BitmapInfo?) : this(entry.key) {
@@ -61,6 +64,7 @@ class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
      */
     fun retarget(entry: AppEntry) {
         homeKey = entry.key
+        intent = AppInfo.makeLaunchIntent(entry.component)
         bind(entry)
     }
 
@@ -82,16 +86,8 @@ val ItemInfo.isDeepShortcut: Boolean
     get() = itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
 
 /**
- * A widget (LauncherAppWidgetInfo): its id in the home screen's widget host and its provider
- * (LauncherAppWidgetInfo.providerName, flattened).
+ * A widget (LauncherAppWidgetInfo): its id in the home screen's widget host and its provider.
  */
-class WidgetItemInfo(val appWidgetId: Int, val provider: String) : LauncherAppWidgetInfo() {
-    init {
-        itemType = LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
-    }
-
-    /** LauncherAppWidgetInfo.getTargetComponent: the provider. */
-    override fun getTargetComponent(): ComponentName? = ComponentName.unflattenFromString(provider)
-
-    override fun toString(): String = "WidgetItemInfo(id=$id appWidgetId=$appWidgetId provider=$provider cell=($cellX,$cellY) span=($spanX,$spanY))"
+class WidgetItemInfo(appWidgetId: Int, providerName: ComponentName) : LauncherAppWidgetInfo(appWidgetId, providerName) {
+    override fun toString(): String = "WidgetItemInfo(id=$id appWidgetId=$appWidgetId provider=$providerName cell=($cellX,$cellY) span=($spanX,$spanY))"
 }

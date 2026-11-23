@@ -25,6 +25,11 @@ import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APP_GRO
 import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT;
 import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_FOLDER;
 
+import androidx.annotation.NonNull;
+
+import com.android.launcher3.LauncherSettings;
+import com.android.launcher3.util.ContentWriter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +62,14 @@ public class FolderInfo extends ItemInfo {
         return mContents;
     }
 
+    @Override
+    public void onAddToDatabase(@NonNull ContentWriter writer) {
+        super.onAddToDatabase(writer);
+        // TextLauncher: CollectionInfo.onAddToDatabase; folders have no title.
+        writer.put(LauncherSettings.Favorites.TITLE, title);
+        writer.put(LauncherSettings.Favorites.OPTIONS, options);
+    }
+
     public boolean hasOption(int optionFlag) {
         return (options & optionFlag) != 0;
     }
@@ -64,8 +77,7 @@ public class FolderInfo extends ItemInfo {
     /**
      * @param option flag to set or clear
      * @param isEnabled whether to set or clear the flag
-     * TextLauncher: no model writer. The options are not saved (the home model has no column for
-     * them), so they last while the process lives.
+     * TextLauncher: no model writer yet; the home model saves the options with the folder.
      */
     public void setOption(int option, boolean isEnabled) {
         if (isEnabled) {

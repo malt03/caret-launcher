@@ -1,6 +1,6 @@
 ---
 id: Tex-o5bb
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:58:38Z
@@ -17,3 +17,9 @@ home_items は独自の種類の値（0〜3）と CONTAINER_HOME=-1 で、メモ
 
 やること: 版3のマイグレーションで itemType と container を Launcher3 の値で持ち、title を足す。アイコンの平坦化と既定かどうかの判定は MODEL_EXECUTOR で（またはビットマップを当てたときに判定を記録）。ioExecutor は SQLite だけにする。のちにアイテムごとの更新にする（Tex-2es1 の ModelWriter と合わせる）
 
+
+## Notes
+
+**2026-11-23T17:01:56Z**
+
+版3のマイグレーションで home_items を Launcher3 の favorites の表（LauncherSettings.Favorites の列。itemType・container は上流の値、アプリはインテント、ショートカットは ShortcutKey のインテント、profileId、title、icon、options、appWidgetSource）に移し、home_items を消した（LauncherDatabaseTest に版2からの移行のテストを足した。実機・エミュレータでは未実行）。値は上流と同じく ItemInfo.onAddToDatabase（ContentWriter をそのままコピー、WorkspaceItemInfo・FolderInfo・LauncherAppWidgetInfo の互換クラスに上流の onAddToDatabase を戻した）で作り、ContentWriter.getValues（アイコンの平坦化と既定かどうかの判定）・データベースの読み書き・ショートカットの問い合わせと固定の更新は MODEL_EXECUTOR で行う。ioExecutor は検索のデータベースだけ。ModelDbController は互換クラス（insert・update・delete・query・generateNewItemId）。読み込みは保存した title を使う（問い合わせに失敗したショートカットにも名前と読み上げが出る）。アイテムごとの書き込みは Tex-2es1 の ModelWriter で行う

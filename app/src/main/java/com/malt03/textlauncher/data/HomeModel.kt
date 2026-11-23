@@ -1,33 +1,43 @@
 package com.malt03.textlauncher.data
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.database.Cursor
 import android.graphics.BitmapFactory
-import android.os.UserHandle
+import android.os.Process
+import android.os.UserManager
 import android.util.Log
-import com.android.launcher3.LauncherSettings
-import com.android.launcher3.icons.BitmapInfo
-import com.android.launcher3.icons.GraphicsUtils
+import com.android.launcher3.LauncherSettings.Favorites
 import com.android.launcher3.icons.IconCache
+import com.android.launcher3.model.ModelDbController
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
-import java.util.concurrent.Executor
+import com.android.launcher3.shortcuts.ShortcutKey
+import com.android.launcher3.util.ContentWriter
+import com.android.launcher3.util.Executors.MODEL_EXECUTOR
 
 /**
  * The home layout (docs/spec.md 5.2), as Launcher3's BgDataModel holds it: the ItemInfos on the
  * home grid ([items]; a folder's items are its FolderInfo's contents), kept in memory on the main
- * thread. [loadBlocking] reads them from [LauncherDatabase] (LoaderTask) and [save] writes them back
- * as a whole after every change (ModelWriter). See HomeItemInfo.kt for the kinds of items.
+ * thread. [loadBlocking] reads them from the favorites table of [LauncherDatabase] (LoaderTask and
+ * LoaderCursor) and [save] writes them back as a whole after every change, each item with
+ * ItemInfo.onAddToDatabase (ModelWriter), on the model thread as in Launcher3. See HomeItemInfo.kt
+ * for the kinds of items.
  */
 class HomeModel(
-    private val db: LauncherDatabase,
-    private val ioExecutor: Executor,
+    private val context: Context,
+    db: LauncherDatabase,
     /** Makes and keys the shortcut items, and keeps the system's pinned shortcuts in step. */
     private val shortcuts: ShortcutRepository,
-    /** Makes the icons saved with the app shortcuts, and tells the default icon apart. */
+    /** Makes the icons saved with the app shortcuts. */
     private val iconCache: IconCache,
 ) {
+    /** LauncherModel.getModelDbController */
+    val modelDbController = ModelDbController(db)
+
     val items = mutableListOf<ItemInfo>()
-    private var nextId = 1
 
     /**
      * LauncherModel.isModelLoaded: [items] hold what was read from the database. Until then
@@ -53,45 +63,89 @@ class HomeModel(
      */
     var hasShortcutsWithoutIcons = false
 
-    /** Called on a background thread once, before the model is used. */
+    /**
+     * LoaderTask.loadWorkspace: called on the model thread once, before the model is used. The
+     * items of other users are left out (docs/spec.md 2.1), as are the rows that cannot be read
+     * (LoaderCursor.markDeleted).
+     */
     fun loadBlocking(): List<ItemInfo> {
-        val rows = db.loadHomeRows()
-        hasShortcutsWithoutIcons = rows.any { it.type == HomeRow.TYPE_SHORTCUT && it.icon == null }
+        val userManager = context.getSystemService(UserManager::class.java)
+        val myUser = Process.myUserHandle()
+        val mySerial = userManager.getSerialNumberForUser(myUser)
         val loaded = mutableListOf<ItemInfo>()
-        val folders = HashMap<Long, FolderInfo>()
-        for (row in rows.filter { it.container == HomeRow.CONTAINER_HOME }) {
-            val item = when (row.type) {
-                HomeRow.TYPE_APP -> row.appKey?.let(::AppItemInfo)
-                HomeRow.TYPE_SHORTCUT -> row.appKey?.let(shortcuts::newItem)?.also { it.loadIcon(row.icon) }
-                HomeRow.TYPE_FOLDER -> FolderInfo().also { folders[row.id] = it }
-                HomeRow.TYPE_WIDGET -> if (row.widgetId != null && row.provider != null) {
-                    WidgetItemInfo(row.widgetId, row.provider)
-                } else {
-                    null
+        val folders = HashMap<Int, FolderInfo>()
+        val folderItems = mutableListOf<Pair<Int, ItemInfo>>()
+        var withoutIcons = false
+        modelDbController.query(null, null, null, "${Favorites.CONTAINER}, ${Favorites.RANK}").use { c ->
+            val cursor = Columns(c)
+            while (c.moveToNext()) {
+                val serial = c.getLong(cursor.profileId)
+                // TextLauncher: the personal profile only.
+                if (serial != mySerial) continue
+                val itemType = c.getInt(cursor.itemType)
+                val intent = if (c.isNull(cursor.intent)) null else parseIntent(c.getString(cursor.intent))
+                val item: ItemInfo = when (itemType) {
+                    Favorites.ITEM_TYPE_APPLICATION -> {
+                        val component = intent?.component ?: continue
+                        AppItemInfo(AppEntry.keyOf(component, serial)).also { it.title = c.getString(cursor.title) }
+                    }
+                    Favorites.ITEM_TYPE_DEEP_SHORTCUT -> {
+                        val key = ShortcutKey.fromIntent(intent ?: continue, myUser)
+                        val info = shortcuts.newItem(HomeShortcutKey(key.packageName, key.id, serial).key) ?: continue
+                        // LoaderCursor.loadSimpleWorkspaceItem: the saved title, until the
+                        // shortcut is looked up.
+                        info.title = c.getString(cursor.title)
+                        if (!info.title.isNullOrEmpty()) {
+                            info.contentDescription = context.packageManager.getUserBadgedLabel(info.title!!, info.user)
+                        }
+                        val blob = if (c.isNull(cursor.icon)) null else c.getBlob(cursor.icon)
+                        if (blob == null) withoutIcons = true
+                        info.loadIcon(blob)
+                        info
+                    }
+                    Favorites.ITEM_TYPE_FOLDER -> FolderInfo().also { it.options = c.getInt(cursor.options) }
+                    Favorites.ITEM_TYPE_APPWIDGET -> {
+                        val provider = if (c.isNull(cursor.appWidgetProvider)) null else c.getString(cursor.appWidgetProvider)
+                        val component = provider?.let(ComponentName::unflattenFromString) ?: continue
+                        WidgetItemInfo(c.getInt(cursor.appWidgetId), component).also {
+                            it.options = c.getInt(cursor.options)
+                            it.sourceContainer = c.getInt(cursor.appWidgetSource)
+                        }
+                    }
+                    else -> continue
                 }
-                else -> null
-            } ?: continue
-            item.id = row.id.toInt()
-            item.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-            item.cellX = row.cellX; item.cellY = row.cellY
-            item.spanX = row.spanX; item.spanY = row.spanY
-            loaded += item
-        }
-        for (row in rows.filter { it.container != HomeRow.CONTAINER_HOME }.sortedBy { it.rank }) {
-            val folder = folders[row.container] ?: continue
-            val key = row.appKey ?: continue
-            val item = if (row.type == HomeRow.TYPE_SHORTCUT) {
-                shortcuts.newItem(key)?.also { it.loadIcon(row.icon) } ?: continue
-            } else {
-                AppItemInfo(key)
+                item.id = c.getInt(cursor.id)
+                item.container = c.getInt(cursor.container)
+                item.screenId = 0
+                item.cellX = c.getInt(cursor.cellX)
+                item.cellY = c.getInt(cursor.cellY)
+                item.spanX = c.getInt(cursor.spanX)
+                item.spanY = c.getInt(cursor.spanY)
+                item.rank = c.getInt(cursor.rank)
+                if (item.container == Favorites.CONTAINER_DESKTOP) {
+                    loaded += item
+                    if (item is FolderInfo) folders[item.id] = item
+                } else {
+                    folderItems += item.container to item
+                }
             }
-            item.id = row.id.toInt()
-            item.container = folder.id
+        }
+        // LoaderTask: the items in folders, by rank; those whose folder is gone are left out.
+        for ((container, item) in folderItems.sortedBy { it.second.rank }) {
+            val folder = folders[container] ?: continue
+            if (item !is WorkspaceItemInfo) continue
             item.rank = folder.contents.size
             folder.contents += item
         }
+        hasShortcutsWithoutIcons = withoutIcons
         return loaded
     }
+
+    /** LoaderCursor.parseIntent */
+    private fun parseIntent(intentString: String): Intent? =
+        runCatching { Intent.parseUri(intentString, 0) }
+            .onFailure { Log.e(TAG, "Error parsing intent", it) }
+            .getOrNull()
 
     /**
      * IconRequestInfo.loadIconFromDb / parseIconBlob: the icon saved with an app shortcut, which it
@@ -111,7 +165,6 @@ class HomeModel(
     fun setLoaded(loaded: List<ItemInfo>) {
         items.clear()
         items += loaded
-        nextId = (allItems().maxOfOrNull { it.id } ?: 0) + 1
         isLoaded = true
     }
 
@@ -128,8 +181,8 @@ class HomeModel(
         }
     }
 
-    /** ModelWriter's id for a new item. */
-    fun newId(): Int = nextId++
+    /** ModelDbController.generateNewItemId: the id for a new item. */
+    fun newId(): Int = modelDbController.generateNewItemId()
 
     /** Every item, including the ones in folders. */
     fun allItems(): List<ItemInfo> = items.flatMap { if (it is FolderInfo) listOf(it) + it.contents else listOf(it) }
@@ -153,33 +206,28 @@ class HomeModel(
             saveRequested = true
             return
         }
-        val rows = mutableListOf<HomeRow>()
-        // ContentWriter.putIcon: an app shortcut's icon is saved with it, by row index.
-        val icons = HashMap<Int, Pair<BitmapInfo, UserHandle>>()
-        fun add(item: ItemInfo, row: HomeRow) {
-            if (item is WorkspaceItemInfo && item.isDeepShortcut) icons[rows.size] = item.bitmap to item.user
-            rows += row
+        // ModelWriter: each item's values (ItemInfo.onAddToDatabase), whose icon ContentWriter
+        // flattens on the model thread.
+        val writers = mutableListOf<ContentWriter>()
+        fun add(item: ItemInfo) {
+            if (item.id == ItemInfo.NO_ID) item.id = newId()
+            item.screenId = 0
+            val writer = ContentWriter(context)
+            item.onAddToDatabase(writer)
+            writer.put(Favorites._ID, item.id)
+            writers += writer
         }
         for (item in items) {
-            if (item.id == ItemInfo.NO_ID) item.id = newId()
-            item.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-            add(item, when (item) {
-                is AppItemInfo -> row(item, HomeRow.TYPE_APP, HomeRow.CONTAINER_HOME, item.homeKey)
-                is FolderInfo -> row(item, HomeRow.TYPE_FOLDER, HomeRow.CONTAINER_HOME, null)
-                is WidgetItemInfo -> row(item, HomeRow.TYPE_WIDGET, HomeRow.CONTAINER_HOME, null)
-                else -> if (item.isDeepShortcut) {
-                    row(item, HomeRow.TYPE_SHORTCUT, HomeRow.CONTAINER_HOME, shortcuts.keyOf(item))
-                } else {
-                    continue
-                }
-            })
+            if (item !is AppItemInfo && item !is FolderInfo && item !is WidgetItemInfo && !item.isDeepShortcut) continue
+            item.container = Favorites.CONTAINER_DESKTOP
+            add(item)
             if (item is FolderInfo) {
                 item.contents.forEachIndexed { rank, content ->
+                    if (content !is AppItemInfo && !content.isDeepShortcut) return@forEachIndexed
                     if (content.id == ItemInfo.NO_ID) content.id = newId()
                     content.container = item.id
                     content.rank = rank
-                    val type = if (content.isDeepShortcut) HomeRow.TYPE_SHORTCUT else HomeRow.TYPE_APP
-                    add(content, row(content, type, item.id.toLong(), keyOf(content) ?: return@forEachIndexed))
+                    add(content)
                 }
             }
         }
@@ -187,25 +235,35 @@ class HomeModel(
         // removed; here, when the set of shortcut keys changed (Tex-536b).
         val shortcutKeys = shortcutKeys().toSet().takeIf { it != pinnedKeys }
         if (shortcutKeys != null) pinnedKeys = shortcutKeys
-        ioExecutor.execute {
-            db.replaceHomeRows(rows.mapIndexed { index, row -> icons[index]?.let { (bitmap, user) -> row.withIcon(bitmap, user) } ?: row })
+        MODEL_EXECUTOR.execute {
+            modelDbController.newTransaction().use { t ->
+                modelDbController.createEmptyDB()
+                for (writer in writers) modelDbController.insert(writer.getValues(context))
+                t.commit()
+            }
             if (shortcutKeys != null) shortcuts.updatePinnedStateBlocking(shortcutKeys)
         }
     }
 
-    /** ContentWriter.getValues: the icon is not saved when it is the default one. */
-    private fun HomeRow.withIcon(bitmap: BitmapInfo, user: UserHandle): HomeRow =
-        // TextLauncher: nor while it is not loaded yet.
-        if (bitmap.isLowRes || iconCache.isDefaultIcon(bitmap, user)) {
-            this
-        } else {
-            copy(icon = GraphicsUtils.createDefaultFlatBitmap(bitmap))
-        }
-
-    private fun row(item: ItemInfo, type: Int, container: Long, key: String?): HomeRow = HomeRow(
-        item.id.toLong(), type, container, item.cellX, item.cellY, item.spanX, item.spanY, item.rank, key,
-        (item as? WidgetItemInfo)?.appWidgetId, (item as? WidgetItemInfo)?.provider,
-    )
+    /** LoaderCursor's column indices. */
+    private class Columns(c: Cursor) {
+        val id = c.getColumnIndexOrThrow(Favorites._ID)
+        val title = c.getColumnIndexOrThrow(Favorites.TITLE)
+        val intent = c.getColumnIndexOrThrow(Favorites.INTENT)
+        val container = c.getColumnIndexOrThrow(Favorites.CONTAINER)
+        val itemType = c.getColumnIndexOrThrow(Favorites.ITEM_TYPE)
+        val cellX = c.getColumnIndexOrThrow(Favorites.CELLX)
+        val cellY = c.getColumnIndexOrThrow(Favorites.CELLY)
+        val spanX = c.getColumnIndexOrThrow(Favorites.SPANX)
+        val spanY = c.getColumnIndexOrThrow(Favorites.SPANY)
+        val rank = c.getColumnIndexOrThrow(Favorites.RANK)
+        val options = c.getColumnIndexOrThrow(Favorites.OPTIONS)
+        val icon = c.getColumnIndexOrThrow(Favorites.ICON)
+        val appWidgetId = c.getColumnIndexOrThrow(Favorites.APPWIDGET_ID)
+        val appWidgetProvider = c.getColumnIndexOrThrow(Favorites.APPWIDGET_PROVIDER)
+        val appWidgetSource = c.getColumnIndexOrThrow(Favorites.APPWIDGET_SOURCE)
+        val profileId = c.getColumnIndexOrThrow(Favorites.PROFILE_ID)
+    }
 
     private companion object {
         const val TAG = "HomeModel"

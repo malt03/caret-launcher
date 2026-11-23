@@ -344,7 +344,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
      * add a page).
      */
     private fun completeAddAppWidget(appWidgetId: Int, itemInfo: ItemInfo, appWidgetInfo: AppWidgetProviderInfo) {
-        val launcherInfo = WidgetItemInfo(appWidgetId, appWidgetInfo.provider.flattenToString())
+        val launcherInfo = WidgetItemInfo(appWidgetId, appWidgetInfo.provider)
         launcherInfo.spanX = itemInfo.spanX
         launcherInfo.spanY = itemInfo.spanY
         launcherInfo.minSpanX = itemInfo.minSpanX

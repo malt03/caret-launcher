@@ -283,6 +283,7 @@ path=src/com/android/launcher3/notification/NotificationRepository.kt
 path=src/com/android/launcher3/util/DaggerSingletonObject.java
 path=modules/concurrent/src/com/android/launcher3/concurrent/annotations/LightweightBackground.kt
 path=src/com/android/launcher3/util/PackageUserKey.java
+path=src/com/android/launcher3/util/ContentWriter.java
 values_root=res
 values_root=quickstep/res
 values_root=https://android.googlesource.com/platform/frameworks/libs/systemui dynamiccolors/res
@@ -384,6 +385,7 @@ ref=quickstep/src/com/android/quickstep/util/BaseDepthControllerImpl.java app/sr
 ref=src/com/android/launcher3/anim/AnimatedPropertySetter.java compat/launcher3-internal/com/android/launcher3/anim/PendingAnimation.java
 ref=modules/widgetpicker/build.gradle.kts third_party/launcher3/modules/widgetpicker/build.gradle.kts
 ref=modules/widgetpicker/Android.bp third_party/launcher3/modules/widgetpicker/build.gradle.kts
+ref=src/com/android/launcher3/model/ModelDbController.kt compat/launcher3-internal/com/android/launcher3/model/ModelDbController.kt
 ref=Android.bp third_party/launcher3/build.gradle.kts
 ref=AndroidManifest-common.xml app/src/main/AndroidManifest.xml
 ```

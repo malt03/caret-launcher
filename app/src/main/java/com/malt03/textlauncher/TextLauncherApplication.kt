@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class TextLauncherApplication : Application() {
-    /** Single thread for all database writes, so they are applied in order. */
+    /** Single thread for the search database writes, so they are applied in order. */
     val ioExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     lateinit var database: LauncherDatabase
@@ -46,7 +46,7 @@ class TextLauncherApplication : Application() {
         iconLoader = AppIconLoader(this, iconSettings)
         appRepository = AppRepository(this, iconLoader)
         shortcutRepository = ShortcutRepository(this)
-        homeModel = HomeModel(database, ioExecutor, shortcutRepository, iconLoader.iconCache)
+        homeModel = HomeModel(this, database, shortcutRepository, iconLoader.iconCache)
         // InvariantDeviceProfile: the grid from the device, until the home screen sets its own.
         InvariantDeviceProfile.setGridInitializer(HomeGridInitializer)
 

@@ -1,6 +1,5 @@
 package com.malt03.textlauncher.ui.home
 
-import android.content.ComponentName
 import android.content.Context
 import android.graphics.Point
 import android.util.Log
@@ -97,7 +96,7 @@ internal object GridSizeMigration {
         val widgetManagerHelper = WidgetManagerHelper(context)
         for (entry in items) {
             if (entry !is WidgetItemInfo) continue
-            val cn = ComponentName.unflattenFromString(entry.provider)
+            val cn = entry.providerName
             val spans: Point? = widgetManagerHelper.getLauncherAppWidgetInfo(entry.appWidgetId, cn)?.minSpans
             if (spans != null) {
                 entry.minSpanX = if (spans.x > 0) spans.x else entry.spanX
