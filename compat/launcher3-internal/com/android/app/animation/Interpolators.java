@@ -51,7 +51,9 @@ public class Interpolators {
     public static final Interpolator EMPHASIZED_ACCELERATE = new PathInterpolator(
             0.3f, 0f, 0.8f, 0.15f);
     public static final Interpolator ACCELERATE = new AccelerateInterpolator();
+    public static final Interpolator DECELERATED_EASE = new PathInterpolator(0, 0, .2f, 1f);
     public static final Interpolator DECELERATE_1_5 = new DecelerateInterpolator(1.5f);
+    public static final Interpolator DECELERATE_1_7 = new DecelerateInterpolator(1.7f);
     public static final Interpolator DECELERATE_2 = new DecelerateInterpolator(2);
     public static final Interpolator DECELERATE_QUINT = new DecelerateInterpolator(2.5f);
 
@@ -117,6 +119,16 @@ public class Interpolators {
             return 1;
         }
         return interpolator.getInterpolation((progress - lowerBound) / (upperBound - lowerBound));
+    }
+
+    /**
+     * Returns the reverse of the provided interpolator, following the formula: g(x) = 1 - f(1 - x).
+     * In practice, this means that if f is an interpolator used to model a value animating between
+     * m and n, g is the interpolator to use to obtain the specular behavior when animating from n
+     * to m.
+     */
+    public static Interpolator reverse(Interpolator interpolator) {
+        return t -> 1 - interpolator.getInterpolation(1 - t);
     }
 
     public static final Interpolator ZOOM_OUT = new Interpolator() {

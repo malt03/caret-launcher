@@ -116,7 +116,7 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         workspace.translationY = translationY * zoom
         home.grid.cellLayout.setSpringLoadedProgress(zoom)
         // SpringLoadedState.getDepth: the wallpaper's depth (blur), LINEAR.
-        home.root.springLoadedDepth = DEPTH_15_PERCENT * progress
+        home.host.depthController.springLoadedDepth.setValue(DEPTH_15_PERCENT * progress)
     }
 
     /**

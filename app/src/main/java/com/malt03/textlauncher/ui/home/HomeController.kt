@@ -36,7 +36,6 @@ import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
-import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
@@ -50,6 +49,7 @@ import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
 import com.malt03.textlauncher.ui.drag.DropTargetBar
 import com.malt03.textlauncher.ui.drag.HomeDragController
+import com.malt03.textlauncher.ui.statehandlers.DepthController
 
 /**
  * The home layout shown while the query is empty (docs/spec.md 5), in the role of Launcher3's
@@ -96,6 +96,8 @@ class HomeController(
         fun canShowOptions(): Boolean
         /** Launcher.getRotationHelper, for a drag from the widget picker (BaseItemDragListener). */
         val rotationHelper: RotationHelper
+        /** Launcher.getDepthController */
+        val depthController: DepthController
     }
 
     internal val context = root.context
@@ -211,11 +213,7 @@ class HomeController(
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
-        // DragLayer.recreateControllers (QuickstepLauncher.createTouchControllers): the drag
-        // controller, then the status bar's swipe down; open floating views (the long-press menu,
-        // folders) are asked first. TextLauncher: the all apps swipe is the root's own interceptor.
-        root.overlay.setControllers(dragController, StatusBarTouchController(launcher, ::canSwipeDownToStatusBar))
-        root.touchInterceptor = root.overlay::dispatchTouchEventFromParent
+        // DragLayer.recreateControllers: the activity sets them (Launcher.createTouchControllers).
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(HomeOptionsMenu(this))
 
@@ -228,7 +226,7 @@ class HomeController(
      * scrolls it until it is at its top (docs/spec.md 5.6); with two panels, the all apps panel's
      * list scrolls with it.
      */
-    private fun canSwipeDownToStatusBar(ev: MotionEvent): Boolean {
+    internal fun canSwipeDownToStatusBar(ev: MotionEvent): Boolean {
         if (!host.canShowOptions() || scrollView.canScrollVertically(-1)) return false
         val panel = root.allAppsPanel ?: return true
         return !root.overlay.isEventOverView(panel, ev)

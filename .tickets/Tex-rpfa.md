@@ -1,6 +1,6 @@
 ---
 id: Tex-rpfa
-status: open
+status: closed
 deps: []
 links: [Tex-ny2k, Tex-ypdf]
 created: 2026-11-22T00:58:38Z
@@ -22,3 +22,9 @@ parent: Tex-vs8t
 - 小さな状態の管理（NORMAL / ALL_APPS / SPRING_LOADED と goToState(state, animated, callback)。LauncherState / StateManager 相当）を作り、戻る・ホーム・メニュー・スワイプから使う。Tex-qdub（下スワイプ）の canInterceptTouch もここで判定できる
 - 検索フィールドの振る舞いを SearchBarView かコントローラーに移す
 
+
+## Notes
+
+**2026-11-23T17:01:44Z**
+
+Launcher3 の形に分けた。状態は StateManager（ui/statemanager、NORMAL / SPRING_LOADED / ALL_APPS、goToState(state, animated, callback)、currentStableState）が持ち、戻る・ホームボタン・onStop・メニューの「アプリのリスト」・スワイプ・編集の始まりと終わり（onEditModeChanged）はここを通る。isAllAppsOpen と isEditMode はなくした。検索フィールドのフォーカスとキーボードは Launcher.onStateSetStart / onStateSetEnd に当たるアクティビティのフックで（上流と違い、移る前の状態とアニメーションするかを渡し、ジェスチャーでないアニメーションもすぐに状態を移す）。状態のハンドラーは AllAppsTransitionController（縦の位置。LauncherRootLayout から applyAllAppsProgress を移した。ホームの縮小は contentArea.scaleX をやめ WORKSPACE_SCALE_PROPERTY_FACTORY の SCALE_INDEX_WORKSPACE_STATE に）と DepthController（ui/statehandlers。stateDepth と編集中の奥行きを MultiPropertyFactory の max でまとめる、ぼかしのリスナー、mapDepthToBlur、ウィンドウのぼかしと RenderEffect）。ジェスチャーでないアニメーションは互換の PendingAnimation（上流の add / addFloat / setFloat / addEndListener / buildAnim を入れた）に各ハンドラーが setStateWithAnimation で加え、補間は QuickstepAtomicAnimationFactory と同じく applyNormalToAllAppsAnimConfig / applyAllAppsToNormalConfig（StateAnimationConfig は third_party にコピー、DECELERATED_EASE・DECELERATE_1_7・reverse を互換の Interpolators に追加）。AllAppsSwipeController は TouchController になり、Launcher.createTouchControllers と同じく [ドラッグ, 全アプリのスワイプ, 通知シェード] の順で overlay.setControllers に渡す（LauncherRootLayout の allAppsTouchInterceptor はなくした）。検索フィールドの mSearchQueryBuilder・preDispatchKeyEvent・clearSearchResult は SearchBarView（AppsSearchContainerLayout 相当）へ。上流からコピーしなかったもの: AnimatorPlaybackController と AbstractStateChangeTouchController の本体。キーボードが下りるにつれて閉じた位置が動き、48dp の引っ掛かりもあるので、スワイプは指の位置から進み具合を出して状態の性質を自分で動かす（setUserControlledProgress）。小さな違い: 検索語があるときに検索フィールドから上にスワイプした引っ掛かりの間、検索結果はもう縮まない（縮むのはホームのグリッドだけ。量は 1% 未満）。ジェスチャーでないアニメーションが途中から始まるとき、奥行きと縮小は上流どおり今の値から補間する。ビルドと単体テストのみ確認（端末では未確認）

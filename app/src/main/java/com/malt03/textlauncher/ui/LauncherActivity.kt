@@ -8,10 +8,7 @@ import android.content.pm.LauncherApps
 import android.os.Bundle
 import android.os.UserHandle
 import android.text.Editable
-import android.text.Selection
-import android.text.SpannableStringBuilder
 import android.text.TextWatcher
-import android.text.method.TextKeyListener
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -30,7 +27,6 @@ import androidx.core.view.WindowCompat
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
-import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Launcher
 import com.android.launcher3.Utilities
 import com.android.launcher3.states.RotationHelper
@@ -42,15 +38,23 @@ import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
 import com.malt03.textlauncher.ui.allapps.AllAppsView
 import com.malt03.textlauncher.ui.home.HomeController
+import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
+import com.android.launcher3.util.TouchController
 import com.android.launcher3.views.ActivityContext
+import com.malt03.textlauncher.ui.LauncherState.ALL_APPS
+import com.malt03.textlauncher.ui.LauncherState.NORMAL
+import com.malt03.textlauncher.ui.LauncherState.SPRING_LOADED
 import com.malt03.textlauncher.ui.search.SearchResults
+import com.malt03.textlauncher.ui.statehandlers.DepthController
+import com.malt03.textlauncher.ui.statemanager.StateManager
 
 /**
  * The home screen. The search field always has focus and the keyboard is always shown
  * (docs/spec.md 1).
  */
 class LauncherActivity :
-    Activity(), HomeController.Host, ActivityContext.Provider, LifecycleOwner, SavedStateRegistryOwner {
+    Activity(), HomeController.Host, ActivityContext.Provider, LifecycleOwner, SavedStateRegistryOwner,
+    StateManager.StatefulContainer {
 
     // BaseActivity: the framework's Activity, as in Launcher3 (no AppCompat), with the lifecycle
     // and saved state that Compose (the widget resize frame) looks up in the view tree.
@@ -76,15 +80,17 @@ class LauncherActivity :
     private lateinit var allAppsResults: SearchResults
     private lateinit var allAppsTransition: AllAppsTransitionController
 
-    /** LauncherState NORMAL / ALL_APPS: whether the all apps list is open or going to be. */
-    private var isAllAppsOpen = false
+    /** The all apps swipe; none with two panels (docs/spec.md 5.5). */
+    private var allAppsSwipe: AllAppsSwipeController? = null
 
-    /** AppsSearchContainerLayout.mSearchQueryBuilder */
-    private val searchQueryBuilder = SpannableStringBuilder().also { Selection.setSelection(it, 0) }
+    /** Launcher.mStateManager: NORMAL, SPRING_LOADED (edit mode) or ALL_APPS. */
+    private val stateManager = StateManager(this)
+
+    /** Launcher.mDepthController */
+    override lateinit var depthController: DepthController
+        private set
+
     private lateinit var home: HomeController
-
-    /** docs/spec.md 5.4: while editing, the keyboard is down and the field has no focus. */
-    private var isEditMode = false
 
     private var apps: List<AppEntry> = emptyList()
     private val appsListener: (List<AppEntry>) -> Unit = {
@@ -126,6 +132,9 @@ class LauncherActivity :
         gridSpec = GridSpec.from(this)
         root = LauncherRootLayout(this)
         setContentView(root)
+        depthController = DepthController(this, root, root.contentArea)
+        // ActivityAllAppsContainerView.getBackgroundColor: the sheet's color with the blur.
+        depthController.addBlurStateListener(root.allAppsSheet::setBlurEnabled)
 
         val isTwoPanels = gridSpec.isTwoPanels
         results = SearchResults(
@@ -175,12 +184,20 @@ class LauncherActivity :
             registerIconContainer(results.view)
             registerIconContainer(allAppsResults.view)
         }
-        allAppsTransition = AllAppsTransitionController(root)
+        allAppsTransition = AllAppsTransitionController(root, stateManager, depthController, home.workspace)
+        // Launcher.createStateHandlers
+        stateManager.stateHandlers = arrayOf(allAppsTransition, depthController)
         if (!isTwoPanels) {
             root.allAppsSheet.setSearchResults(allAppsResults.view)
             root.onBottomInsetChanged = allAppsResults::setBottomInset
-            root.allAppsTouchInterceptor = AllAppsSwipeController(this, root, allAppsTransition, allAppsSwipeCallbacks)::onTouch
+            allAppsSwipe = AllAppsSwipeController(
+                this, root, allAppsTransition, stateManager, home.activityContext, allAppsSwipeCallbacks,
+            )
         }
+        // DragLayer.recreateControllers; open floating views (the long-press menu, folders) are
+        // asked first. TextLauncher: the drag layer is an overlay, which sees the touches first.
+        root.overlay.setControllers(*createTouchControllers())
+        root.touchInterceptor = root.overlay::dispatchTouchEventFromParent
 
         val editText = root.searchBar.editText
         editText.addTextChangedListener(object : TextWatcher {
@@ -192,10 +209,15 @@ class LauncherActivity :
             }
         })
         root.searchBar.onEnter = { launchTopResult() }
+        // AppsSearchContainerLayout.preDispatchKeyEvent's focus: docs/spec.md 6.5, the search in
+        // the all apps list keeps the keyboard as it is.
+        root.searchBar.requestFocusForKey = {
+            if (stateManager.isInState(ALL_APPS)) root.searchBar.editText.requestFocus() else focusSearch()
+        }
         // docs/spec.md 6.5: tapping the field with the all apps list open searches in it; the field
         // gets the focus and the keyboard comes up, over the list.
         root.searchBar.onFocusChanged = { hasFocus ->
-            if (hasFocus && isAllAppsOpen && !allAppsTransition.isAnimating) {
+            if (hasFocus && stateManager.isInState(ALL_APPS) && !isAllAppsAnimating) {
                 WindowCompat.getInsetsController(window, root.searchBar.editText).show(WindowInsets.Type.ime())
             }
         }
@@ -211,7 +233,7 @@ class LauncherActivity :
             }
             if (home.closeTopFloatingView()) return@registerOnBackInvokedCallback
             // docs/spec.md 6.6: back closes the all apps list.
-            if (root.isAllAppsShown) {
+            if (allAppsTransition.isAllAppsShown) {
                 closeAllApps(animate = true)
                 return@registerOnBackInvokedCallback
             }
@@ -314,67 +336,36 @@ class LauncherActivity :
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && !isEditMode) focusSearch()
+        if (hasFocus && !stateManager.isInState(SPRING_LOADED)) focusSearch()
     }
 
     private fun focusSearch() {
         // docs/spec.md 6.4: with the all apps list open, the field has no focus or keyboard.
-        if (isEditMode || root.isAllAppsShown) return
+        if (stateManager.isInState(SPRING_LOADED) || allAppsTransition.isAllAppsShown) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
     }
 
-    private fun clearQuery() {
-        root.searchBar.editText.text?.clear()
-        // AppsSearchContainerLayout.clearSearchResult
-        searchQueryBuilder.clear()
-        searchQueryBuilder.clearSpans()
-        Selection.setSelection(searchQueryBuilder, 0)
-    }
+    private fun clearQuery() = root.searchBar.clearSearchResult()
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        preDispatchKeyEvent(event)
+        root.searchBar.preDispatchKeyEvent(event)
         return super.dispatchKeyEvent(event)
-    }
-
-    /**
-     * AppsSearchContainerLayout.preDispatchKeyEvent: typing while a search result has keyboard focus
-     * focuses the search field first, so that it gets the key.
-     */
-    private fun preDispatchKeyEvent(event: KeyEvent) {
-        // Determine if the key event was actual text, if so, focus the search bar and then dispatch
-        // the key normally so that it can process this key event
-        val editText = root.searchBar.editText
-        if (!editText.isFocused && event.action == KeyEvent.ACTION_DOWN) {
-            val unicodeChar = event.unicodeChar
-            val isKeyNotWhitespace = unicodeChar > 0 &&
-                !Character.isWhitespace(unicodeChar) && !Character.isSpaceChar(unicodeChar)
-            if (isKeyNotWhitespace) {
-                val gotKey = TextKeyListener.getInstance().onKeyDown(editText, searchQueryBuilder,
-                    event.keyCode, event)
-                if (gotKey && searchQueryBuilder.isNotEmpty()) {
-                    if (isAllAppsOpen) {
-                        // docs/spec.md 6.5: the search in the all apps list.
-                        editText.requestFocus()
-                    } else {
-                        focusSearch()
-                    }
-                }
-            }
-        }
     }
 
     /** docs/spec.md 1.4: closing the keyboard with back clears the query and shows it again. */
     private fun onKeyboardHidden() {
         // docs/spec.md 6.5: closing the keyboard while searching in the all apps list keeps the
         // query and shows the filtered list without the focus.
-        if (isAllAppsOpen && !allAppsTransition.isAnimating && root.searchBar.editText.hasFocus()) {
+        if (stateManager.isInState(ALL_APPS) && !isAllAppsAnimating && root.searchBar.editText.hasFocus()) {
             root.requestFocus()
             return
         }
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
-        if (isEditMode || root.isAllAppsShown || isLaunching || !isResumedState || !hasWindowFocus()) return
+        if (stateManager.isInState(SPRING_LOADED) || allAppsTransition.isAllAppsShown || isLaunching ||
+            !isResumedState || !hasWindowFocus()
+        ) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
         // keyboard.
         if (!root.searchBar.editText.hasFocus()) return
@@ -386,14 +377,22 @@ class LauncherActivity :
     }
 
     /**
-     * The all apps swipe (docs/spec.md 6.1, 6.2, 6.6), as AllAppsSwipeController.canInterceptTouch
-     * and the state changes of LauncherStateManager.
+     * Launcher.createTouchControllers (QuickstepLauncher's): the drag controller, the all apps
+     * swipe, then the status bar's swipe down (isEnabledCheck: the NORMAL state; HomeController).
      */
-    private val allAppsSwipeCallbacks = object : AllAppsSwipeController.Callbacks {
-        override fun canSwipe(): Boolean =
-            !isEditMode && !home.isDragging && AbstractFloatingView.getTopOpenView(home.activityContext) == null
+    private fun createTouchControllers(): Array<TouchController> = listOfNotNull(
+        home.dragController,
+        allAppsSwipe,
+        StatusBarTouchController(home.launcher, home::canSwipeDownToStatusBar),
+    ).toTypedArray()
 
-        override fun isAllAppsOpen(): Boolean = isAllAppsOpen
+    /** TextLauncher: a state animation of the all apps list, with a gesture or without, is running. */
+    private val isAllAppsAnimating: Boolean
+        get() = stateManager.isAnimating || allAppsSwipe?.isSettling == true
+
+    /** The all apps swipe (docs/spec.md 6.1, 6.2, 6.6): where it may start. */
+    private val allAppsSwipeCallbacks = object : AllAppsSwipeController.Callbacks {
+        override fun isDragging(): Boolean = home.isDragging
 
         override fun canOpenFrom(ev: MotionEvent): Boolean {
             if (isInSearchBar(ev)) return true
@@ -402,21 +401,8 @@ class LauncherActivity :
         }
 
         /** ActivityAllAppsContainerView.shouldContainerScroll: the search field, or the sheet's check. */
-        override fun canCloseFrom(ev: MotionEvent): Boolean =
+        override fun shouldContainerScroll(ev: MotionEvent): Boolean =
             isInSearchBar(ev) || root.allAppsSheet.shouldContainerScroll(ev, root)
-
-        override fun onThresholdCrossed(opening: Boolean) {
-            // docs/spec.md 6.2: the keyboard goes down as the field comes up.
-            if (opening) prepareAllAppsOpen()
-        }
-
-        override fun onSettling(open: Boolean) {
-            if (open) prepareAllAppsOpen() else prepareAllAppsClose()
-        }
-
-        override fun onSettled(open: Boolean) {
-            if (open) isAllAppsOpen = true else onAllAppsClosed(focus = true)
-        }
     }
 
     private fun isInSearchBar(ev: MotionEvent): Boolean {
@@ -425,11 +411,57 @@ class LauncherActivity :
     }
 
     /**
+     * Launcher.onStateSetStart. TextLauncher: the search field's focus and the keyboard follow the
+     * state (docs/spec.md 5.4, 6.4, 6.6).
+     */
+    override fun onStateSetStart(fromState: LauncherState, toState: LauncherState, animated: Boolean) {
+        when (toState) {
+            ALL_APPS -> prepareAllAppsOpen()
+            NORMAL -> if (fromState != SPRING_LOADED) {
+                if (animated) {
+                    prepareAllAppsClose()
+                } else {
+                    // docs/spec.md 6.6: closing clears the query (of the search in the list).
+                    clearQuery()
+                }
+            }
+            SPRING_LOADED -> {
+                // Launcher.onStateSetStart: the rotation is locked while the workspace icons are
+                // dragged (SPRING_LOADED).
+                rotationHelper.setCurrentStateRequest(REQUEST_LOCK)
+                clearQuery()
+                // docs/spec.md 6.4: a drag from the all apps list closes it and shows the home
+                // screen.
+                if (fromState == ALL_APPS || allAppsTransition.isAllAppsShown) {
+                    allApps.reset()
+                    refreshResults()
+                }
+                root.requestFocus()
+                WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
+            }
+        }
+    }
+
+    /** Launcher.onStateSetEnd */
+    override fun onStateSetEnd(state: LauncherState, lastStableState: LauncherState) {
+        if (state != NORMAL) return
+        if (lastStableState == SPRING_LOADED) {
+            // Launcher.onStateSetStart: the lock is cleared going back to NORMAL.
+            rotationHelper.setCurrentStateRequest(REQUEST_NONE)
+            // docs/spec.md 5.5: the all apps panel shows the icon a drag from it hid.
+            if (gridSpec.isTwoPanels) allApps.rebindCells()
+        } else {
+            allApps.reset()
+            refreshResults()
+        }
+        focusSearch()
+    }
+
+    /**
      * docs/spec.md 6.4: the field has no focus and the keyboard goes down; the query is cleared
      * (the list replaces it).
      */
     private fun prepareAllAppsOpen() {
-        isAllAppsOpen = true
         home.closeFloatingViews(animate = false)
         clearQuery()
         root.requestFocus()
@@ -438,7 +470,6 @@ class LauncherActivity :
 
     /** docs/spec.md 6.6: closing, the field gets the focus and the keyboard comes back with it. */
     private fun prepareAllAppsClose() {
-        isAllAppsOpen = false
         // docs/spec.md 6.6: closing clears the query (of the search in the list).
         clearQuery()
         root.holdFieldAboveKeyboard = true
@@ -458,51 +489,31 @@ class LauncherActivity :
      * the search results, the all apps list or edit mode.
      */
     override fun canShowOptions(): Boolean =
-        !isEditMode && !isAllAppsOpen && !root.isAllAppsShown && currentQuery().isEmpty()
+        stateManager.isInState(NORMAL) && !allAppsTransition.isAllAppsShown && currentQuery().isEmpty()
 
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
     private fun openAllApps() {
         // docs/spec.md 5.5: with two panels, the list is always shown.
-        if (isEditMode || isAllAppsOpen || gridSpec.isTwoPanels) return
-        prepareAllAppsOpen()
-        allAppsTransition.animateTo(open = true) {}
+        if (!stateManager.isInState(NORMAL) || gridSpec.isTwoPanels) return
+        stateManager.goToState(ALL_APPS, animated = true)
     }
 
     /**
-     * docs/spec.md 6.6: closes the list; the field goes back above the keyboard with the focus
-     * ([focus]). Without [animate], at once (the home button, leaving the launcher). [onClosed]
+     * docs/spec.md 6.6: closes the list (goToState(NORMAL)); the field goes back above the keyboard
+     * with the focus. Without [animate], at once (the home button, leaving the launcher). [onClosed]
      * runs once it is closed, and not when something stops the animation before that
-     * (forSuccessCallback).
+     * (forSuccessCallback). TextLauncher: edit mode is left to the drag or the resize frame that
+     * keeps it.
      */
-    private fun closeAllApps(animate: Boolean, focus: Boolean = true, onClosed: () -> Unit = {}) {
-        if (!root.isAllAppsShown && !isAllAppsOpen) {
+    private fun closeAllApps(animate: Boolean, onClosed: () -> Unit = {}) {
+        if (stateManager.isInState(SPRING_LOADED)) {
             onClosed()
             return
         }
-        if (animate) {
-            prepareAllAppsClose()
-            allAppsTransition.animateTo(open = false) {
-                onAllAppsClosed(focus)
-                onClosed()
-            }
-        } else {
-            allAppsTransition.cancelAnimation()
-            isAllAppsOpen = false
-            clearQuery()
-            allAppsTransition.progress = 0f
-            onAllAppsClosed(focus)
-            onClosed()
-        }
+        stateManager.goToState(NORMAL, animate, onClosed)
     }
 
-    private fun onAllAppsClosed(focus: Boolean) {
-        isAllAppsOpen = false
-        allApps.reset()
-        refreshResults()
-        if (focus) focusSearch()
-    }
-
-    private fun currentQuery(): String = root.searchBar.editText.text?.toString().orEmpty()
+    private fun currentQuery(): String = root.searchBar.query
 
     /** docs/spec.md 2.5: the results replace the home screen while there is a query. */
     private fun refreshResults() {
@@ -519,7 +530,7 @@ class LauncherActivity :
             }
             return
         }
-        if (isAllAppsOpen) {
+        if (stateManager.isInState(ALL_APPS)) {
             // docs/spec.md 6.5: the results replace the list on the sheet, without an animation.
             results.hide()
             home.scrollView.visibility = View.VISIBLE
@@ -551,22 +562,9 @@ class LauncherActivity :
         }
     }
 
+    /** Edit mode is Launcher3's SPRING_LOADED state (docs/spec.md 5.4). */
     override fun onEditModeChanged(editing: Boolean) {
-        isEditMode = editing
-        // Launcher.onStateSetStart: the rotation is locked while the workspace icons are dragged
-        // (SPRING_LOADED), and the lock is cleared going back to NORMAL.
-        rotationHelper.setCurrentStateRequest(if (editing) REQUEST_LOCK else REQUEST_NONE)
-        if (editing) {
-            // docs/spec.md 6.4: a drag from the all apps list closes it and shows the home screen.
-            closeAllApps(animate = false, focus = false)
-            clearQuery()
-            root.requestFocus()
-            WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
-        } else {
-            // docs/spec.md 5.5: the all apps panel shows the icon a drag from it hid.
-            if (gridSpec.isTwoPanels) allApps.rebindCells()
-            focusSearch()
-        }
+        stateManager.goToState(if (editing) SPRING_LOADED else NORMAL, animated = false)
     }
 
     override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
@@ -585,7 +583,7 @@ class LauncherActivity :
     override fun getActivityContext(): ActivityContext = home.activityContext
 
     private fun launchTopResult() {
-        val shown = if (isAllAppsOpen) allAppsResults else results
+        val shown = if (stateManager.isInState(ALL_APPS)) allAppsResults else results
         val top = shown.topResult ?: return
         launch(top, shown.topResultView, fromSearch = true)
     }
