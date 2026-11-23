@@ -137,7 +137,11 @@ class LauncherDatabaseTest {
         val widget = favorites.getValue(5)
         assertEquals(Favorites.ITEM_TYPE_APPWIDGET, widget.getAsInteger(Favorites.ITEM_TYPE))
         assertEquals(42, widget.getAsInteger(Favorites.APPWIDGET_ID))
-        assertEquals("com.example/.Widget", widget.getAsString(Favorites.APPWIDGET_PROVIDER))
+        // LauncherAppWidgetInfo.onAddToDatabase writes providerName.flattenToString(), the long form.
+        assertEquals(
+            android.content.ComponentName("com.example", "com.example.Widget"),
+            android.content.ComponentName.unflattenFromString(widget.getAsString(Favorites.APPWIDGET_PROVIDER)),
+        )
         assertEquals(4, widget.getAsInteger(Favorites.SPANX))
         assertEquals(2, widget.getAsInteger(Favorites.SPANY))
 
