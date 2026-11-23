@@ -79,4 +79,9 @@ public final class Flags {
     public static boolean reduceWorkspaceBlurUsage() {
         return false;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean oneGridRotationHandling() {
+        return false;
+    }
 }

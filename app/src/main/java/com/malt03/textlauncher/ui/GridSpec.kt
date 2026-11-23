@@ -1,24 +1,31 @@
 package com.malt03.textlauncher.ui
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Rect
 import android.view.Display
 import android.view.WindowManager
+import com.android.launcher3.Flags
 import com.android.launcher3.Utilities.dpiFromPx
 import com.android.launcher3.testing.shared.ResourceUtils
 import com.android.launcher3.util.WindowBounds
+import com.android.launcher3.util.XmlElement
+import com.android.launcher3.util.XmlElement.Companion.getRootElement
 import com.android.launcher3.util.window.WindowManagerProxy
 import com.malt03.textlauncher.R
+import com.malt03.textlauncher.ui.home.GridSizeMigration
 import kotlin.math.max
 import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.pow
+import com.android.launcher3.R as L3R
 
 /**
  * Grid dimensions, chosen as Launcher3's InvariantDeviceProfile does (android-17.0.0_r1): among the
- * display options of res/xml/device_profiles.xml ([DISPLAY_OPTIONS]) for the device type, the
- * one closest to the device's size gives the grid (columns, folder size), and the icon size, text
- * size and all apps cell height are interpolated from the nearest ones (invDistWeightedInterpolate).
+ * display options of res/xml/device_profiles.xml (copied as is) for the device type, those with
+ * the columns of the grid the items were placed in (DeviceGridState) if there are any, the one
+ * closest to the device's size gives the grid (columns, folder size), and the icon size, text size
+ * and all apps cell height are interpolated from the nearest ones (invDistWeightedInterpolate).
  *
  * Like InvariantDeviceProfile, the grid belongs to the device's displays, not to the window: the
  * size is the smallest the launcher can have on any of them in any rotation (the estimated
@@ -82,10 +89,17 @@ data class GridSpec(
                 supportedBounds.any { isLargeScreen(it.bounds) } -> TYPE_TABLET
                 else -> TYPE_PHONE
             }
+            // InvariantDeviceProfile.initGrid
+            val allOptions = getPredefinedDeviceProfiles(context, deviceType)
+
+            // Filter out options that don't have the same number of columns as the grid
+            val allOptionsFilteredByColCount =
+                filterByColumnCount(allOptions, GridSizeMigration.getColumns(context))
+
             val option = invDistWeightedInterpolate(
                 dpiFromPx(minWidthPx.toFloat(), densityDpi),
                 dpiFromPx(minHeightPx.toFloat(), densityDpi),
-                DISPLAY_OPTIONS.filter { it.grid.isEnabled(deviceType) },
+                if (allOptionsFilteredByColCount.isEmpty()) allOptions else allOptionsFilteredByColCount,
             )
             // DeviceProfile: the icon size in pixels (the icons are not scaled down to fit).
             val iconSizePx = ResourceUtils.pxFromDp(option.iconImageSize, metrics)
@@ -144,6 +158,7 @@ data class GridSpec(
                 closestPoint.grid,
                 width,
                 height,
+                closestPoint.canBeDefault,
                 // Since the bitmaps are persisted, ensure that all bitmap sizes are not larger than
                 // predefined size to avoid cache invalidation
                 iconImageSize = min(iconImageSize / weights, closestPoint.iconImageSize),
@@ -165,38 +180,36 @@ data class GridSpec(
         private const val WEIGHT_POWER = 5f
         private const val WEIGHT_EFFICIENT = 100000f
 
-        // InvariantDeviceProfile's device types and GridOption's device categories.
+        // InvariantDeviceProfile's device types.
         private const val TYPE_PHONE = 0
         private const val TYPE_MULTI_DISPLAY = 1
         private const val TYPE_TABLET = 2
-        private const val DEVICE_CATEGORY_PHONE = 1 shl 0
-        private const val DEVICE_CATEGORY_TABLET = 1 shl 1
-        private const val DEVICE_CATEGORY_MULTI_DISPLAY = 1 shl 2
 
         /**
-         * The grid options of Launcher3's res/xml/device_profiles.xml (android-17.0.0_r1) that
-         * TextLauncher uses: phones, foldables and tablets (not desktops, and not the fixed
-         * landscape mode, whose setting it does not have). All their display options can be the
-         * default.
+         * InvariantDeviceProfile.getPredefinedDeviceProfiles with an empty grid name: the display
+         * options that can be the default, of the grids for the device type. TextLauncher: no grid
+         * is remembered (GRID_NAME), so the grid name is always empty, and there is no fixed
+         * landscape mode (FIXED_LANDSCAPE_MODE), which has no setting here.
          */
-        private val GRID_3_BY_3 = GridOption("3_by_3", 3, 2, 3, DEVICE_CATEGORY_PHONE)
-        private val GRID_4_BY_4 = GridOption("4_by_4", 4, 3, 4, DEVICE_CATEGORY_PHONE or DEVICE_CATEGORY_MULTI_DISPLAY)
-        private val GRID_5_BY_5 = GridOption("5_by_5", 5, 4, 4, DEVICE_CATEGORY_PHONE or DEVICE_CATEGORY_MULTI_DISPLAY)
-        private val GRID_6_BY_5 = GridOption("6_by_5", 6, 3, 3, DEVICE_CATEGORY_TABLET)
+        private fun getPredefinedDeviceProfiles(context: Context, deviceType: Int): List<DisplayOption> {
+            val profiles = DisplayOption.getPredefinedDisplayOptions(context, deviceType, false)
 
-        private val DISPLAY_OPTIONS = listOf(
-            DisplayOption(GRID_3_BY_3, 255f, 300f, 48f, 13f, 104f), // Super Short Stubby
-            DisplayOption(GRID_3_BY_3, 255f, 400f, 48f, 13f, 104f), // Shorter Stubby
-            DisplayOption(GRID_4_BY_4, 275f, 420f, 48f, 13f, 104f), // Short Stubby
-            DisplayOption(GRID_4_BY_4, 255f, 450f, 48f, 13f, 104f), // Stubby
-            DisplayOption(GRID_4_BY_4, 296f, 491.33f, 48f, 13f, 104f), // Nexus S
-            DisplayOption(GRID_4_BY_4, 359f, 567f, 54f, 13f, 104f), // Nexus 4
-            DisplayOption(GRID_4_BY_4, 335f, 567f, 54f, 13f, 104f), // Nexus 5
-            DisplayOption(GRID_5_BY_5, 406f, 694f, 56f, 14.4f, 104f), // Large Phone
-            DisplayOption(GRID_5_BY_5, 406f, 694f, 56f, 14.4f, 104f), // Large Phone Split Display
-            DisplayOption(GRID_5_BY_5, 255f, 400f, 48f, 13f, 104f), // Shorter Stubby
-            DisplayOption(GRID_6_BY_5, 900f, 820f, 60f, 14f, 142f), // Tablet
-        )
+            val filteredProfiles = ArrayList<DisplayOption>()
+            // Use the default options since gridName is empty and there's no valid grids.
+            for (option in profiles) {
+                if (option.canBeDefault) {
+                    filteredProfiles.add(option)
+                }
+            }
+            if (filteredProfiles.isEmpty()) {
+                throw RuntimeException("No display option with canBeDefault=true")
+            }
+            return filteredProfiles
+        }
+
+        /** InvariantDeviceProfile.filterByColumnCount */
+        private fun filterByColumnCount(allOptions: List<DisplayOption>, numColumns: Int): List<DisplayOption> =
+            allOptions.filter { option -> option.grid.numColumns == numColumns }
 
         /**
          * InvariantDeviceProfile.invDistWeightedInterpolate: the smallest available width and
@@ -229,30 +242,136 @@ data class GridSpec(
         }
     }
 
-    /** A grid-option of device_profiles.xml, with what TextLauncher reads of it. */
-    private class GridOption(
-        val name: String,
-        val numColumns: Int,
-        val numFolderRows: Int,
-        val numFolderColumns: Int,
-        val deviceCategory: Int,
-    ) {
-        /** GridOption.isEnabled */
+    /**
+     * GridOption (deviceprofile/parser/GridOption.kt): a grid-option of device_profiles.xml, with
+     * what TextLauncher reads of it.
+     */
+    private class GridOption(ta: TypedArray) {
+        val name: String = requireNotNull(ta.getString(L3R.styleable.GridDisplayOption_name))
+
+        // getDefinedGridSizeSpecOrDefault. TextLauncher: the grid size specs (gridSizeSpecsId,
+        // which only the fixed landscape mode has) are not read.
+        val numRows: Int = ta.getInt(L3R.styleable.GridDisplayOption_numRows, 0)
+        val numColumns: Int = ta.getInt(L3R.styleable.GridDisplayOption_numColumns, 0)
+
+        val deviceCategory: Int = ta.getInt(L3R.styleable.GridDisplayOption_deviceCategory, DEVICE_CATEGORY_ANY)
+
+        // numFolderRows and numFolderColumns. TextLauncher: their defaults (INDEX_DEFAULT) only,
+        // as the folders do not change with the rotation.
+        val numFolderRows: Int = ta.getInt(L3R.styleable.GridDisplayOption_numFolderRows, numRows)
+        val numFolderColumns: Int = ta.getInt(L3R.styleable.GridDisplayOption_numFolderColumns, numColumns)
+
+        val mIsDualGrid: Boolean = ta.getBoolean(L3R.styleable.GridDisplayOption_isDualGrid, false)
+
+        val isFixedLandscape: Boolean = ta.getBoolean(L3R.styleable.GridDisplayOption_isFixedLandscape, false)
+
         fun isEnabled(deviceType: Int): Boolean = when (deviceType) {
-            TYPE_PHONE -> deviceCategory and DEVICE_CATEGORY_PHONE == DEVICE_CATEGORY_PHONE
-            TYPE_TABLET -> deviceCategory and DEVICE_CATEGORY_TABLET == DEVICE_CATEGORY_TABLET
-            TYPE_MULTI_DISPLAY -> deviceCategory and DEVICE_CATEGORY_MULTI_DISPLAY == DEVICE_CATEGORY_MULTI_DISPLAY
+            TYPE_PHONE -> (deviceCategory and DEVICE_CATEGORY_PHONE) == DEVICE_CATEGORY_PHONE
+            TYPE_TABLET -> (deviceCategory and DEVICE_CATEGORY_TABLET) == DEVICE_CATEGORY_TABLET
+            TYPE_MULTI_DISPLAY -> (deviceCategory and DEVICE_CATEGORY_MULTI_DISPLAY) == DEVICE_CATEGORY_MULTI_DISPLAY
+            // TextLauncher: no desktop devices (TYPE_DESKTOP).
             else -> false
+        }
+
+        /** Returns true if the grid option should be used given the flags that are toggled on/off. */
+        fun filterByFlag(deviceType: Int, isFixedLandscape: Boolean): Boolean {
+            // TextLauncher: no desktop devices (TYPE_DESKTOP), whose grids go by gridType.
+
+            if (deviceType == TYPE_TABLET) {
+                return Flags.oneGridRotationHandling() == mIsDualGrid
+            }
+
+            // Here we return true if fixed landscape mode should be on.
+            if (this.isFixedLandscape || isFixedLandscape) {
+                return this.isFixedLandscape && isFixedLandscape
+            }
+
+            return true
+        }
+
+        companion object {
+            const val TAG_NAME: String = "grid-option"
+
+            private const val DEVICE_CATEGORY_PHONE = 1 shl 0
+            private const val DEVICE_CATEGORY_TABLET = 1 shl 1
+            private const val DEVICE_CATEGORY_MULTI_DISPLAY = 1 shl 2
+            private const val DEVICE_CATEGORY_DESKTOP = 1 shl 3
+            private const val DEVICE_CATEGORY_ANY =
+                (DEVICE_CATEGORY_PHONE or
+                    DEVICE_CATEGORY_TABLET or
+                    DEVICE_CATEGORY_MULTI_DISPLAY or
+                    DEVICE_CATEGORY_DESKTOP)
+
+            /** @return all the grid options that can be shown on the device */
+            fun <T> parseAllDefined(
+                context: Context,
+                filter: (GridOption) -> Boolean = { true },
+                mapper: (GridOption, XmlElement) -> T,
+            ): List<T> {
+                return context.resources.getXml(L3R.xml.device_profiles).use { xml ->
+                    xml.getRootElement()
+                        .children(TAG_NAME)
+                        .mapNotNull { el ->
+                            val ta = el.obtainAttrs(context, L3R.styleable.GridDisplayOption)
+                            val option = GridOption(ta)
+                            ta.recycle()
+
+                            if (filter.invoke(option)) mapper.invoke(option, el) else null
+                        }
+                        .toList()
+                }
+            }
         }
     }
 
-    /** A display-option of device_profiles.xml, with what TextLauncher reads of it. */
+    /**
+     * DisplayOption (deviceprofile/parser/DisplayOption.kt): a display-option of
+     * device_profiles.xml, with what TextLauncher reads of it. TextLauncher: of the sizes that
+     * change with the rotation, the defaults (INDEX_DEFAULT).
+     */
     private class DisplayOption(
         val grid: GridOption,
         val minWidthDps: Float,
         val minHeightDps: Float,
+        val canBeDefault: Boolean,
         val iconImageSize: Float,
         val iconTextSize: Float,
         val allAppsCellHeight: Float,
-    )
+    ) {
+        constructor(grid: GridOption, ta: TypedArray) : this(
+            grid,
+            minWidthDps = ta.getFloat(L3R.styleable.ProfileDisplayOption_minWidthDps, 0f),
+            minHeightDps = ta.getFloat(L3R.styleable.ProfileDisplayOption_minHeightDps, 0f),
+            canBeDefault = ta.getBoolean(L3R.styleable.ProfileDisplayOption_canBeDefault, false),
+            // iconSizes, textSizes and allAppsCellSize
+            iconImageSize = ta.getFloat(L3R.styleable.ProfileDisplayOption_iconImageSize, 0f),
+            iconTextSize = ta.getFloat(L3R.styleable.ProfileDisplayOption_iconTextSize, 0f),
+            allAppsCellHeight = ta.getFloat(L3R.styleable.ProfileDisplayOption_allAppsCellHeight, 0f),
+        )
+
+        companion object {
+            fun getPredefinedDisplayOptions(
+                context: Context,
+                deviceType: Int,
+                isFixedLandscapeMode: Boolean,
+            ): List<DisplayOption> {
+                return GridOption.parseAllDefined(
+                    context,
+                    filter = {
+                        it.isEnabled(deviceType) &&
+                            it.filterByFlag(deviceType, isFixedLandscapeMode)
+                    },
+                    mapper = { option, el ->
+                        el.children("display-option")
+                            .map {
+                                val ta = it.obtainAttrs(context, L3R.styleable.ProfileDisplayOption)
+                                DisplayOption(option, ta).also { ta.recycle() }
+                            }
+                            .toList()
+                    },
+                )
+                    .flatten()
+            }
+        }
+    }
 }

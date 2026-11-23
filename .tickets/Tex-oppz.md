@@ -1,6 +1,6 @@
 ---
 id: Tex-oppz
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-23T09:06:34Z
@@ -18,3 +18,9 @@ tags: [home, launcher3]
 
 直し方: 列数で絞り込む。device_profiles.xml を path= で取り込んで読む
 
+
+## Notes
+
+**2026-11-23T16:04:19Z**
+
+res/xml/device_profiles.xml を path= でそのまま取り込み、GridSpec が上流の deviceprofile/parser/GridOption.kt・DisplayOption.kt の読み方（parseAllDefined、getPredefinedDisplayOptions、isEnabled、filterByFlag）を移して R.xml.device_profiles を TypedArray で読むようにした。手で写した表は消した。属性 GridDisplayOption・ProfileDisplayOption は attrs.xml から launcher3.xml に写し、読まない参照先（default_workspace_*、paddings_*、spec_*、taskbar_button_margin_*、FolderStyleDefault）は TextLauncher: の印を付けて空の値で宣言した。InvariantDeviceProfile.initGrid と同じく、DeviceGridState の列数（GridSizeMigration.getColumns が migration_src_workspace_size を読む）の候補に先に絞り（filterByColumnCount）、なければ全候補から選ぶ。getPredefinedDeviceProfiles は GRID_NAME が空なので canBeDefault の候補。Flags.oneGridRotationHandling（リリースでは無効）を互換の Flags に足した。端末のグリッドは今までと同じ候補から選ばれるので、スマホでの列数・アイコンの大きさは変わらないはず

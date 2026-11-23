@@ -25,6 +25,21 @@ internal object GridSizeMigration {
     private const val TAG = "GridSizeMigrationLogic"
 
     /**
+     * DeviceGridState(LauncherPrefs).getColumns: the columns of the grid the items were placed
+     * in, or -1 before any grid was saved. InvariantDeviceProfile.initGrid keeps them if it can
+     * (filterByColumnCount).
+     */
+    fun getColumns(context: Context): Int {
+        val gridSizeString = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE)
+            .getString(KEY_WORKSPACE_SIZE, null)
+        if (gridSizeString.isNullOrEmpty()) {
+            return -1
+        }
+        // TextLauncher: a size that does not parse counts as none, rather than crashing.
+        return gridSizeString.split(",")[0].toIntOrNull() ?: -1
+    }
+
+    /**
      * Moves [items] (the items on the home page, not in folders) into [grid] if it is not the
      * grid they were placed in. Returns true when they changed.
      */
