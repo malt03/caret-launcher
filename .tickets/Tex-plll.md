@@ -1,6 +1,6 @@
 ---
 id: Tex-plll
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:59:03Z
@@ -41,3 +41,7 @@ parent: Tex-vs8t
 **2026-11-23T15:47:19Z**
 
 2026-11-24 整理: HomeController の「下に伸びる」と HomeWorkspace の「行の上限がない」のコメントは Tex-8w0r で直した（findSpaceOnWorkspace と acceptDrop）
+
+**2026-11-23T16:49:39Z**
+
+2026-11-24: 残りを片付けた。DrawerIndex.kt とテスト、NoPressDelayGridLayout、dimens.xml の result_icon_size・result_row_height、LauncherRootLayout の dropTargetBarHeight（と、それだけが使っていた drop_target_button_workspace_edge_gap）・isInsideSearchBar を消した。IconCache.getBadgedIcon は今は使われているので残した。LauncherRootLayout の宙に浮いた KDoc を消し、シートがキーボードの裏から出る（6.4）と直した。DropTargetBar.onLayout の説明をホームが縮むことに合わせた。dimens.xml の見出し（4_by_5 Nexus 4）を、グリッドの寸法は GridSpec が device_profiles.xml から取る旨に直した。LauncherActivity の launch と startShortcut は Utilities.getViewBounds と launchOptions を共有する。LauncherAppState の説明にウィジェットのための InvariantDeviceProfile を加えた

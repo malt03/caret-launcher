@@ -66,7 +66,6 @@
     <dimen name="drop_target_button_drawable_vertical_padding">8dp</dimen>
     <dimen name="drop_target_button_frame_radius">80dp</dimen>
     <dimen name="drop_target_button_gap">28dp</dimen>
-    <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
     <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
     <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
     <color name="materialColorOnSurfaceVariant">@android:color/system_on_surface_variant_light</color>

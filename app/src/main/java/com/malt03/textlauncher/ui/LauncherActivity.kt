@@ -5,7 +5,6 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.pm.LauncherApps
-import android.graphics.Rect
 import android.os.Bundle
 import android.os.UserHandle
 import android.text.Editable
@@ -33,6 +32,7 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Launcher
+import com.android.launcher3.Utilities
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.states.RotationHelper.REQUEST_LOCK
 import com.android.launcher3.states.RotationHelper.REQUEST_NONE
@@ -592,12 +592,10 @@ class LauncherActivity :
 
     /** Launcher.startShortcut, for an app shortcut in the long-press menu or on the home screen. */
     override fun startShortcut(packageName: String, id: String, view: View, user: UserHandle) {
-        val location = IntArray(2).also { view.getLocationOnScreen(it) }
-        val bounds = Rect(location[0], location[1], location[0] + view.width, location[1] + view.height)
-        val options = ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.width, view.height).toBundle()
         isLaunching = true
         try {
-            getSystemService(LauncherApps::class.java).startShortcut(packageName, id, bounds, options, user)
+            getSystemService(LauncherApps::class.java)
+                .startShortcut(packageName, id, Utilities.getViewBounds(view), launchOptions(view), user)
         } catch (e: Exception) {
             isLaunching = false
         }
@@ -606,18 +604,19 @@ class LauncherActivity :
     private fun launch(entry: AppEntry, view: View?, fromSearch: Boolean) {
         if (fromSearch) app.searchStore.recordLaunch(currentQuery(), entry.key)
         val launcherApps = getSystemService(LauncherApps::class.java)
-        val bounds = view?.let { v ->
-            val location = IntArray(2).also { v.getLocationOnScreen(it) }
-            Rect(location[0], location[1], location[0] + v.width, location[1] + v.height)
-        }
-        val options = view?.let { ActivityOptions.makeScaleUpAnimation(it, 0, 0, it.width, it.height).toBundle() }
         isLaunching = true
         try {
-            launcherApps.startMainActivity(entry.component, entry.user, bounds, options)
+            launcherApps.startMainActivity(
+                entry.component, entry.user, view?.let(Utilities::getViewBounds), view?.let(::launchOptions),
+            )
         } catch (e: Exception) {
             isLaunching = false
         }
         // The query and results stay while the app opens over them; onStop clears them once
         // the launcher is hidden, so the home screen never flashes in between.
     }
+
+    /** The animation an app or a shortcut opens with: it scales up from [view]. */
+    private fun launchOptions(view: View) =
+        ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.width, view.height).toBundle()
 }

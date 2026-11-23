@@ -24,7 +24,10 @@ import android.content.Context;
 
 import com.android.launcher3.icons.IconCache;
 
-/** Stand-in for Launcher3's LauncherAppState. Only the icon cache that folder/PreviewItemManager reads. */
+/**
+ * Stand-in for Launcher3's LauncherAppState. Only the icon cache (icons for folders, the long-press
+ * menu and the widget picker) and the InvariantDeviceProfile (widget spans and the widget picker).
+ */
 public class LauncherAppState {
     private static final LauncherAppState INSTANCE = new LauncherAppState();
     private IconCache mIconCache;

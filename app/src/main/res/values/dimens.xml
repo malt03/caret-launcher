@@ -1,9 +1,8 @@
 <resources>
-    <!-- Launcher3 res/xml/device_profiles.xml (android-17.0.0_r1): 4_by_5 "Nexus 4" / 5_by_5 "Large Phone" -->
+    <!-- TextLauncher's own sizes. The grid's sizes (columns, icon and text sizes) come from
+         Launcher3's res/xml/device_profiles.xml through GridSpec. -->
     <dimen name="icon_bitmap_size">64dp</dimen>
     <dimen name="search_bar_height">56dp</dimen>
     <dimen name="search_bar_margin_horizontal">12dp</dimen>
     <dimen name="search_bar_margin_vertical">8dp</dimen>
-    <dimen name="result_icon_size">44dp</dimen>
-    <dimen name="result_row_height">60dp</dimen>
 </resources>

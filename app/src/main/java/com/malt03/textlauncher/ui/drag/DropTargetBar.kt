@@ -164,8 +164,10 @@ class DropTargetBar(
     }
 
     /**
-     * DropTargetBar.onLayout. TextLauncher: the home grid is not scaled while dragging, and spans
-     * the bar's width, so the bar's center and width stand for the scaled cell layout's.
+     * DropTargetBar.onLayout. TextLauncher: the home grid shrinks about its horizontal center
+     * while dragging (SpringLoadedListener) and is centered under the bar, so the bar's center
+     * stands for the scaled cell layout's. The bar's width stands for the scaled panel width,
+     * which cancels out of the two buttons' positions.
      */
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         val visibleCount = getVisibleButtons(tempTargets)

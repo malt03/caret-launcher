@@ -1,7 +1,6 @@
 package com.malt03.textlauncher.ui
 
 import android.content.Context
-import android.widget.GridLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 
@@ -20,9 +19,5 @@ class NoPressDelayScrollView(context: Context) : NestedScrollView(context) {
 }
 
 class NoPressDelayRecyclerView(context: Context) : RecyclerView(context) {
-    override fun shouldDelayChildPressedState(): Boolean = false
-}
-
-class NoPressDelayGridLayout(context: Context) : GridLayout(context) {
     override fun shouldDelayChildPressedState(): Boolean = false
 }

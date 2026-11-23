@@ -59,24 +59,17 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     private val dropTargetBarTopMargin = resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_top_margin)
 
     /**
-     * DeviceProfile.getDropTargetBarHeight: the bar with its margins, which the home grid makes
-     * room for while dragging (the top of Launcher3's spring-loaded workspace).
-     */
-    /**
      * DeviceProfile.getCellLayoutSpringLoadShrunkTop without the top inset: the drop target bar
      * with its top and bottom margins, below which the home screen shrinks while editing.
      */
     val dropTargetBarShrunkHeight = dropTargetBarTopMargin + dropTargetBarSize +
         resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bottom_margin)
 
-    val dropTargetBarHeight = dropTargetBarSize + dropTargetBarTopMargin +
-        resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_bottom_margin) +
-        resources.getDimensionPixelSize(com.android.launcher3.R.dimen.drop_target_button_workspace_edge_gap)
-
     /**
      * The all apps list (docs/spec.md 6), set by the activity. It is on [allAppsSheet], which
-     * [allAppsProgress] brings up from below the screen to right under the search field, as the
-     * field goes from above the keyboard to the top of the screen (AllAppsTransitionController).
+     * [allAppsProgress] keeps right under the search field as the field goes from above the
+     * keyboard to the top of the screen, so it comes out from behind the keyboard
+     * (AllAppsTransitionController; docs/spec.md 6.4).
      */
     var allAppsView: AllAppsView? = null
         set(value) {
@@ -570,6 +563,4 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             },
         )
     }
-
-    fun isInsideSearchBar(view: View): Boolean = view === searchBar || view.parent === searchBar
 }
