@@ -131,6 +131,34 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         if (cellLayoutHeight <= 0f) return 1f to 0f
         // getCellLayoutSpringLoadShrunkTop: the drop target bar with its margins, in root coordinates.
         val shrunkTop = root.statusBarTop + root.dropTargetBarShrunkHeight.toFloat()
+        val scale = workspaceSpringLoadScale(cellLayoutHeight)
+
+        val halfHeight = cellLayoutHeight / 2
+        val myCenter = root.contentArea.top + workspace.top + halfHeight
+        // The page is the workspace itself, so its top is the workspace's.
+        val cellTopFromCenter = halfHeight
+        val actualCellTop = myCenter - cellTopFromCenter * scale
+        return scale to (shrunkTop - actualCellTop)
+    }
+
+    /**
+     * DeviceProfile.getWorkspaceSpringLoadScale, which the widget drag scale uses
+     * (WidgetDragScaleUtils). The page's height is the home screen's with the keyboard down
+     * (getCellLayoutHeight), which it takes while editing (docs/spec.md 5.4); a drag works it out
+     * before the layout changes.
+     */
+    fun workspaceSpringLoadScale(): Float {
+        val root = home.root
+        val cellLayoutHeight = root.keyboardHiddenBarTop - root.statusBarTop - workspace.top
+        if (cellLayoutHeight <= 0f) return 1f
+        return workspaceSpringLoadScale(cellLayoutHeight)
+    }
+
+    /** DeviceProfile.getWorkspaceSpringLoadScale for a page [cellLayoutHeight] high. */
+    private fun workspaceSpringLoadScale(cellLayoutHeight: Float): Float {
+        val root = home.root
+        // getCellLayoutSpringLoadShrunkTop: the drop target bar with its margins, in root coordinates.
+        val shrunkTop = root.statusBarTop + root.dropTargetBarShrunkHeight.toFloat()
         // getCellLayoutSpringLoadShrunkBottom: above the hotseat and its spring-loaded top margin.
         val shrunkBottom = root.keyboardHiddenBarTop - res.getDimensionPixelSize(R.dimen.spring_loaded_hotseat_top_margin)
         var scale = ((shrunkBottom - shrunkTop) / cellLayoutHeight).coerceAtMost(1f)
@@ -140,13 +168,7 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         val maxAvailableWidth = workspaceWidth -
             2 * res.getDimensionPixelSize(R.dimen.dynamic_grid_spring_loaded_min_next_space_visible)
         if (scaledWorkspaceWidth > maxAvailableWidth) scale *= maxAvailableWidth / scaledWorkspaceWidth
-
-        val halfHeight = cellLayoutHeight / 2
-        val myCenter = root.contentArea.top + workspace.top + halfHeight
-        // The page is the workspace itself, so its top is the workspace's.
-        val cellTopFromCenter = halfHeight
-        val actualCellTop = myCenter - cellTopFromCenter * scale
-        return scale to (shrunkTop - actualCellTop)
+        return scale
     }
 
     private companion object {

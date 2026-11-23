@@ -231,6 +231,7 @@ path=src/com/android/launcher3/util/compose/TextStyleFromResource.kt
 path=src/com/android/launcher3/model/WidgetItem.java
 path=src/com/android/launcher3/pm/ShortcutConfigActivityInfo.java
 path=src/com/android/launcher3/widget/util/WidgetSizes.java
+path=src/com/android/launcher3/widget/util/WidgetDragScaleUtils.java
 path=src/com/android/launcher3/widget/WidgetSections.java
 path=src/com/android/launcher3/PendingAddItemInfo.java
 path=src/com/android/launcher3/widget/PendingAddShortcutInfo.java

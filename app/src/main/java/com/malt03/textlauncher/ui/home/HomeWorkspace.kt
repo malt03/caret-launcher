@@ -18,6 +18,7 @@ import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
 import com.android.launcher3.OnAlarmListener
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
@@ -37,6 +38,7 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.ActivityContext
 import com.google.android.msdl.data.model.MSDLToken
+import com.malt03.textlauncher.ui.drag.HomeDragController
 
 /**
  * The home grid as a drop target and drag source: the drag and drop part of Launcher3's Workspace
@@ -233,11 +235,29 @@ class HomeWorkspace(
 
         // TextLauncher: no system drags.
         return if (contentView != null) {
+            // Flags.homeScreenEditImprovements (enabled in the release): a widget stays where it
+            // is until the drag starts, then shrinks to its spring-loaded size.
+            val homeDragController = dragController as? HomeDragController
+            if ((child.tag as? ItemInfo)?.itemType == ITEM_TYPE_APPWIDGET && homeDragController != null) {
+                dragOptions.deferDragToPreDragEnd = true
+                dragOptions.preDragEndScale = (contentView.measuredWidth +
+                    homeDragController.getWidgetDragScalePx(null, contentView, dragObject)) /
+                    contentView.measuredWidth
+            }
             dragController.startDrag(
                 contentView, draggableView, dragLayerX, dragLayerY, source, dragObject, dragRect,
                 scale * iconScale, scale, dragOptions,
             )
         } else {
+            val homeDragController = dragController as? HomeDragController
+            val childItemInfo = child.tag as? ItemInfo
+            if (childItemInfo != null && childItemInfo.itemType == ITEM_TYPE_APPWIDGET &&
+                homeDragController != null && drawable != null
+            ) {
+                dragOptions.preDragEndScale = (drawable.intrinsicWidth +
+                    homeDragController.getWidgetDragScalePx(drawable, null, dragObject)) /
+                    drawable.intrinsicWidth
+            }
             dragController.startDrag(
                 drawable, draggableView, dragLayerX, dragLayerY, source, dragObject, dragRect,
                 scale * iconScale, scale, dragOptions,

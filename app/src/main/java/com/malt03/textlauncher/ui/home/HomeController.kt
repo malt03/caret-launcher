@@ -185,6 +185,8 @@ class HomeController(
         grid.onCellSizeChanged = { width, height ->
             launcher.deviceProfile.workspaceProfile.setCellSize(width, height, widgetPadding)
         }
+        // DeviceProfile.getWorkspaceSpringLoadScale, from the home screen's layout.
+        launcher.deviceProfile.setWorkspaceSpringLoadScale(springLoadedListener::workspaceSpringLoadScale)
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)

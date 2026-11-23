@@ -91,17 +91,13 @@ internal class ItemLongClickListener(private val home: HomeController) {
      * ItemLongClickListener.INSTANCE_WORKSPACE for a widget. With Flags.homeScreenEditImprovements
      * (enabled in the release), Workspace.startDrag shows the widget's menu and its resize frame
      * (PopupControllerForExtraHomeScreenItems), and the drag starts once the finger moves; until
-     * then the widget stays where it is (deferDragToPreDragEnd).
-     *
-     * TextLauncher: no preDragEndScale, as LauncherDragController's widget drag scaling is not
-     * ported.
+     * then the widget stays where it is, and then it shrinks to its spring-loaded size
+     * (Workspace.beginDragShared's deferDragToPreDragEnd and preDragEndScale).
      */
     fun onHomeWidgetLongPress(view: LauncherAppWidgetHostView) {
         if (!canStartDrag()) return
         val info = view.tag as? ItemInfo ?: return
-        val options = DragOptions()
-        options.deferDragToPreDragEnd = true
-        home.homeWorkspace.startDrag(view, info, options) { showExtraHomeScreenItemPopup(view, info) }
+        home.homeWorkspace.startDrag(view, info, DragOptions()) { showExtraHomeScreenItemPopup(view, info) }
     }
 
     /**

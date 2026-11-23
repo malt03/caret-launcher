@@ -29,6 +29,8 @@
     <item type="id" name="perform_a11y_action_on_launcher_state_normal_tag" />
     <dimen name="blur_size_medium_outline">2dp</dimen>
     <dimen name="pre_drag_view_scale">6dp</dimen>
+    <!-- WidgetDragScaleUtils -->
+    <dimen name="widget_drag_view_min_scale_down_size">70dp</dimen>
     <integer name="config_dropAnimMinDuration">100</integer>
     <integer name="config_dropAnimMaxDuration">500</integer>
     <integer name="config_dropAnimMaxDist">800</integer>

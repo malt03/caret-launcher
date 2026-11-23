@@ -154,6 +154,22 @@ public class DeviceProfile {
         }
     }
 
+    private java.util.function.Supplier<Float> mWorkspaceSpringLoadScale = () -> 1f;
+
+    /**
+     * The scale of the workspace in the spring-loaded state (WidgetDragScaleUtils). TextLauncher:
+     * the home screen works it out from its own layout (the drop target bar, the search field with
+     * the keyboard down) and sets it with {@link #setWorkspaceSpringLoadScale}.
+     */
+    public float getWorkspaceSpringLoadScale(android.content.Context context) {
+        return mWorkspaceSpringLoadScale.get();
+    }
+
+    /** TextLauncher: set by the home screen; see {@link #getWorkspaceSpringLoadScale}. */
+    public void setWorkspaceSpringLoadScale(java.util.function.Supplier<Float> scale) {
+        mWorkspaceSpringLoadScale = scale;
+    }
+
     public FolderProfile getFolderProfile() {
         return mFolderProfile;
     }
