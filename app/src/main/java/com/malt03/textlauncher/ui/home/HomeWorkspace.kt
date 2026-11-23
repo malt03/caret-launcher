@@ -19,10 +19,13 @@ import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
+import com.android.launcher3.LauncherSettings
 import com.android.launcher3.OnAlarmListener
+import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DragController
+import com.android.launcher3.dragndrop.DragLayer
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DragView
 import com.android.launcher3.dragndrop.DraggableView
@@ -35,6 +38,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.Poppable
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.PendingAddShortcutInfo
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.ActivityContext
 import com.google.android.msdl.data.model.MSDLToken
@@ -43,7 +47,8 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
 /**
  * The home grid as a drop target and drag source: the drag and drop part of Launcher3's Workspace
  * (android-17.0.0_r1) for its one CellLayout. Methods keep Workspace's names and logic. Left out:
- * pages, the hotseat, widgets, system drags and state transitions; the grid scrolls vertically
+ * pages, the hotseat, widgets and state transitions (a system drag, from the widget picker, is
+ * taken as in Workspace.onDropExternal); the grid scrolls vertically
  * instead, so dragging near its top or bottom edge scrolls it.
  *
  * Drag coordinates (DragObject.x / y) are in the grid's coordinates: [getDropView] is the grid,
@@ -606,12 +611,31 @@ class HomeWorkspace(
     }
 
     /**
-     * Workspace.onDropExternal, for drops that did not start on the grid: apps from search results,
-     * items from folders and app shortcuts from the long-press menu ("other drag/drop cases, like
-     * dragging from All Apps").
+     * Workspace.onDropExternal, for drops that did not start on the grid: widgets and shortcuts
+     * from the widget picker (PendingAddItemInfo), and apps from search results, items from
+     * folders and app shortcuts from the long-press menu ("other drag/drop cases, like dragging
+     * from All Apps").
      */
     private fun onDropExternal(touchXY: IntArray?, cellLayout: CellLayout?, d: DragObject) {
         cellLayout ?: return
+        // TextLauncher: one page and no hotseat.
+        val container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+
+        val pendingShortcut = d.dragInfo as? PendingAddShortcutInfo
+        if (pendingShortcut != null) {
+            val si = pendingShortcut.getActivityInfo(context).createWorkspaceItemInfo()
+            if (si != null) {
+                d.dragInfo = si
+                si.container = container
+            }
+        }
+
+        val pendingInfo = d.dragInfo as? PendingAddItemInfo
+        if (pendingInfo != null) {
+            onDropPendingItem(touchXY, cellLayout, d, pendingInfo, container)
+            return
+        }
+
         val info = d.dragInfo as? WorkspaceItemInfo ?: return
         var spanX = info.spanX
         var spanY = info.spanY
@@ -650,6 +674,134 @@ class HomeWorkspace(
         if (d.dragView != null) {
             mLauncher.dragLayer.animateViewIntoPosition(d.dragView, view, -1, grid)
         }
+    }
+
+    /** Workspace.onDropExternal for a widget or shortcut from the widget picker. */
+    private fun onDropPendingItem(
+        touchXY: IntArray?, cellLayout: CellLayout, d: DragObject, pendingInfo: PendingAddItemInfo, container: Int,
+    ) {
+        var spanX = pendingInfo.spanX
+        var spanY = pendingInfo.spanY
+        mDragInfo?.let {
+            spanX = it.spanX
+            spanY = it.spanY
+        }
+
+        var findNearestVacantCell = true
+        if (pendingInfo.itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT && touchXY != null) {
+            mTargetCell = findNearestArea(touchXY[0], touchXY[1], spanX, spanY, cellLayout, mTargetCell)
+            val distance = cellLayout.getDistanceFromWorkspaceCellVisualCenter(
+                mDragViewVisualCenter[0], mDragViewVisualCenter[1], mTargetCell,
+            )
+            if (willCreateUserFolder(d.dragInfo, cellLayout, mTargetCell, distance, true) ||
+                willAddToExistingUserFolder(d.dragInfo, cellLayout, mTargetCell, distance)
+            ) {
+                findNearestVacantCell = false
+            }
+        }
+
+        val item = d.dragInfo
+        if (findNearestVacantCell) {
+            var minSpanX = item.spanX
+            var minSpanY = item.spanY
+            if (item.minSpanX > 0 && item.minSpanY > 0) {
+                minSpanX = item.minSpanX
+                minSpanY = item.minSpanY
+            }
+            val resultSpan = IntArray(2)
+            mTargetCell = cellLayout.performReorder(
+                mDragViewVisualCenter[0].toInt(), mDragViewVisualCenter[1].toInt(), minSpanX, minSpanY,
+                pendingInfo.spanX, pendingInfo.spanY, null, mTargetCell, resultSpan, CellLayout.MODE_ON_DROP_EXTERNAL,
+            )
+            // TextLauncher: no widget is bound while it is dragged (WidgetHostViewLoader), so
+            // there is no bound widget whose size to update; it gets its size once it is added.
+            item.spanX = resultSpan[0]
+            item.spanY = resultSpan[1]
+        }
+
+        val onAnimationCompleteRunnable = Runnable {
+            // When dragging and dropping from customization tray, we deal with creating
+            // widgets/shortcuts/folders in a slightly different way
+            mLauncher.addPendingItem(pendingInfo, container, 0, mTargetCell, item.spanX, item.spanY)
+        }
+        // TextLauncher: the drag view always disappears (Launcher3 keeps it for a widget's
+        // configuration activity, ANIMATE_INTO_POSITION_AND_REMAIN, until the result comes).
+        animateWidgetDrop(pendingInfo, cellLayout, d.dragView, onAnimationCompleteRunnable)
+    }
+
+    /**
+     * Workspace.getFinalPositionForDropAnimation. TextLauncher: no bound widget (finalView), no
+     * widget scale and no state transition to account for, and the grid has no unused space.
+     */
+    private fun getFinalPositionForDropAnimation(
+        loc: IntArray, scaleXY: FloatArray, dragView: DragView, layout: CellLayout, info: ItemInfo,
+        targetCell: IntArray, scale: Boolean,
+    ) {
+        // Now we animate the dragView, (ie. the widget or shortcut preview) into its final
+        // location and size on the home screen.
+        val spanX = info.spanX
+        val spanY = info.spanY
+
+        val r = mLauncher.workspace.estimateItemPosition(layout, targetCell[0], targetCell[1], spanX, spanY)
+
+        val tempFXY = floatArrayOf(r.left.toFloat(), r.top.toFloat())
+        // TextLauncher: the CellLayout's coordinates are the grid's.
+        val cellLayoutScale = mLauncher.dragLayer.getDescendantCoordRelativeToSelf(grid, tempFXY)
+        loc[0] = Math.round(tempFXY[0])
+        loc[1] = Math.round(tempFXY[1])
+
+        if (scale) {
+            val dragViewScaleX = (1.0f * r.width()) / dragView.measuredWidth
+            val dragViewScaleY = (1.0f * r.height()) / dragView.measuredHeight
+
+            // The animation will scale the dragView about its center, so we need to center about
+            // the final location.
+            loc[0] -= ((dragView.measuredWidth - cellLayoutScale * r.width()) / 2).toInt()
+            loc[1] -= ((dragView.measuredHeight - cellLayoutScale * r.height()) / 2).toInt()
+            scaleXY[0] = dragViewScaleX * cellLayoutScale
+            scaleXY[1] = dragViewScaleY * cellLayoutScale
+        } else {
+            // Since we are not cross-fading the dragView, align the drag view to the
+            // final cell position.
+            val dragScale = dragView.initialScale * cellLayoutScale
+            loc[0] += ((dragScale - 1) * dragView.width / 2).toInt()
+            loc[1] += ((dragScale - 1) * dragView.height / 2).toInt()
+            scaleXY[0] = dragScale
+            scaleXY[1] = dragScale
+
+            // If a dragRegion was provided, offset the final position accordingly.
+            val dragRegion = dragView.dragRegion
+            if (dragRegion != null) {
+                loc[0] += (cellLayoutScale * dragRegion.left).toInt()
+                loc[1] += (cellLayoutScale * dragRegion.top).toInt()
+            }
+        }
+    }
+
+    /**
+     * Workspace.animateWidgetDrop for an item from the widget picker (external). TextLauncher: no
+     * bound widget to cross-fade to, and the drag view disappears at the end.
+     */
+    private fun animateWidgetDrop(info: ItemInfo, cellLayout: CellLayout, dragView: DragView, onCompleteRunnable: Runnable) {
+        val finalPos = IntArray(2)
+        val scaleXY = FloatArray(2)
+        val scalePreview = info !is PendingAddShortcutInfo
+        getFinalPositionForDropAnimation(finalPos, scaleXY, dragView, cellLayout, info, mTargetCell, scalePreview)
+
+        val duration = context.resources.getInteger(com.android.launcher3.R.integer.config_dropAnimMaxDuration) - 200
+
+        val isWidget = info.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET ||
+            info.itemType == LauncherSettings.Favorites.ITEM_TYPE_CUSTOM_APPWIDGET
+        if (isWidget) {
+            val minScale = Math.min(scaleXY[0], scaleXY[1])
+            scaleXY[0] = minScale
+            scaleXY[1] = minScale
+        }
+
+        mLauncher.dragLayer.animateViewIntoPosition(
+            dragView, finalPos[0], finalPos[1], 1f, scaleXY[0], scaleXY[1], onCompleteRunnable,
+            DragLayer.ANIMATION_END_DISAPPEAR, duration, grid,
+        )
     }
 
     override fun onDragEnter(d: DragObject) {

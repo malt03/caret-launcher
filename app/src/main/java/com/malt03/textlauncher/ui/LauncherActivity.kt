@@ -101,7 +101,7 @@ class LauncherActivity :
     }
 
     /** Launcher.mRotationHelper */
-    private val rotationHelper = RotationHelper(this)
+    override val rotationHelper = RotationHelper(this)
 
     /** InvariantDeviceProfile: the grid of the display the activity was created on. */
     private lateinit var gridSpec: GridSpec
@@ -256,8 +256,10 @@ class LauncherActivity :
         // handled instead of going home.
         val internalStateHandled = Launcher.ACTIVITY_TRACKER.handleNewIntent(home.launcher)
         if (internalStateHandled) return
-        // Home button while already on the home screen.
-        home.cancelDrag()
+        // Home button while already on the home screen. TextLauncher: a drag from the widget
+        // picker (a system drag, BaseItemDragListener) goes on, as it starts before the picker's
+        // home intent comes; Launcher3's onNewIntent cancels no drag.
+        if (!home.isSystemDragInProgress) home.cancelDrag()
         home.closeFloatingViews(animate = false)
         clearQuery()
         // docs/spec.md 6.6: the home button closes the all apps list.

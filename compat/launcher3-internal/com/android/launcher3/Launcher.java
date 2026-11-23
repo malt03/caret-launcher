@@ -31,6 +31,7 @@ import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.states.RotationHelper;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
 import com.android.launcher3.util.RunnableList;
@@ -152,6 +153,30 @@ public abstract class Launcher implements ActivityContext {
      * in edit mode (docs/spec.md 5.4).
      */
     public void onWidgetResizeFrameOpenChanged(boolean open) {}
+
+    /** TextLauncher: the home activity's RotationHelper. */
+    public abstract RotationHelper getRotationHelper();
+
+    /** Activity.getIntent of the home activity. */
+    public abstract Intent getIntent();
+
+    /** Activity.setIntent of the home activity. */
+    public abstract void setIntent(Intent intent);
+
+    /**
+     * TextLauncher: StateManager.goToState(NORMAL, animated) with a success callback: the home
+     * screen leaves the search results and the all apps list, and runs {@code onDone} once it is
+     * shown (at once when it already is).
+     */
+    public abstract void goToNormalState(boolean animated, @Nullable Runnable onDone);
+
+    /**
+     * Launcher.addPendingItem: a widget or shortcut dropped from the widget picker
+     * (Workspace.onDropExternal) at {@code cell}, with the spans it takes.
+     * TextLauncher: one page and no hotseat, so the screen id and container are kept as given.
+     */
+    public abstract void addPendingItem(PendingAddItemInfo info, int container, int screenId,
+            int[] cell, int spanX, int spanY);
 
     /** No wallpaper zoom: it needs a system permission. */
     public DepthController getDepthController() {

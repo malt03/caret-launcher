@@ -17,9 +17,11 @@ import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.BubbleTextView
+import com.android.launcher3.CellLayout
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.LauncherSettings
+import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.ShortcutAndWidgetContainer
@@ -34,6 +36,7 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
+import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
@@ -90,6 +93,8 @@ class HomeController(
         val openAllApps: (() -> Unit)?
         /** Whether the empty space's long press may show its menu (Launcher3's NORMAL state). */
         fun canShowOptions(): Boolean
+        /** Launcher.getRotationHelper, for a drag from the widget picker (BaseItemDragListener). */
+        val rotationHelper: RotationHelper
     }
 
     internal val context = root.context
@@ -125,6 +130,8 @@ class HomeController(
         override fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>, reason: String?) {
             if (loader.removeItems(matcher::test)) loader.rebuild()
         }
+
+        override fun getFirstCellLayout(): CellLayout = grid.cellLayout
     }.apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
@@ -324,6 +331,10 @@ class HomeController(
 
     val isDragging: Boolean get() = dragController.isDragging
 
+    /** Whether a drag from another window (the widget picker) is in progress (DragDriver). */
+    val isSystemDragInProgress: Boolean
+        get() = dragController.isDragging && dragController.mOptions?.simulatedDndStartPoint != null
+
     /**
      * Closes the open folder (typing in the search field, dragging a shortcut out of the menu),
      * and a widget's resize frame, which belongs to the home screen the search results cover.
@@ -425,6 +436,39 @@ class HomeController(
         info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
         info.cellX = cell[0]
         info.cellY = cell[1]
+        addAppWidgetFromDrop(info)
+        return true
+    }
+
+    /**
+     * Launcher.addPendingItem for a widget or shortcut dropped from the widget picker
+     * (Workspace.onDropExternal), at [cell] with the spans it takes there.
+     */
+    internal fun addPendingItem(info: PendingAddItemInfo, container: Int, cell: IntArray?, spanX: Int, spanY: Int) {
+        if (cell != null) {
+            info.cellX = cell[0]
+            info.cellY = cell[1]
+        }
+        info.container = container
+        info.spanX = spanX
+        info.spanY = spanY
+
+        if (info is PendingAddWidgetInfo) {
+            // TextLauncher: WidgetHostViewLoader.preloadWidget's size options, as the widget is
+            // not preloaded while it is dragged.
+            if (info.bindOptions == null) {
+                info.bindOptions = info.getDefaultSizeOptions(context)
+            }
+            addAppWidgetFromDrop(info)
+        } else { // info can only be PendingAddShortcutInfo
+            // TextLauncher: shortcuts made by an app's activity (processShortcutFromDrop) are not
+            // supported yet.
+            android.util.Log.w("Launcher", "Shortcut creation is not supported yet: $info")
+        }
+    }
+
+    /** Launcher.addAppWidgetFromDrop, once the home screen is resumed. */
+    private fun addAppWidgetFromDrop(info: PendingAddWidgetInfo) {
         // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
         // permission), so it starts no activity while the picker is still in front. TextLauncher
         // may need the system's bind dialog or the widget's configuration activity, which the home
@@ -432,7 +476,6 @@ class HomeController(
         // add waits until the home screen is resumed.
         if (isResumed) widgetAddFlow.addAppWidgetFromDrop(info)
         else runOnResume = { widgetAddFlow.addAppWidgetFromDrop(info) }
-        return true
     }
 
     /**

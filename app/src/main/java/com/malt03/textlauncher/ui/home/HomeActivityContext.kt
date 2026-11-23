@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.app.Activity
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -9,6 +10,7 @@ import com.android.launcher3.DeviceProfile
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
+import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
@@ -17,6 +19,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.shortcuts.ShortcutKey
+import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
@@ -134,6 +137,22 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun saveItemPlacement() = home.saveItemPlacement()
 
     override fun onWidgetResizeFrameOpenChanged(open: Boolean) = home.onWidgetResizeFrameOpenChanged(open)
+
+    override fun getRotationHelper(): RotationHelper = home.host.rotationHelper
+
+    override fun getIntent(): Intent = (context as Activity).intent
+
+    override fun setIntent(intent: Intent) {
+        (context as Activity).intent = intent
+    }
+
+    /** StateManager.goToState(NORMAL): the home screen, without the search results or all apps. */
+    override fun goToNormalState(animated: Boolean, onDone: Runnable?) =
+        home.host.showHome { onDone?.run() }
+
+    /** Launcher.addPendingItem: a widget or shortcut dropped from the widget picker. */
+    override fun addPendingItem(info: PendingAddItemInfo, container: Int, screenId: Int, cell: IntArray?, spanX: Int, spanY: Int) =
+        home.addPendingItem(info, container, cell, spanX, spanY)
 
     /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */
     override fun addToWorkspace(item: ItemInfo, accessibility: Boolean, finishCallback: Consumer<Boolean>?): Boolean {

@@ -21,6 +21,7 @@
 package com.android.launcher3;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -47,6 +48,36 @@ public abstract class Workspace<T> extends FrameLayout {
     }
 
     /**
+     * Estimates the size of an item using spans: hSpan, vSpan.
+     *
+     * @return MAX_VALUE for each dimension if unsuccessful.
+     */
+    public int[] estimateItemSize(ItemInfo itemInfo) {
+        int[] size = new int[2];
+        // TextLauncher: the home grid's CellLayout, which is not a child of the workspace.
+        CellLayout cl = getFirstCellLayout();
+        if (cl != null) {
+            // Use the first page to estimate the child position
+            // TextLauncher: no widget scale (DeviceProfile.getAppWidgetScale is 1 but in the
+            // launcher preview).
+            Rect r = estimateItemPosition(cl, 0, 0, itemInfo.spanX, itemInfo.spanY);
+            size[0] = r.width();
+            size[1] = r.height();
+            return size;
+        } else {
+            size[0] = Integer.MAX_VALUE;
+            size[1] = Integer.MAX_VALUE;
+            return size;
+        }
+    }
+
+    public Rect estimateItemPosition(CellLayout cl, int hCell, int vCell, int hSpan, int vSpan) {
+        Rect r = new Rect();
+        cl.cellToRect(hCell, vCell, hSpan, vSpan, r);
+        return r;
+    }
+
+    /**
      * Removes items that match the {@param matcher}. When applications are removed
      * as a part of an update, this is called to ensure that other widgets and application
      * shortcuts are not removed.
@@ -62,4 +93,8 @@ public abstract class Workspace<T> extends FrameLayout {
         sibling.setPivotX(getPivotX() + getLeft()
                 - sibling.getLeft() - sibling.getTranslationX());
     }
+
+    /** TextLauncher: the home grid's one CellLayout (Launcher3's first page), or null. */
+    @Nullable
+    protected abstract CellLayout getFirstCellLayout();
 }

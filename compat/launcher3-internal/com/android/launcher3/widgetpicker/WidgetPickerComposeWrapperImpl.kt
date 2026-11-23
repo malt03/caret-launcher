@@ -50,6 +50,7 @@ import com.android.launcher3.widgetpicker.data.repository.WidgetUsersRepository
 import com.android.launcher3.widgetpicker.data.repository.WidgetsRepository
 import com.android.launcher3.widgetpicker.data.repository.WidgetsRepository.InitializationOptions
 import com.android.launcher3.widgetpicker.listeners.WidgetPickerAddItemListener
+import com.android.launcher3.widgetpicker.listeners.WidgetPickerDragItemListener
 import com.android.launcher3.widgetpicker.logging.LauncherWidgetPickerCuiReporter
 import com.android.launcher3.widgetpicker.shared.model.CloseBehavior
 import com.android.launcher3.widgetpicker.shared.model.HostConstraint
@@ -74,8 +75,8 @@ import kotlinx.coroutines.launch
  * Sets up the bindings necessary for widget picker component.
  *
  * <p>Stand-in for Launcher3's WidgetPickerComposeWrapperImpl (android-17.0.0_r1), made from
- * WidgetPickerComposeWrapperImpl.kt by deleting what TextLauncher does not use (pin requests and
- * dragging a widget out of the picker); changes are marked with "TextLauncher:".
+ * WidgetPickerComposeWrapperImpl.kt by deleting what TextLauncher does not use (pin requests);
+ * changes are marked with "TextLauncher:".
  */
 class WidgetPickerComposeWrapperImpl
 @Inject
@@ -320,12 +321,16 @@ constructor(
         ) {
             val interactionListener =
                 when (interactionInfo) {
-                    // TextLauncher: dragging a widget out of the picker is not ported yet
-                    // (WidgetPickerDragItemListener); the picker stays open.
-                    is WidgetInteractionInfo.WidgetDragInfo -> {
-                        Log.d(TAG, "Widget drag is not supported yet")
-                        return
-                    }
+                    // TextLauncher: no pin requests (PinItemDragListener).
+                    is WidgetInteractionInfo.WidgetDragInfo ->
+                        WidgetPickerDragItemListener(
+                            container = interactionInfo.source.toContainer(),
+                            mimeType = interactionInfo.mimeType,
+                            widgetInfo = interactionInfo.widgetInfo,
+                            widgetPreview = interactionInfo.previewInfo,
+                            previewRect = interactionInfo.bounds,
+                            previewWidth = interactionInfo.widthPx,
+                        )
 
                     is WidgetInteractionInfo.WidgetAddInfo ->
                         WidgetPickerAddItemListener(

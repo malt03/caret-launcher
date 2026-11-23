@@ -41,7 +41,8 @@ class HomeDragController(
         dragInfo: ItemInfo,
         dragLayerX: Int,
         dragLayerY: Int,
-        dragRegion: Rect,
+        // Null for a widget from the widget picker (PendingItemDragHelper).
+        dragRegion: Rect?,
         initialDragViewScale: Float,
         dragViewScaleOnDrop: Float,
         allowSpringDrawable: Boolean,
