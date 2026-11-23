@@ -1,6 +1,6 @@
 ---
 id: Tex-3dnt
-status: open
+status: closed
 deps: []
 links: [Tex-a8os, Tex-yh7w]
 created: 2026-11-22T00:58:38Z
@@ -38,3 +38,7 @@ Launcher3 の形:
 **2026-11-23T15:47:19Z**
 
 2026-11-24: Tex-yh7w で HomeLoader.pruneMissingApps に WorkspaceItemProcessor / PackageUpdatedTask の付け替え（AppItemInfo.retarget）と使えないアプリの扱い（markUnavailable、FLAG_DISABLED_NOT_AVAILABLE）が入った。部分バインドにするときは、これをパッケージごとの作業（PackageUpdatedTask の OP_UNAVAILABLE / OP_UPDATE）に分け、2つの LauncherApps.Callback（AppRepository、ShortcutRepository）を ModelLauncherCallbacks の形にまとめる
+
+**2026-11-23T17:28:13Z**
+
+部分バインドにした。LauncherApps のコールバックを ModelLauncherCallbacks（data/、ref=）1つにまとめ、AppRepository がアプリの一覧とアイコンのキャッシュを更新してから PackageEvent をホームに渡す。ShortcutRepository は自分のコールバックを持たず、パッケージとショートカットを渡す。ホームは HomeModelTasks（PackageUpdatedTask・PackageTaskFactory の appsRemoved/appsUnavailable/appsSuspended/appsUnsuspended・CacheDataUpdatedTask・ShortcutsChangedTask・ModelTaskController の bindUpdatedWorkspaceItems/deleteAndBindComponentsRemoved を書き写した）で当てはまるアイテムだけを変えて ModelWriter で書き、HomeController.bindItemsUpdated（LauncherBindableItemsContainer.updateContainerItems を互換に移した。開いているフォルダも）と bindWorkspaceComponentsRemoved（Workspace.removeItemsByMatcher を互換の Workspace に足し、フォルダは Folder.removeFolderContent → replaceFolderWithFinalItem。DragController.onAppsRemoved、PopupContainer.dismissInvalidPopup も戻した）でバインドする。付け替え（起動画面が変わった）と使えないアプリ（markUnavailable）は PackageUpdatedTask / appsUnavailable に移った（読み込み時の pruneMissingApps は WorkspaceItemProcessor として残す）。ドラッグは、ドラッグ中のアイテムかドラッグ元のフォルダの中身が当てはまるときだけ、モデルを変える前に取り消す（全体の取り消しは外した）。AppIconLoader の通知はパッケージ（CacheDataUpdatedTask）と全体（テーマと形の変更、作り直し）に分け、updateIconCacheOnce の終わりも部分更新になった。HomeController.bindItemChanged はなくした。残り: 形だけの変化も上流（refreshAndReloadLauncher）と同じく全体を作り直す（invalidate では済ませていない）。読み込み・作り直しの途中に来た変化は従来どおりモデルで畳んで（HomeLoader.removeItems）作り直す。ItemClickHandler の persistRemoveItemsByMatcher も同じ。端末では未確認

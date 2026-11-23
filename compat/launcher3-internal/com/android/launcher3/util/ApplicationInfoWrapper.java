@@ -53,6 +53,19 @@ public class ApplicationInfoWrapper {
         return mInfo != null && (mInfo.flags & flag) != 0;
     }
 
+    /** Returns whether the app is installed for the user (ApplicationInfo.FLAG_INSTALLED). */
+    public boolean isInstalled() {
+        return hasFlag(ApplicationInfo.FLAG_INSTALLED);
+    }
+
+    /**
+     * Returns whether the app is archived (ApplicationInfo.isArchived; Flags
+     * .enableSupportForArchiving is on at android-17.0.0_r1).
+     */
+    public boolean isArchived() {
+        return mInfo != null && mInfo.isArchived;
+    }
+
     /**
      * Returns true if the app can possibly be on the SDCard. This is just a workaround and doesn't
      * guarantee that the app is on SD card.

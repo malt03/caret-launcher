@@ -119,7 +119,7 @@ internal class HomeActivityContext(private val home: HomeController) :
             si.bitmap = bitmap
             // bindUpdatedWorkspaceItems: written and bound.
             home.model.writer.updateItemInDatabase(si)
-            home.bindItemChanged(si)
+            home.bindItemsUpdated(setOf(si))
         }
     }
 

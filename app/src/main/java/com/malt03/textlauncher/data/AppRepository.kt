@@ -2,7 +2,6 @@ package com.malt03.textlauncher.data
 
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
@@ -26,28 +25,11 @@ class AppRepository(private val context: Context, private val iconLoader: AppIco
     var apps: List<AppEntry>? = null
         private set
 
-    /** LauncherAppsCallbackImpl: the package's icons are updated first (PackageUpdatedTask). */
-    private val callback = object : LauncherApps.Callback() {
-        override fun onPackageRemoved(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = true)
-        override fun onPackageAdded(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = false)
-        override fun onPackageChanged(packageName: String, user: UserHandle) = updatePackage(packageName, user, removed = false)
-        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) {
-            // OP_UPDATE
-            if (isMine(user)) packageNames.forEach { updatePackage(it, user, removed = false) }
-        }
-        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) {
-            // ModelLauncherCallbacks: OP_UNAVAILABLE only when the package is not being replaced
-            // (Tex-yh7w).
-            if (!replacing) reloadIfMine(user)
-        }
-        override fun onPackagesSuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
-        override fun onPackagesUnsuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
-        override fun onShortcutsChanged(packageName: String, shortcuts: MutableList<ShortcutInfo>, user: UserHandle) = Unit
-    }
+    /** Called once the app list reflects a package event (the home screen's package tasks). */
+    private val packageListeners = mutableListOf<(PackageEvent) -> Unit>()
 
     init {
-        launcherApps.registerCallback(callback, mainHandler)
-        reload()
+        reload(null)
     }
 
     fun addListener(listener: (List<AppEntry>) -> Unit) {
@@ -59,19 +41,44 @@ class AppRepository(private val context: Context, private val iconLoader: AppIco
         listeners -= listener
     }
 
+    /** Called on the main thread with each package event, once [apps] includes it. */
+    fun addPackageListener(listener: (PackageEvent) -> Unit) {
+        packageListeners += listener
+    }
+
+    fun removePackageListener(listener: (PackageEvent) -> Unit) {
+        packageListeners -= listener
+    }
+
     fun find(key: String): AppEntry? = apps?.firstOrNull { it.key == key }
 
     private fun isMine(changedUser: UserHandle): Boolean = changedUser == user
 
-    private fun reloadIfMine(changedUser: UserHandle) {
-        if (isMine(changedUser)) reload()
+    /**
+     * A package event from [ModelLauncherCallbacks]: as in Launcher3's package tasks, the icon
+     * cache (PackageUpdatedTask: IconCache.updateIconsForPkg, appsRemoved: removeIconsForPkg) and
+     * the app list (AllAppsList.updatePackage / removePackage) are updated first; then the
+     * [packageListeners] apply it to their items.
+     */
+    fun onPackageEvent(event: PackageEvent) {
+        if (!isMine(event.user)) return
+        when (event.op) {
+            PackageEvent.OP_ADD, PackageEvent.OP_UPDATE, PackageEvent.OP_REMOVE -> {
+                var remaining = event.packages.size
+                if (remaining == 0) return
+                for (packageName in event.packages) {
+                    iconLoader.updatePackage(packageName, event.user, removed = event.op == PackageEvent.OP_REMOVE) {
+                        if (--remaining == 0) reload(event)
+                    }
+                }
+            }
+            else -> reload(event)
+        }
     }
 
-    private fun updatePackage(packageName: String, changedUser: UserHandle, removed: Boolean) {
-        if (isMine(changedUser)) iconLoader.updatePackage(packageName, changedUser, removed, ::reload)
-    }
+    fun reload() = reload(null)
 
-    fun reload() {
+    private fun reload(event: PackageEvent?) {
         executor.execute {
             val serial = userManager.getSerialNumberForUser(user)
             val loaded = launcherApps.getActivityList(null, user)
@@ -88,6 +95,7 @@ class AppRepository(private val context: Context, private val iconLoader: AppIco
             mainHandler.post {
                 apps = loaded
                 listeners.toList().forEach { it(loaded) }
+                if (event != null) packageListeners.toList().forEach { it(event) }
             }
         }
     }

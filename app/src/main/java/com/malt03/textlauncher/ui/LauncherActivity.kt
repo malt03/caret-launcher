@@ -97,11 +97,11 @@ class LauncherActivity :
     private val appsListener: (List<AppEntry>) -> Unit = {
         apps = it
         refreshResults()
-        home.onAppsChanged()
         allApps.setApps(it)
     }
-    private val iconsListener: () -> Unit = {
-        home.rebuild()
+    private val iconsListener: (Set<String>?) -> Unit = { packages ->
+        // LauncherModel.onPackageIconsUpdated (CacheDataUpdatedTask), or a reload for the theme.
+        if (packages == null) home.rebuild() else home.onPackageIconsUpdated(packages)
         // The search results bind the all apps list's AppInfos, which come again with the icons.
         allApps.setApps(apps)
     }

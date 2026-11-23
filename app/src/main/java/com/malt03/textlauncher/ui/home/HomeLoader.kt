@@ -5,6 +5,7 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
+import android.os.UserHandle
 import android.util.Log
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
@@ -18,6 +19,7 @@ import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.HomeShortcutKey
+import com.malt03.textlauncher.data.PackageEvent
 import com.malt03.textlauncher.data.isDeepShortcut
 
 /**
@@ -43,7 +45,17 @@ internal class HomeLoader(private val home: HomeController) {
     var isWorkspaceLoading = true
         private set
     private var rebuildGeneration = 0
-    private val shortcutsListener: () -> Unit = ::onShortcutsChanged
+    /** ModelLauncherCallbacks.onShortcutsChanged: ShortcutsChangedTask. */
+    private val shortcutsListener: (String, List<ShortcutInfo>, UserHandle) -> Unit = { packageName, shortcuts, user ->
+        if (canRunTasks()) tasks.shortcutsChanged(packageName, shortcuts, user) else onShortcutsChanged()
+    }
+
+    /** The package tasks (PackageUpdatedTask, PackageTaskFactory) for the home items. */
+    private val packageListener: (PackageEvent) -> Unit = { event ->
+        if (canRunTasks()) tasks.execute(event) else onAppsChanged()
+    }
+
+    private val tasks = HomeModelTasks(home) { destroyed }
 
     /**
      * The activity was destroyed (LauncherModel.removeCallbacks): what it started on other threads
@@ -57,6 +69,7 @@ internal class HomeLoader(private val home: HomeController) {
      */
     fun start() {
         app.shortcutRepository.addChangeListener(shortcutsListener)
+        app.appRepository.addPackageListener(packageListener)
         if (model.isLoaded) {
             onModelLoaded()
             return
@@ -90,6 +103,7 @@ internal class HomeLoader(private val home: HomeController) {
 
     fun destroy() {
         app.shortcutRepository.removeChangeListener(shortcutsListener)
+        app.appRepository.removePackageListener(packageListener)
         destroyed = true
         // The callbacks of a rebuild in progress see another generation and stop.
         rebuildGeneration++
@@ -239,8 +253,29 @@ internal class HomeLoader(private val home: HomeController) {
     }
 
     /**
-     * PackageUpdatedTask: apps that are no longer installed leave the home screen, and the others
-     * are bound again (an app may have been suspended or unsuspended).
+     * Whether the model tasks may change and bind single items (Launcher3 runs them once the
+     * model is loaded and bound): the items are bound, and no rebind is in progress (which reads
+     * the model again).
+     */
+    private fun canRunTasks(): Boolean = loaded && !destroyed && isLoaded && !isWorkspaceLoading
+
+    /**
+     * LauncherModel.onPackageIconsUpdated: CacheDataUpdatedTask for the home items, or a rebind
+     * while they are being bound.
+     */
+    fun onPackageIconsUpdated(packages: Set<String>) {
+        if (canRunTasks()) {
+            tasks.cacheDataUpdated(android.os.Process.myUserHandle(), packages)
+        } else if (loaded && !destroyed) {
+            rebuild()
+        }
+    }
+
+    /**
+     * TextLauncher: while the home screen is loaded or bound again ([canRunTasks] is false),
+     * PackageUpdatedTask's changes are made to the model and the items are bound with the rest:
+     * apps that are no longer installed leave the home screen, and the others are bound again (an
+     * app may have been suspended or unsuspended).
      */
     fun onAppsChanged() {
         if (!loaded || destroyed) return
@@ -251,8 +286,9 @@ internal class HomeLoader(private val home: HomeController) {
     }
 
     /**
-     * ShortcutsChangedTask: shortcuts that are gone leave the home screen; the others get their
-     * new labels, states and icons in place.
+     * TextLauncher: ShortcutsChangedTask for every package while the home screen is loaded or
+     * bound again ([canRunTasks] is false): shortcuts that are gone leave the home screen; the
+     * others get their new labels, states and icons in place.
      */
     private fun onShortcutsChanged() {
         if (!loaded || destroyed) return
@@ -278,7 +314,7 @@ internal class HomeLoader(private val home: HomeController) {
                     loadShortcutIcon(info, shortcut) {
                         // bindUpdatedWorkspaceItems: written and bound.
                         if (model.contains(info)) model.writer.updateItemInDatabase(info)
-                        if (!destroyed) home.bindItemChanged(info)
+                        if (!destroyed) home.bindItemsUpdated(setOf(info))
                     }
                 }
             }

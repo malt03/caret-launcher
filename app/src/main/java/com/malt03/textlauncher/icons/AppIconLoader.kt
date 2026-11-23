@@ -71,7 +71,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     /** The icons of the apps by [AppEntry.key] (AllAppsList's AppInfo.bitmap); main thread only. */
     private val icons = HashMap<String, BitmapInfo>()
     private val pending = HashMap<Pair<String, CacheLookupFlag>, MutableList<(BitmapInfo) -> Unit>>()
-    private val changeListeners = mutableListOf<() -> Unit>()
+    private val changeListeners = mutableListOf<(Set<String>?) -> Unit>()
 
     /** Bumped when the icons are made again; results looked up for an older one are dropped. */
     private var generation = 0
@@ -92,12 +92,16 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         themeManager.setShapes(settings.shape.pathString, settings.shape.folderRadiusRatio)
     }
 
-    /** Called on the main thread when every icon has to be rebound. */
-    fun addChangeListener(listener: () -> Unit) {
+    /**
+     * Called on the main thread when icons have to be rebound: the icons of the packages given
+     * (LauncherModel.onPackageIconsUpdated), or every icon (null: the icon theme or shape changed,
+     * ModelInitializer.refreshAndReloadLauncher).
+     */
+    fun addChangeListener(listener: (Set<String>?) -> Unit) {
         changeListeners += listener
     }
 
-    fun removeChangeListener(listener: () -> Unit) {
+    fun removeChangeListener(listener: (Set<String>?) -> Unit) {
         changeListeners -= listener
     }
 
@@ -271,7 +275,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         val updated = HashSet(packages)
         mainHandler.post {
             forgetPackages(updated)
-            changeListeners.toList().forEach { it() }
+            changeListeners.toList().forEach { it(updated) }
         }
     }
 
@@ -294,7 +298,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
             iconPool.clear()
             iconCache.updateIconParams(iconDpi, iconSize)
         }
-        changeListeners.toList().forEach { it() }
+        changeListeners.toList().forEach { it(null) }
     }
 
     /** ThemeManager.createIconShape: the shape path (a 100x100 SVG path) scaled to the icon size. */

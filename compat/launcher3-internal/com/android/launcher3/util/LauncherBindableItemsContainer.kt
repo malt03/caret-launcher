@@ -21,16 +21,63 @@
 package com.android.launcher3.util
 
 import android.view.View
+import com.android.launcher3.BubbleTextView
+import com.android.launcher3.folder.Folder
+import com.android.launcher3.folder.FolderIcon
+import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.util.LauncherBindableItemsContainer.ItemOperator
+import com.android.launcher3.views.ActivityContext
+import java.util.function.Predicate
 
 /**
  * Interface representing a container which can bind Launcher items with some utility methods
  *
- * Stand-in for Launcher3's LauncherBindableItemsContainer (android-17.0.0_r1): only mapping over
- * the items (PopupDataProvider's notification dots). TextLauncher: no updateContainerItems, which
- * the model's bind callbacks use.
+ * Stand-in for Launcher3's LauncherBindableItemsContainer (android-17.0.0_r1). TextLauncher: no app
+ * pairs and no pending widgets; the model's updates never move an item, so there is nothing to
+ * rebind ([updateContainerItems] returns an empty set; no getCellInfoForView).
  */
 fun interface LauncherBindableItemsContainer {
+
+    /**
+     * Called to update items in a specific container as a result of
+     * [com.android.launcher3.model.BgDataModel.Callbacks.bindItemsUpdated]. Returns a set of items
+     * which were potentially moved and need to be rebound to the container.
+     */
+    fun updateContainerItems(updates: Set<ItemInfo>, context: ActivityContext): Set<ItemInfo> {
+        val op = ItemOperator { info, v ->
+            when {
+                v is BubbleTextView && info is WorkspaceItemInfo && updates.contains(info) ->
+                    v.applyFromWorkspaceItem(info)
+                v is FolderIcon && info is FolderInfo -> {
+                    v.updatePreviewItems(updates::contains)
+                    if (updates.contains(info)) {
+                        v.onItemsChanged(false)
+                        v.folder.apply {
+                            // TextLauncher: no folder titles to apply again (reapplyItemInfo).
+                            if (isOpen()) close(false)
+                        }
+                    }
+                }
+            }
+
+            // Iterate all items
+            false
+        }
+
+        mapOverItems(op)
+        Folder.getOpen(context)?.mapOverItems(op)
+
+        // TextLauncher: no moved items to check.
+        return emptySet()
+    }
+
+    /** Finds the first icon to match one of the given matchers, from highest to lowest priority. */
+    fun getFirstMatch(vararg matchers: Predicate<ItemInfo>): View? =
+        matchers.firstNotNullOfOrNull { mapOverItems { info, _ -> info != null && it.test(info) } }
+
+    fun getViewByItemId(id: Int): View? = mapOverItems { info, _ -> info != null && info.id == id }
 
     /**
      * Map the [op] over the shortcuts and widgets. Once we found the first view which matches, we

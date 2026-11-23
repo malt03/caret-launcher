@@ -1,10 +1,7 @@
 package com.malt03.textlauncher.data
 
 import android.content.Context
-import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
-import android.os.Handler
-import android.os.Looper
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
@@ -44,36 +41,25 @@ data class HomeShortcutKey(val packageName: String, val id: String, val userSeri
  * Personal profile only (docs/spec.md 2.1).
  */
 class ShortcutRepository(private val context: Context) {
-    private val launcherApps = context.getSystemService(LauncherApps::class.java)
     private val user: UserHandle = Process.myUserHandle()
     private val userSerial = context.getSystemService(UserManager::class.java).getSerialNumberForUser(user)
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private val listeners = mutableListOf<() -> Unit>()
+    private val listeners = mutableListOf<(String, List<ShortcutInfo>, UserHandle) -> Unit>()
 
-    private val callback = object : LauncherApps.Callback() {
-        override fun onPackageRemoved(packageName: String, user: UserHandle) = Unit
-        override fun onPackageAdded(packageName: String, user: UserHandle) = Unit
-        override fun onPackageChanged(packageName: String, user: UserHandle) = Unit
-        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = Unit
-        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = Unit
-
-        /** ShortcutsChangedTask: the home screen's shortcuts may have changed or gone. */
-        override fun onShortcutsChanged(packageName: String, shortcuts: MutableList<ShortcutInfo>, user: UserHandle) {
-            if (user == this@ShortcutRepository.user) listeners.toList().forEach { it() }
-        }
-    }
-
-    init {
-        launcherApps.registerCallback(callback, mainHandler)
-    }
-
-    /** Called on the main thread when an app's shortcuts changed. */
-    fun addChangeListener(listener: () -> Unit) {
+    /**
+     * Called on the main thread when an app's shortcuts changed (ShortcutsChangedTask), with the
+     * package, its shortcuts and the user.
+     */
+    fun addChangeListener(listener: (String, List<ShortcutInfo>, UserHandle) -> Unit) {
         listeners += listener
     }
 
-    fun removeChangeListener(listener: () -> Unit) {
+    fun removeChangeListener(listener: (String, List<ShortcutInfo>, UserHandle) -> Unit) {
         listeners -= listener
+    }
+
+    /** ModelLauncherCallbacks.onShortcutsChanged: the personal profile's only. */
+    fun onShortcutsChanged(packageName: String, shortcuts: List<ShortcutInfo>, user: UserHandle) {
+        if (user == this.user) listeners.toList().forEach { it(packageName, shortcuts, user) }
     }
 
     fun keyOf(shortcut: ShortcutInfo): String = HomeShortcutKey(shortcut.`package`, shortcut.id, userSerial).key

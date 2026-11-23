@@ -37,6 +37,7 @@ import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
@@ -143,6 +144,31 @@ class HomeController(
 
         override fun getViewByItemId(id: Int): View? =
             grid.itemViews().firstOrNull { (it.tag as? ItemInfo)?.id == id }
+
+        override fun removeItemsByMatcher(matcher: Predicate<ItemInfo>, persistChanges: Boolean) {
+            // TextLauncher: one CellLayout, whose views are the grid's children.
+            // Iterate in reverse order as we are removing items
+            for (i in grid.childCount - 1 downTo 0) {
+                val child = grid.getChildAt(i)
+                val info = child.tag as? ItemInfo ?: continue
+
+                if (matcher.test(info)) {
+                    // TextLauncher: removeView, which frees the cells (CellLayout.removeViewInLayout).
+                    grid.removeView(child)
+                    if (child is DropTarget) dragController.removeDropTarget(child)
+                } else if (child is FolderIconView) {
+                    val folderInfo = info as FolderInfo
+                    val matches = folderInfo.contents.filter(matcher::test).toTypedArray()
+                    if (matches.isNotEmpty()) {
+                        child.folder.removeFolderContent(false, *matches)
+                        if (child.folder.isOpen) child.folder.close(false /* animate */)
+                    }
+                }
+                // TextLauncher: no app pairs.
+            }
+            // TextLauncher: one page, so no empty screens to strip.
+            grid.requestLayout()
+        }
 
         override fun getFirstCellLayout(): CellLayout = grid.cellLayout
     }.apply {
@@ -254,8 +280,6 @@ class HomeController(
 
     /** Re-creates every view, e.g. after the icon theme changed. */
     fun rebuild() = loader.rebuild()
-
-    fun onAppsChanged() = loader.onAppsChanged()
 
     /** Launcher.onResume: runs the uninstall drop target's deferred result. */
     fun onResume() {
@@ -550,17 +574,45 @@ class HomeController(
     }
 
     /**
-     * Launcher.bindWorkspaceItemsChanged: the views of [info], on the grid or in a folder's preview,
-     * show its new details.
+     * ModelCallbacks.bindItemsUpdated (bindWorkspaceItemsUpdated): the views of [updates], on the
+     * grid, in folders' previews and in the open folder, show their new details
+     * (LauncherBindableItemsContainer.updateContainerItems).
      */
-    internal fun bindItemChanged(info: WorkspaceItemInfo) {
-        for (view in grid.itemViews()) {
-            when (view) {
-                is AppIconView -> if (view.tag === info) view.applyFromWorkspaceItem(info)
-                is FolderIconView -> if (view.contents.any { it === info }) view.updatePreviewItems { it === info }
-            }
+    internal fun bindItemsUpdated(updates: Set<ItemInfo>) {
+        if (updates.isEmpty()) return
+        launcher.content.updateContainerItems(updates, launcher)
+        PopupContainer.dismissInvalidPopup(launcher)
+    }
+
+    /**
+     * ModelCallbacks.bindWorkspaceComponentsRemoved (bindWorkspaceItemsRemoved): the views of the
+     * items that [matcher] matches leave the grid and the folders.
+     */
+    internal fun bindWorkspaceComponentsRemoved(matcher: Predicate<ItemInfo>) {
+        workspace.removeItemsByMatcher(matcher, true)
+        dragController.onAppsRemoved(matcher)
+        PopupContainer.dismissInvalidPopup(launcher)
+    }
+
+    /**
+     * DragController.onAppsRemoved, before the model changes (TextLauncher): a drag of an item that
+     * [matcher] matches, or out of a folder whose contents it matches, is cancelled first, so that
+     * the dragged item goes back where it came from while it is still in the model (Tex-a8os).
+     */
+    internal fun cancelDragIfAffected(matcher: Predicate<ItemInfo>) {
+        val dragObject = dragController.mDragObject ?: return
+        if (!dragController.isDragging) return
+        val dragInfo = dragObject.dragInfo
+        val sourceFolder = dragObject.dragSource as? Folder
+        if ((dragInfo is WorkspaceItemInfo && matcher.test(dragInfo)) ||
+            sourceFolder?.info?.contents?.any(matcher::test) == true
+        ) {
+            dragController.cancelDrag()
         }
     }
+
+    /** LauncherModel.onPackageIconsUpdated: CacheDataUpdatedTask for the home items. */
+    fun onPackageIconsUpdated(packages: Set<String>) = loader.onPackageIconsUpdated(packages)
 
     /**
      * Launcher.bindInflatedItems with createNewAppBounceAnimation: an item added from the menu

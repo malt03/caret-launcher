@@ -37,6 +37,7 @@ import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.shortcuts.DeepShortcutView
+import com.android.launcher3.util.ShortcutUtil
 import com.android.launcher3.views.ActivityContext
 
 /**
@@ -45,7 +46,7 @@ import com.android.launcher3.views.ActivityContext
  * <p>Stand-in for Launcher3's PopupContainer (android-17.0.0_r1), made from PopupContainer.kt by
  * deleting what TextLauncher does not use (the Compose version of the menu, which
  * Flags.expandableLongPressMenu turns on and the release config disables; deep shortcut clicks
- * and the add button, which only the Compose version has; stats logging; dismissInvalidPopup);
+ * and the add button, which only the Compose version has; stats logging);
  * changes are marked with "TextLauncher:". [PopupData] and [PopupCategory] are from
  * PopupDataMapper.kt, at the end of this file.
  *
@@ -239,6 +240,16 @@ open class PopupContainer<T : ActivityContext>(
         @JvmStatic
         fun getOpen(context: ActivityContext): PopupContainer<*>? =
             getOpenView(context, TYPE_ACTION_POPUP)
+
+        /** Dismisses the popup if it is no longer valid */
+        @JvmStatic
+        fun dismissInvalidPopup(activity: ActivityContext) {
+            val popup = getOpen(activity)
+            val view = popup?.originalView ?: return
+            if (!view.isAttachedToWindow || !ShortcutUtil.supportsShortcuts(popup.itemInfo)) {
+                popup.handleClose(/* animate */ true)
+            }
+        }
 
         /**
          * Creates a new instance of [PopupContainer].

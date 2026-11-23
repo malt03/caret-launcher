@@ -88,6 +88,16 @@ public abstract class Workspace<T> extends FrameLayout {
             @Nullable final String reason);
 
     /**
+     * Removes items that match the {@param matcher}. When applications are removed
+     * as a part of an update, this is called to ensure that other widgets and application
+     * shortcuts are not removed.
+     *
+     * TextLauncher: the home grid removes the views; folders remove their contents
+     * (Folder.removeFolderContent).
+     */
+    public abstract void removeItemsByMatcher(Predicate<ItemInfo> matcher, boolean persistChanges);
+
+    /**
      * Unbinds the shortcut for a given ItemInfo from the workspace. Does not change the model.
      * TextLauncher: the home grid removes the view (CellLayout.removeView) and the drop target.
      */
