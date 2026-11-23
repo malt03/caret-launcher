@@ -35,7 +35,11 @@ class AppRepository(private val context: Context, private val iconLoader: AppIco
             // OP_UPDATE
             if (isMine(user)) packageNames.forEach { updatePackage(it, user, removed = false) }
         }
-        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadIfMine(user)
+        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) {
+            // ModelLauncherCallbacks: OP_UNAVAILABLE only when the package is not being replaced
+            // (Tex-yh7w).
+            if (!replacing) reloadIfMine(user)
+        }
         override fun onPackagesSuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
         override fun onPackagesUnsuspended(packageNames: Array<out String>, user: UserHandle) = reloadIfMine(user)
         override fun onShortcutsChanged(packageName: String, shortcuts: MutableList<ShortcutInfo>, user: UserHandle) = Unit

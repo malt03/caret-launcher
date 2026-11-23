@@ -48,4 +48,16 @@ public class ApplicationInfoWrapper {
     public ApplicationInfo getInfo() {
         return mInfo;
     }
+
+    private boolean hasFlag(int flag) {
+        return mInfo != null && (mInfo.flags & flag) != 0;
+    }
+
+    /**
+     * Returns true if the app can possibly be on the SDCard. This is just a workaround and doesn't
+     * guarantee that the app is on SD card.
+     */
+    public boolean isOnSdCard() {
+        return hasFlag(ApplicationInfo.FLAG_EXTERNAL_STORAGE);
+    }
 }

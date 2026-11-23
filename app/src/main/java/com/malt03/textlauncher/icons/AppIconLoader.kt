@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.icons
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.LauncherApps
@@ -11,6 +12,7 @@ import android.os.Process
 import android.os.UserHandle
 import androidx.core.graphics.PathParser
 import com.android.launcher3.LauncherAppState
+import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.graphics.ThemeManager
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.CacheableShortcutCachingLogic
@@ -173,6 +175,28 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
             val bitmap = result.bitmap
             mainHandler.post {
                 if (requestedGeneration == generation) onLoaded(bitmap)
+            }
+        }
+    }
+
+    /**
+     * IconCache.getTitleAndIcon for an app that is present but not available (WorkspaceItemProcessor
+     * keeps it with FLAG_DISABLED_NOT_AVAILABLE): no activity to look up, so the icon and title saved
+     * in the cache, else the package's (withUsePackageIcon). Calls [onLoaded] on the main thread.
+     */
+    fun loadUnavailable(component: ComponentName, user: UserHandle, onLoaded: (BitmapInfo, CharSequence?) -> Unit) {
+        val requestedGeneration = generation
+        iconCache.workerHandler.post {
+            val info = AppInfo().apply {
+                this.user = user
+                componentName = component
+                intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(component)
+            }
+            iconCache.getTitleAndIcon(info, DESKTOP_ICON_FLAG.withUsePackageIcon()) { null }
+            val bitmap = info.bitmap
+            val title = info.title
+            mainHandler.post {
+                if (requestedGeneration == generation) onLoaded(bitmap, title)
             }
         }
     }

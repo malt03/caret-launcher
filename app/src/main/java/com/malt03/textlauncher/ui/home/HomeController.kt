@@ -359,10 +359,18 @@ class HomeController(
         if (item is PendingAddWidgetInfo) return addPendingWidget(item)
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
         val info = (item as? WorkspaceItemInfo ?: return false).clone()
+        // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
+        // while it is showing, so findSpaceOnWorkspace may try to use those cells.
+        AbstractFloatingView.closeOpenViews(activityContext, false, AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME)
+        val cell = IntArray(2)
+        if (!findSpaceOnWorkspace(info, cell)) {
+            // TextLauncher: one page, so where Launcher3 adds a page there is no room; it says so
+            // as Workspace.onNoCellFound does for a drop (Tex-8w0r).
+            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
+            return false
+        }
         // TextLauncher: Launcher3 goes to the NORMAL state first.
         host.showHome()
-        val cell = IntArray(2)
-        findSpaceOnWorkspace(info, cell)
         val view = workspaceHost.addItem(info, cell[0], cell[1])
         model.save()
         animateNewItem(view)
@@ -484,17 +492,11 @@ class HomeController(
 
     /**
      * LauncherAccessibilityDelegate.findSpaceOnWorkspace: the first free cell of the grid.
-     * TextLauncher: one grid that grows downward, so a new row below the last stands in for an
-     * extra empty screen.
+     * TextLauncher: there is one page and no extra empty screen to add, so it returns false when
+     * the grid is full.
      */
-    private fun findSpaceOnWorkspace(info: ItemInfo, outCoordinates: IntArray) {
-        val layout = grid.cellLayout
-        val found = layout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
-        if (!found) {
-            outCoordinates[0] = 0
-            outCoordinates[1] = layout.countY
-        }
-    }
+    private fun findSpaceOnWorkspace(info: ItemInfo, outCoordinates: IntArray): Boolean =
+        grid.cellLayout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
 
     // ---- model changes ----
 

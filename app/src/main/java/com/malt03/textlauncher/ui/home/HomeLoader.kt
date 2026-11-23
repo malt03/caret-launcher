@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
 import android.appwidget.AppWidgetManager
+import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
@@ -10,8 +11,10 @@ import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.util.ApplicationInfoWrapper
 import com.android.launcher3.util.GridOccupancy
 import com.malt03.textlauncher.data.WidgetItemInfo
+import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.HomeShortcutKey
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -132,26 +135,52 @@ internal class HomeLoader(private val home: HomeController) {
         // .loadIconFromDb), or else gets the default one.
         val unknown = items.filterIsInstance<WorkspaceItemInfo>()
             .filter { it.isDeepShortcut && it !in shortcuts && it.bitmap.isLowRes }
+        // WorkspaceItemProcessor: an app that is not available keeps its cached icon.
+        val unavailable = items.filterIsInstance<AppItemInfo>().filter { it.entry == null }
         app.iconLoader.loadAll(entries, DESKTOP_ICON_FLAG) {
             if (generation != rebuildGeneration) return@loadAll
-            loadShortcutIcons(shortcuts) {
-                if (generation != rebuildGeneration) return@loadShortcutIcons
-                app.iconLoader.loadDefault { default ->
-                    if (generation != rebuildGeneration) return@loadDefault
-                    for (info in unknown) if (info.bitmap.isLowRes) info.bitmap = default
-                    home.bindItems(model.items)
-                    isWorkspaceLoading = false
-                    if (!isLoaded) {
-                        isLoaded = true
-                        home.widgetAddFlow.onLoaded()
+            loadUnavailableIcons(unavailable) {
+                if (generation != rebuildGeneration) return@loadUnavailableIcons
+                loadShortcutIcons(shortcuts) {
+                    if (generation != rebuildGeneration) return@loadShortcutIcons
+                    app.iconLoader.loadDefault { default ->
+                        if (generation != rebuildGeneration) return@loadDefault
+                        for (info in unknown) if (info.bitmap.isLowRes) info.bitmap = default
+                        home.bindItems(model.items)
+                        isWorkspaceLoading = false
+                        if (!isLoaded) {
+                            isLoaded = true
+                            home.widgetAddFlow.onLoaded()
+                        }
+                        if (shortcuts.isNotEmpty() && model.hasShortcutsWithoutIcons) {
+                            model.hasShortcutsWithoutIcons = false
+                            model.save()
+                        }
+                        // LoaderTask: the icon cache is brought up to date after the first binding.
+                        app.appRepository.apps?.let { app.iconLoader.updateIconCacheOnce(it, shortcuts.values) }
                     }
-                    if (shortcuts.isNotEmpty() && model.hasShortcutsWithoutIcons) {
-                        model.hasShortcutsWithoutIcons = false
-                        model.save()
-                    }
-                    // LoaderTask: the icon cache is brought up to date after the first binding.
-                    app.appRepository.apps?.let { app.iconLoader.updateIconCacheOnce(it, shortcuts.values) }
                 }
+            }
+        }
+    }
+
+    /** The cached icons and titles of the apps that are not available ([AppItemInfo.markUnavailable]). */
+    private fun loadUnavailableIcons(items: List<AppItemInfo>, onLoaded: () -> Unit) {
+        var remaining = items.size
+        if (remaining == 0) {
+            onLoaded()
+            return
+        }
+        for (info in items) {
+            val component = AppEntry.componentOf(info.homeKey)
+            if (component == null) {
+                if (--remaining == 0) onLoaded()
+                continue
+            }
+            app.iconLoader.loadUnavailable(component, info.user) { bitmap, title ->
+                info.bitmap = bitmap
+                if (!title.isNullOrEmpty()) info.title = title
+                if (--remaining == 0) onLoaded()
             }
         }
     }
@@ -240,10 +269,42 @@ internal class HomeLoader(private val home: HomeController) {
         }
     }
 
-    /** Removes apps that are no longer installed. Returns true when something changed. */
+    /**
+     * WorkspaceItemProcessor.processAppOrDeepShortcut and PackageUpdatedTask for the apps whose
+     * saved activity is not in the app list (Tex-yh7w):
+     * - the package is enabled: the item opens the package's first launchable activity instead
+     *   (PackageManagerHelper.getAppLaunchIntent), or is deleted when it has none
+     * - the package is present but not available (isOnSdCard): the item stays, disabled
+     *   (FLAG_DISABLED_NOT_AVAILABLE)
+     * - otherwise the app is not installed, and the item is deleted
+     * Returns true when something changed.
+     */
     private fun pruneMissingApps(): Boolean {
-        val installed = app.appRepository.apps?.map { it.key }?.toSet() ?: return false
-        return pruneMissing { !HomeShortcutKey.isShortcutKey(it) && it !in installed }
+        val apps = app.appRepository.apps ?: return false
+        val installed = apps.associateBy { it.key }
+        val launcherApps = context.getSystemService(LauncherApps::class.java)
+        var retargeted = false
+        val unavailable = HashSet<String>()
+        for (info in model.allItems()) {
+            if (info !is AppItemInfo || info.homeKey in installed) continue
+            val pkg = AppEntry.componentOf(info.homeKey)?.packageName ?: continue
+            if (launcherApps.isPackageEnabled(pkg, info.user)) {
+                // Gracefully try to find a fallback activity.
+                val fallback = launcherApps.getActivityList(pkg, info.user).firstNotNullOfOrNull { activity ->
+                    apps.firstOrNull { it.component == activity.componentName && it.user == info.user }
+                } ?: continue
+                Log.d(TAG, "Activity not enabled for ${info.homeKey}, using ${fallback.key}")
+                info.retarget(fallback)
+                retargeted = true
+            } else if (ApplicationInfoWrapper(context, pkg, info.user).isOnSdCard()) {
+                // Package is present but not available.
+                info.markUnavailable()
+                unavailable += info.homeKey
+            }
+        }
+        val removed = pruneMissing { !HomeShortcutKey.isShortcutKey(it) && it !in installed && it !in unavailable }
+        if (retargeted && !removed) model.save()
+        return removed || retargeted
     }
 
     /**

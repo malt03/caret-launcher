@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import com.android.launcher3.Alarm
 import com.android.launcher3.AppWidgetResizeFrame
@@ -317,12 +318,17 @@ class HomeWorkspace(
             val foundCell = mTargetCell[0] >= 0 && mTargetCell[1] >= 0
 
             // Don't accept the drop if there's no room for the item
-            // TextLauncher: the grid has no row limit, so there is always room; no toast.
             if (!foundCell) {
+                onNoCellFound()
                 return false
             }
         }
         return true
+    }
+
+    /** Workspace.onNoCellFound: there is no hotseat, and nothing is logged. */
+    private fun onNoCellFound() {
+        Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
     }
 
     private fun willCreateUserFolder(info: ItemInfo, target: CellLayout, targetCell: IntArray, distance: Float, considerTimeout: Boolean): Boolean {

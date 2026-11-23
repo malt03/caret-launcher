@@ -6,6 +6,7 @@ import com.android.launcher3.LauncherSettings
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
 import com.android.launcher3.model.data.WorkspaceItemInfo
 
@@ -21,7 +22,10 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
  * Loaded from its key; [entry] is set once the installed app is found (LoaderTask's lookup of the
  * activity).
  */
-class AppItemInfo(val homeKey: String) : WorkspaceItemInfo() {
+class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
+    /** Changes when the app's saved activity is gone and another of the package takes its place. */
+    var homeKey: String = homeKey
+        private set
     var entry: AppEntry? = null
         private set
 
@@ -47,6 +51,26 @@ class AppItemInfo(val homeKey: String) : WorkspaceItemInfo() {
         } else {
             runtimeStatusFlags and FLAG_DISABLED_SUSPENDED.inv()
         }
+        // PackageUpdatedTask (OP_ADD, OP_UPDATE): the package is available again.
+        runtimeStatusFlags = runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE.inv()
+    }
+
+    /**
+     * WorkspaceItemProcessor and PackageUpdatedTask: the saved activity is gone but its package has
+     * another one to launch (PackageManagerHelper.getAppLaunchIntent), which the item now opens.
+     */
+    fun retarget(entry: AppEntry) {
+        homeKey = entry.key
+        bind(entry)
+    }
+
+    /**
+     * WorkspaceItemProcessor (isOnSdCard) and PackageUpdatedTask (OP_UNAVAILABLE): the package is
+     * present but not available, so the item stays, disabled, with the icon it had.
+     */
+    fun markUnavailable() {
+        entry = null
+        runtimeStatusFlags = runtimeStatusFlags or FLAG_DISABLED_NOT_AVAILABLE
     }
 
     /** ItemInfo.mComponentName */
