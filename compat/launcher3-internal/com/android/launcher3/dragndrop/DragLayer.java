@@ -70,15 +70,19 @@ public class DragLayer extends BaseDragLayer<Launcher> {
 
     private DragView mDropView = null;
 
+    private int mTopViewIndex;
+    private int mChildCountOnLastUpdate = -1;
+
     /**
      * TextLauncher: created in code, over the home screen. No alpha channels, multitouch is not
-     * kept from splitting, the children keep their drawing order, and the home grid draws the
-     * focus outline.
+     * kept from splitting, and the home grid draws the focus outline.
      *
      * @param context The application's context.
      */
     public DragLayer(Context context) {
         super(context);
+
+        setChildrenDrawingOrderEnabled(true);
     }
 
     public void animateViewIntoPosition(DragView dragView, final View child, View anchorView) {
@@ -262,6 +266,63 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         mDropView = null;
         invalidate();
         return ret;
+    }
+
+    @Override
+    public void onViewAdded(View child) {
+        super.onViewAdded(child);
+        updateChildIndices();
+        // TextLauncher: no ActivityContext.onDragLayerHierarchyChanged.
+    }
+
+    @Override
+    public void onViewRemoved(View child) {
+        super.onViewRemoved(child);
+        updateChildIndices();
+        // TextLauncher: no ActivityContext.onDragLayerHierarchyChanged.
+    }
+
+    @Override
+    public void bringChildToFront(View child) {
+        super.bringChildToFront(child);
+        updateChildIndices();
+    }
+
+    private void updateChildIndices() {
+        mTopViewIndex = -1;
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            if (getChildAt(i) instanceof DragView) {
+                mTopViewIndex = i;
+            }
+        }
+        mChildCountOnLastUpdate = childCount;
+    }
+
+    @Override
+    protected int getChildDrawingOrder(int childCount, int i) {
+        if (mChildCountOnLastUpdate != childCount) {
+            // between platform versions 17 and 18, behavior for onChildViewRemoved / Added changed.
+            // Pre-18, the child was not added / removed by the time of those callbacks. We need to
+            // force update our representation of things here to avoid crashing on pre-18 devices
+            // in certain instances.
+            updateChildIndices();
+        }
+
+        // i represents the current draw iteration
+        if (mTopViewIndex == -1) {
+            // in general we do nothing
+            return i;
+        } else if (i == childCount - 1) {
+            // if we have a top index, we return it when drawing last item (highest z-order)
+            return mTopViewIndex;
+        } else if (i < mTopViewIndex) {
+            return i;
+        } else {
+            // for indexes greater than the top index, we fetch one item above to shift for the
+            // displacement of the top index
+            return i + 1;
+        }
     }
 
     // TextLauncher: members TextLauncher adds.
