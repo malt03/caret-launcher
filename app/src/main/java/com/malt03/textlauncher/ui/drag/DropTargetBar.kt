@@ -10,27 +10,35 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.UserHandle
+import android.os.UserManager
 import android.text.TextUtils
+import android.util.ArrayMap
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.android.app.animation.Interpolators
+import com.android.launcher3.Alarm
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherSettings
+import com.android.launcher3.OnAlarmListener
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon
+import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_SYSTEM_MASK
+import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_SYSTEM_NO
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.dragndrop.DragLayer
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AppItemInfo
 import com.android.launcher3.R as L3R
 
 /**
@@ -47,9 +55,7 @@ class DropTargetBar(
     /** DropTargetHandler: its drag layer. */
     private val launcher: Launcher,
     private val dragController: () -> DragController,
-    /** Which items the Remove target removes (DeleteDropTarget.canRemove). */
-    private val canRemove: (DragObject) -> Boolean,
-) : FrameLayout(context), DragController.DragListener {
+): FrameLayout(context), DragController.DragListener {
     val remove = DeleteDropTarget()
     val uninstall = UninstallDropTarget()
     private val dropTargets = arrayOf(remove, uninstall)
@@ -538,12 +544,18 @@ class DropTargetBar(
         /** Set the drop target's text to either "Remove" or "Cancel" depending on the drag item. */
         private fun setTextBasedOnDragSource(d: DragObject) {
             if (!TextUtils.isEmpty(mText)) {
-                val resId = if (canRemove(d)) R.string.drop_target_remove else android.R.string.cancel
+                val resId = if (canRemove(d.dragInfo)) R.string.drop_target_remove else android.R.string.cancel
                 mText = resources.getString(resId)
                 contentDescription = mText
                 requestLayout()
             }
         }
+
+        /**
+         * Items on the home screen or in a folder have an id; apps from the search results and
+         * shortcuts from the menu are not there yet, so for them the button cancels the drag.
+         */
+        private fun canRemove(item: ItemInfo): Boolean = item.id != ItemInfo.NO_ID
 
         override fun supportsDrop(info: DragObject): Boolean = true
 
@@ -554,8 +566,15 @@ class DropTargetBar(
         override fun completeDrop(d: DragObject) = Unit
     }
 
-    /** SecondaryDropTarget with the UNINSTALL action. */
-    inner class UninstallDropTarget : ButtonDropTarget() {
+    /**
+     * SecondaryDropTarget with the UNINSTALL action. TextLauncher: there is no RECONFIGURE (a
+     * widget's settings are in its long-press menu) and no DISMISS_PREDICTION (no predicted apps),
+     * so the button is only for the apps that can be uninstalled.
+     */
+    inner class UninstallDropTarget : ButtonDropTarget(), OnAlarmListener {
+        private val uninstallDisabledCache = ArrayMap<UserHandle, Boolean>(1)
+        private val cacheExpireAlarm = Alarm()
+        private var hadPendingAlarm = false
         private var deferred: DeferredOnComplete? = null
 
         init {
@@ -563,12 +582,88 @@ class DropTargetBar(
             setDrawable(L3R.drawable.ic_uninstall_no_shadow)
         }
 
+        override fun onAttachedToWindow() {
+            super.onAttachedToWindow()
+            if (hadPendingAlarm) {
+                cacheExpireAlarm.setAlarm(CACHE_EXPIRE_TIMEOUT)
+                cacheExpireAlarm.setOnAlarmListener(this)
+                hadPendingAlarm = false
+            }
+        }
+
+        override fun onDetachedFromWindow() {
+            super.onDetachedFromWindow()
+            if (cacheExpireAlarm.alarmPending()) {
+                cacheExpireAlarm.cancelAlarm()
+                cacheExpireAlarm.setOnAlarmListener(null)
+                hadPendingAlarm = true
+            }
+        }
+
+        override fun onAlarm(alarm: Alarm) {
+            uninstallDisabledCache.clear()
+        }
+
         override fun setupItemInfo(d: DragObject) = Unit
 
-        /** SecondaryDropTarget.supportsDrop for UNINSTALL: apps that are not system apps. */
-        override fun supportsDrop(info: DragObject): Boolean {
-            val entry = (info.dragInfo as? AppItemInfo)?.entry ?: return false
-            return entry.info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0
+        override fun supportsDrop(info: DragObject): Boolean = getButtonType(info.dragInfo)
+
+        /**
+         * SecondaryDropTarget.getButtonType: whether the button is UNINSTALL (true) rather than
+         * INVALID.
+         */
+        private fun getButtonType(info: ItemInfo): Boolean {
+            // TextLauncher: no RECONFIGURE for a widget and no predicted items; a widget has no
+            // uninstall target below.
+            var uninstallDisabled = uninstallDisabledCache[info.user]
+            if (uninstallDisabled == null) {
+                val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+                val restrictions = userManager.getUserRestrictions(info.user)
+                uninstallDisabled = restrictions.getBoolean(UserManager.DISALLOW_APPS_CONTROL, false) ||
+                    restrictions.getBoolean(UserManager.DISALLOW_UNINSTALL_APPS, false)
+                uninstallDisabledCache[info.user] = uninstallDisabled
+            }
+            // Cancel any pending alarm and set cache expiry after some time
+            cacheExpireAlarm.setAlarm(CACHE_EXPIRE_TIMEOUT)
+            cacheExpireAlarm.setOnAlarmListener(this)
+            if (uninstallDisabled) {
+                return false
+            }
+            // TextLauncher: no private space (Flags.enablePrivateSpace).
+
+            if (info is ItemInfoWithIcon) {
+                if (info.runtimeStatusFlags and FLAG_SYSTEM_MASK != 0 &&
+                    info.runtimeStatusFlags and FLAG_SYSTEM_NO == 0
+                ) {
+                    return false
+                }
+            }
+            if (getUninstallTarget(info) == null) {
+                return false
+            }
+            return true
+        }
+
+        /**
+         * SecondaryDropTarget.getUninstallTarget: the component name that should be uninstalled
+         * or null.
+         */
+        private fun getUninstallTarget(item: ItemInfo?): ComponentName? {
+            var intent: Intent? = null
+            var user: UserHandle? = null
+            if (item != null && item.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION) {
+                // TextLauncher: an app's home item (AppItemInfo) has no intent; its activity is
+                // its target component.
+                intent = item.targetComponent?.let { Intent(Intent.ACTION_MAIN).setComponent(it) }
+                user = item.user
+            }
+            if (intent != null) {
+                val info = context.getSystemService(LauncherApps::class.java).resolveActivity(intent, user)
+                if (info != null && info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0) {
+                    return info.componentName
+                }
+            }
+            return null
         }
 
         override fun onDrop(d: DragObject, options: DragOptions) {
@@ -589,16 +684,21 @@ class DropTargetBar(
             }
         }
 
-        /** SecondaryDropTarget.performDropAction for UNINSTALL. */
+        /**
+         * SecondaryDropTarget.performDropAction for UNINSTALL, with performUninstall: starts the
+         * uninstall and returns the component it uninstalls, or null.
+         */
         private fun performDropAction(info: ItemInfo): ComponentName? {
-            val entry = (info as? AppItemInfo)?.entry ?: return null
-            val component = entry.component
+            // TextLauncher: no toast for a system app (uninstall_system_app_text), as supportsDrop
+            // takes only the items with an uninstall target.
+            val cn = getUninstallTarget(info) ?: return null
             return try {
-                val intent = Intent(Intent.ACTION_DELETE, Uri.fromParts("package", component.packageName, component.className))
+                // R.string.delete_package_intent
+                val intent = Intent(Intent.ACTION_DELETE, Uri.fromParts("package", cn.packageName, cn.className))
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-                    .putExtra(Intent.EXTRA_USER, entry.user)
+                    .putExtra(Intent.EXTRA_USER, info.user)
                 context.startActivity(intent)
-                component
+                cn
             } catch (e: Exception) {
                 null
             }
@@ -626,11 +726,11 @@ class DropTargetBar(
 
             fun onLauncherResume() {
                 val d = dragObject ?: return
-                val entry = (d.dragInfo as? AppItemInfo)?.entry
+                // TextLauncher: ApplicationInfoWrapper.getInfo, which is null when the package is
+                // not installed for the user.
+                val pkg = packageName ?: return
                 val launcherApps = context.getSystemService(LauncherApps::class.java)
-                val installed = entry != null && runCatching {
-                    launcherApps.getApplicationInfo(entry.component.packageName, 0, entry.user)
-                }.isSuccess
+                val installed = runCatching { launcherApps.getApplicationInfo(pkg, 0, d.dragInfo.user) }.isSuccess
                 if (!installed) {
                     d.dragSource = original
                     original.onDropCompleted(this@UninstallDropTarget, d, true)
@@ -658,5 +758,8 @@ class DropTargetBar(
 
         /** DropTargetBar.DEFAULT_DRAG_FADE_DURATION */
         const val DEFAULT_DRAG_FADE_DURATION = 175L
+
+        /** SecondaryDropTarget.CACHE_EXPIRE_TIMEOUT */
+        const val CACHE_EXPIRE_TIMEOUT = 5000L
     }
 }

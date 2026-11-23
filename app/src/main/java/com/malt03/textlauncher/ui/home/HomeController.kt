@@ -136,7 +136,7 @@ class HomeController(
     private val workspaceHost = WorkspaceHost()
     internal val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
     private val springLoadedListener = SpringLoadedListener(this)
-    private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController }, ::canRemove)
+    private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController })
 
     internal val widgetHost = HomeWidgetHost(context)
     internal val widgetSizes = HomeWidgetSizes(grid)
@@ -324,13 +324,6 @@ class HomeController(
     /** A long press on an app in the search results: its menu, and a drag once it moves. */
     fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) =
         itemLongClickListener.onSearchResultLongPress(entry, iconView)
-
-    /**
-     * DeleteDropTarget.canRemove: items on the home screen or in a folder (Launcher3: items with
-     * an id). Apps from search results and shortcuts from the menu are not there yet, so the
-     * button cancels the drag.
-     */
-    private fun canRemove(d: DragObject): Boolean = d.dragSource === homeWorkspace || d.dragSource is Folder
 
     // ---- views ----
 
