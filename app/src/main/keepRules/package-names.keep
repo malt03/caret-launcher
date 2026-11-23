@@ -1,0 +1,6 @@
+# R8 (AGP 9.5.1) moves some classes of the optimized libraries (packageScope in build.gradle.kts)
+# out of their packages even when they extend a package-private class there, e.g.
+# kotlin.collections.CollectionsKt__MutableCollectionsJVMKt, whose superclass is the package-private
+# CollectionsKt__IterablesKt. The app then fails at startup with IllegalAccessError. Keeping the
+# package names keeps every class in its own package.
+-keeppackagenames
