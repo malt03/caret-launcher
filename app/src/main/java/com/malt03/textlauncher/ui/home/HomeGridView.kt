@@ -41,6 +41,9 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
     var cellWidth = 0
         private set
 
+    /** Called with the cell size each time the grid is measured (DeviceProfile's cell size). */
+    var onCellSizeChanged: ((width: Int, height: Int) -> Unit)? = null
+
     /**
      * The page: the height above the search field with the keyboard down (Launcher3's workspace
      * above the hotseat). Set by the root layout as it measures.
@@ -99,6 +102,7 @@ class HomeGridView(context: Context, val grid: GridSpec) : ShortcutAndWidgetCont
         val rows = grid.rows
         cellHeight = max((pageHeight - paddingTop - paddingBottom) / rows, minCellHeight)
         cellLayout.setCellGeometry(cellWidth, cellHeight, 0, 0, paddingLeft, paddingTop)
+        onCellSizeChanged?.invoke(cellWidth, cellHeight)
         for (child in itemViews()) measureChild(child)
         // TextLauncher: while the keyboard covers part of the page, it scrolls only as far as the
         // items go; the empty rows below stay under the keyboard. The scroll container stretches

@@ -31,4 +31,21 @@
     <string name="resize_handle_bottom">Bottom resize handle</string>
     <string name="tap_to_show_resize_buttons">Show resize buttons</string>
     <string name="widget_frame_name">Widget Resize Frame for <xliff:g id="string" example="Clock">%1$s</xliff:g></string>
+    <string name="all_apps_button_personal_label">Personal apps list</string>
+    <string name="all_apps_button_work_label">Work apps list</string>
+    <string name="all_apps_personal_tab">Personal</string>
+    <string name="all_apps_work_tab">Work</string>
+    <string name="widgets_full_sheet_personal_tab">Personal</string>
+    <string name="widgets_full_sheet_work_tab">Work</string>
+    <string name="work_apps_enable_btn_text">Unpause</string>
+    <string name="work_apps_pause_btn_text">Pause work apps</string>
+    <string name="work_apps_paused_body">Your work apps can’t send you notifications, use your battery, or access your location</string>
+    <string name="work_apps_paused_info_body">You won’t receive notifications from your work apps</string>
+    <string name="work_apps_paused_telephony_unavailable_body">You won’t receive phone calls, text messages, or notifications from your work apps</string>
+    <string name="work_apps_paused_title">Work apps are paused</string>
+    <string name="work_profile_edu_work_apps">Work apps are badged and visible to your IT admin</string>
+    <string name="activity_not_found">App isn\'t installed.</string>
+    <string name="widget_category_conversations">Conversations</string>
+    <string name="widget_category_note_taking">Note-taking</string>
+    <string name="safemode_widget_error">Widgets disabled in Safe mode</string>
 </resources>

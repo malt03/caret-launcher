@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Ibabang handle sa pag-resize"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Ipakita ang mga resize button"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Frame sa Pag-resize ng Widget para sa <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Listahan ng mga personal na app"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Listahan ng mga app sa trabaho"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Personal"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Trabaho"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Personal"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Trabaho"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"I-unpause"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"I-pause ang mga app para sa trabaho"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Ang mga app mo para sa trabaho ay hindi makakapagpadala sa iyo ng mga notification, makakagamit ng baterya mo, o makaka-access ng iyong lokasyon"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Hindi ka makakatanggap ng mga notification mula sa iyong mga app para sa trabaho"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Hindi ka makakatanggap ng mga tawag sa telepono, text message, o notification mula sa iyong mga app para sa trabaho"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Naka-pause ang mga app para sa trabaho"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"May badge at nakikita ng iyong IT admin ang mga app para sa trabaho"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Hindi naka-install ang app."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Mga Pag-uusap"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Pagtatala"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Naka-disable ang mga widget sa Safe mode"</string>
 </resources>

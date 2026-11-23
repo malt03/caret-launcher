@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Ô điều chỉnh kích thước dưới"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Hiện các nút đổi kích thước"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Khung đổi kích thước tiện ích của <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Danh sách ứng dụng cá nhân"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Danh sách ứng dụng công việc"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Cá nhân"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Công việc"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Cá nhân"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Công việc"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Bỏ tạm dừng"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Tạm dừng các ứng dụng công việc"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Các ứng dụng công việc không thể gửi thông báo cho bạn, sử dụng pin hoặc truy cập thông tin vị trí của bạn"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Bạn sẽ không nhận được thông báo từ các ứng dụng công việc"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Bạn sẽ không nhận được tin nhắn văn bản, cuộc gọi điện thoại hoặc thông báo từ các ứng dụng công việc"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Đã tạm dừng các ứng dụng công việc"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Các ứng dụng công việc được gắn huy hiệu và quản trị viên CNTT có thể nhìn thấy"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Ứng dụng chưa được cài đặt."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Cuộc trò chuyện"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Ghi chú"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Tiện ích bị vô hiệu hóa ở chế độ an toàn"</string>
 </resources>

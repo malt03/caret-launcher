@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Indicador de redimensionamento inferior"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Ver botões redimensionamento"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Frame de redimensionamento do widget para <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Lista de aplicações pessoais"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Lista de aplicações de trabalho"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Pessoal"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Trabalho"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Pessoal"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Trabalho"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Retomar"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Pausar apps de trabalho"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"As apps de trabalho não podem enviar-lhe notificações, utilizar a bateria ou aceder à sua localização"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Não vai receber notificações das apps de trabalho"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Não vai receber chamadas, mensagens de texto nem notificações das apps de trabalho"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"As apps de trabalho estão suspensas"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"As apps de trabalho têm um emblema e estão visíveis para o seu administrador de TI"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"A app não está instalada."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Conversas"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Tomar notas"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Widgets desativados no Modo de segurança"</string>
 </resources>

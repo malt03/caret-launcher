@@ -1,6 +1,6 @@
 ---
 id: Tex-r705
-status: open
+status: closed
 deps: [Tex-t2ea]
 links: []
 created: 2026-11-22T15:43:20Z
@@ -26,3 +26,9 @@ android-17.0.0_r1 の流れ:
 コードの量と依存:
 - modules/widgetpicker（65 ファイル・約 9,800 行）は、Launcher3 の他のコードに依存しない。外への依存は Compose（material3、activity-compose、window、material3-window-size-class、icons-extended）と Dagger（@Inject、@AssistedInject、@Subcomponent など）だけ。上流にも独立した build.gradle.kts がある
 - Launcher 側のつなぎ（src/.../widgetpicker と widget/picker、23 ファイル・約 2,700 行）は、WidgetsModel と WidgetItem（ウィジェットの一覧）、DatabaseWidgetPreviewLoader（プレビュー）、IconCache、PendingAddWidgetInfo、ShortcutConfigActivityInfo（ショートカットの作成画面も一覧に出る）、BaseItemDragListener とシステムのドラッグ、ContextTracker、SimpleDragLayer、SystemUiController などに依存する
+
+## Notes
+
+**2026-11-23T06:16:03Z**
+
+ピッカーを開いて「追加」でホームに置くところまで移した（Dagger は KSP で生成、ルートは LauncherAppComponent + LauncherWidgetPickerModule + TextLauncherAppModule）。TextLauncher は BIND_APPWIDGET を持たないので OS の確認画面が出ることがあり、ピッカーが閉じるときのホームへの切り替え（singleTask）で消えないよう、追加はホームが resume してから始める。エミュレータ（Pixel9ProFold）で、ピッカーの表示・分類（会話）の名前とアイコン・確認画面・設定画面・配置・削除を確かめた。ピッカーからのドラッグ、ショートカットの作成、ピン留めの要求は別チケットに分けた。

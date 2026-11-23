@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"கீழ் அளவை மாற்றும் ஹேண்டில்"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"அளவை மாற்றும் பட்டன்களை காட்டு"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g>க்கான விட்ஜெட்டின் அளவை மாற்றும் சட்டம்"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"தனிப்பட்ட ஆப்ஸ் பட்டியல்"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"பணி ஆப்ஸ் பட்டியல்"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"தனிப்பட்டவை"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"பணி"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"தனிப்பட்டவை"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"பணி"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"மீண்டும் இயக்கு"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"பணி ஆப்ஸை இடைநிறுத்து"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"பணி ஆப்ஸால் உங்களுக்கு அறிவிப்புகளை அனுப்பவோ பேட்டரியைப் பயன்படுத்தவோ உங்கள் இருப்பிடத்தை அணுகவோ முடியாது"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"உங்கள் பணி ஆப்ஸிலிருந்து அறிவிப்புகளைப் பெறமாட்டீர்கள்"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"உங்கள் பணி ஆப்ஸிலிருந்து மொபைல் அழைப்புகள், மெசேஜ்கள், அறிவிப்புகள் ஆகியவற்றைப் பெறமாட்டீர்கள்"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"பணி ஆப்ஸ் இடைநிறுத்தப்பட்டுள்ளன"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"பணி ஆப்ஸில் பேட்ஜ் இடப்பட்டிருக்கும், உங்கள் IT நிர்வாகியால் பணி ஆப்ஸைப் பார்க்க முடியும்"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"ஆப்ஸ் நிறுவப்படவில்லை."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"உரையாடல்கள்"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"குறிப்பெடுத்தல்"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"பாதுகாப்புப் பயன்முறையில் விட்ஜெட்கள் முடக்கப்பட்டுள்ளன"</string>
 </resources>

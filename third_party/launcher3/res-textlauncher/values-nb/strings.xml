@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Nedre størrelseshåndtak"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Vis størrelsesknapper"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Modul – endre størrelse på rammen for <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Personlige apper-liste"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Jobbapper-liste"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Personlig"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Jobb"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Personlige"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Jobb"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Gjenoppta"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Sett jobbapper på pause"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Jobbapper kan ikke sende deg varsler, bruke batteriet eller få tilgang til posisjonen din"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Du får ikke varsler fra jobbappene dine"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Du får ikke telefonanrop, tekstmeldinger eller varsler fra jobbappene dine"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Jobbapper er satt på pause"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Jobbapper er merket og synlige for IT-administratoren"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Appen er ikke installert."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Samtaler"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Notatskriving"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Moduler er deaktivert i sikker modus"</string>
 </resources>

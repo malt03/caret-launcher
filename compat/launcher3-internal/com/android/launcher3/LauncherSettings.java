@@ -29,10 +29,15 @@ public class LauncherSettings {
         public static final int CONTAINER_DESKTOP = -100;
         public static final int CONTAINER_ALL_APPS = -104;
         public static final int CONTAINER_SHORTCUTS = -107;
+        public static final int CONTAINER_WIDGETS_PREDICTION = -111;
+        public static final int CONTAINER_WIDGETS_TRAY = -105;
+        public static final int CONTAINER_BOTTOM_WIDGETS_TRAY = -112;
+        public static final int CONTAINER_PIN_WIDGETS = -113;
 
         public static final int ITEM_TYPE_APPLICATION = 0;
         public static final int ITEM_TYPE_FOLDER = 2;
         public static final int ITEM_TYPE_APPWIDGET = 4;
+        public static final int ITEM_TYPE_CUSTOM_APPWIDGET = 5;
         public static final int ITEM_TYPE_DEEP_SHORTCUT = 6;
         public static final int ITEM_TYPE_APP_GROUP = 10;
         public static final int ITEM_TYPE_CUSTOM_VIEW = 14;

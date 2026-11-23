@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"පහළ ප්‍රතිප්‍රමාණ කිරීමේ හසුරුව"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"ප්‍රතිප්‍රමාණ කිරීමේ බොත්තම් පෙන්වන්න"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> සඳහා විජට් ප්‍රමාණය වෙනස් කිරීමේ රාමුව"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"පෞද්ගලික යෙදුම් ලැයිස්තුව"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"වැඩ යෙදුම් ලැයිස්තුව"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"පුද්ගලික"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"කාර්යාලය"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"පුද්ගලික"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"කාර්යාලය"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"විරාම නොකරන්න"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"කාර්යාල යෙදුම් විරාම කරන්න"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"ඔබගේ කාර්යාල යෙදුම්වලට ඔබට දැනුම්දීම් එවීමට, ඔබගේ බැටරිය භාවිත කිරීමට හෝ ඔබගේ ස්ථානයට ප්‍රවේශ වීමට නොහැකිය"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"ඔබට ඔබේ කාර්යාල යෙදුම්වලින් දැනුම්දීම් නොලැබෙනු ඇත"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"ඔබට ඔබේ කාර්යාල යෙදුම්වලින් දුරකථන ඇමතුම්, පෙළ පණිවිඩ, හෝ දැනුම්දීම් නොලැබෙනු ඇත"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"කාර්යාල යෙදුම් විරාම කර ඇත"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"කාර්යාල යෙදුම්වලට ලාංඡන යොදා ඇති අතර ඔබගේ IT පරිපාලකට දෘශ්‍යමාන වේ"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"යෙදුම ස්ථාපනය කර නැත."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"සංවාද"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"සටහන් කර ගැනීම"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"සුරක්ෂිත ආකාරය තුළ විජටය අබල කරන ලදි"</string>
 </resources>

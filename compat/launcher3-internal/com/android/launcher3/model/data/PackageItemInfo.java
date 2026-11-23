@@ -35,8 +35,34 @@ public class PackageItemInfo extends ItemInfoWithIcon {
      */
     public final String packageName;
 
+    /**
+     * Represents the widget category shown in the widget picker for which all widgets contained in
+     * this package are being grouped together.
+     */
+    public final int widgetCategory;
+
     public PackageItemInfo(String packageName, UserHandle user) {
+        this(packageName, com.android.launcher3.widget.WidgetSections.NO_CATEGORY, user);
+    }
+
+    public PackageItemInfo(String packageName, int widgetCategory, UserHandle user) {
         this.packageName = packageName;
+        this.widgetCategory = widgetCategory;
         this.user = user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PackageItemInfo that = (PackageItemInfo) o;
+        return java.util.Objects.equals(packageName, that.packageName)
+                && java.util.Objects.equals(user, that.user)
+                && widgetCategory == that.widgetCategory;
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(packageName, user, widgetCategory);
     }
 }

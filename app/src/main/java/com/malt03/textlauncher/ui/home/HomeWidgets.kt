@@ -19,6 +19,8 @@ import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.util.Executors
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
+import com.android.launcher3.widget.PendingAddWidgetInfo
+import com.android.launcher3.widget.WidgetManagerHelper
 import com.malt03.textlauncher.data.WidgetItemInfo
 import kotlin.math.ceil
 import kotlin.math.max
@@ -61,63 +63,11 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
 
     /**
      * LauncherAppWidgetProviderInfo.initSpans: [LauncherAppWidgetProviderInfo.spanX] and spanY
-     * are what a new widget gets, the min and max what it can be resized to.
+     * are what a new widget gets, the min and max what it can be resized to. The cells are the
+     * home grid's, which it sets in the device profile as it measures.
      */
-    fun initSpans(info: AppWidgetProviderInfo): LauncherAppWidgetProviderInfo {
-        val numColumns = grid.grid.columns
-        val numRows = grid.grid.rows
-        var maxSpanX = numColumns
-        var maxSpanY = numRows
-
-        val cellSize = cellSize
-        val widgetPadding = widgetPadding
-
-        val paddingX = widgetPadding.left + widgetPadding.right
-        val paddingY = widgetPadding.top + widgetPadding.bottom
-        val minSpanX = getSpan(paddingX, info.minResizeWidth, borderSpace.x, cellSize.x.toFloat())
-        val minSpanY = getSpan(paddingY, info.minResizeHeight, borderSpace.y, cellSize.y.toFloat())
-
-        if (info.maxResizeWidth > 0) {
-            maxSpanX = min(maxSpanX, getSpan(paddingX, info.maxResizeWidth, borderSpace.x, cellSize.x.toFloat()))
-        }
-        if (info.maxResizeHeight > 0) {
-            maxSpanY = min(maxSpanY, getSpan(paddingY, info.maxResizeHeight, borderSpace.y, cellSize.y.toFloat()))
-        }
-
-        var spanX = getSpan(paddingX, info.minWidth, borderSpace.x, cellSize.x.toFloat())
-        var spanY = getSpan(paddingY, info.minHeight, borderSpace.y, cellSize.y.toFloat())
-
-        // Ensures maxSpan >= minSpan
-        maxSpanX = max(maxSpanX, minSpanX)
-        maxSpanY = max(maxSpanY, minSpanY)
-
-        // Use targetCellWidth/Height if it is within the min/max ranges.
-        // Otherwise, use the span of minWidth/Height.
-        if (info.targetCellWidth in minSpanX..maxSpanX && info.targetCellHeight in minSpanY..maxSpanY) {
-            spanX = info.targetCellWidth
-            spanY = info.targetCellHeight
-        }
-
-        // If minSpanX/Y > spanX/Y, ignore the minSpanX/Y to match the behavior described in
-        // minResizeWidth & minResizeHeight Android documentation. See
-        // https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo
-        return LauncherAppWidgetProviderInfo(info).also {
-            // Ensures the default span X and span Y will not exceed the current grid size.
-            it.spanX = min(spanX, numColumns)
-            it.spanY = min(spanY, numRows)
-            it.minSpanX = min(spanX, minSpanX)
-            it.minSpanY = min(spanY, minSpanY)
-            it.maxSpanX = maxSpanX
-            it.maxSpanY = maxSpanY
-        }
-    }
-
-    /**
-     * Solving the equation:
-     *   n * cellSize + (n - 1) * cellSpacing - widgetPadding = widgetSize
-     */
-    private fun getSpan(widgetPadding: Int, widgetSize: Int, cellSpacing: Int, cellSize: Float): Int =
-        max(1, ceil((widgetSize + widgetPadding + cellSpacing) / (cellSize + cellSpacing)).toInt())
+    fun initSpans(info: AppWidgetProviderInfo): LauncherAppWidgetProviderInfo =
+        LauncherAppWidgetProviderInfo.fromProviderInfo(context, info)
 
     /** WidgetSizes.getWidgetSizePx: the size, in pixels, of a widget of the given spans. */
     fun getWidgetSizePx(spanX: Int, spanY: Int): Size {
@@ -173,14 +123,16 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
 }
 
 /**
- * Launcher's widget adding, with the system's widget picker (ACTION_APPWIDGET_PICK, docs/spec.md
- * 5.2): a widget id is allocated and the picker binds the chosen widget to it
- * (REQUEST_PICK_APPWIDGET); a widget that needs configuring gets its configuration activity
- * (WidgetAddFlowHandler, REQUEST_CREATE_APPWIDGET); then it is added in the first free cell
- * (completeAddAppWidget). A cancelled flow deletes the id (completeTwoStageWidgetDrop).
+ * Launcher's widget adding for a widget from the widget picker (docs/spec.md 5.2):
+ * Launcher.addAppWidgetFromDrop allocates a widget id and binds the widget to it with its size
+ * options, asking the user first when the launcher may not bind widgets (startBindFlow,
+ * REQUEST_BIND_APPWIDGET); a widget that needs configuring gets its configuration activity
+ * (WidgetAddFlowHandler, REQUEST_CREATE_APPWIDGET); then it is added (completeAddAppWidget). A
+ * cancelled flow deletes the id (completeTwoStageWidgetDrop).
  *
- * TextLauncher: Launcher3's own picker drags the widget to its place; the system's picker only
- * picks it, so it goes in the first free cell, like an item added from a menu.
+ * TextLauncher: a widget that is configured is added once its configuration activity comes back,
+ * in the first free cell then; Launcher3 adds a pending widget view at once
+ * (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
  */
 internal class HomeWidgetAddFlow(private val home: HomeController) {
     private val activity get() = home.context as Activity
@@ -192,19 +144,72 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     /** Launcher.mPendingActivityResult: a result that came while the home screen was loading. */
     private var pendingActivityResult: (() -> Unit)? = null
 
-    /** WorkspaceLongPressOptions.openWidgetPicker, with the system's picker. */
-    fun startPick() {
+    /**
+     * Launcher.addAppWidgetFromDrop: binds the widget to a new id, or asks the user whether the
+     * launcher may (startBindFlow), and goes on with addAppWidgetImpl.
+     */
+    fun addAppWidgetFromDrop(info: PendingAddWidgetInfo) {
+        // In this case, we either need to start an activity to get permission to bind
+        // the widget, or we need to start an activity to configure the widget, or both.
+        // TextLauncher: no custom widgets (ITEM_TYPE_CUSTOM_APPWIDGET).
         val appWidgetId = home.widgetHost.allocateAppWidgetId()
+        val options = info.bindOptions
+
+        val success = WidgetManagerHelper(home.context).bindAppWidgetIdIfAllowed(appWidgetId, info.info, options)
+        if (success) {
+            addAppWidgetImpl(appWidgetId)
+        } else {
+            startBindFlow(appWidgetId, info.info)
+        }
+    }
+
+    /** WidgetAddFlowHandler.startBindFlow with LauncherWidgetHolder.startBindFlow. */
+    private fun startBindFlow(appWidgetId: Int, info: AppWidgetProviderInfo) {
         pendingAddWidgetId = appWidgetId
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK)
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND)
             .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, info.provider)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, info.profile)
+        // TODO: we need to make sure that this accounts for the options bundle.
+        // intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_OPTIONS, options);
         try {
             @Suppress("DEPRECATION")
-            activity.startActivityForResult(intent, REQUEST_PICK_APPWIDGET)
+            activity.startActivityForResult(intent, REQUEST_BIND_APPWIDGET)
         } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "No widget picker", e)
+            Log.e(TAG, "No activity to bind the widget", e)
+            pendingAddWidgetId = -1
             cancel(appWidgetId)
         }
+    }
+
+    /**
+     * Launcher.addAppWidgetImpl: the widget's configuration activity if it needs one
+     * (WidgetAddFlowHandler.startConfigActivity), or else the widget is added.
+     */
+    private fun addAppWidgetImpl(appWidgetId: Int) {
+        val info = appWidgetManager.getAppWidgetInfo(appWidgetId)
+        if (info == null) {
+            cancel(appWidgetId)
+            return
+        }
+        if (needsConfigure(info)) {
+            pendingAddWidgetId = appWidgetId
+            try {
+                home.widgetHost.startAppWidgetConfigureActivityForResult(
+                    activity, appWidgetId, 0, REQUEST_CREATE_APPWIDGET, null,
+                )
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+                pendingAddWidgetId = -1
+                cancel(appWidgetId)
+            } catch (e: SecurityException) {
+                Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+                pendingAddWidgetId = -1
+                cancel(appWidgetId)
+            }
+            return
+        }
+        completeAddAppWidget(appWidgetId, info)
     }
 
     /**
@@ -230,7 +235,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         // restored (completeRestoreAppWidget); the widget updates itself. TextLauncher: widgets are
         // not restored, so there is nothing to do.
         if (requestCode == REQUEST_RECONFIGURE_APPWIDGET) return true
-        if (requestCode != REQUEST_PICK_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET) return false
+        if (requestCode != REQUEST_BIND_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET) return false
         val result = { handleActivityResult(requestCode, resultCode, data) }
         // Launcher.handleActivityResult: process the result once the workspace has loaded.
         if (home.isLoaded) result() else pendingActivityResult = result
@@ -250,6 +255,15 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         val widgetId = data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
         val appWidgetId = if (widgetId < 0) pendingAddWidgetId else widgetId
         pendingAddWidgetId = -1
+        if (requestCode == REQUEST_BIND_APPWIDGET) {
+            // This is called only if the user did not previously have permissions to bind widgets
+            if (resultCode == Activity.RESULT_OK && appWidgetId >= 0) {
+                addAppWidgetImpl(appWidgetId)
+            } else {
+                cancel(appWidgetId)
+            }
+            return
+        }
         if (appWidgetId < 0 || resultCode == Activity.RESULT_CANCELED) {
             Log.e(TAG, "Error: appWidgetId (EXTRA_APPWIDGET_ID) was not returned from the widget configuration activity.")
             cancel(appWidgetId)
@@ -258,33 +272,6 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         val info = appWidgetManager.getAppWidgetInfo(appWidgetId)
         if (info == null) {
             cancel(appWidgetId)
-            return
-        }
-        if (requestCode == REQUEST_PICK_APPWIDGET) {
-            // PendingAddWidgetInfo.bindOptions: Launcher3 binds the widget with its size options,
-            // so it knows its size before it is configured and drawn. TextLauncher: the system's
-            // picker binds it, so the options are set as soon as it comes back.
-            val spans = home.widgetSizes.initSpans(info)
-            appWidgetManager.updateAppWidgetOptions(
-                appWidgetId, home.widgetSizes.getWidgetSizeOptions(spans.spanX, spans.spanY),
-            )
-        }
-        if (requestCode == REQUEST_PICK_APPWIDGET && needsConfigure(info)) {
-            // WidgetAddFlowHandler.startConfigActivity
-            pendingAddWidgetId = appWidgetId
-            try {
-                home.widgetHost.startAppWidgetConfigureActivityForResult(
-                    activity, appWidgetId, 0, REQUEST_CREATE_APPWIDGET, null,
-                )
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
-                pendingAddWidgetId = -1
-                cancel(appWidgetId)
-            } catch (e: SecurityException) {
-                Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
-                pendingAddWidgetId = -1
-                cancel(appWidgetId)
-            }
             return
         }
         completeAddAppWidget(appWidgetId, info)
@@ -333,7 +320,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
 
         /** LauncherConstants.ActivityCodes */
         const val REQUEST_CREATE_APPWIDGET = 5
-        const val REQUEST_PICK_APPWIDGET = 9
+        const val REQUEST_BIND_APPWIDGET = 11
         const val REQUEST_RECONFIGURE_APPWIDGET = 13
     }
 }

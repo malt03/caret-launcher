@@ -27,6 +27,7 @@ import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Flags
+import com.android.launcher3.Launcher
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.states.RotationHelper.REQUEST_LOCK
 import com.android.launcher3.states.RotationHelper.REQUEST_NONE
@@ -201,6 +202,9 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         app.iconLoader.addChangeListener(iconsListener)
         // Launcher.onCreate
         rotationHelper.initialize()
+        // Launcher.onCreate: the widget picker's add (WidgetPickerAddItemListener) waits for it.
+        // TextLauncher: no saved state for an internal state to restore.
+        Launcher.ACTIVITY_TRACKER.handleCreate(home.launcher)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -218,10 +222,15 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
         app.iconLoader.removeChangeListener(iconsListener)
         home.destroy()
         super.onDestroy()
+        Launcher.ACTIVITY_TRACKER.onContextDestroyed(home.launcher)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // Launcher.onNewIntent: an intent that something waits for (the widget picker's add) is
+        // handled instead of going home.
+        val internalStateHandled = Launcher.ACTIVITY_TRACKER.handleNewIntent(home.launcher)
+        if (internalStateHandled) return
         // Home button while already on the home screen.
         home.cancelDrag()
         home.closeFloatingViews(animate = false)
@@ -241,6 +250,7 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
     override fun onPause() {
         isResumedState = false
+        home.onPause()
         super.onPause()
     }
 

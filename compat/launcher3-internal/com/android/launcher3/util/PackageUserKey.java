@@ -35,6 +35,7 @@ import java.util.Objects;
 public class PackageUserKey {
 
     public String mPackageName;
+    public int mWidgetCategory;
     public UserHandle mUser;
     private int mHashCode;
 
@@ -42,10 +43,19 @@ public class PackageUserKey {
         update(packageName, user);
     }
 
+    public PackageUserKey(int widgetCategory, UserHandle user) {
+        update(/* packageName= */ "", widgetCategory, user);
+    }
+
     public void update(String packageName, UserHandle user) {
+        update(packageName, com.android.launcher3.widget.WidgetSections.NO_CATEGORY, user);
+    }
+
+    private void update(String packageName, int widgetCategory, UserHandle user) {
         mPackageName = packageName;
+        mWidgetCategory = widgetCategory;
         mUser = user;
-        mHashCode = Objects.hash(packageName, user);
+        mHashCode = Objects.hash(packageName, widgetCategory, user);
     }
 
     @Override
@@ -58,6 +68,7 @@ public class PackageUserKey {
         if (!(obj instanceof PackageUserKey)) return false;
         PackageUserKey otherKey = (PackageUserKey) obj;
         return Objects.equals(mPackageName, otherKey.mPackageName)
+                && mWidgetCategory == otherKey.mWidgetCategory
                 && Objects.equals(mUser, otherKey.mUser);
     }
 }

@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Doreza e ndryshimit të përmasave në fund"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Shfaq butonat për ndryshimin e përmasave"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Kuadri i ndryshimit të përmasave të miniaplikacionit për <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Lista e aplikacioneve personale"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Lista e aplikacioneve të punës"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Personale"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Punë"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Personale"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Puna"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Hiq nga pauza"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Vendos në pauzë aplikacionet e punës"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Aplikacionet e tua të punës nuk mund të të dërgojnë njoftime, të përdorin baterinë tënde apo të kenë qasje në vendndodhjen tënde"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Nuk do të marrësh njoftime nga aplikacionet e punës"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Nuk do të marrësh telefonata, mesazhe me tekst ose njoftime nga aplikacionet e punës"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Aplikacionet e punës janë vendosur në pauzë"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Aplikacionet e punës janë të shënuara dhe të dukshme për administratorin e teknologjisë së informacionit"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Aplikacioni nuk është i instaluar."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Bisedat"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Mbajtja e shënimeve"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Miniaplikacionet janë të çaktivizuara në modalitetin e sigurt"</string>
 </resources>

@@ -1,0 +1,57 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
+ */
+
+package com.android.launcher3.dagger;
+
+import android.content.Context;
+
+import com.android.launcher3.InvariantDeviceProfile;
+import com.android.launcher3.folder.FolderNameSuggestionLoader;
+import com.android.launcher3.util.ScreenOnTracker;
+import com.android.launcher3.widgetpicker.WidgetPickerComposeWrapper;
+
+import dagger.BindsInstance;
+
+/**
+ * Launcher base component for Dagger injection.
+ *
+ * This class is not actually annotated as a Dagger component, since it is not used directly as one
+ * in Launcher3. Variants should extend this component and add ancillary modules.
+ *
+ * <p>Stand-in for Launcher3's LauncherBaseAppComponent (android-17.0.0_r1): only the objects the
+ * copied code asks for. TextLauncher: no icons database name or safe mode in the builder.
+ */
+public interface LauncherBaseAppComponent {
+    ScreenOnTracker getScreenOnTracker();
+    InvariantDeviceProfile getIDP();
+
+    /** TextLauncher: folders have no names (docs/spec.md 5.2), so there is no loader. */
+    default FolderNameSuggestionLoader getFolderNameSuggestionLoader() {
+        return null;
+    }
+
+    WidgetPickerComposeWrapper getWidgetPickerComposeWrapper();
+
+    /** Builder for LauncherBaseAppComponent. */
+    interface Builder {
+        @BindsInstance Builder appContext(@ApplicationContext Context context);
+        LauncherBaseAppComponent build();
+    }
+}

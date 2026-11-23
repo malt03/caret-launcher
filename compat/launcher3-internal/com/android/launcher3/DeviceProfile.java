@@ -27,6 +27,9 @@ import android.graphics.Point;
  * and device values that the copied code reads. TextLauncher sets them from its own grid.
  */
 public class DeviceProfile {
+    /** TextLauncher: set by {@link InvariantDeviceProfile#setDeviceProfile}. */
+    public InvariantDeviceProfile inv;
+
     private final FolderProfile mFolderProfile;
     private final WorkspaceProfile mWorkspaceProfile;
     private final DeviceProperties mDeviceProperties;
@@ -48,10 +51,16 @@ public class DeviceProfile {
     public static class AllAppsProfile {
         private final int mNumShownAllAppsColumns;
         private final int mCellHeightPx;
+        private final int mIconSizePx;
 
-        public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx) {
+        public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx, int iconSizePx) {
             mNumShownAllAppsColumns = numShownAllAppsColumns;
             mCellHeightPx = cellHeightPx;
+            mIconSizePx = iconSizePx;
+        }
+
+        public int getIconSizePx() {
+            return mIconSizePx;
         }
 
         public int getNumShownAllAppsColumns() {
@@ -70,9 +79,26 @@ public class DeviceProfile {
     /** Stand-in for DeviceProfile's device properties. */
     public static class DeviceProperties {
         private final int mAvailableHeightPx;
+        private final boolean mIsLargeScreen;
+        private final boolean mIsTwoPanels;
 
-        public DeviceProperties(int availableHeightPx) {
+        public DeviceProperties(int availableHeightPx, boolean isLargeScreen, boolean isTwoPanels) {
             mAvailableHeightPx = availableHeightPx;
+            mIsLargeScreen = isLargeScreen;
+            mIsTwoPanels = isTwoPanels;
+        }
+
+        public boolean isLargeScreen() {
+            return mIsLargeScreen;
+        }
+
+        public boolean isTwoPanels() {
+            return mIsTwoPanels;
+        }
+
+        /** TextLauncher: the home screen's profile is the same in every rotation. */
+        public boolean isLandscape() {
+            return false;
         }
 
         /** The height of the window minus the system bars. */
@@ -106,6 +132,25 @@ public class DeviceProfile {
         /** TextLauncher: the home grid's cells have no space between them. */
         public Point getCellLayoutBorderSpacePx() {
             return new Point(0, 0);
+        }
+
+        private final Point mCellSize = new Point();
+        private final android.graphics.Rect mWidgetPadding = new android.graphics.Rect();
+
+        /** The home grid's cell size, which the grid sets as it is measured. */
+        public Point getCellSize() {
+            return new Point(mCellSize);
+        }
+
+        /** The space around a widget in its cells (ShortcutAndWidgetContainer.getWidgetPadding). */
+        public android.graphics.Rect getWidgetPadding() {
+            return new android.graphics.Rect(mWidgetPadding);
+        }
+
+        /** TextLauncher: DeviceProfile works these out; the home grid sets them as it measures. */
+        public void setCellSize(int width, int height, android.graphics.Rect widgetPadding) {
+            mCellSize.set(width, height);
+            mWidgetPadding.set(widgetPadding);
         }
     }
 

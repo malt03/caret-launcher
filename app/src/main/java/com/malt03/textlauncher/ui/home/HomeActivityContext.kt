@@ -7,6 +7,7 @@ import android.view.View
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DeviceProfile
 import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
@@ -46,9 +47,15 @@ internal class HomeActivityContext(private val home: HomeController) :
         ),
         // No labels (docs/spec.md 5.2): the icons are centered in their cells.
         DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
-        DeviceProfile.DeviceProperties(context.resources.displayMetrics.heightPixels),
-        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx),
-    )
+        DeviceProfile.DeviceProperties(
+            context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
+        ),
+        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx),
+    ).also {
+        // InvariantDeviceProfile: the grid and its profile, for the widget picker and the widget
+        // sizes (LauncherAppWidgetProviderInfo.initSpans).
+        LauncherAppState.getIDP(context).setDeviceProfile(gridSpec.columns, gridSpec.rows, it)
+    }
     private val activityComponent = ActivityComponent().apply {
         setPopupDataProvider(PopupDataProvider(context))
     }
@@ -80,6 +87,8 @@ internal class HomeActivityContext(private val home: HomeController) :
         return null
     }
     override fun asContext() = context
+
+    override fun isStarted(): Boolean = home.isStarted
 
     /** Edit mode hides the keyboard once the drag starts (docs/spec.md 5.4), not at the long press. */
     override fun hideKeyboard() = Unit

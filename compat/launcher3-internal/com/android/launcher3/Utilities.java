@@ -39,7 +39,27 @@ import java.util.Objects;
  * Members are copied from Launcher3 android-17.0.0_r1 as code in third_party/ needs them.
  */
 public final class Utilities {
+
+    public static final boolean ATLEAST_T = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU;
+    public static final boolean ATLEAST_U = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
     private Utilities() {}
+
+    public static boolean isBinderSizeError(Exception e) {
+        return e.getCause() instanceof android.os.TransactionTooLargeException
+                || e.getCause() instanceof android.os.DeadObjectException;
+    }
+
+    /**
+     * Utility method to allow background activity launch for the provided activity options
+     */
+    public static android.app.ActivityOptions allowBGLaunch(android.app.ActivityOptions options) {
+        if (ATLEAST_U) {
+            options.setPendingIntentBackgroundActivityStartMode(
+                    android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+        }
+        return options;
+    }
 
     public static boolean isDarkTheme(Context context) {
         Configuration configuration = context.getResources().getConfiguration();
@@ -192,5 +212,11 @@ private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
         int[] pos = new int[2];
         v.getLocationOnScreen(pos);
         return new Rect(pos[0], pos[1], pos[0] + v.getWidth(), pos[1] + v.getHeight());
+    }
+
+    /** Utilities.shouldReduceWorkspaceBlurUsage */
+    public static boolean shouldReduceWorkspaceBlurUsage(Context context) {
+        return Flags.reduceWorkspaceBlurUsage() && context.getResources().getBoolean(
+                R.bool.reduce_workspace_blur_usage);
     }
 }

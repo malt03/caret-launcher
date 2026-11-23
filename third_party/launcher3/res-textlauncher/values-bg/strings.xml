@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Долен манипулатор за преоразм."</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Бутони за преоразмер.: Показв."</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Рамка за преоразмеряване на приспособлението за <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Списък с лични приложения"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Списък със служебни приложения"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Лични"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Служебни"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Лични"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Служебни"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Отмяна на паузата"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Поставяне на пауза на служебните приложения"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Служебните ви приложения не могат да ви изпращат известия, да използват батерията или да осъществяват достъп до местоположението ви"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Няма да получавате известия от служебните си приложения"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Няма да получавате телефонни обаждания, текстови съобщения и известия от служебните си приложения"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Служебните приложения са поставени на пауза"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Служебните приложения са означени със значка и са видими за системния администратор"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Приложението не е инсталирано."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Разговори"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Водене на бележки"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Приспособленията са деактивирани в безопасния режим"</string>
 </resources>

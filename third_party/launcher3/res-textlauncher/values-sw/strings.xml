@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Ncha ya chini ya kubadilisha ukubwa"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Onyesha vitufe vya kubadilisha ukubwa"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Fremu ya Kubadilisha Ukubwa wa Wijeti ya <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Orodha ya programu za binafsi"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Orodha ya programu za kazini"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Binafsi"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Kazini"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Binafsi"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Kazini"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Acha kusimamisha"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Simamisha programu za kazini"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Programu zako za kazini haziwezi kukutumia arifa, kutumia betri yako au kufikia maelezo ya mahali ulipo"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Hutaweza kupokea arifa kutoka kwenye programu zako za kazini"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Hutaweza kupokea simu, ujumbe wa maandishi au arifa kutoka kwenye programu zako za kazini"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Programu za kazini zimesimamishwa"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Programu za kazini zina beji na msimamizi wako wa TEHAMA anaziona"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Programu haijasakinishwa."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Mazungumzo"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Kuandika madokezo"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Wijeti zimezimwa katika hali ya Usalama"</string>
 </resources>

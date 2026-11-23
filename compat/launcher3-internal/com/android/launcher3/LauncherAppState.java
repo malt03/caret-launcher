@@ -28,6 +28,15 @@ import com.android.launcher3.icons.IconCache;
 public class LauncherAppState {
     private static final LauncherAppState INSTANCE = new LauncherAppState();
     private IconCache mIconCache;
+    private final InvariantDeviceProfile mInvariantDeviceProfile = new InvariantDeviceProfile();
+
+    public static InvariantDeviceProfile getIDP(Context context) {
+        return INSTANCE.mInvariantDeviceProfile;
+    }
+
+    public InvariantDeviceProfile getInvariantDeviceProfile() {
+        return mInvariantDeviceProfile;
+    }
 
     public static LauncherAppState getInstance(Context context) {
         return INSTANCE;

@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"ബോട്ടം വലുപ്പം മാറ്റൽ ഹാൻഡിൽ"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"വലുപ്പം മാറ്റൽ ബട്ടൺ കാണിക്കുക"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> എന്നതിനുള്ള വിജറ്റിന്റെ വലുപ്പം മാറ്റുന്നതിനുള്ള ഫ്രെയിം"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"വ്യക്തിഗത ആപ്പുകളുടെ ലിസ്റ്റ്"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"ഔദ്യോഗിക ആപ്പുകളുടെ ലിസ്റ്റ്"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"വ്യക്തിപരം"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Work"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"വ്യക്തിപരം"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"ജോലി"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"താൽക്കാലികമായി നിർത്തിയത് മാറ്റുക"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"ഔദ്യോഗിക ആപ്പുകൾ താൽക്കാലികമായി നിർത്തുക"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"നിങ്ങൾക്ക് അറിയിപ്പുകൾ അയയ്ക്കാനോ ബാറ്ററി ഉപയോഗിക്കാനോ ലൊക്കേഷൻ ആക്‌സസ് ചെയ്യാനോ നിങ്ങളുടെ ഔദ്യോഗിക ആപ്പുകൾക്ക് കഴിയില്ല"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"ഔദ്യോഗിക ആപ്പുകളിൽ നിന്ന് നിങ്ങൾക്ക് അറിയിപ്പുകളൊന്നും ലഭിക്കില്ല"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"വർക്ക് ആപ്പുകളിൽ നിന്ന് നിങ്ങൾക്ക് ഫോൺ കോളുകളും ടെക്സ്റ്റ് മെസേജുകളും അറിയിപ്പുകളും ലഭിക്കില്ല"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"ഔദ്യോഗിക ആപ്പുകൾ തൽക്കാലം നിർത്തിയിരിക്കുന്നു"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"ഔദ്യോഗിക ആപ്പുകൾക്ക് ബാഡ്‌ജ് നൽകിയിരിക്കുന്നു, അവ നിങ്ങളുടെ ഐടി അഡ്‌മിന് കാണാനുമാകും"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"അപ്ലിക്കേഷൻ ഇൻസ്‌റ്റാളുചെ‌യ്‌തിട്ടില്ല."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"സംഭാഷണങ്ങൾ"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"കുറിപ്പ് രേഖപ്പെടുത്തൽ"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"സുരക്ഷിത മോഡിൽ വിജറ്റുകൾ പ്രവർത്തനരഹിതമാക്കി"</string>
 </resources>

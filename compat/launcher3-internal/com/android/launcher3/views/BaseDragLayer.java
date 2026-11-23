@@ -81,6 +81,10 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         super(context, null);
     }
 
+    public BaseDragLayer(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
     /** TextLauncher: set where Launcher3's DragLayer.recreateControllers builds its controllers. */
     public void setControllers(TouchController... controllers) {
         mControllers = controllers;

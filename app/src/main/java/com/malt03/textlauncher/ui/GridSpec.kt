@@ -55,6 +55,8 @@ data class GridSpec(
      * (docs/spec.md 5.5).
      */
     val isTwoPanels: Boolean,
+    /** LauncherDisplayInfo.isLargeScreen for the window (DeviceProperties.isLargeScreen). */
+    val isLargeScreen: Boolean,
 ) {
     companion object {
         fun from(context: Context): GridSpec {
@@ -105,6 +107,7 @@ data class GridSpec(
                 homePaddingPx = paddingPx,
                 homeMinCellHeightPx = minCellHeightPx,
                 isTwoPanels = isLargeScreen(windowBounds) && isMultiDisplay,
+                isLargeScreen = isLargeScreen(windowBounds),
             )
         }
 

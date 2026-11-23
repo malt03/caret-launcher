@@ -38,7 +38,12 @@ public class StatsLogManager {
 
     public enum LauncherEvent implements EventEnum {
         LAUNCHER_FOLDER_OPEN(551),
-        LAUNCHER_TAP_TO_ADD_DEEP_SHORTCUT(2446);
+        LAUNCHER_TAP_TO_ADD_DEEP_SHORTCUT(2446),
+        LAUNCHER_WIDGET_PICKER_OPEN_ANIMATION_BEGIN(1979),
+        LAUNCHER_WIDGET_PICKER_OPEN_ANIMATION_END(1980),
+        LAUNCHER_WIDGET_PICKER_APP_EXPAND_ANIMATION_BEGIN(1981),
+        LAUNCHER_WIDGET_PICKER_APP_EXPAND_ANIMATION_END(1982),
+        LAUNCHER_WIDGET_ADD_BUTTON_TAP(1622);
 
         private final int mId;
 
@@ -59,6 +64,9 @@ public class StatsLogManager {
         }
 
         default void log(EventEnum event) {
+        }
+
+        default void sendToInteractionJankMonitor(EventEnum event, android.view.View view) {
         }
     }
 

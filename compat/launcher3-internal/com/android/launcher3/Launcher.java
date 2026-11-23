@@ -32,6 +32,7 @@ import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.MultiPropertyFactory;
+import com.android.launcher3.util.ContextTracker;
 import com.android.launcher3.util.RunnableList;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
@@ -45,6 +46,21 @@ import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
  * Activity here, and only the members copied code uses are declared.
  */
 public abstract class Launcher implements ActivityContext {
+    /**
+     * TextLauncher: a ContextTracker rather than ContextTracker.ActivityTracker, since the launcher
+     * is not a BaseActivity; the home is started as {@link #isStarted()} says. The home screen
+     * calls handleCreate, handleNewIntent and onContextDestroyed where Launcher3's Launcher does.
+     */
+    public static final ContextTracker<Launcher> ACTIVITY_TRACKER = new LauncherTracker();
+
+    /** TextLauncher: ContextTracker.ActivityTracker for a launcher that is not an activity. */
+    private static final class LauncherTracker extends ContextTracker<Launcher> {
+        @Override
+        public boolean isHomeStarted(Launcher launcher) {
+            return launcher.isStarted();
+        }
+    }
+
     private final DragLayer mDragLayer;
     private final Workspace<?> mWorkspace;
     private final Hotseat mHotseat;
@@ -89,6 +105,9 @@ public abstract class Launcher implements ActivityContext {
 
     /** TextLauncher: the app adds items to its home screen (LauncherAccessibilityDelegate). */
     public abstract LauncherAccessibilityDelegate getAccessibilityDelegate();
+
+    /** BaseActivity.isStarted: whether the home activity is started. */
+    public abstract boolean isStarted();
 
     /** TextLauncher: no logging; see {@link StatsLogManager}. */
     public StatsLogManager getStatsLogManager() {

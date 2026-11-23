@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,31 @@
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
-package com.android.launcher3.dagger;
+package com.android.launcher3.util;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 
-import com.android.launcher3.folder.FolderNameSuggestionLoader;
+import com.android.launcher3.dagger.ApplicationContext;
 
-/** Stand-in for Launcher3's Dagger component provider. Only what DropTarget.DragObject reads. */
-public class LauncherComponentProvider {
-    private static final LauncherComponentProvider INSTANCE = new LauncherComponentProvider();
+import javax.inject.Inject;
 
-    public static LauncherComponentProvider get(Context context) {
-        return INSTANCE;
+/**
+ * Stand-in for Launcher3's ApiWrapper (android-17.0.0_r1), with what the widget picker uses.
+ */
+public class ApiWrapper {
+
+    private final Context mContext;
+
+    @Inject
+    public ApiWrapper(@ApplicationContext Context context) {
+        mContext = context;
     }
 
-    /** Folders have no names in TextLauncher (docs/spec.md 5.2). */
-    public FolderNameSuggestionLoader getFolderNameSuggestionLoader() {
-        return null;
+    /**
+     * Creates an ActivityOptions to play fade-out animation on closing targets
+     */
+    public ActivityOptions createFadeOutAnimOptions() {
+        return ActivityOptions.makeCustomAnimation(mContext, 0, android.R.anim.fade_out);
     }
 }

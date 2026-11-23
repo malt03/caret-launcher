@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"ନିମ୍ନର ରିସାଇଜ ହେଣ୍ଡେଲ"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"ରିସାଇଜ ବଟନ ଦେଖାନ୍ତୁ"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> ପାଇଁ ୱିଜେଟ ରିସାଇଜ ଫ୍ରେମ"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"ବ୍ୟକ୍ତିଗତ ଆପ୍ ତାଲିକା"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"କାର୍ଯ୍ୟକାରୀ ଆପ୍‌ ତାଲିକା"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"ବ୍ୟକ୍ତିଗତ"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"ୱାର୍କ"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"ବ୍ୟକ୍ତିଗତ"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"ୱାର୍କ"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"ପୁଣି ଚାଲୁ କରନ୍ତୁ"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"ୱାର୍କ ଆପ୍ସ ବିରତ କରନ୍ତୁ"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"ଆପଣଙ୍କ ୱାର୍କ ଆପ୍ସ ଆପଣଙ୍କୁ ବିଜ୍ଞପ୍ତି ପଠାଇପାରିବ ନାହିଁ, ଆପଣଙ୍କ ବ୍ୟାଟେରୀକୁ ବ୍ୟବହାର କରିପାରିବ ନାହିଁ କିମ୍ବା ଆପଣଙ୍କର ଲୋକେସନକୁ ଆକ୍ସେସ କରିପାରିବ ନାହିଁ"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"ଆପଣ ଆପଣଙ୍କ ୱାର୍କ ଆପ୍ସରୁ ବିଜ୍ଞପ୍ତି ପାଇବେ ନାହିଁ"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"ଆପଣ ଆପଣଙ୍କ ୱାର୍କ ଆପ୍ସରୁ ଫୋନ କଲ, ଟେକ୍ସଟ ମେସେଜ କିମ୍ବା ବିଜ୍ଞପ୍ତି ପାଇବେ ନାହିଁ"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"ୱାର୍କ ଆପ୍ସ ବିରତ କରାଯାଇଛି"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"ୱାର୍କ ଆପ୍ସକୁ ବେଜ କରାଯାଇଛି ଏବଂ ସେଗୁଡ଼ିକ ଆପଣଙ୍କ IT ଆଡମିନଙ୍କୁ ଦେଖାଯାଉଛି"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"ଆପ୍‌ ଇନଷ୍ଟଲ୍‌ ହୋଇନାହିଁ"</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"ନୋଟ-ଟେକିଂ"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"ନିରାପଦ ମୋଡରେ ୱିଜେଟ୍‌ ଅକ୍ଷମ କରାଗଲା"</string>
 </resources>

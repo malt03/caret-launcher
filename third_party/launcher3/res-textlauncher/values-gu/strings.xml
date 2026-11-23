@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"નીચેનું કદ બદલવાનું હેન્ડલ"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"કદ બદલવાના બટન બતાવો"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> માટે વિજેટનું કદ બદલવાની ફ્રેમ"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"વ્યક્તિગત ઍપની સૂચિ"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"કાર્યસ્થળની ઍપની સૂચિ"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"વ્યક્તિગત ઍપ"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"ઑફિસની ઍપ"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"વ્યક્તિગત"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"ઑફિસ"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"ફરી ચાલુ કરો"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"ઑફિસની ઍપ થોભાવો"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"ઑફિસ માટેની તમારી ઍપ તમને નોટિફિકેશન મોકલી શકતી નથી, તમારી બૅટરી વાપરી શકતી નથી કે તમારું સ્થાન ઍક્સેસ કરી શકતી નથી"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"તમને તમારી ઑફિસ માટેની ઍપ તરફથી નોટિફિકેશન મળશે નહીં"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"તમને તમારી ઑફિસ માટેની ઍપ તરફથી ફોન કૉલ, ટેક્સ્ટ મેસેજ કે નોટિફિકેશન મળશે નહીં"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"ઑફિસ માટેની ઍપ થોભાવવામાં આવી છે"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"ઑફિસની ઍપને બૅજ આપેલા હોય છે અને તમારા IT ઍડમિન તેમને જોઈ શકે છે"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"ઍપ્લિકેશન ઇન્સ્ટોલ થઈ નથી."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"વાતચીતો"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"નોંધ લેવી"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"સુરક્ષિત મોડમાં વિજેટ્સ અક્ષમ કર્યા"</string>
 </resources>

@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
+    <!-- Permission required to start a WidgetPickerActivity. -->
+    <permission android:name="${applicationId}.permission.START_WIDGET_PICKER_ACTIVITY"
+        android:protectionLevel="signature|privileged" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -49,6 +53,21 @@
             <meta-data
                 android:name="com.android.launcher3.themedicon.option"
                 android:value="${applicationId}.grid_control" />
+        </activity>
+
+        <!-- Launcher3's AndroidManifest.xml: the widget picker (docs/spec.md 5.2). -->
+        <activity android:name="com.android.launcher3.widgetpicker.WidgetPickerActivity"
+            android:theme="@style/WidgetPickerActivityTheme"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
+            android:launchMode="singleTop"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:permission="${applicationId}.permission.START_WIDGET_PICKER_ACTIVITY">
+            <intent-filter>
+                <action android:name="android.intent.action.PICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <!-- Callers must hold BIND_WALLPAPER; checked in code like Launcher3. -->

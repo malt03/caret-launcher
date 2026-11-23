@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"Poignée de redim. inférieure"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Afficher les boutons de redim."</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"Cadre de redimensionnement du widget pour <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Liste des applis personnelles"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Liste des applis professionnelles"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Personnel"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Travail"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Personnels"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Travail"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Réactiver"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Mettre en pause les applis professionnelles"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Les applis professionnelles ne peuvent ni vous envoyer de notifications, ni utiliser la pile, ni accéder à votre position"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Vous ne recevrez pas de notifications de vos applis professionnelles"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Vous ne recevrez pas d\'appels téléphoniques, de messages texte ni de notifications de vos applis professionnelles"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Les applis professionnelles sont interrompues"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Les applis professionnelles sont indiquées par un badge et elles sont visibles pour votre administrateur informatique"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"L\'appli n\'est pas installée."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Conversations"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Prise de note"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Widgets désactivés en mode sans échec"</string>
 </resources>

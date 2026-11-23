@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
 import android.appwidget.AppWidgetHostView
+import android.content.Intent
 import android.graphics.Rect
 import android.os.UserHandle
 import android.graphics.drawable.GradientDrawable
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.graphics.ColorUtils
 import androidx.core.widget.NestedScrollView
 import java.util.function.Predicate
@@ -17,6 +19,8 @@ import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.LauncherSettings
+import com.android.launcher3.widget.PendingAddWidgetInfo
+import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DragOptions
@@ -158,6 +162,12 @@ class HomeController(
         val padding = gridSpec.homePaddingPx
         grid.setPadding(padding, padding, padding, padding)
         root.onPageHeightChanged = { grid.pageHeight = it }
+        // DeviceProfile's cell size and widget padding (WorkspaceProfile), which the widget sizes
+        // and the widget picker read.
+        val widgetPadding = ShortcutAndWidgetContainer.getWidgetPadding(context, android.graphics.Point(0, 0))
+        grid.onCellSizeChanged = { width, height ->
+            launcher.deviceProfile.workspaceProfile.setCellSize(width, height, widgetPadding)
+        }
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
@@ -187,15 +197,35 @@ class HomeController(
 
     /** Launcher.onResume: runs the uninstall drop target's deferred result. */
     fun onResume() {
+        isResumed = true
         dropTargetBar.uninstall.onLauncherResume()
+        runOnResume?.let {
+            runOnResume = null
+            it()
+        }
     }
+
+    fun onPause() {
+        isResumed = false
+    }
+
+    private var isResumed = false
+
+    /** The widget picker's add, waiting for the home screen to come to the front. */
+    private var runOnResume: (() -> Unit)? = null
+
+    /** BaseActivity.isStarted, for Launcher.ACTIVITY_TRACKER. */
+    internal var isStarted = false
+        private set
 
     /** LauncherWidgetHolder.setActivityStarted: the widgets are updated while it is started. */
     fun onStart() {
+        isStarted = true
         widgetHost.startListening()
     }
 
     fun onStop() {
+        isStarted = false
         widgetHost.stopListening()
     }
 
@@ -203,8 +233,25 @@ class HomeController(
     fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
         widgetAddFlow.onActivityResult(requestCode, resultCode, data)
 
-    /** The empty space's menu's "Widgets" (WorkspaceLongPressOptions.openWidgetPicker). */
-    internal fun openWidgetPicker() = widgetAddFlow.startPick()
+    /**
+     * The empty space's menu's "Widgets" (WorkspaceLongPressOptions.openWidgetPicker): the widget
+     * picker activity (WidgetPickerActivity), which adds the chosen widget through
+     * Launcher.ACTIVITY_TRACKER and [addToWorkspace].
+     */
+    internal fun openWidgetPicker(): Boolean {
+        if (context.packageManager.isSafeMode) {
+            Toast.makeText(context, com.android.launcher3.R.string.safemode_widget_error, Toast.LENGTH_SHORT).show()
+            return false
+        } else {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.setPackage(context.packageName)
+            if (context !is android.app.Activity) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            return true
+        }
+    }
 
     fun cancelDrag() {
         dragController.cancelDrag()
@@ -271,10 +318,12 @@ class HomeController(
     }
 
     /**
-     * LauncherAccessibilityDelegate.addToWorkspace for the menu's add button: the first free
-     * cell, bound with Launcher.bindInflatedItems' bounce.
+     * LauncherAccessibilityDelegate.addToWorkspace for the menu's add button and the widget
+     * picker's: the first free cell, bound with Launcher.bindInflatedItems' bounce, or for a
+     * widget, Launcher.addPendingItem's widget add flow.
      */
     internal fun addToWorkspace(item: ItemInfo): Boolean {
+        if (item is PendingAddWidgetInfo) return addPendingWidget(item)
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
         val info = (item as? WorkspaceItemInfo ?: return false).clone()
         // TextLauncher: Launcher3 goes to the NORMAL state first.
@@ -284,6 +333,36 @@ class HomeController(
         val view = workspaceHost.addItem(info, cell[0], cell[1])
         model.save()
         animateNewItem(view)
+        return true
+    }
+
+    /**
+     * LauncherAccessibilityDelegate.addToWorkspace for a widget (PendingAddItemInfo): with room
+     * for it, its size options and Launcher.addPendingItem (addAppWidgetFromDrop).
+     */
+    private fun addPendingWidget(info: PendingAddWidgetInfo): Boolean {
+        // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
+        // while it is showing, so findSpaceOnWorkspace may try to use those cells.
+        AbstractFloatingView.closeOpenViews(activityContext, false, AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME)
+        host.showHome()
+        val cell = IntArray(2)
+        // TextLauncher: one page, so no room means it is not added (Launcher3 would add a page).
+        if (!grid.cellLayout.findCellForSpan(cell, info.spanX, info.spanY)) return false
+        if (info.bindOptions == null) {
+            // PendingAddWidgetInfo.getDefaultSizeOptions (WidgetSizeHandler.getWidgetSizeOptions)
+            info.bindOptions = widgetSizes.getWidgetSizeOptions(info.spanX, info.spanY)
+        }
+        // Launcher.addPendingItem
+        info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
+        info.cellX = cell[0]
+        info.cellY = cell[1]
+        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
+        // permission), so it starts no activity while the picker is still in front. TextLauncher
+        // may need the system's bind dialog or the widget's configuration activity, which the home
+        // intent the picker starts as it closes would clear (the launcher is singleTask), so the
+        // add waits until the home screen is resumed.
+        if (isResumed) widgetAddFlow.addAppWidgetFromDrop(info)
+        else runOnResume = { widgetAddFlow.addAppWidgetFromDrop(info) }
         return true
     }
 

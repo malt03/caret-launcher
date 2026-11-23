@@ -31,6 +31,7 @@ import android.os.Looper
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
+import android.util.SparseArray
 import androidx.annotation.AnyThread
 import androidx.annotation.VisibleForTesting
 import com.android.launcher3.Flags
@@ -41,6 +42,8 @@ import com.android.launcher3.icons.CacheableShortcutCachingLogic.getComponent
 import com.android.launcher3.icons.CacheableShortcutCachingLogic.getUser
 import com.android.launcher3.icons.cache.BaseIconCache
 import com.android.launcher3.icons.cache.CacheLookupFlag
+import com.android.launcher3.icons.cache.CachedObject
+import com.android.launcher3.icons.cache.CachedObjectCachingLogic
 import com.android.launcher3.icons.cache.LauncherActivityCachingLogic
 import com.android.launcher3.logging.FileLog
 import com.android.launcher3.model.data.AppInfo
@@ -52,6 +55,7 @@ import com.android.launcher3.shortcuts.ShortcutRequest
 import com.android.launcher3.util.ApplicationInfoWrapper
 import com.android.launcher3.util.CancellableTask
 import com.android.launcher3.util.ComponentKey
+import com.android.launcher3.widget.WidgetSections
 import java.util.concurrent.Executor
 import java.util.function.Supplier
 
@@ -60,7 +64,7 @@ import java.util.function.Supplier
  *
  * Stand-in for Launcher3's IconCache (android-17.0.0_r1), made from IconCache.kt by deleting what
  * TextLauncher does not have: Dagger, bulk loading for LoaderTask, home screen files, install
- * sessions, widget categories, archived apps and instant apps. Changes are marked with
+ * sessions, archived apps and instant apps. Changes are marked with
  * "TextLauncher:".
  */
 class IconCache(
@@ -91,6 +95,8 @@ class IconCache(
         CancellableTask<Any?>({ null }, context.mainExecutor, {}).apply { cancel() }
 
     private val userManager: UserManager = context.getSystemService(UserManager::class.java)!!
+
+    private val widgetCategoryBitmapInfos = SparseArray<BitmapInfo>()
 
     // TextLauncher: UserCache.getSerialNumberForUser, without the cache.
     override fun getSerialNumberForUser(user: UserHandle): Long =
@@ -311,6 +317,20 @@ class IconCache(
         applyCacheEntry(entry, infoInOut)
     }
 
+    /** Returns the title of [info] without adding it to the in-memory cache (the widget picker). */
+    @Synchronized
+    fun getTitleNoCache(info: CachedObject): String {
+        val entry =
+            cacheLocked(
+                info.component,
+                info.user,
+                { info },
+                CachedObjectCachingLogic,
+                CacheLookupFlag.DEFAULT_LOOKUP_FLAG.withUseLowRes().withSkipAddToMemCache(),
+            )
+        return Utilities.trim(entry.title)
+    }
+
     // TextLauncher: no bulk loading (getTitlesAndIconsInBulk) for LoaderTask.
 
     /** Fill in {@param infoInOut} with the corresponding icon and label. */
@@ -318,7 +338,28 @@ class IconCache(
     fun getTitleAndIconForApp(infoInOut: PackageItemInfo, lookupFlag: CacheLookupFlag) {
         val entry = getEntryForPackageLocked(infoInOut.packageName, infoInOut.user, lookupFlag)
         applyCacheEntry(entry, infoInOut)
-        // TextLauncher: no widget categories.
+        if (infoInOut.widgetCategory == WidgetSections.NO_CATEGORY) return
+
+        val widgetSection = WidgetSections.getWidgetSections(context)[infoInOut.widgetCategory]
+        val title = context.getString(widgetSection.mSectionTitle)
+        infoInOut.title = title
+        infoInOut.contentDescription = getUserBadgedLabel(title, infoInOut.user)
+        val cachedBitmap = widgetCategoryBitmapInfos[infoInOut.widgetCategory]
+        if (cachedBitmap != null) {
+            infoInOut.bitmap = getBadgedIcon(cachedBitmap, infoInOut.user)
+            return
+        }
+
+        try {
+            iconPool.obtain().use { li ->
+                val tempBitmap =
+                    li.createBadgedIconBitmap(context.getDrawable(widgetSection.mSectionDrawable))
+                widgetCategoryBitmapInfos.put(infoInOut.widgetCategory, tempBitmap)
+                infoInOut.bitmap = getBadgedIcon(tempBitmap, infoInOut.user)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing bitmap for icons with widget category", e)
+        }
     }
 
     @Synchronized

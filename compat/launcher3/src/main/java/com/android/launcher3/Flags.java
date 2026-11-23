@@ -69,4 +69,14 @@ public final class Flags {
     public static boolean letterFastScroller() {
         return false;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean enableWidgetPickerBlur() {
+        return false;
+    }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean reduceWorkspaceBlurUsage() {
+        return false;
+    }
 }

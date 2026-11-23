@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
 import com.android.launcher3.model.data.WorkspaceItemInfo
 
@@ -60,7 +61,7 @@ val ItemInfo.isDeepShortcut: Boolean
  * A widget (LauncherAppWidgetInfo): its id in the home screen's widget host and its provider
  * (LauncherAppWidgetInfo.providerName, flattened).
  */
-class WidgetItemInfo(val appWidgetId: Int, val provider: String) : ItemInfo() {
+class WidgetItemInfo(val appWidgetId: Int, val provider: String) : LauncherAppWidgetInfo() {
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
     }

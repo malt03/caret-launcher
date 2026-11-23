@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"तळाशी असलेले आकार बदला हँडल"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"आकार बदलण्याची बटणे दाखवा"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> साठी विजेटचा आकार बदलण्याची फ्रेम"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"वैयक्तिक अ‍ॅप्स सूची"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"कामाच्या ठिकाणी वापरली जाणाऱ्या ॲप्सची सूची"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"वैयक्तिक"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"कार्य"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"वैयक्तिक"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"ऑफिस"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"अनपॉझ करा"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"कार्य ॲप्स थांबवा"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"तुमची कार्य ॲप्स तुम्हाला सूचना पाठवू शकत नाहीत, तुमची बॅटरी वापरू शकत नाहीत किंवा तुमचे स्थान अ‍ॅक्सेस करू शकत नाहीत"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"तुम्हाला तुमच्या कार्य अ‍ॅप्सवरून सूचना मिळणार नाहीत"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"तुम्हाला तुमच्या कार्य अ‍ॅप्सवरून फोन कॉल, एसएमएस किंवा सूचना मिळणार नाहीत"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"कार्य ॲप्स थांबवली आहेत"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"कार्य ॲप्स ही बॅज केलेली असून तुमच्या आयटी ॲडमिनला दृश्यमान आहेत"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"अ‍ॅप इंस्टॉल केलेला नाही."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"संभाषणे"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"टिपा घेणे"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"विजेट सुरक्षित मोडमध्ये अक्षम झाले"</string>
 </resources>

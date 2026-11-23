@@ -76,6 +76,19 @@ internal constructor(
         }
     }
 
+    companion object {
+        /**
+         * Return a new LauncherIcons instance from the global pool. Allows us to avoid allocating
+         * new objects in many cases.
+         *
+         * TextLauncher: the pool is the icon cache's (the app's), not the Dagger component's.
+         */
+        @JvmStatic
+        fun obtain(context: Context): LauncherIcons =
+            com.android.launcher3.LauncherAppState.getInstance(context).iconCache.iconFactory
+                as LauncherIcons
+    }
+
     /** TextLauncher: InvariantDeviceProfile.fillResIconDpi / iconBitmapSize and the theme. */
     data class Params(
         val fillResIconDpi: Int,

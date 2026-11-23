@@ -126,4 +126,22 @@ public class ItemInfo {
     public boolean isDisabled() {
         return false;
     }
+
+    /**
+     * TextLauncher: without the item type's name, the container info and the resolved target,
+     * which are not ported.
+     */
+    @androidx.annotation.NonNull
+    protected String dumpProperties() {
+        return "id=" + id
+                + " type=" + itemType
+                + " container=" + container
+                + " targetComponent=" + getTargetComponent()
+                + " cell(" + cellX + "," + cellY + ")"
+                + " span(" + spanX + "," + spanY + ")"
+                + " minSpan(" + minSpanX + "," + minSpanY + ")"
+                + " rank=" + rank
+                + " user=" + user
+                + " title=" + title;
+    }
 }

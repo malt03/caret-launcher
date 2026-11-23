@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"底部的調整大小控點"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"顯示調整大小按鈕"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"「<xliff:g id="STRING">%1$s</xliff:g>」嘅小工具調整大小框架"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"個人應用程式清單"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"工作應用程式清單"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"個人"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"工作"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"個人"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"工作"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"取消暫停"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"暫停工作應用程式"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"工作應用程式無法向你傳送通知、使用電池電量或存取你的位置"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"你不會收到工作應用程式的通知"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"你不會收到工作應用程式的來電、短訊或通知"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"已暫停工作應用程式"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"工作應用程式均加有標誌。你的 IT 管理員可以看到這些應用程式"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"尚未安裝應用程式。"</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"對話"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"做筆記"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"在安全模式中無法使用小工具"</string>
 </resources>

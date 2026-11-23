@@ -26,4 +26,21 @@
     <string name="resize_handle_bottom" msgid="4217171801060928429">"ಕೆಳಗಿನ ರೀಸೈಜ್ ಹ್ಯಾಂಡಲ್"</string>
     <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"ರೀಸೈಜ್ ಬಟನ್ ಅನ್ನು ತೋರಿಸಿ"</string>
     <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> ಗಾಗಿ ವಿಜೆಟ್ ಮರುಗಾತ್ರಗೊಳಿಸುವಿಕೆ ಫ್ರೇಮ್"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"ವೈಯಕ್ತಿಕ ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಪಟ್ಟಿ"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"ಕೆಲಸದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಪಟ್ಟಿ"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"ವೈಯಕ್ತಿಕ"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"ಕೆಲಸ"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"ವೈಯಕ್ತಿಕ"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"ಕೆಲಸ"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"ವಿರಾಮವನ್ನು ರದ್ದುಗೊಳಿಸಿ"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ವಿರಾಮಗೊಳಿಸಿ"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳಿಗೆ ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲು, ನಿಮ್ಮ ಬ್ಯಾಟರಿಯನ್ನು ಬಳಸಲು ಅಥವಾ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗದು"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳಿಂದ ನೀವು ಅಧಿಸೂಚನೆಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳಿಂದ ನೀವು ಫೋನ್ ಕರೆಗಳು, ಪಠ್ಯ ಸಂದೇಶಗಳು ಅಥವಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ಬ್ಯಾಡ್ಜ್ ಮಾಡಲಾಗಿದೆ ಮತ್ತು ಅವುಗಳು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ಗೋಚರಿಸುತ್ತವೆ"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"ಆ್ಯಪ್‌ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ"</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"ಸಂಭಾಷಣೆಗಳು"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"ಟಿಪ್ಪಣಿ ತೆಗೆದುಕೊಳ್ಳುವುದು"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"ಸುರಕ್ಷಿತ ಮೋಡ್‌ನಲ್ಲಿ ವಿಜೆಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
 </resources>
