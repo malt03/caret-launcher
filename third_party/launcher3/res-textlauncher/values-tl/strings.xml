@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Listahan ng mga app"</string>
     <string name="out_of_space" msgid="6455557115204099579">"Walang espasyo sa home screen na ito"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Na-disable ng iyong admin"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Alisin"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Mga Setting"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Dagdagan ang lapad"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Bawasan ang lapad"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Kaliwang handle sa pag-resize"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Itaas na handle sa pag-resize"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Kanang handle sa pag-resize"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Ibabang handle sa pag-resize"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Ipakita ang mga resize button"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Frame sa Pag-resize ng Widget para sa <xliff:g id="STRING">%1$s</xliff:g>"</string>
 </resources>

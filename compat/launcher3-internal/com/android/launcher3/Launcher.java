@@ -20,9 +20,12 @@
 
 package com.android.launcher3;
 
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragLayer;
@@ -32,6 +35,8 @@ import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.RunnableList;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
+import com.android.launcher3.widget.LauncherAppWidgetHostView;
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 
 /**
  * Stand-in for Launcher3's Launcher (android-17.0.0_r1). As in Launcher3, the launcher is the
@@ -92,6 +97,30 @@ public abstract class Launcher implements ActivityContext {
 
     /** TextLauncher: the app's home model (LauncherModel). */
     public abstract LauncherModel getModel();
+
+    /**
+     * TextLauncher: WidgetManagerHelper.getLauncherAppWidgetInfo, with the spans the widget takes
+     * on the home grid (LauncherAppWidgetProviderInfo.initSpans), for the widget resize frame.
+     */
+    @Nullable
+    public abstract LauncherAppWidgetProviderInfo getLauncherAppWidgetInfo(
+            @Nullable AppWidgetProviderInfo info);
+
+    /** TextLauncher: WidgetSizeHandler.updateSizeRanges, which tells the widget its size. */
+    public abstract void updateWidgetSizeRanges(LauncherAppWidgetHostView widgetView, int spanX,
+            int spanY);
+
+    /**
+     * TextLauncher: the database writes of CellLayout.commitTempPlacement. The home screen saves
+     * its items' cells and spans from their views.
+     */
+    public abstract void saveItemPlacement();
+
+    /**
+     * TextLauncher: a widget's resize frame opened or closed. While it is open the home screen is
+     * in edit mode (docs/spec.md 5.4).
+     */
+    public void onWidgetResizeFrameOpenChanged(boolean open) {}
 
     /** No wallpaper zoom: it needs a system permission. */
     public DepthController getDepthController() {

@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
 import android.appwidget.AppWidgetHostView
+import android.appwidget.AppWidgetProviderInfo
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Handler
@@ -8,6 +9,7 @@ import android.os.Looper
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import com.android.launcher3.Alarm
+import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.CellLayout
 import com.android.launcher3.DragSource
@@ -70,6 +72,12 @@ class HomeWorkspace(
 
         /** WidgetSizeHandler.updateSizeRanges for a widget whose spans changed. */
         fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int)
+
+        /**
+         * StateManager.goToState(NORMAL) with a success callback: runs [callback] once the home
+         * screen is back from the spring-loaded state.
+         */
+        fun runWhenNormal(callback: Runnable)
     }
 
     /** CellLayout.CellInfo */
@@ -205,6 +213,10 @@ class HomeWorkspace(
         if (child is BubbleTextView && !dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
             dragOptions.preDragCondition = startLongPressAction?.invoke()
             // TextLauncher: search results use the home icon size, so no preDragEndScale.
+        } else if (child is LauncherAppWidgetHostView && !dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
+            // Flags.homeScreenEditImprovements and a Poppable child: the popup controller for home
+            // screen items shows the menu, whose pre-drag condition starts the drag.
+            dragOptions.preDragCondition = startLongPressAction?.invoke()
         }
 
         dragOptions.preDragCondition?.let { condition ->
@@ -449,6 +461,7 @@ class HomeWorkspace(
             onDropExternal(touchXY, dropTargetLayout, d)
         } else {
             val cell = dragInfo.cell
+            var onCompleteRunnable: Runnable? = null
             if (dropTargetLayout != null && !d.cancelled) {
                 // Move internally
                 val spanX = dragInfo.spanX
@@ -513,6 +526,12 @@ class HomeWorkspace(
                     lp.cellHSpan = item.spanX
                     lp.cellVSpan = item.spanY
                     lp.isLockedToGrid = true
+
+                    if (cell is LauncherAppWidgetHostView) {
+                        // We post this call so that the widget has a chance to be placed
+                        // in its final location
+                        onCompleteRunnable = getWidgetResizeFrameRunnable(cell)
+                    }
                     host.onItemsMoved()
                 } else {
                     if (cell is LauncherAppWidgetHostView) {
@@ -527,6 +546,8 @@ class HomeWorkspace(
             } else if (cell is LauncherAppWidgetHostView) {
                 // When drag is cancelled, reattach content view back to its original parent.
                 d.dragView.detachContentView(/* reattachToPreviousParent= */ true)
+                // TextLauncher: the one page is always visible.
+                onCompleteRunnable = getWidgetResizeFrameRunnable(cell)
             }
 
             val parent = layout
@@ -537,7 +558,22 @@ class HomeWorkspace(
                 cell.visibility = View.VISIBLE
             }
             parent.onDropChild(cell)
+
+            // Workspace.onDrop: goToState(NORMAL, SPRING_LOADED_EXIT_DELAY, onCompleteRunnable).
+            onCompleteRunnable?.let { host.runWhenNormal(it) }
         }
+    }
+
+    /**
+     * Workspace.getWidgetResizeFrameRunnable: the resize frame of a widget that can be resized.
+     * TextLauncher: no page transitions (isPageInTransition).
+     */
+    private fun getWidgetResizeFrameRunnable(hostView: LauncherAppWidgetHostView): Runnable? {
+        val pInfo = hostView.appWidgetInfo
+        if (pInfo != null && pInfo.resizeMode != AppWidgetProviderInfo.RESIZE_NONE) {
+            return Runnable { AppWidgetResizeFrame.showForWidget(hostView, layout) }
+        }
+        return null
     }
 
     /**

@@ -2,7 +2,7 @@
 
 方針: [docs/launcher3-porting.md](../../docs/launcher3-porting.md)
 
-`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。`derived=` の行は、上流のファイルから使わない部分を削り、変更に `TextLauncher:` の印を付けて作った互換クラスで、同じく3方向マージで更新する（`PopupContainer` と `PopupContainerWithArrow` は上流から削っただけ。`ItemClickHandler` はアプリペア・ウィジェット・インストール中のアイコン・プライベートスペースの部分を削った。`IconCache` は Dagger・LoaderTask の一括読み込み・ホームのファイル・インストール中のセッション・ウィジェットの分類・アーカイブされたアプリ・インスタントアプリの部分を削った。全アプリ一覧の `AlphabeticalAppsList`・`BaseAllAppsAdapter`・`AllAppsRecyclerView` は仕事用プロファイル・プライベートスペース・記録・文字の一覧の部分を削った。`WindowManagerProxy` は各向きのウィンドウの大きさの見積もり（`estimateWindowBounds`）だけを残し、Dagger・タスクバー・インセットの補正を削った。内蔵ディスプレイは `DisplayManager` から数え、大画面のカットアウトは向きによらず上に取る。`RotationHelper` は `DisplayController` とデバイスプロファイルの通知の代わりに、Activity から構成の変化を受け取る）。
+`scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。ただし上流の `res/` は、ここでは `res-textlauncher/` に置く（`res_dir`）。`derived=` の行は、上流のファイルから使わない部分を削り、変更に `TextLauncher:` の印を付けて作った互換クラスで、同じく3方向マージで更新する（`PopupContainerWithArrow` は上流から削っただけ。`PopupContainer` は削ったうえで、キーボードの出入りで落とし先の層の高さが変わってもメニューの画面上の位置を保つ。`AppWidgetResizeFrame` は `IntRange` と `showForWidget` の Compose 版への経路だけを残した（`Flags.fixWidgetSinglePtrResize` はリリース設定で有効）。`ResizeManager` は2パネルの隣の `CellLayout` の処理・保留中のウィジェット・記録を削り、ウィジェットのスパン・大きさの通知・モデルの保存を `Launcher` の互換クラス経由でアプリから受ける。`AppWidgetResizeFrameCompose` はアクセシビリティのデリゲートを削り、ホームのスクロールとキーボードの出入りに枠を追従させ、開閉を `Launcher` に知らせる（編集モード）。`ItemClickHandler` はアプリペア・ウィジェット・インストール中のアイコン・プライベートスペースの部分を削った。`IconCache` は Dagger・LoaderTask の一括読み込み・ホームのファイル・インストール中のセッション・ウィジェットの分類・アーカイブされたアプリ・インスタントアプリの部分を削った。全アプリ一覧の `AlphabeticalAppsList`・`BaseAllAppsAdapter`・`AllAppsRecyclerView` は仕事用プロファイル・プライベートスペース・記録・文字の一覧の部分を削った。`WindowManagerProxy` は各向きのウィンドウの大きさの見積もり（`estimateWindowBounds`）だけを残し、Dagger・タスクバー・インセットの補正を削った。内蔵ディスプレイは `DisplayManager` から数え、大画面のカットアウトは向きによらず上に取る。`RotationHelper` は `DisplayController` とデバイスプロファイルの通知の代わりに、Activity から構成の変化を受け取る）。
 
 ```upstream
 repo=https://android.googlesource.com/platform/packages/apps/Launcher3
@@ -115,6 +115,15 @@ derived=src/com/android/launcher3/allapps/BaseAllAppsAdapter.java compat/launche
 derived=src/com/android/launcher3/allapps/AllAppsRecyclerView.java compat/launcher3-internal/com/android/launcher3/allapps/AllAppsRecyclerView.java
 derived=src/com/android/launcher3/util/window/WindowManagerProxy.java compat/launcher3-internal/com/android/launcher3/util/window/WindowManagerProxy.java
 derived=src/com/android/launcher3/states/RotationHelper.java compat/launcher3-internal/com/android/launcher3/states/RotationHelper.java
+derived=src/com/android/launcher3/AppWidgetResizeFrame.kt compat/launcher3-internal/com/android/launcher3/AppWidgetResizeFrame.kt
+derived=src/com/android/launcher3/widget/resize/ResizeManager.kt compat/launcher3-internal/com/android/launcher3/widget/resize/ResizeManager.kt
+derived=src/com/android/launcher3/widget/resize/AppWidgetResizeFrameCompose.kt compat/launcher3-internal/com/android/launcher3/widget/resize/AppWidgetResizeFrameCompose.kt
+path=src/com/android/launcher3/widget/resize/ResizeFrame.kt
+path=src/com/android/launcher3/widget/resize/ResizeFrameViewModel.kt
+path=src/com/android/launcher3/util/compose/TestModifiers.kt
+path=src/com/android/launcher3/PopupTouchHandler.kt
+path=res/layout/app_widget_resize_frame_compose.xml
+path=res/drawable/ic_setting.xml
 path=res/color/drop_target_text.xml
 path=res/color/popup_shade_first.xml
 path=res/color/popup_shade_second.xml
@@ -156,7 +165,7 @@ path=res/layout/system_shortcut_spacer.xml
 | 上流のパス | 理由 |
 |---|---|
 | `build.gradle.kts`、`AndroidManifest.xml` | 自前のもの（`build.gradle.kts`、`TextLauncherManifest.xml`）を置く |
-| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、空き領域の長押しメニューとウィジェットの追加の `styles_wallpaper_button_text`・`widget_button_text`・`all_apps_button_label`・`out_of_space`・`msg_disabled_by_admin`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
+| `res/` | 丸ごとは取り込まない。そのままコピーした `color/`・`drawable/`・`layout/` のファイルは上のブロックに載せ、`res-textlauncher/` に置く。コピーしたコードが使う値は抜き出して `res-textlauncher/` に置く（`values/strings.xml`、`values-ja/strings.xml` の `*_shape_title`、各言語の `values-*/strings.xml` の `app_info_drop_target_label`、`action_deep_shortcut`、`action_add_to_workspace`、空き領域の長押しメニューとウィジェットの追加の `styles_wallpaper_button_text`・`widget_button_text`・`all_apps_button_label`・`out_of_space`・`msg_disabled_by_admin`、ウィジェットの長押しメニューとリサイズ枠の `remove_system_shortcut_label`・`widget_settings`・`action_increase_width`・`action_decrease_width`・`resize_handle_*`・`tap_to_show_resize_buttons`・`widget_frame_name`、`values/launcher3.xml` と `values-night/launcher3.xml` にまとめたフォルダ、ドラッグ、落とし先の枠、削除・アンインストールのボタン、長押しメニュー、キーボードのフォーカス枠、全アプリ一覧のスクロールバーと開閉のジェスチャー、ウィンドウの大きさの見積もり、ウィジェットのリサイズ枠用の attr・色・寸法・時間・スタイル）。抜き出した値は更新スクリプトの対象外なので、更新時は手で突き合わせる |
 
 ## 手を入れたファイル
 

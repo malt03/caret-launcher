@@ -23,9 +23,11 @@ package com.android.launcher3.popup
 import android.animation.AnimatorSet
 import android.content.Context
 import android.graphics.Rect
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.DragSource
@@ -74,6 +76,34 @@ open class PopupContainer<T : ActivityContext>(
     @CallSuper
     override fun handleClose(animate: Boolean) {
         super.handleClose(animate)
+    }
+
+    /**
+     * TextLauncher: the drag layer ends above the keyboard (LauncherRootLayout), so it grows and
+     * shrinks when the keyboard goes down or comes back while the menu is open (a widget's resize
+     * frame puts it down, docs/spec.md 5.4). A menu above its item is placed from the drag layer's
+     * bottom (orientAboutObject), so it keeps its place on the screen by the same amount.
+     */
+    private val keepPlaceOnScreen =
+        View.OnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            val delta = (bottom - top) - (oldBottom - oldTop)
+            val lp = layoutParams as? FrameLayout.LayoutParams ?: return@OnLayoutChangeListener
+            if (delta == 0 || oldBottom == oldTop || lp.gravity != Gravity.BOTTOM) {
+                return@OnLayoutChangeListener
+            }
+            lp.bottomMargin += delta
+            (mArrow.layoutParams as FrameLayout.LayoutParams).bottomMargin += delta
+            post { requestLayout() }
+        }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        popupContainer.addOnLayoutChangeListener(keepPlaceOnScreen)
+    }
+
+    override fun onDetachedFromWindow() {
+        popupContainer.removeOnLayoutChangeListener(keepPlaceOnScreen)
+        super.onDetachedFromWindow()
     }
 
     @CallSuper

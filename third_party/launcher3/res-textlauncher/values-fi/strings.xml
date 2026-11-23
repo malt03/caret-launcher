@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Sovellusluettelo"</string>
     <string name="out_of_space" msgid="6455557115204099579">"Aloitusnäytöllä ei ole tilaa"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Järjestelmänvalvoja on poistanut toiminnon käytöstä."</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Poista"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Asetukset"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Lisää leveyttä"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Vähennä leveyttä"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Vasemman reunan rajauskahva"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Yläreunan rajauskahva"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Oikean reunan rajauskahva"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Alareunan rajauskahva"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Näytä koon muuttamispainikkeet"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Widgetin koon muuttaminen (<xliff:g id="STRING">%1$s</xliff:g>)"</string>
 </resources>

@@ -29,6 +29,9 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
     private val workspace get() = home.workspace
     private val res = home.context.resources
 
+    /** The success callbacks of the transition back to NORMAL (StateManager.goToState). */
+    private val normalCallbacks = mutableListOf<Runnable>()
+
     init {
         workspace.background = home.grid.cellLayout.pageBackground
         // The layout changes while the keyboard moves; the scale follows it.
@@ -37,6 +40,8 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
 
     override fun onDragStart(dragObject: DragObject, options: DragOptions) {
         editing = true
+        // The transition back to NORMAL did not finish, so its callbacks do not run.
+        normalCallbacks.clear()
         AbstractFloatingView.closeOpenViews(home.activityContext, true, AbstractFloatingView.TYPE_FOLDER)
         // docs/spec.md 5.4: the home screen takes its keyboard-down size at once.
         home.root.isEditLayout = true
@@ -49,8 +54,35 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         if (!editing) return
         editing = false
         home.root.animateWallpaperScrim(false)
-        animateTo(0f) { if (!editing) home.root.isEditLayout = false }
-        home.host.onEditModeChanged(false)
+        // A widget dropped on the home screen shows its resize frame once the home screen is back
+        // (Workspace.getWidgetResizeFrameRunnable), which keeps edit mode (docs/spec.md 5.4); the
+        // keyboard does not come back in between.
+        val frameFollows = normalCallbacks.isNotEmpty()
+        animateTo(0f) {
+            if (!editing) {
+                runNormalCallbacks()
+                if (!home.isWidgetResizeFrameOpen) {
+                    home.root.isEditLayout = false
+                    if (frameFollows) home.host.onEditModeChanged(false)
+                }
+            }
+        }
+        if (!frameFollows) home.host.onEditModeChanged(false)
+    }
+
+    /**
+     * Runs [callback] once the home screen is in the NORMAL state: now, or when the transition
+     * from SPRING_LOADED ends (StateManager.goToState with a success callback).
+     */
+    fun runWhenNormal(callback: Runnable) {
+        normalCallbacks += callback
+        if (!editing && animator?.isRunning != true) runNormalCallbacks()
+    }
+
+    private fun runNormalCallbacks() {
+        val callbacks = normalCallbacks.toList()
+        normalCallbacks.clear()
+        callbacks.forEach { it.run() }
     }
 
     private fun animateTo(target: Float, onEnd: () -> Unit) {

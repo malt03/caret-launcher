@@ -18,6 +18,7 @@ import com.android.launcher3.R
 import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.util.Executors
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import kotlin.math.ceil
 import kotlin.math.max
@@ -39,19 +40,6 @@ internal class HomeWidgetHost(context: Context) : AppWidgetHost(context.applicat
 }
 
 /**
- * LauncherAppWidgetProviderInfo's spans: [spanX] and [spanY] are what a new widget gets, the
- * min and max what it can be resized to.
- */
-internal data class WidgetSpans(
-    val spanX: Int,
-    val spanY: Int,
-    val minSpanX: Int,
-    val minSpanY: Int,
-    val maxSpanX: Int,
-    val maxSpanY: Int,
-)
-
-/**
  * The widget sizes of the home grid: LauncherAppWidgetProviderInfo.initSpans, WidgetSizes and
  * WidgetSizeHandler.
  *
@@ -71,8 +59,11 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
     /** WorkspaceProfile.getWidgetPadding */
     private val widgetPadding get() = ShortcutAndWidgetContainer.getWidgetPadding(context, borderSpace)
 
-    /** LauncherAppWidgetProviderInfo.initSpans */
-    fun initSpans(info: AppWidgetProviderInfo): WidgetSpans {
+    /**
+     * LauncherAppWidgetProviderInfo.initSpans: [LauncherAppWidgetProviderInfo.spanX] and spanY
+     * are what a new widget gets, the min and max what it can be resized to.
+     */
+    fun initSpans(info: AppWidgetProviderInfo): LauncherAppWidgetProviderInfo {
         val numColumns = grid.grid.columns
         val numRows = grid.grid.rows
         var maxSpanX = numColumns
@@ -110,15 +101,15 @@ internal class HomeWidgetSizes(private val grid: HomeGridView) {
         // If minSpanX/Y > spanX/Y, ignore the minSpanX/Y to match the behavior described in
         // minResizeWidth & minResizeHeight Android documentation. See
         // https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo
-        return WidgetSpans(
+        return LauncherAppWidgetProviderInfo(info).also {
             // Ensures the default span X and span Y will not exceed the current grid size.
-            spanX = min(spanX, numColumns),
-            spanY = min(spanY, numRows),
-            minSpanX = min(spanX, minSpanX),
-            minSpanY = min(spanY, minSpanY),
-            maxSpanX = maxSpanX,
-            maxSpanY = maxSpanY,
-        )
+            it.spanX = min(spanX, numColumns)
+            it.spanY = min(spanY, numRows)
+            it.minSpanX = min(spanX, minSpanX)
+            it.minSpanY = min(spanY, minSpanY)
+            it.maxSpanX = maxSpanX
+            it.maxSpanY = maxSpanY
+        }
     }
 
     /**
@@ -216,8 +207,29 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         }
     }
 
+    /**
+     * The widget's long-press menu's "Settings" (AppWidgetSystemShortcuts' widget settings): the
+     * widget's configuration activity, for a widget already on the home screen.
+     */
+    fun startReconfigure(view: AppWidgetHostView) {
+        // LauncherWidgetHolder.startConfigActivity
+        try {
+            home.widgetHost.startAppWidgetConfigureActivityForResult(
+                activity, view.appWidgetId, 0, REQUEST_RECONFIGURE_APPWIDGET, null,
+            )
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     /** Launcher.onActivityResult. Returns whether the result was for a widget. */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        // Launcher.completeAdd for REQUEST_RECONFIGURE_APPWIDGET only marks a restored widget as
+        // restored (completeRestoreAppWidget); the widget updates itself. TextLauncher: widgets are
+        // not restored, so there is nothing to do.
+        if (requestCode == REQUEST_RECONFIGURE_APPWIDGET) return true
         if (requestCode != REQUEST_PICK_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET) return false
         val result = { handleActivityResult(requestCode, resultCode, data) }
         // Launcher.handleActivityResult: process the result once the workspace has loaded.
@@ -322,5 +334,6 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         /** LauncherConstants.ActivityCodes */
         const val REQUEST_CREATE_APPWIDGET = 5
         const val REQUEST_PICK_APPWIDGET = 9
+        const val REQUEST_RECONFIGURE_APPWIDGET = 13
     }
 }

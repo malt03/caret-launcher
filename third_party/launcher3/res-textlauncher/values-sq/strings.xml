@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Lista e aplikacioneve"</string>
     <string name="out_of_space" msgid="6455557115204099579">"Nuk ka më hapësirë në këtë ekran bazë"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Çaktivizuar nga administratori"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Hiq"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Cilësimet"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Rrit gjerësinë"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Zvogëlo gjerësinë"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Doreza e ndryshimit të përmasave në të majtë"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Doreza e ndryshimit të përmasave në krye"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Doreza e ndryshimit të përmasave në të djathtë"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Doreza e ndryshimit të përmasave në fund"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Shfaq butonat për ndryshimin e përmasave"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Kuadri i ndryshimit të përmasave të miniaplikacionit për <xliff:g id="STRING">%1$s</xliff:g>"</string>
 </resources>

@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"앱 목록"</string>
     <string name="out_of_space" msgid="6455557115204099579">"홈 화면에 더 이상 공간이 없습니다."</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"관리자가 사용 중지함"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"삭제"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"설정"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"폭 늘리기"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"폭 줄이기"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"왼쪽 크기 조절 핸들"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"상단 크기 조절 핸들"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"오른쪽 크기 조절 핸들"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"하단 크기 조절 핸들"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"크기 조절 버튼 표시"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g>의 위젯 크기 조절 프레임"</string>
 </resources>

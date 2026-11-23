@@ -20,6 +20,8 @@
 
 package com.android.launcher3;
 
+import android.graphics.Point;
+
 /**
  * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace, all apps
  * and device values that the copied code reads. TextLauncher sets them from its own grid.
@@ -99,6 +101,11 @@ public class DeviceProfile {
 
         public boolean getIconCenterVertically() {
             return mIconCenterVertically;
+        }
+
+        /** TextLauncher: the home grid's cells have no space between them. */
+        public Point getCellLayoutBorderSpacePx() {
+            return new Point(0, 0);
         }
     }
 

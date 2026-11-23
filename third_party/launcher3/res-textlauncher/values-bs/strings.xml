@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Lista aplikacija"</string>
     <string name="out_of_space" msgid="6455557115204099579">"Nema prostora na ovom početnom ekranu"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Onemogućio vaš administrator"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Ukloni"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Postavke"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Povećaj širinu"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Smanji širinu"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Lijevi regulator za promjenu veličine"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Gornji regulator za promjenu veličine"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Desni regulator za promjenu veličine"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Donji regulator za promjenu veličine"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Prikaz dugmadi za promjenu veličine"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Promjena veličine okvira vidžeta za aplikaciju <xliff:g id="STRING">%1$s</xliff:g>"</string>
 </resources>

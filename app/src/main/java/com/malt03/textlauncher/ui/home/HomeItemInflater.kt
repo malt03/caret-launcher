@@ -8,6 +8,7 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.touch.ItemClickHandler
+import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -59,7 +60,7 @@ internal class HomeItemInflater(private val home: HomeController) {
         val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
         return home.widgetHost.createView(context, info.appWidgetId, providerInfo).apply {
             setOnLongClickListener {
-                home.itemLongClickListener.onHomeWidgetLongPress(this)
+                (this as? LauncherAppWidgetHostView)?.let { home.itemLongClickListener.onHomeWidgetLongPress(it) }
                 true
             }
         }

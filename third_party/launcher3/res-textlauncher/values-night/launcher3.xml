@@ -8,4 +8,7 @@
     <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_dark</color>
     <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_dark</color>
     <color name="materialColorOutlineVariant">@android:color/system_outline_variant_dark</color>
+    <color name="materialColorPrimary">@android:color/system_primary_dark</color>
+    <color name="materialColorTertiaryContainer">@android:color/system_tertiary_container_dark</color>
+    <color name="materialColorOnTertiaryContainer">@android:color/system_on_tertiary_container_dark</color>
 </resources>

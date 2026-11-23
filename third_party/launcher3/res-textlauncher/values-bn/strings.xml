@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"অ্যাপ্লিকেশানগুলির তালিকা"</string>
     <string name="out_of_space" msgid="6455557115204099579">"এই হোম স্ক্রিনে জায়গা খালি নেই"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"সরান"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"সেটিংস"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"প্রস্থ বাড়ান"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"প্রস্থ কমান"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"বাঁদিকে হ্যান্ডেল যা উইজেট ছোট বড় করার সুবিধা দেয়"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"উপরের দিকে হ্যান্ডেল যা উইজেট ছোট বড় করার সুবিধা দেয়"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"ডানদিকে হ্যান্ডেল যা উইজেট ছোট বড় করার সুবিধা দেয়"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"নিচের দিকে হ্যান্ডেল যা উইজেট ছোট বড় করার সুবিধা দেয়"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"ছোট বড় করার বোতাম দেখুন"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g>-এর জন্য উইজেট ছোট বড় করার ফ্রেম"</string>
 </resources>

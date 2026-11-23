@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Список приложений"</string>
     <string name="out_of_space" msgid="6455557115204099579">"На главном экране нет свободного места."</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Функция отключена администратором"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Удалить"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Настройки"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Увеличить ширину"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Уменьшить ширину"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Левый маркер изменения размера"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Верхний маркер изменения размера"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Правый маркер изменения размера"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Нижний маркер изменения размера"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Показать кнопки изменения размера"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Рамка изменения размеров виджета \"<xliff:g id="STRING">%1$s</xliff:g>\""</string>
 </resources>

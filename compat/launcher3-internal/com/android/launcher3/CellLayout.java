@@ -361,6 +361,53 @@ public class CellLayout extends FrameLayout {
         }
     }
 
+    /** Returns true if there exists an arrangement to support the given resizing needs. */
+    public boolean hasAreaForResize(int cellX, int cellY, int spanX, int spanY,
+            View dragView, int[] direction) {
+        ItemConfiguration swapSolution = checkAreaForResize(cellX, cellY, spanX, spanY, dragView,
+                direction);
+        return swapSolution != null && swapSolution.isSolution;
+    }
+
+    @Nullable
+    private ItemConfiguration checkAreaForResize(int cellX, int cellY, int spanX, int spanY,
+            View dragView, int[] direction) {
+        int[] pixelXY = new int[2];
+        regionToCenterPoint(cellX, cellY, spanX, spanY, pixelXY);
+
+        // First we determine if things have moved enough to cause a different layout
+        return findReorderSolution(pixelXY[0], pixelXY[1], spanX, spanY,
+                spanX,  spanY, direction, dragView,  true);
+    }
+
+    /** Create area for resizing the widget in given the direction. */
+    public boolean createAreaForResize(int cellX, int cellY, int spanX, int spanY,
+            View dragView, int[] direction, boolean commit) {
+        final ItemConfiguration swapSolution = checkAreaForResize(cellX, cellY, spanX, spanY,
+                dragView, direction);
+
+        if (swapSolution != null && swapSolution.isSolution) {
+            setUseTempCoords(true);
+            // If we're just testing for a possible location (MODE_ACCEPT_DROP), we don't bother
+            // committing anything or animating anything as we just want to determine if a solution
+            // exists
+            copySolutionToTempState(swapSolution, dragView);
+            setItemPlacementDirty(true);
+            animateItemsToSolution(swapSolution, dragView, commit);
+
+            if (commit) {
+                commitTempPlacement(null);
+                completeAndClearReorderPreviewAnimations();
+                setItemPlacementDirty(false);
+            } else {
+                beginOrAdjustReorderPreviewAnimations(swapSolution, dragView,
+                        ReorderPreviewAnimation.MODE_PREVIEW);
+            }
+            mShortcutsAndWidgets.requestLayout();
+        }
+        return swapSolution.isSolution;
+    }
+
     public ReorderAlgorithm createReorderAlgorithm() {
         return new ReorderAlgorithm(this);
     }

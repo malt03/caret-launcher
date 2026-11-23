@@ -12,6 +12,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.widget.NestedScrollView
 import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
+import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
@@ -27,6 +28,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
+import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.WidgetItemInfo
@@ -124,6 +126,7 @@ class HomeController(
     internal val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
     private val workspaceHost = WorkspaceHost()
     internal val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
+    private val springLoadedListener = SpringLoadedListener(this)
     private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController }, ::canRemove)
 
     internal val widgetHost = HomeWidgetHost(context)
@@ -160,7 +163,7 @@ class HomeController(
         root.overlay.setDragController(dragController)
         dragController.defaultDropTarget = homeWorkspace
         dragController.addDragListener(homeWorkspace)
-        dragController.addDragListener(SpringLoadedListener(this))
+        dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
         // DragLayer.recreateControllers: the drag controller is the touch controller; open
@@ -209,9 +212,16 @@ class HomeController(
 
     val isDragging: Boolean get() = dragController.isDragging
 
-    /** Closes the open folder (typing in the search field, dragging a shortcut out of the menu). */
+    /**
+     * Closes the open folder (typing in the search field, dragging a shortcut out of the menu),
+     * and a widget's resize frame, which belongs to the home screen the search results cover.
+     */
     fun closeFolders() {
-        AbstractFloatingView.closeOpenViews(activityContext, true, AbstractFloatingView.TYPE_FOLDER)
+        AbstractFloatingView.closeOpenViews(
+            activityContext,
+            true,
+            AbstractFloatingView.TYPE_FOLDER or AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME,
+        )
     }
 
     /** Closes the long-press menu and other floating views (Launcher.onNewIntent and onStop). */
@@ -295,9 +305,39 @@ class HomeController(
         model.save()
         if (view is AppWidgetHostView) {
             widgetSizes.updateSizeRanges(view, item.spanX, item.spanY)
-            view.post { view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), false) }
+            view.post {
+                view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), true)
+                // Launcher.showWidgetResizeFrame
+                if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, grid.cellLayout)
+            }
         }
         return true
+    }
+
+    /** The widget menu's "Remove" (PopupDataSource.removePopupData, DropTargetHandler.onDeleteComplete). */
+    internal fun removeHomeItem(view: View) = workspaceHost.removeWorkspaceItem(view)
+
+    /** CellLayout.commitTempPlacement's database writes: the items' cells and spans, from their views. */
+    internal fun saveItemPlacement() = workspaceHost.onItemsMoved()
+
+    /** Whether a widget's resize frame is open. */
+    internal var isWidgetResizeFrameOpen = false
+        private set
+
+    /**
+     * docs/spec.md 5.4: resizing a widget is edit mode, so the keyboard goes down while its frame
+     * is open, and comes back when it closes. A frame that closes as its widget's drag starts
+     * leaves edit mode to the drag (SpringLoadedListener).
+     */
+    internal fun onWidgetResizeFrameOpenChanged(open: Boolean) {
+        isWidgetResizeFrameOpen = open
+        if (open) {
+            root.isEditLayout = true
+            host.onEditModeChanged(true)
+        } else if (!dragController.isDragging) {
+            root.isEditLayout = false
+            host.onEditModeChanged(false)
+        }
     }
 
     /**
@@ -413,6 +453,8 @@ class HomeController(
 
         override fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int) =
             widgetSizes.updateSizeRanges(view, spanX, spanY)
+
+        override fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
 
         override fun onItemsMoved() {
             for (child in grid.itemViews()) {

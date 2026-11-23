@@ -1,12 +1,15 @@
 // TextLauncher: build file for files copied from packages/apps/Launcher3 (not copied from upstream).
 plugins {
     alias(libs.plugins.android.library)
+    // The widget resize frame (widget/resize/) is Compose, as in Launcher3.
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.android.launcher3"
     compileSdk { version = release(37) }
     defaultConfig { minSdk = 37 }
+    buildFeatures { compose = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -30,6 +33,10 @@ dependencies {
     implementation(libs.androidx.dynamicanimation)
     implementation(libs.androidx.graphics.shapes)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     api(project(":launcher3-compat"))
     api(project(":iconloaderlib"))
     api(project(":msdllib"))

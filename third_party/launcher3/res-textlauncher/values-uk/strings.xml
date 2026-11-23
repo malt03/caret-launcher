@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Список додатків"</string>
     <string name="out_of_space" msgid="6455557115204099579">"На головному екрані немає місця"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Вимкнув адміністратор"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Вилучити"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Налаштування"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Збільшити ширину"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Зменшити ширину"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Лівий маркер для змінення розміру"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Верхній маркер для змінення розміру"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Правий маркер для змінення розміру"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Нижній маркер для змінення розміру"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Показувати кнопки змінення розміру"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Рамка для зміни розміру віджета \"<xliff:g id="STRING">%1$s</xliff:g>\""</string>
 </resources>

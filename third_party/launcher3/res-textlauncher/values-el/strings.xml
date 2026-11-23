@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"Λίστα εφαρμογών"</string>
     <string name="out_of_space" msgid="6455557115204099579">"Δεν υπάρχει χώρος σε αυτή την αρχική οθόνη"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Απενεργοποιήθηκε από τον διαχειριστή σας"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Κατάργηση"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Ρυθμίσεις"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Αύξηση του πλάτους"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"μείωση του πλάτους"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Δείκ. αλλαγής μεγέθ. αριστερά"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Δείκτης αλλαγής μεγέθους επάνω"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Δείκτης αλλαγής μεγέθους δεξιά"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Δείκτης αλλαγής μεγέθους κάτω"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Εμφάν. κουμπιών αλλαγής μεγέθ."</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Πλαίσιο αλλαγής μεγέθους γραφικού στοιχείου για <xliff:g id="STRING">%1$s</xliff:g>"</string>
 </resources>

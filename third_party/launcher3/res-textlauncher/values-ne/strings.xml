@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"एपको सूची"</string>
     <string name="out_of_space" msgid="6455557115204099579">"यो होम स्क्रिनमा ठाउँ छैन"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"तपाईँको एडमिनद्वारा असक्षम गरिएको"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"हटाउनुहोस्"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"सेटिङ"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"चौडाइ बढाउनुहोस्"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"चौडाइ घटाउनुहोस्"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"बायाँतिरको रिसाइज ह्यान्डल"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"सिरानको रिसाइज ह्यान्डल"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"दायाँतिरको रिसाइज ह्यान्डल"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"पुछारको रिसाइज ह्यान्डल"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"आकार बदल्ने बटनहरू देखाउनुहोस्"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> एपको विजेटको आकार बदल्ने फ्रेम"</string>
 </resources>

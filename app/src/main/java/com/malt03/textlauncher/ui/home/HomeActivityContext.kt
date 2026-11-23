@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetProviderInfo
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.view.View
@@ -16,6 +17,8 @@ import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.RunnableList
+import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -99,6 +102,19 @@ internal class HomeActivityContext(private val home: HomeController) :
             home.bindItemChanged(si)
         }
     }
+
+    /** The widget's spans on the home grid, for the resize frame (LauncherAppWidgetProviderInfo). */
+    override fun getLauncherAppWidgetInfo(info: AppWidgetProviderInfo?): LauncherAppWidgetProviderInfo? =
+        info?.let { home.widgetSizes.initSpans(it) }
+
+    /** WidgetSizeHandler.updateSizeRanges, while the resize frame resizes the widget. */
+    override fun updateWidgetSizeRanges(widgetView: LauncherAppWidgetHostView, spanX: Int, spanY: Int) =
+        home.widgetSizes.updateSizeRanges(widgetView, spanX, spanY)
+
+    /** The cells the resize frame gave the widget and the items it moved aside, saved. */
+    override fun saveItemPlacement() = home.saveItemPlacement()
+
+    override fun onWidgetResizeFrameOpenChanged(open: Boolean) = home.onWidgetResizeFrameOpenChanged(open)
 
     /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */
     override fun addToWorkspace(item: ItemInfo, accessibility: Boolean, finishCallback: Consumer<Boolean>?): Boolean {

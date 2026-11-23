@@ -266,4 +266,10 @@
     <!-- The wallpaper picker the menu opens (WorkspaceLongPressOptions): values/config.xml.
          Empty: the system picks the activity for ACTION_SET_WALLPAPER. -->
     <string name="wallpaper_picker_package" translatable="false"></string>
+    <!-- The widget resize frame (widget/resize/ResizeFrame.kt): values/dimens.xml, and the
+         dynamiccolors colors it draws with (frameworks/libs/systemui res/values/colors.xml). -->
+    <dimen name="resize_frame_touch_target_size">48dp</dimen>
+    <color name="materialColorPrimary">@android:color/system_primary_light</color>
+    <color name="materialColorTertiaryContainer">@android:color/system_tertiary_container_light</color>
+    <color name="materialColorOnTertiaryContainer">@android:color/system_on_tertiary_container_light</color>
 </resources>

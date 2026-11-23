@@ -16,4 +16,14 @@
     <string name="all_apps_button_label" msgid="8130441508702294465">"යෙදුම් ලැයිස්තුව"</string>
     <string name="out_of_space" msgid="6455557115204099579">"මෙම මුල් තිරයේ ඉඩ නැත"</string>
     <string name="msg_disabled_by_admin" msgid="6898038085516271325">"ඔබගේ පරිපාලක විසින් අබල කරන ලදී"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"ඉවත් කරන්න"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"සැකසීම්"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"පළල වැඩි කරන්න"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"පළල අඩු කරන්න"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"වම් ප්‍රතිප්‍රමාණ කිරීමේ හසුරුව"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"ඉහළ ප්‍රතිප්‍රමාණ කිරීමේ හසුරුව"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"දකුණු ප්‍රතිප්‍රමාණ කිරීමේ හසුරුව"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"පහළ ප්‍රතිප්‍රමාණ කිරීමේ හසුරුව"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"ප්‍රතිප්‍රමාණ කිරීමේ බොත්තම් පෙන්වන්න"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> සඳහා විජට් ප්‍රමාණය වෙනස් කිරීමේ රාමුව"</string>
 </resources>
