@@ -1,6 +1,6 @@
 ---
 id: Tex-ijxl
-status: open
+status: closed
 deps: []
 links: [Tex-a8os, Tex-4z1w]
 created: 2026-11-21T10:20:30Z
@@ -24,3 +24,7 @@ Tex-f33r の確認中に一度だけ起きた。アンインストールのダ�
 **2026-11-22T00:59:09Z**
 
 2026-11-22 のレビューで原因の候補が2つ見つかった: Tex-a8os（フォルダーからのドラッグ中にモデルでフォルダーが畳まれ、最後のアイテムが二重に足される）と Tex-4z1w（残った mDragInfo のせいでドロップが onDropExternal に回り二重に足される）
+
+**2026-11-23T16:02:08Z**
+
+Tex-4z1w の修正で、2つ目の候補（残った mDragInfo）の原因は取り除かれたと判断して閉じる。mDragInfo は onDragEnd で消えるので、長押しメニューで終わったドラッグやアンインストールに落としたドラッグのものが次のドラッグに残らない。onDropCompleted は d.originalDragInfo で View を探すので、遅れて来た呼び出しが別のアイテムの View を触らない。さらに Launcher.onPause と同じく一時停止でドラッグを取り消すので、アンインストールの遅れた結果（onResume で来る）が別のドラッグの最中に来て、その mDragInfo を消し onDropExternal で二重に足すことは起きない（ドラッグは長押しの後に始まるので、再開の前には始まらない）。1つ目の候補 Tex-a8os は閉じ済み。実機での再現は試していない（同じ手順でまた起きたら開き直す）
