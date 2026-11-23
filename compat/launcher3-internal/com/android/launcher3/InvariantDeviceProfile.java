@@ -22,13 +22,18 @@ package com.android.launcher3;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Stand-in for Launcher3's InvariantDeviceProfile (android-17.0.0_r1): the home grid's size and its
  * device profile. TextLauncher: the app works the grid out (GridSpec) and sets it with the home
- * screen's one profile; Launcher3 has a profile for each window size the device supports.
+ * screen's one profile; Launcher3 has a profile for each window size the device supports. Until
+ * the home screen sets it (the widget picker can be made again before the home screen, after the
+ * process ended), the app's {@link GridInitializer} works it out from the device, as Launcher3's
+ * constructor does.
  */
 public class InvariantDeviceProfile {
 
@@ -42,6 +47,10 @@ public class InvariantDeviceProfile {
     private DeviceProfile mDeviceProfile;
 
     public DeviceProfile getDeviceProfile(Context context) {
+        // TextLauncher: the grid from the device until the home screen sets its own.
+        if (mDeviceProfile == null && sGridInitializer != null) {
+            sGridInitializer.initGrid(context, this);
+        }
         return mDeviceProfile;
     }
 
@@ -52,5 +61,21 @@ public class InvariantDeviceProfile {
         deviceProfile.inv = this;
         mDeviceProfile = deviceProfile;
         supportedProfiles = Collections.singletonList(deviceProfile);
+    }
+
+    @Nullable
+    private static GridInitializer sGridInitializer;
+
+    /** TextLauncher: set by the app as it starts. */
+    public static void setGridInitializer(@Nullable GridInitializer initializer) {
+        sGridInitializer = initializer;
+    }
+
+    /**
+     * TextLauncher: InvariantDeviceProfile's initGrid; works the grid out for the context's
+     * display and sets it ({@link #setDeviceProfile}).
+     */
+    public interface GridInitializer {
+        void initGrid(Context context, InvariantDeviceProfile idp);
     }
 }

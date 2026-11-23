@@ -2,6 +2,7 @@ package com.malt03.textlauncher
 
 import android.app.Application
 import android.content.ComponentName
+import com.android.launcher3.InvariantDeviceProfile
 import com.android.launcher3.notification.NotificationListener
 import com.android.launcher3.util.Executors.MAIN_EXECUTOR
 import com.android.launcher3.util.SettingsCache
@@ -13,6 +14,7 @@ import com.malt03.textlauncher.data.SearchStore
 import com.malt03.textlauncher.data.ShortcutRepository
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.icons.IconSettings
+import com.malt03.textlauncher.ui.home.HomeGridInitializer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -45,6 +47,8 @@ class TextLauncherApplication : Application() {
         appRepository = AppRepository(this, iconLoader)
         shortcutRepository = ShortcutRepository(this)
         homeModel = HomeModel(database, ioExecutor, shortcutRepository, iconLoader.iconCache)
+        // InvariantDeviceProfile: the grid from the device, until the home screen sets its own.
+        InvariantDeviceProfile.setGridInitializer(HomeGridInitializer)
 
         // ModelInitializer: when notification dots are turned back on, the listener (which unbinds
         // itself when they are turned off) is bound again.

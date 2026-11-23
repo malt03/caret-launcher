@@ -19,17 +19,30 @@
  */
 package com.android.launcher3.pm;
 
+import static com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR;
+
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.LauncherApps;
 import android.content.pm.LauncherUserInfo;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.android.launcher3.util.SafeCloseable;
 import com.android.launcher3.util.UserIconInfo;
 import com.android.users.UserType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -38,17 +51,78 @@ import java.util.function.Consumer;
  *
  * <p>Stand-in for Launcher3's UserCache (android-17.0.0_r1): the serial numbers, profiles and
  * their types and quiet mode for the widget picker, asked of UserManager directly (no cache, no
- * Dagger).
+ * Dagger), and the changes to the profiles, from the same broadcasts as UserCache.kt.
  */
 public class UserCache {
+    private static final String TAG = "UserCache";
+
     public static final Instance INSTANCE = new Instance();
 
     private final UserManager mUserManager;
     private final LauncherApps mLauncherApps;
 
+    /**
+     * TextLauncher: the users as of the last change, to tell what a broadcast changed
+     * (UserCache.kt's cached UserManagerState).
+     */
+    private Map<UserHandle, CachedUserInfo> mUserInfoMap;
+
     private UserCache(Context context) {
         mUserManager = context.getSystemService(UserManager.class);
         mLauncherApps = context.getSystemService(LauncherApps.class);
+
+        // UserCache.kt: the receiver of the profile changes, on a lightweight background thread.
+        // TextLauncher: UI_HELPER_EXECUTOR's, and the cache is built there first.
+        UI_HELPER_EXECUTOR.execute(() -> mUserInfoMap = rebuildUserCache());
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNLOCKED);
+        filter.addAction(Intent.ACTION_PROFILE_ACCESSIBLE);
+        filter.addAction(Intent.ACTION_PROFILE_ADDED);
+        filter.addAction(Intent.ACTION_PROFILE_AVAILABLE);
+        filter.addAction(Intent.ACTION_PROFILE_INACCESSIBLE);
+        filter.addAction(Intent.ACTION_PROFILE_REMOVED);
+        filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent intent) {
+                onUsersChanged(intent);
+            }
+        }, filter, null, UI_HELPER_EXECUTOR.getHandler());
+    }
+
+    /** UserCache.onUsersChanged */
+    @WorkerThread
+    private void onUsersChanged(Intent intent) {
+        Map<UserHandle, CachedUserInfo> oldState = mUserInfoMap;
+        mUserInfoMap = rebuildUserCache();
+        UserHandle user = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
+        if (user == null) return;
+        UserChangeEvent change = new UserChangeEvent(
+                oldState != null ? oldState.get(user) : null, mUserInfoMap.get(user));
+        if (!Objects.equals(change.getOldUser(), change.getNewUser())) {
+            mUserChanges.dispatchValue(change);
+        }
+    }
+
+    /** UserCache.rebuildUserCache: the profiles and their state (buildCachedUserInfo). */
+    @WorkerThread
+    private Map<UserHandle, CachedUserInfo> rebuildUserCache() {
+        Map<UserHandle, CachedUserInfo> map = new HashMap<>();
+        try {
+            for (UserHandle user : getUserProfiles()) {
+                if (mLauncherApps.getLauncherUserInfo(user) == null) continue;
+                map.put(user, new CachedUserInfo(getUserInfo(user),
+                        mUserManager.isUserUnlocked(user),
+                        mUserManager.isQuietModeEnabled(user)));
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "Security exception while fetching user property", e);
+        }
+        return map;
     }
 
     /** @see UserManager#getSerialNumberForUser */
@@ -78,10 +152,7 @@ public class UserCache {
         return mUserManagerState;
     }
 
-    /**
-     * Changes to the users. TextLauncher: they are not tracked yet, so the listeners are not
-     * called; the widget picker reads the profiles when it opens.
-     */
+    /** Stream for listening to user manager changes */
     public UserChanges getUserChanges() {
         return mUserChanges;
     }
@@ -96,23 +167,68 @@ public class UserCache {
         }
     }
 
-    /** Stand-in for the listenable stream of {@link UserChangeEvent}. */
+    /**
+     * Stand-in for the listenable stream of {@link UserChangeEvent} (MutableListenableStream):
+     * each listener gets the changes on its executor until it is closed.
+     */
     public static class UserChanges {
+        private final CopyOnWriteArrayList<Consumer<UserChangeEvent>> mListeners =
+                new CopyOnWriteArrayList<>();
+
         public SafeCloseable forEach(Executor executor, Consumer<UserChangeEvent> listener) {
-            return () -> { };
+            Consumer<UserChangeEvent> entry = event -> executor.execute(() -> listener.accept(event));
+            mListeners.add(entry);
+            return () -> mListeners.remove(entry);
+        }
+
+        void dispatchValue(UserChangeEvent event) {
+            for (Consumer<UserChangeEvent> listener : mListeners) {
+                listener.accept(event);
+            }
         }
     }
 
-    /** UserCache.CachedUserInfo */
+    /**
+     * UserCache.CachedUserInfo: information about a UserHandle cached in the platform.
+     * TextLauncher: no pre-installed apps.
+     */
     public static class CachedUserInfo {
         private final UserIconInfo mIconInfo;
+        private final boolean mIsUnlocked;
+        private final boolean mIsQuietModeEnabled;
 
-        public CachedUserInfo(UserIconInfo iconInfo) {
+        public CachedUserInfo(UserIconInfo iconInfo, boolean isUnlocked,
+                boolean isQuietModeEnabled) {
             mIconInfo = iconInfo;
+            mIsUnlocked = isUnlocked;
+            mIsQuietModeEnabled = isQuietModeEnabled;
         }
 
         public UserIconInfo getIconInfo() {
             return mIconInfo;
+        }
+
+        public boolean isUnlocked() {
+            return mIsUnlocked;
+        }
+
+        public boolean isQuietModeEnabled() {
+            return mIsQuietModeEnabled;
+        }
+
+        // TextLauncher: a Kotlin data class upstream.
+        @Override
+        public boolean equals(@Nullable Object o) {
+            if (this == o) return true;
+            if (!(o instanceof CachedUserInfo other)) return false;
+            return mIsUnlocked == other.mIsUnlocked
+                    && mIsQuietModeEnabled == other.mIsQuietModeEnabled
+                    && Objects.equals(mIconInfo, other.mIconInfo);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mIconInfo, mIsUnlocked, mIsQuietModeEnabled);
         }
     }
 

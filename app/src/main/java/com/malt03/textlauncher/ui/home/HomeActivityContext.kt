@@ -2,15 +2,19 @@ package com.malt03.textlauncher.ui.home
 
 import android.app.Activity
 import android.appwidget.AppWidgetProviderInfo
+import android.content.Context
 import android.content.Intent
+import android.graphics.Point
 import android.content.pm.ShortcutInfo
 import android.view.View
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DeviceProfile
+import com.android.launcher3.InvariantDeviceProfile
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.PendingAddItemInfo
+import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
@@ -27,6 +31,7 @@ import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
+import com.malt03.textlauncher.ui.GridSpec
 import java.util.function.Consumer
 
 /**
@@ -41,21 +46,7 @@ internal class HomeActivityContext(private val home: HomeController) :
     private val context = home.context
     private val gridSpec = home.gridSpec
 
-    /** The open folder's cells: the icon with Launcher3's folder cell padding around it. */
-    private val folderCellSizePx = gridSpec.iconSizePx + (24 * context.resources.displayMetrics.density).toInt()
-
-    private val deviceProfile = DeviceProfile(
-        DeviceProfile.FolderProfile(
-            gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx,
-            folderCellSizePx, folderCellSizePx,
-        ),
-        // No labels (docs/spec.md 5.2): the icons are centered in their cells.
-        DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
-        DeviceProfile.DeviceProperties(
-            context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
-        ),
-        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx),
-    ).also {
+    private val deviceProfile = newDeviceProfile(context, gridSpec).also {
         // InvariantDeviceProfile: the grid and its profile, for the widget picker and the widget
         // sizes (LauncherAppWidgetProviderInfo.initSpans).
         LauncherAppState.getIDP(context).setDeviceProfile(gridSpec.columns, gridSpec.rows, it)
@@ -159,5 +150,42 @@ internal class HomeActivityContext(private val home: HomeController) :
         val added = home.addToWorkspace(item)
         finishCallback?.accept(added)
         return added
+    }
+}
+
+/**
+ * The home screen's device profile for [gridSpec]: its folders, its workspace and all apps cells
+ * and the device's properties.
+ */
+internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfile {
+    /** The open folder's cells: the icon with Launcher3's folder cell padding around it. */
+    val folderCellSizePx = gridSpec.iconSizePx + (24 * context.resources.displayMetrics.density).toInt()
+    return DeviceProfile(
+        DeviceProfile.FolderProfile(
+            gridSpec.iconSizePx, 0, gridSpec.folderColumns, gridSpec.folderRows, gridSpec.iconSizePx,
+            folderCellSizePx, folderCellSizePx,
+        ),
+        // No labels (docs/spec.md 5.2): the icons are centered in their cells.
+        DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
+        DeviceProfile.DeviceProperties(
+            context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
+        ),
+        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx),
+    )
+}
+
+/**
+ * InvariantDeviceProfile's grid before the home screen sets its own, e.g. for a widget picker made
+ * again before the home screen after the process ended: the grid for the context's display, with
+ * the cells it has in the smallest window of the displays (as the home screen has until its grid
+ * is measured).
+ */
+internal object HomeGridInitializer : InvariantDeviceProfile.GridInitializer {
+    override fun initGrid(context: Context, idp: InvariantDeviceProfile) {
+        val gridSpec = GridSpec.from(context)
+        val deviceProfile = newDeviceProfile(context, gridSpec)
+        val widgetPadding = ShortcutAndWidgetContainer.getWidgetPadding(context, Point(0, 0))
+        deviceProfile.workspaceProfile.setCellSize(gridSpec.homeCellWidthPx, gridSpec.homeCellHeightPx, widgetPadding)
+        idp.setDeviceProfile(gridSpec.columns, gridSpec.rows, deviceProfile)
     }
 }
