@@ -44,7 +44,7 @@ import kotlin.math.abs
  * "TextLauncher:". TextLauncher: the two panels are the all apps list and the home screen, so
  * there is no paired CellLayout to dim (handleInvalidResizeForTwoPanelUi); there are no pending
  * widget views and no stats logging. The widget's spans come from the home screen
- * ([Launcher.getLauncherAppWidgetInfo]), and so do its size updates and the model writes.
+ * ([Launcher.getLauncherAppWidgetInfo]), and so do its size updates.
  */
 class ResizeManager(
     private val widgetView: LauncherAppWidgetHostView,
@@ -60,7 +60,7 @@ class ResizeManager(
 
     private val resizeSession: ResizeSession = ResizeSession()
 
-    // TextLauncher: the launcher, for the widget's spans and the model.
+    // TextLauncher: the launcher, for the widget's spans.
     private val launcher: Launcher = Launcher.getLauncher(cellLayout.context)
 
     init {
@@ -270,21 +270,17 @@ class ResizeManager(
         if (widgetView.layoutParams !is CellLayoutLayoutParams) return
 
         val wlp = widgetView.layoutParams as CellLayoutLayoutParams
-        // TextLauncher: when the cells are committed, the home screen's model is written
-        // (CellLayout.commitTempPlacement does it in Launcher3); no stats logging.
-        if (
-            cellLayout.createAreaForResize(
-                wlp.tmpCellX,
-                wlp.tmpCellY,
-                wlp.cellHSpan,
-                wlp.cellVSpan,
-                widgetView,
-                resizeSession.lastDirectionVector,
-                /* commit= */ true,
-            )
-        ) {
-            launcher.saveItemPlacement()
-        }
+        cellLayout.createAreaForResize(
+            wlp.tmpCellX,
+            wlp.tmpCellY,
+            wlp.cellHSpan,
+            wlp.cellVSpan,
+            widgetView,
+            resizeSession.lastDirectionVector,
+            /* commit= */ true,
+        )
+
+        // TextLauncher: no stats logging.
     }
 
     private fun resizeWidgetIfNeeded(
@@ -390,9 +386,6 @@ class ResizeManager(
 
             if (!commit) {
                 widgetView.updateSizeRanges(spanX, spanY)
-            } else {
-                // TextLauncher: CellLayout.commitTempPlacement writes the cells in Launcher3.
-                launcher.saveItemPlacement()
             }
         }
 

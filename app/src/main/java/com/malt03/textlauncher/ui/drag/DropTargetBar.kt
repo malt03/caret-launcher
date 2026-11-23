@@ -52,7 +52,7 @@ import com.android.launcher3.R as L3R
 class DropTargetBar(
     context: Context,
     private val activity: () -> ActivityContext,
-    /** DropTargetHandler: its drag layer. */
+    /** DropTargetHandler: its drag layer and Launcher.removeItem. */
     private val launcher: Launcher,
     private val dragController: () -> DragController,
 ): FrameLayout(context), DragController.DragListener {
@@ -562,10 +562,15 @@ class DropTargetBar(
         override fun supportsDrop(info: DragObject): Boolean = true
 
         /**
-         * DeleteDropTarget.completeDrop removes the item from the model. TextLauncher: the drag
-         * source does that in onDropCompleted, since it owns the home model.
+         * DeleteDropTarget.completeDrop with DropTargetHandler.onDeleteComplete: the item leaves
+         * the model (Launcher.removeItem). TextLauncher: no undo and no empty screens to strip.
          */
-        override fun completeDrop(d: DragObject) = Unit
+        override fun completeDrop(d: DragObject) {
+            val item = d.dragInfo
+            if (canRemove(item)) {
+                launcher.removeItem(null, item, true /* deleteFromDb */, "removed via drop target")
+            }
+        }
     }
 
     /**

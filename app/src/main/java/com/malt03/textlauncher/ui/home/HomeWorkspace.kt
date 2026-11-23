@@ -73,11 +73,8 @@ class HomeWorkspace(
          */
         fun addItem(info: WorkspaceItemInfo, cellX: Int, cellY: Int): View
 
-        /** Workspace.removeWorkspaceItem, with the model delete. */
+        /** Workspace.removeWorkspaceItem: the view leaves the grid; the model is not changed. */
         fun removeWorkspaceItem(view: View)
-
-        /** ModelWriter.modifyItemInDatabase: the cells of the items on the grid changed. */
-        fun onItemsMoved()
 
         /** WidgetSizeHandler.updateSizeRanges for a widget whose spans changed. */
         fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int)
@@ -566,7 +563,9 @@ class HomeWorkspace(
                         // in its final location
                         onCompleteRunnable = getWidgetResizeFrameRunnable(cell)
                     }
-                    host.onItemsMoved()
+                    mLauncher.modelWriter.modifyItemInDatabase(
+                        item, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, lp.cellX, lp.cellY, item.spanX, item.spanY,
+                    )
                 } else {
                     if (cell is LauncherAppWidgetHostView) {
                         d.dragView.detachContentView(/* reattachToPreviousParent= */ true)
@@ -667,7 +666,6 @@ class HomeWorkspace(
         // Add the item to DB before adding to screen ensures that the container and other
         // values of the info is properly updated.
         val view = host.addItem(info, mTargetCell[0], mTargetCell[1])
-        host.onItemsMoved()
         cellLayout.onDropChild(view)
         grid.measureChild(view)
 

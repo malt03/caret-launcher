@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.os.Process
 import android.os.UserManager
 import android.util.Log
+import android.util.SparseArray
 import com.android.launcher3.LauncherSettings.Favorites
 import com.android.launcher3.icons.IconCache
 import com.android.launcher3.model.ModelDbController
@@ -15,21 +16,22 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.shortcuts.ShortcutKey
-import com.android.launcher3.util.ContentWriter
-import com.android.launcher3.util.Executors.MODEL_EXECUTOR
+import com.android.launcher3.model.BgDataModel
+import com.android.launcher3.model.ModelWriter
 
 /**
- * The home layout (docs/spec.md 5.2), as Launcher3's BgDataModel holds it: the ItemInfos on the
- * home grid ([items]; a folder's items are its FolderInfo's contents), kept in memory on the main
- * thread. [loadBlocking] reads them from the favorites table of [LauncherDatabase] (LoaderTask and
- * LoaderCursor) and [save] writes them back as a whole after every change, each item with
- * ItemInfo.onAddToDatabase (ModelWriter), on the model thread as in Launcher3. See HomeItemInfo.kt
- * for the kinds of items.
+ * The home layout (docs/spec.md 5.2), in the role of Launcher3's LauncherModel: its BgDataModel
+ * ([bgDataModel]) holds every ItemInfo by id, on the main thread, and a folder's items are also
+ * its FolderInfo's contents, as in Launcher3. [loadBlocking] reads them from the favorites table of
+ * [LauncherDatabase] (LoaderTask and LoaderCursor). Every change goes through [writer]
+ * (ModelWriter), which changes the in-memory model and writes the changed items to the database
+ * one by one on the model thread; adding and removing shortcuts updates the system's pinned
+ * shortcuts (BgDataModel.updateShortcutPinnedState). See HomeItemInfo.kt for the kinds of items.
  */
 class HomeModel(
     private val context: Context,
     db: LauncherDatabase,
-    /** Makes and keys the shortcut items, and keeps the system's pinned shortcuts in step. */
+    /** Makes and keys the shortcut items. */
     private val shortcuts: ShortcutRepository,
     /** Makes the icons saved with the app shortcuts. */
     private val iconCache: IconCache,
@@ -37,29 +39,21 @@ class HomeModel(
     /** LauncherModel.getModelDbController */
     val modelDbController = ModelDbController(db)
 
-    val items = mutableListOf<ItemInfo>()
+    val bgDataModel = BgDataModel()
 
     /**
-     * LauncherModel.isModelLoaded: [items] hold what was read from the database. Until then
-     * nothing is saved, as Launcher3's model tasks wait for the load (Tex-twu9).
+     * LauncherModel.getWriter. The home screen changes the model only once it is loaded: no drag
+     * starts and nothing is added while it loads (Tex-twu9).
      */
+    val writer = ModelWriter(context, modelDbController, bgDataModel, BgDataModel.ModificationSource.ModelTask)
+
+    /** LauncherModel.isModelLoaded: [bgDataModel] holds what was read from the database. */
     var isLoaded = false
         private set
 
     /**
-     * While a drag is in progress, saves wait for its end: the dragged item is out of the model
-     * meanwhile (a folder's contents lose it at the start), and Launcher3 writes nothing until the
-     * drop (Folder.removeFolderContent does not change the database). See [deferSaves].
-     */
-    private var savesDeferred = false
-    private var saveRequested = false
-
-    /** The shortcut keys the system was last told to keep pinned; null until the first save. */
-    private var pinnedKeys: Set<String>? = null
-
-    /**
      * TextLauncher: some app shortcuts were saved without their icons (before the icon column was
-     * added); the home screen is saved again once their icons are loaded.
+     * added); they are saved again once their icons are loaded.
      */
     var hasShortcutsWithoutIcons = false
 
@@ -162,30 +156,46 @@ class HomeModel(
         }
     }
 
+    /**
+     * BgDataModel.dataLoadComplete: [loaded] (the items on the home page, with their folders'
+     * contents) become the model.
+     */
     fun setLoaded(loaded: List<ItemInfo>) {
-        items.clear()
-        items += loaded
+        val all = SparseArray<ItemInfo>()
+        for (item in loaded) {
+            all.put(item.id, item)
+            if (item is FolderInfo) item.contents.forEach { all.put(it.id, it) }
+        }
+        bgDataModel.dataLoadComplete(all, "load")
         isLoaded = true
     }
 
     /**
-     * Holds [save] from a drag's start to its end (or saves at the end when one was asked for in
-     * between), so that a drag is saved once, with the item where it was dropped.
+     * The items on the home page (CONTAINER_DESKTOP), in the order of their ids; a folder's items
+     * are its FolderInfo's contents.
      */
-    fun deferSaves(deferred: Boolean) {
-        if (savesDeferred == deferred) return
-        savesDeferred = deferred
-        if (!deferred && saveRequested) {
-            saveRequested = false
-            save()
-        }
+    val items: List<ItemInfo>
+        get() = bgDataModel.itemsIdMap.filter { it.container == Favorites.CONTAINER_DESKTOP }
+
+    /** Every item, including the ones in folders (BgDataModel.itemsIdMap). */
+    fun allItems(): List<ItemInfo> = bgDataModel.itemsIdMap.toList()
+
+    private var shortcutsSanitized = false
+
+    /**
+     * LoaderTask.sanitizeWidgetsShortcutsAndPackages: once the loaded shortcuts were looked up (and
+     * the missing ones deleted), the system's pinned shortcuts are made to match the model. Once
+     * per load.
+     */
+    fun sanitizeShortcutsOnce() {
+        if (shortcutsSanitized) return
+        shortcutsSanitized = true
+        // Update pinned state of model shortcuts
+        bgDataModel.updateShortcutPinnedState(context)
     }
 
-    /** ModelDbController.generateNewItemId: the id for a new item. */
-    fun newId(): Int = modelDbController.generateNewItemId()
-
-    /** Every item, including the ones in folders. */
-    fun allItems(): List<ItemInfo> = items.flatMap { if (it is FolderInfo) listOf(it) + it.contents else listOf(it) }
+    /** Whether [item] is in the model (and not a copy, or an item that was deleted). */
+    fun contains(item: ItemInfo): Boolean = bgDataModel.itemsIdMap[item.id] === item
 
     /** The keys of every app shortcut on the home screen, also in folders. */
     fun shortcutKeys(): List<String> = allItems().filter { it.isDeepShortcut }.map(shortcuts::keyOf)
@@ -195,54 +205,6 @@ class HomeModel(
         item is AppItemInfo -> item.homeKey
         item.isDeepShortcut -> shortcuts.keyOf(item)
         else -> null
-    }
-
-    fun save() {
-        if (!isLoaded) {
-            Log.w(TAG, "Not saving the home screen before it is loaded")
-            return
-        }
-        if (savesDeferred) {
-            saveRequested = true
-            return
-        }
-        // ModelWriter: each item's values (ItemInfo.onAddToDatabase), whose icon ContentWriter
-        // flattens on the model thread.
-        val writers = mutableListOf<ContentWriter>()
-        fun add(item: ItemInfo) {
-            if (item.id == ItemInfo.NO_ID) item.id = newId()
-            item.screenId = 0
-            val writer = ContentWriter(context)
-            item.onAddToDatabase(writer)
-            writer.put(Favorites._ID, item.id)
-            writers += writer
-        }
-        for (item in items) {
-            if (item !is AppItemInfo && item !is FolderInfo && item !is WidgetItemInfo && !item.isDeepShortcut) continue
-            item.container = Favorites.CONTAINER_DESKTOP
-            add(item)
-            if (item is FolderInfo) {
-                item.contents.forEachIndexed { rank, content ->
-                    if (content !is AppItemInfo && !content.isDeepShortcut) return@forEachIndexed
-                    if (content.id == ItemInfo.NO_ID) content.id = newId()
-                    content.container = item.id
-                    content.rank = rank
-                    add(content)
-                }
-            }
-        }
-        // BgDataModel.addItems / removeItems update the pinned state when shortcuts are added or
-        // removed; here, when the set of shortcut keys changed (Tex-536b).
-        val shortcutKeys = shortcutKeys().toSet().takeIf { it != pinnedKeys }
-        if (shortcutKeys != null) pinnedKeys = shortcutKeys
-        MODEL_EXECUTOR.execute {
-            modelDbController.newTransaction().use { t ->
-                modelDbController.createEmptyDB()
-                for (writer in writers) modelDbController.insert(writer.getValues(context))
-                t.commit()
-            }
-            if (shortcutKeys != null) shortcuts.updatePinnedStateBlocking(shortcutKeys)
-        }
     }
 
     /** LoaderCursor's column indices. */

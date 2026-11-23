@@ -76,7 +76,14 @@ internal class HomeLoader(private val home: HomeController) {
         // LoaderTask (ModelDbController): the grid is migrated before the items are read.
         // TextLauncher: also for a loaded model, as a new grid creates the activity again rather
         // than reloading the model (Launcher.onIdpChanged).
-        if (GridSizeMigration.migrateGridIfNeeded(context, home.gridSpec, model.items)) model.save()
+        val items = model.items
+        val leftOut = GridSizeMigration.migrateGridIfNeeded(context, home.gridSpec, items)
+        if (leftOut != null) {
+            // TextLauncher: the moved items are written one by one (GridSizeMigrationLogic writes
+            // the destination grid's database).
+            for (item in items) if (item !in leftOut) model.writer.updateItemInDatabase(item)
+            deleteItems(leftOut, "grid migration")
+        }
         pruneMissingApps()
         rebuild()
     }
@@ -110,6 +117,7 @@ internal class HomeLoader(private val home: HomeController) {
                 if (found != null) {
                     // LoaderTask: "Pinned shortcut not found"
                     pruneMissing { it in shortcutKeys && it !in found }
+                    model.sanitizeShortcutsOnce()
                     for (info in model.allItems()) {
                         if (info !is WorkspaceItemInfo || !info.isDeepShortcut) continue
                         val shortcut = found[model.keyOf(info)] ?: continue
@@ -142,10 +150,7 @@ internal class HomeLoader(private val home: HomeController) {
                 true
             }
         }
-        if (deleted.isNotEmpty()) {
-            model.items.removeAll(deleted)
-            model.save()
-        }
+        deleteItems(deleted, "item placement")
     }
 
     /** LoaderTask's binding: the apps' activities and the icons, then the views. */
@@ -180,7 +185,7 @@ internal class HomeLoader(private val home: HomeController) {
                         }
                         if (shortcuts.isNotEmpty() && model.hasShortcutsWithoutIcons) {
                             model.hasShortcutsWithoutIcons = false
-                            model.save()
+                            for (info in shortcuts.keys) if (model.contains(info)) model.writer.updateItemInDatabase(info)
                         }
                         // LoaderTask: the icon cache is brought up to date after the first binding.
                         app.appRepository.apps?.let { app.iconLoader.updateIconCacheOnce(it, shortcuts.values) }
@@ -269,11 +274,11 @@ internal class HomeLoader(private val home: HomeController) {
                     info.updateFromDeepShortcutInfo(shortcut, context)
                     changed += info to shortcut
                 }
-                var remaining = changed.size
                 for ((info, shortcut) in changed) {
                     loadShortcutIcon(info, shortcut) {
+                        // bindUpdatedWorkspaceItems: written and bound.
+                        if (model.contains(info)) model.writer.updateItemInDatabase(info)
                         if (!destroyed) home.bindItemChanged(info)
-                        if (--remaining == 0) model.save()
                     }
                 }
             }
@@ -286,13 +291,10 @@ internal class HomeLoader(private val home: HomeController) {
      */
     private fun pruneMissingWidgets() {
         val widgetManager = AppWidgetManager.getInstance(context)
-        removeItems { item ->
-            (item is WidgetItemInfo && widgetManager.getAppWidgetInfo(item.appWidgetId) == null).also { missing ->
-                if (missing) {
-                    Log.d(TAG, "Deleting widget that isn't installed anymore: $item")
-                    home.widgetHost.deleteAppWidgetId((item as WidgetItemInfo).appWidgetId)
-                }
-            }
+        for (item in model.items) {
+            if (item !is WidgetItemInfo || widgetManager.getAppWidgetInfo(item.appWidgetId) != null) continue
+            Log.d(TAG, "Deleting widget that isn't installed anymore: $item")
+            model.writer.deleteWidgetInfo(item, home.widgetHost, "widget not installed")
         }
     }
 
@@ -322,6 +324,7 @@ internal class HomeLoader(private val home: HomeController) {
                 } ?: continue
                 Log.d(TAG, "Activity not enabled for ${info.homeKey}, using ${fallback.key}")
                 info.retarget(fallback)
+                model.writer.updateItemInDatabase(info)
                 retargeted = true
             } else if (ApplicationInfoWrapper(context, pkg, info.user).isOnSdCard()) {
                 // Package is present but not available.
@@ -330,7 +333,6 @@ internal class HomeLoader(private val home: HomeController) {
             }
         }
         val removed = pruneMissing { !HomeShortcutKey.isShortcutKey(it) && it !in installed && it !in unavailable }
-        if (retargeted && !removed) model.save()
         return removed || retargeted
     }
 
@@ -355,34 +357,49 @@ internal class HomeLoader(private val home: HomeController) {
      * replaces itself once bound (Folder.bind). Returns true when something changed.
      */
     fun removeItems(matcher: (ItemInfo) -> Boolean): Boolean {
+        val writer = model.writer
         var changed = false
-        for (item in model.items.toList()) {
+        for (item in model.items) {
             when (item) {
                 is FolderInfo -> {
-                    if (!item.contents.removeAll(matcher)) continue
+                    val removed = item.contents.filter(matcher)
+                    if (removed.isEmpty()) continue
+                    item.contents.removeAll(removed)
+                    writer.deleteItemsFromDatabase(removed, "removed by matcher")
                     changed = true
                     when (item.contents.size) {
-                        0 -> {
-                            model.items.remove(item); changed = true
-                        }
+                        0 -> writer.deleteCollectionAndContentsFromDatabase(item)
                         1 -> {
-                            model.items.remove(item)
+                            // LauncherDelegate.replaceFolderWithFinalItem's model part.
                             val last = item.contents.removeAt(0)
-                            last.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-                            last.cellX = item.cellX
-                            last.cellY = item.cellY
-                            model.items += last
-                            changed = true
+                            writer.addOrMoveItemInDatabase(
+                                last, LauncherSettings.Favorites.CONTAINER_DESKTOP, item.screenId, item.cellX, item.cellY,
+                            )
+                            writer.deleteCollectionAndContentsFromDatabase(item)
                         }
                     }
                 }
+                is WidgetItemInfo -> if (matcher(item)) {
+                    writer.deleteWidgetInfo(item, home.widgetHost, "removed by matcher")
+                    changed = true
+                }
                 else -> if (matcher(item)) {
-                    model.items.remove(item); changed = true
+                    writer.deleteItemFromDatabase(item, "removed by matcher")
+                    changed = true
                 }
             }
         }
-        if (changed) model.save()
         return changed
+    }
+
+    /** Deletes [items] from the model and the database, a folder with its contents. */
+    private fun deleteItems(items: List<ItemInfo>, reason: String) {
+        for (item in items) {
+            when (item) {
+                is FolderInfo -> model.writer.deleteCollectionAndContentsFromDatabase(item)
+                else -> model.writer.deleteItemFromDatabase(item, reason)
+            }
+        }
     }
 
     private companion object {

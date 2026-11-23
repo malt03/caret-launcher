@@ -31,6 +31,7 @@ import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.dagger.ActivityComponent;
 import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DragController;
+import com.android.launcher3.model.IModelWriter;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.LauncherBindableItemsContainer;
 import com.android.launcher3.util.RunnableList;
@@ -118,6 +119,13 @@ public interface ActivityContext {
     default RunnableList startActivitySafely(
             View v, Intent intent, @Nullable ItemInfo item) {
         // TextLauncher: the home screen (Launcher) starts activities; nothing else does.
+        return null;
+    }
+
+    /** Returns a writer for updating model properties */
+    default IModelWriter getModelWriter() {
+        // TextLauncher: the home screen's Launcher returns its model's writer; nothing else
+        // changes the home model.
         return null;
     }
 

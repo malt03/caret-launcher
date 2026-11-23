@@ -20,6 +20,7 @@
 
 package com.android.launcher3.folder;
 
+import static com.android.launcher3.folder.FolderGridOrganizer.createFolderGridOrganizer;
 import static com.android.launcher3.model.data.FolderInfo.willAcceptItemType;
 import static com.android.launcher3.pageindicators.PaginationArrow.DISABLED_ARROW_OPACITY;
 import static com.android.launcher3.pageindicators.PaginationArrow.FULLY_OPAQUE;
@@ -91,8 +92,9 @@ import java.util.Objects;
  *
  * <p>Stand-in for Launcher3's Folder (android-17.0.0_r1), made from Folder.java by deleting what
  * TextLauncher does not have (the name field and its suggestions, accessible drags, box
- * selection and custom touch handling, the blur, the database writes (the icon reports content
- * changes to the app), the state listeners and logging); changes are marked with "TextLauncher:".
+ * selection and custom touch handling, the blur, the UI state notifier, the state listeners and
+ * logging); changes are marked with "TextLauncher:". The database writes go through the home
+ * model's ModelWriter, as in Launcher3.
  * As in Launcher3, the folder has pages that scroll sideways, with the page indicator and its
  * arrows in the footer, and the open folder is a drop target: its items can be reordered within
  * and across pages (a drag held near the left or right edge scrolls to the next page) and dropped
@@ -410,6 +412,8 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
 
     void bind(FolderInfo info) {
         mInfo = info;
+        // TextLauncher: no folder titles.
+        updateItemLocationsInDatabaseBatch(true);
 
         BaseDragLayer.LayoutParams lp = (BaseDragLayer.LayoutParams) getLayoutParams();
         if (lp == null) {
@@ -558,8 +562,8 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
                     mPageIndicator.playEntryAnimation();
 
                     if (updateAnimationFlag) {
-                        // TextLauncher: no model writer.
-                        mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, true);
+                        mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, true,
+                                mActivityContext.getModelWriter());
                     }
                 }
             });
@@ -941,16 +945,36 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         mItemAddedBackToSelfViaIcon = false;
         mCurrentDragView = null;
 
-        // TextLauncher: no database writes (updateItemLocationsInDatabaseBatch): the contents keep
-        // their ranks in order, and the icon told the app of each change, which saves its model
-        // once the drag ends (HomeModel.deferSaves).
+        // Reordering may have occured, and we need to save the new item locations. We do this once
+        // at the end to prevent unnecessary database operations.
+        updateItemLocationsInDatabaseBatch(false);
         // Use the item count to check for multi-page as the folder UI may not have
         // been refreshed yet.
         if (getItemCount() <= mContent.itemsPerPage()) {
             // Show the animation, next time something is added to the folder.
-            // TextLauncher: no model writer.
-            mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, false);
+            mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, false,
+                    mActivityContext.getModelWriter());
         }
+    }
+
+    private void updateItemLocationsInDatabaseBatch(boolean isBind) {
+        FolderGridOrganizer verifier = createFolderGridOrganizer(
+                mActivityContext.getDeviceProfile()
+        ).setFolderInfo(mInfo);
+
+        ArrayList<ItemInfo> items = new ArrayList<>();
+        int total = mInfo.getContents().size();
+        for (int i = 0; i < total; i++) {
+            ItemInfo itemInfo = mInfo.getContents().get(i);
+            if (verifier.updateRankAndPos(itemInfo, i)) {
+                items.add(itemInfo);
+            }
+        }
+
+        if (!items.isEmpty()) {
+            mActivityContext.getModelWriter().moveItemsInDatabase(items, mInfo.id, 0);
+        }
+        // TextLauncher: no folder name suggestions.
     }
 
     public void notifyDrop() {
@@ -1167,8 +1191,10 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             if (mIsExternalDrag) {
                 currentDragView = mContent.createAndAddViewForRank(si, mEmptyCellRank);
 
-                // TextLauncher: no database write (addOrMoveItemInDatabase); the icon tells the
-                // app, which saves its model (addFolderContent below).
+                // Actually move the item in the database if it was an external drag. Call this
+                // before creating the view, so that the ItemInfo is updated appropriately.
+                mActivityContext.getModelWriter().addOrMoveItemInDatabase(
+                        si, mInfo.id, 0, si.cellX, si.cellY);
                 mIsExternalDrag = false;
             } else {
                 currentDragView = mCurrentDragView;
@@ -1196,7 +1222,11 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             // Temporarily suppress the listener, as we did all the work already here.
             executeWithContentUpdateSuppressed(() -> addFolderContent(si, mEmptyCellRank, false));
 
-            // TextLauncher: no database writes (updateItemLocationsInDatabaseBatch).
+            // We only need to update the locations if it doesn't get handled in
+            // #onDropCompleted.
+            if (d.dragSource != this) {
+                updateItemLocationsInDatabaseBatch(false);
+            }
         }
 
         // Clear the drag info, as it is no longer being dragged.
@@ -1204,8 +1234,8 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
 
         if (mContent.getPageCount() > 1) {
             // The animation has already been shown while opening the folder.
-            // TextLauncher: no model writer.
-            mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, true);
+            mInfo.setOption(FolderInfo.FLAG_MULTI_PAGE_ANIMATION, true,
+                    mActivityContext.getModelWriter());
         }
 
         // TextLauncher: the home screen leaves its spring-loaded state as the drag ends
@@ -1244,8 +1274,13 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         mInfo.getContents().add(rank, item);
 
         if (!mSuppressContentUpdate) {
-            // TextLauncher: no database writes; the ranks are kept in order below, and the icon
-            // tells the app (FolderIcon.onContentAdded), which saves its model.
+            FolderGridOrganizer verifier = createFolderGridOrganizer(
+                    mActivityContext.getDeviceProfile()).setFolderInfo(mInfo);
+            verifier.updateRankAndPos(item, rank);
+            mActivityContext.getModelWriter().addOrMoveItemInDatabase(item, mInfo.id, 0,
+                    item.cellX,
+                    item.cellY);
+            updateItemLocationsInDatabaseBatch(false);
 
             if (mContent.areViewsBound()) {
                 mContent.createAndAddViewForRank(item, rank);
@@ -1254,22 +1289,15 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             updateTextViewFocus();
         }
 
-        // TextLauncher: the ranks in the order of the contents (updateItemLocationsInDatabaseBatch
-        // and the model's notifier in Launcher3).
-        updateRanks();
-
+        // TextLauncher: no UI state notifier (notifyItemModifiedOptimistically).
         mFolderIcon.onItemsChanged(animate);
-        mFolderIcon.onContentAdded(item, rank);
     }
 
     /** Remove all matching app or shortcut. Does not change the DB. */
     public void removeFolderContent(boolean animate, ItemInfo... items) {
         List<ItemInfo> itemArray = Arrays.asList(items);
-        if (mInfo.getContents().removeAll(itemArray)) {
-            // TextLauncher: no model writer; the ranks are kept in order here, and the icon tells
-            // the app (FolderIcon.onContentRemoved below), which saves its model.
-            updateRanks();
-        }
+        // TextLauncher: no UI state notifier (notifyItemModifiedOptimistically).
+        mInfo.getContents().removeAll(itemArray);
 
         if (!mSuppressContentUpdate) {
             mItemsInvalidated = true;
@@ -1290,7 +1318,6 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         }
 
         mFolderIcon.onItemsChanged(animate);
-        mFolderIcon.onContentRemoved(itemArray);
     }
 
     @VisibleForTesting
@@ -1509,14 +1536,5 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
      */
     protected boolean shouldFocusIconOnClose(boolean hadFocus) {
         return true;
-    }
-
-    /**
-     * Keeps the items' ranks in the order of the contents, as Launcher3's
-     * updateItemLocationsInDatabaseBatch does before it writes them; the app saves them.
-     */
-    private void updateRanks() {
-        List<ItemInfo> contents = mInfo.getContents();
-        for (int i = 0; i < contents.size(); i++) contents.get(i).rank = i;
     }
 }

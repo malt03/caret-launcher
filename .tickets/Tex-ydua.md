@@ -32,3 +32,7 @@ tags: [launcher3, upstream, home]
 **2026-11-23T12:17:52Z**
 
 2026-11-23: これらの書き写しは Tex-hpdq で ref= に載り、更新時に上流の差分が出るようになった。derived= の互換クラスにする作業はまだ（Tex-n0ut で互換の Folder・CellLayout などを derived= にした形に合わせる）
+
+**2026-11-23T17:16:42Z**
+
+2026-11-24: Tex-2es1 でモデルの書き換えは ModelWriter にまとまった（互換の Workspace に removeWorkspaceItem・getViewByItemId、互換の Launcher に removeItem・getModelWriter・getAppWidgetHolder を足した）。HomeWorkspace.Host（addFolder・addItem・removeWorkspaceItem・updateWidgetSize・runWhenNormal）と HomeController の replaceFolderWithFinalItem（LauncherDelegateImpl の本体）は、HomeWorkspace を Workspace にするときに Launcher・Workspace・LauncherDelegate の互換クラスへ移す

@@ -28,6 +28,7 @@ import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_FOLDER;
 import androidx.annotation.NonNull;
 
 import com.android.launcher3.LauncherSettings;
+import com.android.launcher3.model.IModelWriter;
 import com.android.launcher3.util.ContentWriter;
 
 import java.util.ArrayList;
@@ -77,13 +78,17 @@ public class FolderInfo extends ItemInfo {
     /**
      * @param option flag to set or clear
      * @param isEnabled whether to set or clear the flag
-     * TextLauncher: no model writer yet; the home model saves the options with the folder.
+     * @param writer if not null, save changes to the db.
      */
-    public void setOption(int option, boolean isEnabled) {
+    public void setOption(int option, boolean isEnabled, IModelWriter writer) {
+        int oldOptions = options;
         if (isEnabled) {
             options |= option;
         } else {
             options &= ~option;
+        }
+        if (writer != null && oldOptions != options) {
+            writer.updateItemInDatabase(this);
         }
     }
 

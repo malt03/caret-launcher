@@ -2,14 +2,12 @@ package com.malt03.textlauncher.data
 
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.content.pm.LauncherApps.ShortcutQuery
 import android.content.pm.ShortcutInfo
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
-import android.util.Log
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -41,8 +39,8 @@ data class HomeShortcutKey(val packageName: String, val id: String, val userSeri
 }
 
 /**
- * The app shortcuts placed on the home screen: looks them up, keeps the system's pinned state in
- * step with the home layout (BgDataModel.updateShortcutPinnedState), and reports changes.
+ * The app shortcuts placed on the home screen: looks them up and reports changes (the home model
+ * keeps the system's pinned state in step, BgDataModel.updateShortcutPinnedState).
  * Personal profile only (docs/spec.md 2.1).
  */
 class ShortcutRepository(private val context: Context) {
@@ -121,62 +119,5 @@ class ShortcutRepository(private val context: Context) {
                 shortcuts.forEach { result[keyOf(it)] = it }
             }
         return result
-    }
-
-    /**
-     * BgDataModel.updateShortcutPinnedState: updates the deep shortcuts state in system to match
-     * the home layout, pinning any missing shortcuts and unpinning any extra shortcuts.
-     * Background thread.
-     */
-    fun updatePinnedStateBlocking(keys: Collection<String>) {
-        // Collect all system shortcuts
-        val result = ShortcutRequest(context, user)
-            .query(ShortcutRequest.PINNED or ShortcutQuery.FLAG_GET_KEY_FIELDS_ONLY)
-        if (!result.wasSuccess()) {
-            return
-        }
-
-        // Map of packageName to shortcutIds that are currently in the system
-        val systemMap: MutableMap<String, MutableSet<String>> = result
-            .groupingBy { it.`package` }
-            .foldTo(
-                destination = mutableMapOf(),
-                initialValueSelector = { _, element -> mutableSetOf(element.id) },
-                operation = { _, accumulator, element -> accumulator.apply { add(element.id) } },
-            )
-
-        // Map of packageName to shortcutIds that are currently in our model
-        val modelMap: Map<String, Set<String>> = keys.mapNotNull(HomeShortcutKey::parse)
-            .filter { it.userSerial == userSerial }
-            .groupBy({ it.packageName }, { it.id })
-            .mapValues { it.value.toSet() }
-
-        // Check for diff
-        for ((key, modelShortcuts) in modelMap) {
-            val systemShortcuts = systemMap.remove(key) ?: emptySet()
-
-            // Do not use .equals as it can vary based on the type of set
-            if (systemShortcuts.size != modelShortcuts.size || !systemShortcuts.containsAll(modelShortcuts)) {
-                // Update system state for this package
-                pinShortcuts(key, modelShortcuts.toList())
-            }
-        }
-
-        // If there are any extra pinned shortcuts, remove them
-        systemMap.keys.forEach { packageName -> pinShortcuts(packageName, emptyList()) }
-    }
-
-    private fun pinShortcuts(packageName: String, ids: List<String>) {
-        try {
-            launcherApps.pinShortcuts(packageName, ids, user)
-        } catch (e: SecurityException) {
-            Log.w(TAG, "Failed to pin shortcuts", e)
-        } catch (e: IllegalStateException) {
-            Log.w(TAG, "Failed to pin shortcuts", e)
-        }
-    }
-
-    private companion object {
-        const val TAG = "ShortcutRepository"
     }
 }

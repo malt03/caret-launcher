@@ -602,14 +602,4 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     public FolderInfo getFolderInfo() {
         return mInfo;
     }
-
-    /**
-     * TextLauncher: called by {@link Folder#addFolderContent} when an item was added to the
-     * folder's contents, after the icon has updated. The app saves its home model here (Launcher3's
-     * Folder writes the database).
-     */
-    protected void onContentAdded(ItemInfo item, int rank) { }
-
-    /** TextLauncher: called when items were removed from the folder's contents. */
-    protected void onContentRemoved(List<ItemInfo> items) { }
 }

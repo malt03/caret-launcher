@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
 import android.app.Activity
+import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
 import android.content.Intent
@@ -19,6 +20,7 @@ import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
 import com.android.launcher3.dragndrop.DragController
+import com.android.launcher3.model.IModelWriter
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
@@ -115,7 +117,8 @@ internal class HomeActivityContext(private val home: HomeController) :
         si.updateFromDeepShortcutInfo(info, context)
         home.app.iconLoader.loadShortcut(si, info) { bitmap ->
             si.bitmap = bitmap
-            home.model.save()
+            // bindUpdatedWorkspaceItems: written and bound.
+            home.model.writer.updateItemInDatabase(si)
             home.bindItemChanged(si)
         }
     }
@@ -124,8 +127,10 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun getLauncherAppWidgetInfo(info: AppWidgetProviderInfo?): LauncherAppWidgetProviderInfo? =
         info?.let { LauncherAppWidgetProviderInfo.fromProviderInfo(context, it) }
 
-    /** The cells the resize frame gave the widget and the items it moved aside, saved. */
-    override fun saveItemPlacement() = home.saveItemPlacement()
+    /** LauncherModel.getWriter: the home model's writer. */
+    override fun getModelWriter(): IModelWriter = home.model.writer
+
+    override fun getAppWidgetHolder(): AppWidgetHost = home.widgetHost
 
     override fun onWidgetResizeFrameOpenChanged(open: Boolean) = home.onWidgetResizeFrameOpenChanged(open)
 

@@ -80,7 +80,7 @@ internal class HomeItemInflater(private val home: HomeController) {
 
     /** FolderIcon.inflateIcon */
     private fun createFolderView(folderInfo: FolderInfo): FolderIconView =
-        FolderIconView(context, home.activityContext, folderInfo, folderCallbacks).apply {
+        FolderIconView(context, home.activityContext, folderInfo).apply {
             HomeFolder(context, home.activityContext, home.launcherDelegate, home.gridSpec.iconSizePx).bindToIcon(this)
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             for (item in contents) {
@@ -96,8 +96,4 @@ internal class HomeItemInflater(private val home: HomeController) {
                 true
             }
         }
-
-    private val folderCallbacks = object : FolderIconView.Callbacks {
-        override fun onContentChanged(view: FolderIconView) = home.model.save()
-    }
 }

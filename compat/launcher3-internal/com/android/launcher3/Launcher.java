@@ -20,6 +20,7 @@
 
 package com.android.launcher3;
 
+import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
@@ -29,8 +30,14 @@ import androidx.annotation.Nullable;
 
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragLayer;
+import com.android.launcher3.folder.Folder;
+import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.logging.StatsLogManager;
+import com.android.launcher3.model.IModelWriter;
+import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.LauncherAppWidgetInfo;
+import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.states.RotationHelper;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
@@ -134,6 +141,82 @@ public abstract class Launcher implements ActivityContext {
     /** TextLauncher: the app's home model (LauncherModel). */
     public abstract LauncherModel getModel();
 
+    /** TextLauncher: the home model's writer (ActivityContext.getModelWriter). */
+    @Override
+    public abstract IModelWriter getModelWriter();
+
+    /** TextLauncher: the home screen's widget host (LauncherWidgetHolder). */
+    public abstract AppWidgetHost getAppWidgetHolder();
+
+    /**
+     * Unbinds the view for the specified item, and removes the item and all its children.
+     *
+     * @param v the view being removed.
+     * @param itemInfo the {@link ItemInfo} for this view.
+     * @param deleteFromDb whether or not to delete this item from the db.
+     */
+    public boolean removeItem(View v, final ItemInfo itemInfo, boolean deleteFromDb) {
+        return removeItem(v, itemInfo, deleteFromDb, null);
+    }
+
+    /**
+     * Unbinds the view for the specified item, and removes the item and all its children.
+     *
+     * @param v the view being removed.
+     * @param itemInfo the {@link ItemInfo} for this view.
+     * @param deleteFromDb whether or not to delete this item from the db.
+     * @param reason the resaon for removal.
+     */
+    public boolean removeItem(View v, final ItemInfo itemInfo, boolean deleteFromDb,
+            @Nullable final String reason) {
+        if (itemInfo instanceof WorkspaceItemInfo) {
+            if (!removeItemFromCollectionIfNecessary(itemInfo, deleteFromDb)) {
+                mWorkspace.removeWorkspaceItem(v);
+            }
+            if (deleteFromDb) {
+                getModelWriter().deleteItemFromDatabase(itemInfo, reason);
+            }
+        } else if (itemInfo instanceof FolderInfo ci) {
+            // TextLauncher: FolderInfo is the only CollectionInfo.
+            if (!removeItemFromCollectionIfNecessary(itemInfo, deleteFromDb)) {
+                mWorkspace.removeWorkspaceItem(v);
+            }
+            if (deleteFromDb) {
+                getModelWriter().deleteCollectionAndContentsFromDatabase(ci);
+            }
+        } else if (itemInfo instanceof LauncherAppWidgetInfo) {
+            final LauncherAppWidgetInfo widgetInfo = (LauncherAppWidgetInfo) itemInfo;
+            mWorkspace.removeWorkspaceItem(v);
+            if (deleteFromDb) {
+                getModelWriter().deleteWidgetInfo(widgetInfo, getAppWidgetHolder(), reason);
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Removes an item from a collection if the item is in a collection. In the case of collection
+     * being folder, we simply remove the item from the folder.
+     *
+     * @param itemInfo the {@link ItemInfo} for the view we're looking to remove from a collection
+     * @param deleteFromDb whether or not to delete this item from the db.
+     *
+     * @return true if we removed an item from a collection, false otherwise.
+     */
+    private boolean removeItemFromCollectionIfNecessary(ItemInfo itemInfo, boolean deleteFromDb) {
+        View collectionIcon = mWorkspace.getViewByItemId(itemInfo.container);
+        if (collectionIcon instanceof FolderIcon folderIcon) {
+            // Remove the shortcut from the folder before removing it from launcher
+            Folder folder = folderIcon.getFolder();
+            folder.removeFolderContent(true, itemInfo);
+            return true;
+        }
+        // TextLauncher: no app pairs.
+        return false;
+    }
+
     /**
      * TextLauncher: WidgetManagerHelper.getLauncherAppWidgetInfo, with the spans the widget takes
      * on the home grid (LauncherAppWidgetProviderInfo.initSpans), for the widget resize frame.
@@ -141,12 +224,6 @@ public abstract class Launcher implements ActivityContext {
     @Nullable
     public abstract LauncherAppWidgetProviderInfo getLauncherAppWidgetInfo(
             @Nullable AppWidgetProviderInfo info);
-
-    /**
-     * TextLauncher: the database writes of CellLayout.commitTempPlacement. The home screen saves
-     * its items' cells and spans from their views.
-     */
-    public abstract void saveItemPlacement();
 
     /**
      * TextLauncher: a widget's resize frame opened or closed. While it is open the home screen is

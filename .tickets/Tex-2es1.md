@@ -1,6 +1,6 @@
 ---
 id: Tex-2es1
-status: open
+status: closed
 deps: []
 links: [Tex-536b]
 created: 2026-11-22T00:58:38Z
@@ -36,3 +36,7 @@ Workspace の役割が、互換の Workspace（HomeController の匿名サブク
 **2026-11-23T12:17:52Z**
 
 2026-11-23: P0 の応急の直し（Tex-536b・Tex-twu9）が入った。HomeModel.save() は読み込み前は何もせず、ドラッグの間は後回し（deferSaves）、固定の更新はキーの集合が変わったときだけ。モデルを丸ごと書く形とモデル・View の削除の混在はそのままなので、ここで1か所にまとめるときに deferSaves を ModelWriter 相当の書き込みに置き換える
+
+**2026-11-23T17:16:42Z**
+
+ModelWriter（derived=、IModelWriter も）と BgDataModel（derived=、WorkspaceData も）を移し、ホームのモデルの書き換えをすべて ModelWriter に通した（変わったアイテムだけを書く）。モデルはメインスレッドに置き、ModelWriter がその場でメモリ上のモデルを変え、データベースの書き込みを順に MODEL_EXECUTOR に送る。HomeModel.save・deferSaves・pinnedKeys・FolderIcon の onContentAdded/onContentRemoved・Launcher.saveItemPlacement をなくした。Folder の互換クラスは上流の addOrMoveItemInDatabase・updateItemLocationsInDatabaseBatch・FolderInfo.setOption(writer) に戻し、CellLayout.commitTempPlacement は上流の modifyItemInDatabase（ウィジェットのリサイズもここで書く）、HomeWorkspace.onDrop は modifyItemInDatabase、onDropExternal は addOrMoveItemInDatabase、Launcher.addFolder は addItemToDatabase。Workspace.removeWorkspaceItem は View を外すだけになり、削除は Launcher.removeItem（上流の本体を互換の Launcher に移した。削除のドロップ先の completeDrop とメニューの「削除」から）で行う。ショートカットの固定は BgDataModel.addItems/removeItems と読み込み後（sanitizeWidgetsShortcutsAndPackages 相当、HomeModel.sanitizeShortcutsOnce）にだけ更新するので、ドラッグ・フォルダー作成・メニューからのドラッグの途中では変わらない（Tex-536b の応急処置の置き換え）。replaceFolderWithFinalItem は LauncherDelegateImpl の本体（addOrMoveItemInDatabase と Launcher.removeItem）にしたが HomeController に残した。残り: HomeWorkspace を互換の Workspace にして Host をなくすこと、addFolder/getItemInflater を互換の Launcher に移すこと、replaceFolderWithFinalItem の互換への移動は Tex-ydua で（HomeWorkspace を Workspace.java の derived= にする作業と同じ）。端末では未確認

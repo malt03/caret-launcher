@@ -87,6 +87,19 @@ public abstract class Workspace<T> extends FrameLayout {
     public abstract void persistRemoveItemsByMatcher(Predicate<ItemInfo> matcher,
             @Nullable final String reason);
 
+    /**
+     * Unbinds the shortcut for a given ItemInfo from the workspace. Does not change the model.
+     * TextLauncher: the home grid removes the view (CellLayout.removeView) and the drop target.
+     */
+    public abstract void removeWorkspaceItem(View v);
+
+    /**
+     * LauncherBindableItemsContainer.getViewByItemId: the view of the item with the id, or null.
+     * TextLauncher: on the home grid.
+     */
+    @Nullable
+    public abstract View getViewByItemId(int id);
+
     public void setPivotToScaleWithSelf(View sibling) {
         sibling.setPivotY(getPivotY() + getTop()
                 - sibling.getTop() - sibling.getTranslationY());

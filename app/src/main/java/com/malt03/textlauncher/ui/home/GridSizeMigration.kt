@@ -45,35 +45,35 @@ internal object GridSizeMigration {
 
     /**
      * Moves [items] (the items on the home page, not in folders) into [grid] if it is not the
-     * grid they were placed in. Returns true when they changed.
+     * grid they were placed in. Returns null when they were not moved, or else the items that fit
+     * on no page, which are to be deleted.
      */
-    fun migrateGridIfNeeded(context: Context, grid: GridSpec, items: MutableList<ItemInfo>): Boolean {
+    fun migrateGridIfNeeded(context: Context, grid: GridSpec, items: List<ItemInfo>): List<ItemInfo>? {
         val prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE)
         // DeviceGridState: the grid size string, "columns,rows".
         val dest = "${grid.columns},${grid.rows}"
         val src = prefs.getString(KEY_WORKSPACE_SIZE, null)
         // TextLauncher: before any grid was saved, the items are where they were put.
         val srcSize = src?.split(",")?.mapNotNull { it.toIntOrNull() }?.takeIf { it.size == 2 }
-        val changed = if (src == dest || srcSize == null) {
-            false
+        val leftOut = if (src == dest || srcSize == null) {
+            null
         } else {
             Log.d(TAG, "Begin grid migration. srcDeviceState: $src, destDeviceState: $dest")
             migrateGrid(context, srcSize[0], srcSize[1], grid.columns, grid.rows, items)
-            true
         }
         // Save current configuration, so that the migration does not run again.
         prefs.edit().putString(KEY_WORKSPACE_SIZE, dest).apply()
-        return changed
+        return leftOut
     }
 
-    private fun migrateGrid(context: Context, srcColumns: Int, srcRows: Int, columns: Int, rows: Int, items: MutableList<ItemInfo>) {
+    private fun migrateGrid(context: Context, srcColumns: Int, srcRows: Int, columns: Int, rows: Int, items: List<ItemInfo>): List<ItemInfo> {
         loadAllEntries(context, items)
         // shouldMigrateToStrictlyTallerGrid: "We want to add the extra row(s) to the top of the
         // screen, so we shift the grid down."
         if (srcColumns == columns && srcRows < rows) {
             Log.d(TAG, "Migrating to strictly taller grid")
             for (item in items) item.cellY += rows - srcRows
-            return
+            return emptyList()
         }
         // migrateWorkspace into an empty destination: every item is placed again, in order (DbEntry
         // .compareTo; there is one screen).
@@ -82,7 +82,8 @@ internal object GridSizeMigration {
         // TextLauncher: the items that are left would go on new pages. A widget's id is given
         // back once the home screen is loaded (LoaderTask's removeGhostWidgets).
         for (item in toPlace) Log.d(TAG, "No room for $item in the ${columns}x$rows grid")
-        items.retainAll(placed.toSet())
+        val placedSet = placed.toSet()
+        return items.filter { it !in placedSet }
     }
 
     /**

@@ -59,17 +59,7 @@ class FolderIconView(
     context: Context,
     activityContext: ActivityContext,
     folderInfo: FolderInfo,
-    private val callbacks: Callbacks,
 ) : FolderIcon(context, activityContext, folderInfo) {
-    interface Callbacks {
-        /** The folder's items changed (its FolderInfo's contents, which are the model). */
-        fun onContentChanged(view: FolderIconView)
-    }
-
     /** The apps and shortcuts in the folder, in order. */
     val contents: List<WorkspaceItemInfo> get() = folderInfo.contents.map { it as WorkspaceItemInfo }
-
-    override fun onContentAdded(item: ItemInfo, rank: Int) = callbacks.onContentChanged(this)
-
-    override fun onContentRemoved(items: List<ItemInfo>) = callbacks.onContentChanged(this)
 }

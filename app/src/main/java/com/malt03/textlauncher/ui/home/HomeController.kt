@@ -19,6 +19,7 @@ import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.CellLayout
 import com.android.launcher3.DragSource
+import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.PendingAddItemInfo
@@ -134,6 +135,15 @@ class HomeController(
             if (loader.removeItems(matcher::test)) loader.rebuild()
         }
 
+        /** Workspace.removeWorkspaceItem: the view leaves the grid; the model is not changed. */
+        override fun removeWorkspaceItem(v: View?) {
+            if (v != null && v.parent === grid) grid.removeView(v)
+            if (v is DropTarget) dragController.removeDropTarget(v)
+        }
+
+        override fun getViewByItemId(id: Int): View? =
+            grid.itemViews().firstOrNull { (it.tag as? ItemInfo)?.id == id }
+
         override fun getFirstCellLayout(): CellLayout = grid.cellLayout
     }.apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
@@ -201,14 +211,6 @@ class HomeController(
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
         dragController.defaultDropTarget = homeWorkspace
-        // TextLauncher: the model saves once per drag (HomeModel.deferSaves); this listener comes
-        // first, before the drag source takes the item out of the model.
-        dragController.addDragListener(object : DragController.DragListener {
-            override fun onDragStart(dragObject: DragObject, options: DragOptions) =
-                model.deferSaves(true)
-
-            override fun onDragEnd() = model.deferSaves(false)
-        })
         dragController.addDragListener(homeWorkspace)
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
@@ -409,9 +411,8 @@ class HomeController(
         }
         // Launcher3 goes to the NORMAL state first, and binds the item when it gets there.
         host.showHome {
-            val view = workspaceHost.addItem(info, cell[0], cell[1])
-            model.save()
-            animateNewItem(view)
+            model.writer.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
+            animateNewItem(addInScreen(info)!!)
         }
         return true
     }
@@ -488,9 +489,8 @@ class HomeController(
             Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
             return false
         }
-        val view = workspaceHost.addItem(info, cellXY[0], cellXY[1])
-        model.save()
-        animateNewItem(view)
+        model.writer.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellXY[0], cellXY[1])
+        animateNewItem(addInScreen(info)!!)
         return true
     }
 
@@ -510,13 +510,8 @@ class HomeController(
         ) {
             return false
         }
-        item.id = model.newId()
-        item.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-        item.cellX = cell[0]
-        item.cellY = cell[1]
-        model.items += item
+        model.writer.addItemToDatabase(item, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
         val view = addInScreen(item)
-        model.save()
         if (view is AppWidgetHostView) {
             view.updateSizeRanges(item.spanX, item.spanY)
             view.post {
@@ -529,10 +524,10 @@ class HomeController(
     }
 
     /** The widget menu's "Remove" (PopupDataSource.removePopupData, DropTargetHandler.onDeleteComplete). */
-    internal fun removeHomeItem(view: View) = workspaceHost.removeWorkspaceItem(view)
-
-    /** CellLayout.commitTempPlacement's database writes: the items' cells and spans, from their views. */
-    internal fun saveItemPlacement() = workspaceHost.onItemsMoved()
+    internal fun removeHomeItem(view: View) {
+        val info = view.tag as? ItemInfo ?: return
+        launcher.removeItem(view, info, true /* deleteFromDb */, "removed from its menu")
+    }
 
     /** Whether a widget's resize frame is open. */
     internal var isWidgetResizeFrameOpen = false
@@ -594,35 +589,39 @@ class HomeController(
 
     // ---- model changes ----
 
-    /** LauncherDelegate.replaceFolderWithFinalItem. Returns whether the folder was destroyed. */
+    /**
+     * LauncherDelegateImpl.replaceFolderWithFinalItem. Returns whether the folder was destroyed.
+     * TextLauncher: the new icon does not take the focus (the search field keeps it, docs/spec.md
+     * 1).
+     */
     private fun replaceFolderWithFinalItem(folderView: FolderIconView): Boolean {
         // TextLauncher: the folder may report again after it was already replaced, or after the
         // model dropped it (Tex-a8os).
-        if (folderView.parent == null || folderView.folderInfo !in model.items) return true
+        if (folderView.parent == null || !model.contains(folderView.folderInfo)) return true
         // Add the last remaining child to the workspace in place of the folder
         val onCompleteRunnable = Runnable {
             val info = folderView.folderInfo
             val itemCount = info.contents.size
             // TextLauncher: unless the model dropped the folder during the animation (Tex-a8os).
-            if (itemCount <= 1 && info in model.items) {
+            if (itemCount <= 1 && model.contains(info)) {
+                var newIcon: View? = null
                 var finalItem: ItemInfo? = null
                 if (itemCount == 1) {
-                    // Move the item from the folder to the workspace, in the position of the folder
+                    // Move the item from the folder to the workspace, in the position of the
+                    // folder
                     finalItem = info.contents.removeAt(0)
-                    finalItem.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-                    finalItem.cellX = info.cellX
-                    finalItem.cellY = info.cellY
+                    newIcon = itemInflater.inflateItem(finalItem)
+                    model.writer.addOrMoveItemInDatabase(finalItem, info.container, info.screenId, info.cellX, info.cellY)
                 }
+
                 // Remove the folder
-                grid.removeView(folderView)
-                model.items.remove(info)
-                if (finalItem != null) {
-                    // We add the child after removing the folder to prevent both from existing at
-                    // the same time in the CellLayout.
-                    model.items += finalItem
-                    addInScreen(finalItem)
+                launcher.removeItem(folderView, info, true /* deleteFromDb */, "folder removed because there's only 1 item in it")
+
+                if (newIcon != null && finalItem != null) {
+                    // We add the child after removing the folder to prevent both from existing
+                    // at the same time in the CellLayout.
+                    grid.addItemView(newIcon, finalItem)
                 }
-                model.save()
             }
         }
         if (folderView.folderInfo.contents.isNotEmpty()) {
@@ -633,51 +632,34 @@ class HomeController(
         return true
     }
 
-    /** HomeWorkspace's model side (Launcher, ModelWriter). */
+    /** HomeWorkspace's Launcher side (Launcher.addFolder, Workspace.addInScreen). */
     private inner class WorkspaceHost : HomeWorkspace.Host {
+        /** Launcher.addFolder */
         override fun addFolder(cellX: Int, cellY: Int): FolderIconView {
-            val folder = FolderInfo()
-            folder.id = model.newId()
-            folder.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-            folder.cellX = cellX
-            folder.cellY = cellY
-            model.items += folder
-            return addInScreen(folder) as FolderIconView
+            val folderInfo = FolderInfo()
+
+            // Update the model
+            model.writer.addItemToDatabase(folderInfo, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellX, cellY)
+
+            // Create the view
+            return addInScreen(folderInfo) as FolderIconView
         }
 
         override fun addItem(info: WorkspaceItemInfo, cellX: Int, cellY: Int): View {
-            info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-            info.cellX = cellX
-            info.cellY = cellY
-            model.items += info
+            // Add the item to DB before adding to screen ensures that the container and other
+            // values of the info is properly updated.
+            model.writer.addOrMoveItemInDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellX, cellY)
             return addInScreen(info)!!
         }
 
-        override fun removeWorkspaceItem(view: View) {
-            if (view.parent === grid) grid.removeView(view)
-            (view.tag as? ItemInfo)?.let { model.items.remove(it) }
-            // ModelWriter.deleteWidgetInfo: the widget's id is given back.
-            (view.tag as? WidgetItemInfo)?.let { widgetHost.deleteAppWidgetId(it.appWidgetId) }
-            model.save()
-        }
+        override fun removeWorkspaceItem(view: View) = workspace.removeWorkspaceItem(view)
 
         override fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int) =
             view.updateSizeRanges(spanX, spanY)
 
         override fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
-
-        override fun onItemsMoved() {
-            for (child in grid.itemViews()) {
-                val item = child.tag as? ItemInfo ?: continue
-                val lp = child.layoutParams as CellLayoutLayoutParams
-                item.cellX = lp.cellX
-                item.cellY = lp.cellY
-                item.spanX = lp.cellHSpan
-                item.spanY = lp.cellVSpan
-            }
-            model.save()
-        }
     }
+
 
     private companion object {
         /** RecyclerViewFastScroller.MAX_TRACK_ALPHA */

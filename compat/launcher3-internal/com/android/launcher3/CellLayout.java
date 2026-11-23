@@ -46,6 +46,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.celllayout.DelegatedCellDrawing;
 import com.android.launcher3.celllayout.ItemConfiguration;
@@ -60,6 +61,7 @@ import com.android.launcher3.util.MSDLPlayerWrapper;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.Thunk;
+import com.android.launcher3.views.ActivityContext;
 
 import com.google.android.msdl.data.model.MSDLToken;
 
@@ -918,8 +920,9 @@ public class CellLayout extends FrameLayout {
     private void commitTempPlacement(View dragView) {
         mTmpOccupied.copyTo(mOccupied);
 
-        // TextLauncher: no database writes here; the app saves the items' cells and spans from
-        // their views (Launcher.saveItemPlacement), and there is no cell position mapper.
+        // TextLauncher: one page and no hotseat.
+        int screenId = 0;
+        int container = Favorites.CONTAINER_DESKTOP;
 
         int childCount = mShortcutsAndWidgets.getChildCount();
         for (int i = 0; i < childCount; i++) {
@@ -929,8 +932,20 @@ public class CellLayout extends FrameLayout {
             // We do a null check here because the item info can be null in the case of the
             // AllApps button in the hotseat.
             if (info != null && child != dragView) {
+                // TextLauncher: no cell position mapper (the model's cells are the presenter's).
+                final boolean requiresDbUpdate = (info.cellX != lp.getTmpCellX()
+                        || info.cellY != lp.getTmpCellY() || info.spanX != lp.cellHSpan
+                        || info.spanY != lp.cellVSpan || info.screenId != screenId);
+
                 lp.setCellX(lp.getTmpCellX());
                 lp.setCellY(lp.getTmpCellY());
+                if (requiresDbUpdate) {
+                    // TextLauncher: the activity context is looked up here, as the home grid's
+                    // layout is made before the home screen's Launcher.
+                    ActivityContext.lookupContext(getContext()).getModelWriter()
+                            .modifyItemInDatabase(info, container, screenId, lp.getCellX(),
+                                    lp.getCellY(), lp.cellHSpan, lp.cellVSpan);
+                }
             }
         }
     }
