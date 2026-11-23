@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.text.InputType
@@ -11,11 +12,9 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.android.launcher3.R as L3R
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.SearchStore
@@ -51,13 +50,13 @@ object SearchTermsDialog {
                 row.addView(TextView(context).apply {
                     text = term
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-                    setTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface))
+                    setTextColor(context.getColor(L3R.color.materialColorOnSurface))
                 }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 row.addView(ImageButton(context).apply {
                     // Launcher3's remove icon (the drop target bar's), in the dialog's text color.
                     setImageResource(com.android.launcher3.R.drawable.ic_remove_no_shadow)
                     imageTintList = ColorStateList.valueOf(
-                        MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant),
+                        context.getColor(L3R.color.materialColorOnSurfaceVariant),
                     )
                     background = null
                     contentDescription = context.getString(R.string.search_terms_remove)
@@ -91,7 +90,8 @@ object SearchTermsDialog {
         }
         render()
 
-        val dialog: AlertDialog = MaterialAlertDialogBuilder(context)
+        // The framework's dialog, as Launcher3 has no AppCompat.
+        val dialog: AlertDialog = AlertDialog.Builder(context)
             .setTitle(context.getString(R.string.search_terms_title, entry.label))
             .setView(content)
             .setPositiveButton(R.string.search_terms_add, null)

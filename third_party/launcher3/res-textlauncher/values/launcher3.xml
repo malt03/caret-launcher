@@ -61,6 +61,8 @@
     <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
     <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
     <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
+    <color name="materialColorOnSurfaceVariant">@android:color/system_on_surface_variant_light</color>
+    <color name="materialColorSurfaceContainerHigh">@android:color/system_surface_container_high_light</color>
     <color name="materialColorSurfaceContainer">@android:color/system_surface_container_light</color>
     <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_light</color>
     <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_light</color>

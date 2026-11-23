@@ -33,9 +33,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
+    // BaseActivity: the lifecycle and saved state the activity provides to Compose.
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.savedstate)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.dynamicanimation)
     implementation(project(":launcher3"))

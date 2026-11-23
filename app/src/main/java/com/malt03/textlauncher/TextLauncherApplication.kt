@@ -1,7 +1,6 @@
 package com.malt03.textlauncher
 
 import android.app.Application
-import com.google.android.material.color.DynamicColors
 import com.malt03.textlauncher.data.AppRepository
 import com.malt03.textlauncher.data.HomeModel
 import com.malt03.textlauncher.data.LauncherDatabase
@@ -33,7 +32,6 @@ class TextLauncherApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this)
         database = LauncherDatabase(this)
         searchStore = SearchStore(database, ioExecutor)
         ioExecutor.execute { searchStore.loadBlocking() }

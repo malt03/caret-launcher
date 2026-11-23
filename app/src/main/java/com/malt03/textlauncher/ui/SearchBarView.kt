@@ -10,7 +10,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
-import com.google.android.material.color.MaterialColors
+import com.android.launcher3.R as L3R
 import com.malt03.textlauncher.R
 
 /**
@@ -27,10 +27,10 @@ class SearchBarView(context: Context) : FrameLayout(context) {
     private val background = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         cornerRadius = dp(28f)
-        setColor(MaterialColors.getColor(this@SearchBarView, com.google.android.material.R.attr.colorSurfaceContainerHigh))
+        setColor(context.getColor(L3R.color.materialColorSurfaceContainerHigh))
     }
-    private val focusedStroke = MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary)
-    private val unfocusedStroke = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutlineVariant)
+    private val focusedStroke = context.getColor(L3R.color.materialColorPrimary)
+    private val unfocusedStroke = context.getColor(L3R.color.materialColorOutlineVariant)
 
     /** Called when the field gains or loses keyboard focus. */
     var onFocusChanged: ((Boolean) -> Unit)? = null
@@ -45,8 +45,8 @@ class SearchBarView(context: Context) : FrameLayout(context) {
             imeOptions = EditorInfo.IME_ACTION_GO or EditorInfo.IME_FLAG_NO_EXTRACT_UI or
                 EditorInfo.IME_FLAG_NO_FULLSCREEN
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-            setTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface))
-            setHintTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant))
+            setTextColor(context.getColor(L3R.color.materialColorOnSurface))
+            setHintTextColor(context.getColor(L3R.color.materialColorOnSurfaceVariant))
             setPadding(dp(20f).toInt(), 0, dp(20f).toInt(), 0)
             gravity = Gravity.CENTER_VERTICAL
             setOnEditorActionListener { _, actionId, event ->

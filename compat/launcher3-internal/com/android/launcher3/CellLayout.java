@@ -37,8 +37,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
 import android.util.ArrayMap;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -142,16 +140,6 @@ public class CellLayout extends FrameLayout {
         Resources res = getResources();
 
         mBackground = getContext().getDrawable(R.drawable.bg_celllayout);
-        // TextLauncher: bg_celllayout's corners are ?android:attr/dialogCornerRadius, which this
-        // app's theme sets to AppCompat's 2dp; they get the device's (Themes.getDialogCornerRadius).
-        if (mBackground instanceof StateListDrawable states) {
-            float radius = Themes.getDialogCornerRadius(context);
-            for (int i = 0; i < states.getStateCount(); i++) {
-                if (states.getStateDrawable(i) instanceof GradientDrawable shape) {
-                    shape.setCornerRadius(radius);
-                }
-            }
-        }
         mBackground.setAlpha(0);
 
         mGridColor = Themes.getAttrColor(context, R.attr.workspaceAccentColor);

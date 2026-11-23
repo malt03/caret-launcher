@@ -24,7 +24,6 @@ import static android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT;
 import static android.app.WallpaperColors.HINT_SUPPORTS_DARK_THEME;
 
 import android.content.Context;
-import android.view.ContextThemeWrapper;
 import android.content.res.TypedArray;
 
 import com.android.launcher3.R;
@@ -66,13 +65,7 @@ public class Themes {
     }
 
     public static float getDialogCornerRadius(Context context) {
-        // TextLauncher: Launcher3's themes come from Theme.DeviceDefault, which has the device's
-        // dialog corner radius; this app's come from AppCompat (Material3), which sets
-        // android:dialogCornerRadius to 2dp (abc_dialog_corner_radius_material). It is read with
-        // the device default theme on top.
-        Context deviceDefault = new ContextThemeWrapper(context,
-                android.R.style.Theme_DeviceDefault_DayNight);
-        return getDimension(deviceDefault, android.R.attr.dialogCornerRadius,
+        return getDimension(context, android.R.attr.dialogCornerRadius,
                 context.getResources().getDimension(R.dimen.default_dialog_corner_radius));
     }
 

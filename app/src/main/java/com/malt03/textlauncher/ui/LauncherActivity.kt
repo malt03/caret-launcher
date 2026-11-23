@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui
 
+import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
 import android.content.res.Configuration
@@ -19,8 +20,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import android.view.WindowInsets
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
+import android.window.OnBackInvokedDispatcher
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
+import com.android.launcher3.util.LifecycleHelper
 import androidx.core.view.WindowCompat
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
@@ -46,7 +53,22 @@ import com.malt03.textlauncher.ui.search.SearchResults
  * The home screen. The search field always has focus and the keyboard is always shown
  * (docs/spec.md 1).
  */
-class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityContext.Provider {
+class LauncherActivity :
+    Activity(), HomeController.Host, ActivityContext.Provider, LifecycleOwner, SavedStateRegistryOwner {
+
+    // BaseActivity: the framework's Activity, as in Launcher3 (no AppCompat), with the lifecycle
+    // and saved state that Compose (the widget resize frame) looks up in the view tree.
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateRegistryController.savedStateRegistry
+
+    init {
+        savedStateRegistryController.performAttach()
+        registerActivityLifecycleCallbacks(
+            LifecycleHelper(this, savedStateRegistryController, lifecycleRegistry),
+        )
+    }
 
     private val app get() = application as TextLauncherApplication
 
@@ -177,26 +199,25 @@ class LauncherActivity : AppCompatActivity(), HomeController.Host, ActivityConte
 
         // docs/spec.md 1.4: the back gesture itself does nothing on the home screen.
         // Launcher.getOnBackAnimationCallback: a drag is canceled first (docs/spec.md 5.4).
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (home.isDragging) {
-                    home.cancelDrag()
-                    return
-                }
-                if (home.closeTopFloatingView()) return
-                // docs/spec.md 6.6: back closes the all apps list.
-                if (root.isAllAppsShown) {
-                    closeAllApps(animate = true)
-                    return
-                }
-                // docs/spec.md 1.4: a search result has keyboard focus and the keyboard is down, so the
-                // back gesture reaches here; it clears the query like closing the keyboard does.
-                if (!root.searchBar.editText.hasFocus()) {
-                    clearQuery()
-                    focusSearch()
-                }
+        // BaseActivity.registerBackDispatcher
+        onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
+            if (home.isDragging) {
+                home.cancelDrag()
+                return@registerOnBackInvokedCallback
             }
-        })
+            if (home.closeTopFloatingView()) return@registerOnBackInvokedCallback
+            // docs/spec.md 6.6: back closes the all apps list.
+            if (root.isAllAppsShown) {
+                closeAllApps(animate = true)
+                return@registerOnBackInvokedCallback
+            }
+            // docs/spec.md 1.4: a search result has keyboard focus and the keyboard is down, so the
+            // back gesture reaches here; it clears the query like closing the keyboard does.
+            if (!root.searchBar.editText.hasFocus()) {
+                clearQuery()
+                focusSearch()
+            }
+        }
 
         app.appRepository.addListener(appsListener)
         app.iconLoader.addChangeListener(iconsListener)
