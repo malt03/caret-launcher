@@ -235,8 +235,13 @@ class HomeController(
         }
     }
 
+    /**
+     * Launcher.onPause: a drag does not outlast the pause, so the uninstall drop target's deferred
+     * result (onResume) never comes while another drag is in progress.
+     */
     fun onPause() {
         isResumed = false
+        dragController.cancelDrag()
     }
 
     private var isResumed = false

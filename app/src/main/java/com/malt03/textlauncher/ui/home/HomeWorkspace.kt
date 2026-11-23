@@ -256,6 +256,7 @@ class HomeWorkspace(
         setAutoScroll(0)
         // Workspace.onDragEnd: setCurrentDragOverlappingLayout(null)
         layout.setIsDragOverlapping(false)
+        mDragInfo = null
     }
 
     // ---- DropTarget ----
@@ -945,12 +946,20 @@ class HomeWorkspace(
                 layout.onDropChild(dragInfo.cell)
             }
         }
-        val cell = dragInfo?.cell
+        val cell = getViewByItemId(d.originalDragInfo.id)
         if (d.cancelled && cell != null) {
             cell.visibility = View.VISIBLE
+            // TextLauncher: a result that comes after the drag ended (the uninstall drop target's,
+            // on resume) marks the item's cells as occupied again; Launcher3 leaves them free
+            // until the next drag or binding.
+            if (dragInfo == null) layout.markCellsAsOccupiedForView(cell)
         }
         mDragInfo = null
     }
+
+    /** LauncherBindableItemsContainer.getViewByItemId: the grid's view of the item. */
+    private fun getViewByItemId(id: Int): View? =
+        grid.itemViews().firstOrNull { (it.tag as? ItemInfo)?.id == id }
 
     private companion object {
         const val DRAG_MODE_NONE = 0
