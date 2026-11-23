@@ -26,3 +26,9 @@ Workspace の役割が、互換の Workspace（HomeController の匿名サブク
 ## 追記（2026-11-23）
 
 ウィジェットのリサイズ（Tex-yw4e）は、互換の ResizeManager が CellLayout.createAreaForResize で確定したあと Launcher.saveItemPlacement を呼び、HomeController.onItemsMoved で子の LayoutParams を ItemInfo に書き戻している。上流では CellLayout.commitTempPlacement が DB に書く。経路がもう1つ増えたので、まとめるときはここも含める。
+
+## Notes
+
+**2026-11-23T09:06:57Z**
+
+2026-11-23: HomeWorkspace は「互換の Workspace を継承」だけでなく、Workspace.java の derived=（ドラッグとドロップのメンバー）にする方向で（Tex-ydua）。ウィジェットのサイズも互換の DeviceProfile／IDP を唯一の元にする（Tex-qnof）

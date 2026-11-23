@@ -26,3 +26,12 @@ CellLayout（1152行。performReorder、animateItemsToSolution、visualizeDropLo
    - WallpaperThemeManager の unregisterComponentCallbacks 追加と setWallpaperDependentTheme の削除、WallpaperColorHints の .toList()
 3. 互換クラスに入ったアプリの都合をアプリ側のフックに出す: CellLayout.setGridSize の占有の引き継ぎ（Javadoc も二重）、Folder.closeComplete のフォーカスの決まり（ドキュメントでは HomeFolder が決める）、Folder.onDropCompleted の失敗時の戻し方、FolderIcon.onDragEnter（ばねで開かない）、FolderPagedView.removeItem の並べ直し、ThemeManager.getIconShape がフォルダーの形を返す
 
+
+## Notes
+
+**2026-11-23T09:06:57Z**
+
+2026-11-23 の再レビュー（Tex-hpdq と合わせて読む）:
+1. derived= にできる候補（上流と同じ順で残っている）: Folder（メソッド 48/57）、ShortcutAndWidgetContainer（12/12）、AllAppsStore（64/71、通知ドットで追加）、PopupDataProvider（65/66、同）、BaseActivity、SystemShortcut、WorkspaceItemInfo、ItemInfo、LauncherAnimUtils、DragLayer。CellLayout（上流と同じ順のメソッドは 21/76。中身は書き換えではなく呼び出し元ごとに並べ替えただけ）、BubbleTextView（30/62）、FolderIcon（27/44）は、上流の順に並べ直し、TextLauncher だけのメソッドを印つきの1か所にまとめてから derived= にする。FolderPagedView、Utilities、BaseDragLayer は作り直しが大きいので ref=（Tex-hpdq）で追う。合成した1行の上流の変更での merge-file の試験では、今の derived= は 82〜95%、スタンドインは 40〜80% が衝突なしで入った（移動したブロックは必ず衝突になるので、黙って落ちることはない）
+2. 印のない変更（まだある・新しく見つかったもの）: 上の Folder・BubbleTextView の項目はまだそのまま。新しく: Folder.closeComplete が上流のドットのアニメーション（mFolderIcon.hasDot() なら animateDotScale(0f,1f)）、setIconVisible(true)、animateBgShadowAndStroke、onFolderClose を落としている（通知ドットの移植で戻すべきだった）。CellLayout.markCellsAsOccupiedForView / markCellsAsUnoccupiedForView が getParent() != mShortcutsAndWidgets を indexOfChild < 0 に変え、ウィジェットの CellPosMapper の分岐を落としている。derived= では PopupContainer.kt 175 行の View?（元に戻す）、PopupContainerWithArrow.kt 83-85 行の setPopupItemDragHandler の移動（UPSTREAM.md の「削っただけ」と食い違う）、IconCache.kt 125 行の workerHandler.post（印がない）と 320-322 行の getTitleNoCache の移動、ResizeManager.kt 271-282 行の saveItemPlacement の分岐と 65 行の as ItemInfo、WidgetPickerComposeWrapperImpl.kt 140・169・209・283 行の複数行の呼び出しを1行に詰めたこと（上流の変更が衝突する）、WallpaperThemeManager.kt 56 行・WallpaperColorHints.kt 69 行。RotationHelper、AppWidgetResizeFrameCompose、PopupContainerWithArrow、WidgetPickerAddItemListener はクラスの説明でしか印していない（規則は「該当箇所に」）
+3. 互換に入ったアプリの都合（新しく derived= に入ったもの）: PopupContainer.keepPlaceOnScreen（キーボードに合わせてメニューを動かす）、AppWidgetResizeFrameCompose.followWidget（グリッドのスクロールに枠を追従）、WindowManagerProxy.canShowHome（外側の画面の条件）。Launcher の互換クラスのフック（saveItemPlacement、onWidgetResizeFrameOpenChanged）はうまく働いているので、同じ形でアプリから渡す

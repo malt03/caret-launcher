@@ -20,3 +20,9 @@ parent: Tex-vs8t
 - color/、color-night/ の shade_panel_{bg,fg}_color.xml が UPSTREAM.md にない
 - provider/CustomizationProvider.kt は BIND_WALLPAPER だけを受け付ける。上流の LauncherCustomizationProvider.enforceCallerPermission は <applicationId>.permission.GRID_CONTROL と署名の許可リストも受け付ける（移行までの暫定）。違いを記録するか合わせる
 
+
+## Notes
+
+**2026-11-23T09:06:57Z**
+
+2026-11-23: res-textlauncher/values の色 18 個が、上流の基本の values の値ではなく values-v31 の値を持っている（ヘッダーの「values-v31 for the accent colors」だけで、名前ごとの印はない。minSdk 37 では使われない）。AppTheme* 6つは親を外している（印なし）。materialColor* と max_depth_blur_radius_enhanced は quickstep/res と systemui dynamiccolors から来ていることをコメントでしか書いていない。Interpolators（systemui の animationlib）が third_party/systemui/UPSTREAM.md にない。PopupData・PopupCategory（PopupContainer.kt 318-334 行）が PopupDataMapper.kt から来ていることが記録にない
