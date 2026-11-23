@@ -20,10 +20,12 @@
 package com.android.launcher3.widget;
 
 import android.appwidget.AppWidgetHostView;
+import android.content.Context;
 import android.os.Bundle;
 
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.PendingAddItemInfo;
+import com.android.launcher3.dagger.LauncherComponentProvider;
 
 /**
  * Meta data used for late binding of {@link LauncherAppWidgetProviderInfo}.
@@ -31,8 +33,7 @@ import com.android.launcher3.PendingAddItemInfo;
  * @see {@link PendingAddItemInfo}
  *
  * <p>Stand-in for Launcher3's PendingAddWidgetInfo (android-17.0.0_r1). TextLauncher: no
- * WidgetAddFlowHandler (the home screen's widget add flow takes the info), no default size
- * options (WidgetSizeHandler) and no logging proto.
+ * WidgetAddFlowHandler (the home screen's widget add flow takes the info) and no logging proto.
  */
 public class PendingAddWidgetInfo extends PendingAddItemInfo {
     public int previewImage;
@@ -59,5 +60,12 @@ public class PendingAddWidgetInfo extends PendingAddItemInfo {
         minSpanX = i.minSpanX;
         minSpanY = i.minSpanY;
         this.sourceContainer = this.container = container;
+    }
+
+    // TextLauncher: no WidgetAddFlowHandler (getHandler).
+
+    public Bundle getDefaultSizeOptions(Context context) {
+        return LauncherComponentProvider.get(context)
+                .getWidgetSizeHandler().getWidgetSizeOptions(spanX, spanY);
     }
 }

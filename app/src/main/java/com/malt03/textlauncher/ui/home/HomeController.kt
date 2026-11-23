@@ -35,6 +35,7 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.util.WidgetSizeHandler.Companion.updateSizeRanges
 import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.WidgetItemInfo
@@ -58,8 +59,9 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
  * - [SpringLoadedListener]: the SPRING_LOADED state while dragging
  * - [HomeWorkspace], [HomeDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
- * - [HomeWidgetHost], [HomeWidgetSizes], [HomeWidgetAddFlow]: LauncherWidgetHolder, the widget
- *   sizes and Launcher's widget adding
+ * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget adding (the
+ *   widget sizes are Launcher3's WidgetSizes and WidgetSizeHandler, with the device profile's
+ *   cells)
  * - [HomeOptionsMenu]: WorkspaceTouchListener and WorkspaceLongPressOptions, the empty space's
  *   long-press menu
  */
@@ -139,7 +141,6 @@ class HomeController(
     private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController })
 
     internal val widgetHost = HomeWidgetHost(context)
-    internal val widgetSizes = HomeWidgetSizes(grid)
     internal val widgetAddFlow = HomeWidgetAddFlow(this)
 
     internal val itemInflater = HomeItemInflater(this)
@@ -270,6 +271,12 @@ class HomeController(
         widgetHost.stopListening()
     }
 
+    /** Launcher.restoreState: the widget add flow that was waiting for an activity's result. */
+    fun restoreState(savedState: android.os.Bundle?) = widgetAddFlow.restoreState(savedState)
+
+    /** Launcher.onSaveInstanceState: the widget add flow waiting for an activity's result. */
+    fun onSaveInstanceState(outState: android.os.Bundle) = widgetAddFlow.onSaveInstanceState(outState)
+
     /** Launcher.onActivityResult for the widget add flow. Returns whether it was for it. */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
         widgetAddFlow.onActivityResult(requestCode, resultCode, data)
@@ -395,8 +402,7 @@ class HomeController(
         // TextLauncher: one page, so no room means it is not added (Launcher3 would add a page).
         if (!grid.cellLayout.findCellForSpan(cell, info.spanX, info.spanY)) return false
         if (info.bindOptions == null) {
-            // PendingAddWidgetInfo.getDefaultSizeOptions (WidgetSizeHandler.getWidgetSizeOptions)
-            info.bindOptions = widgetSizes.getWidgetSizeOptions(info.spanX, info.spanY)
+            info.bindOptions = info.getDefaultSizeOptions(context)
         }
         // Launcher.addPendingItem
         info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
@@ -413,14 +419,21 @@ class HomeController(
     }
 
     /**
-     * Launcher.completeAddAppWidget's model and view part: the widget in the first free cell
-     * (LauncherAccessibilityDelegate.findSpaceOnWorkspace), told its size. Returns false when there
-     * is no room. TextLauncher: Launcher3 would add a page.
+     * Launcher.completeAddAppWidget's model and view part: the widget in the cell
+     * Launcher.addPendingItem chose ([cellX], [cellY]), told its size. TextLauncher: when that
+     * cell is no longer free (the home screen may have changed or been loaded again while an
+     * activity was in front), the first free cell (LauncherAccessibilityDelegate
+     * .findSpaceOnWorkspace); returns false when there is no room, where Launcher3 would add a
+     * page.
      */
-    internal fun addWidget(item: WidgetItemInfo): Boolean {
+    internal fun addWidget(item: WidgetItemInfo, cellX: Int, cellY: Int): Boolean {
         host.showHome()
-        val cell = IntArray(2)
-        if (!grid.cellLayout.findCellForSpan(cell, item.spanX, item.spanY)) return false
+        val cell = intArrayOf(cellX, cellY)
+        if (!grid.cellLayout.occupied.isRegionVacant(cellX, cellY, item.spanX, item.spanY) &&
+            !grid.cellLayout.findCellForSpan(cell, item.spanX, item.spanY)
+        ) {
+            return false
+        }
         item.id = model.newId()
         item.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
         item.cellX = cell[0]
@@ -429,7 +442,7 @@ class HomeController(
         val view = addInScreen(item)
         model.save()
         if (view is AppWidgetHostView) {
-            widgetSizes.updateSizeRanges(view, item.spanX, item.spanY)
+            view.updateSizeRanges(item.spanX, item.spanY)
             view.post {
                 view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), true)
                 // Launcher.showWidgetResizeFrame
@@ -573,7 +586,7 @@ class HomeController(
         }
 
         override fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int) =
-            widgetSizes.updateSizeRanges(view, spanX, spanY)
+            view.updateSizeRanges(spanX, spanY)
 
         override fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
 

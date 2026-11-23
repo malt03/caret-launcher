@@ -140,6 +140,8 @@ class LauncherActivity :
             fromBottom = true,
         )
         home = HomeController(app, root, this)
+        // Launcher.restoreState: a widget add flow that was waiting for an activity's result.
+        home.restoreState(savedInstanceState)
         root.contentArea.addView(home.workspace)
         allApps = AllAppsView(this, home.activityContext, app.iconLoader, gridSpec)
         if (isTwoPanels) {
@@ -280,6 +282,12 @@ class LauncherActivity :
     override fun onStart() {
         super.onStart()
         home.onStart()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Launcher.onSaveInstanceState: the widget add flow waiting for an activity's result.
+        home.onSaveInstanceState(outState)
     }
 
     @Deprecated("Deprecated in Java")

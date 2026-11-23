@@ -8,23 +8,17 @@ import android.appwidget.AppWidgetProviderInfo
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Point
 import android.os.Bundle
+import android.os.UserHandle
 import android.util.Log
-import android.util.Size
-import android.util.SizeF
 import android.widget.Toast
+import com.android.launcher3.LauncherSettings
 import com.android.launcher3.R
-import com.android.launcher3.ShortcutAndWidgetContainer
-import com.android.launcher3.util.Executors
+import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.widget.LauncherAppWidgetHostView
-import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.widget.WidgetManagerHelper
 import com.malt03.textlauncher.data.WidgetItemInfo
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * LauncherWidgetHolder and LauncherAppWidgetHost: the home screen's widget host, which makes the
@@ -74,107 +68,49 @@ internal class HomeWidgetHost(context: Context) : AppWidgetHost(context.applicat
 }
 
 /**
- * The widget sizes of the home grid: LauncherAppWidgetProviderInfo.initSpans, WidgetSizes and
- * WidgetSizeHandler.
- *
- * TextLauncher: Launcher3 works them out for every supported device profile and takes the largest
- * spans (and gives the widget the size in each profile); the home grid has one profile, its cells
- * as they are now.
- */
-internal class HomeWidgetSizes(private val grid: HomeGridView) {
-    private val context = grid.context
-
-    /** The cell size (WorkspaceProfile.getCellSize). */
-    private val cellSize: Point get() = Point(grid.cellWidth, grid.cellHeight)
-
-    /** The cells have no space between them (WorkspaceProfile.getCellLayoutBorderSpacePx). */
-    private val borderSpace = Point(0, 0)
-
-    /** WorkspaceProfile.getWidgetPadding */
-    private val widgetPadding get() = ShortcutAndWidgetContainer.getWidgetPadding(context, borderSpace)
-
-    /**
-     * LauncherAppWidgetProviderInfo.initSpans: [LauncherAppWidgetProviderInfo.spanX] and spanY
-     * are what a new widget gets, the min and max what it can be resized to. The cells are the
-     * home grid's, which it sets in the device profile as it measures.
-     */
-    fun initSpans(info: AppWidgetProviderInfo): LauncherAppWidgetProviderInfo =
-        LauncherAppWidgetProviderInfo.fromProviderInfo(context, info)
-
-    /** WidgetSizes.getWidgetSizePx: the size, in pixels, of a widget of the given spans. */
-    fun getWidgetSizePx(spanX: Int, spanY: Int): Size {
-        val hBorderSpacing = (spanX - 1) * borderSpace.x
-        val vBorderSpacing = (spanY - 1) * borderSpace.y
-        val cellSize = cellSize
-        val padding = widgetPadding
-        return Size(
-            (spanX * cellSize.x) + hBorderSpacing - padding.left - padding.right,
-            (spanY * cellSize.y) + vBorderSpacing - padding.top - padding.bottom,
-        )
-    }
-
-    /**
-     * WidgetSizeHandler.updateSizeRangesAsync: tells the widget its size, when it changed (updating
-     * the options wakes up the provider and updates the whole widget).
-     */
-    fun updateSizeRanges(view: AppWidgetHostView, spanX: Int, spanY: Int) {
-        val widgetId = view.appWidgetId
-        if (widgetId <= 0) return
-        val sizeOptions = getWidgetSizeOptions(spanX, spanY)
-        Executors.UI_HELPER_EXECUTOR.handler.post {
-            val widgetManager = AppWidgetManager.getInstance(context)
-            if (widgetManager.getAppWidgetInfo(widgetId) == null) return@post
-            val widgetOptions = widgetManager.getAppWidgetOptions(widgetId)
-            @Suppress("DEPRECATION")
-            if (sizeOptions.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES) !=
-                widgetOptions.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
-            ) {
-                widgetManager.updateAppWidgetOptions(widgetId, sizeOptions)
-            }
-        }
-    }
-
-    /**
-     * WidgetSizeHandler.getWidgetSizeOptions: the options with the widget's size, for the given
-     * spans, in dp.
-     */
-    fun getWidgetSizeOptions(spanX: Int, spanY: Int): Bundle {
-        val density = context.resources.displayMetrics.density
-        val sizePx = getWidgetSizePx(spanX, spanY)
-        return getWidgetSizeOptions(SizeF(sizePx.width / density, sizePx.height / density))
-    }
-
-    /** WidgetSizeHandler.getWidgetSizeOptionsInternal for the one profile. */
-    private fun getWidgetSizeOptions(size: SizeF): Bundle = Bundle().apply {
-        putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, size.width.toInt())
-        putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, size.height.toInt())
-        putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, size.width.toInt())
-        putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, size.height.toInt())
-        putParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES, arrayListOf(size))
-    }
-}
-
-/**
  * Launcher's widget adding for a widget from the widget picker (docs/spec.md 5.2):
  * Launcher.addAppWidgetFromDrop allocates a widget id and binds the widget to it with its size
  * options, asking the user first when the launcher may not bind widgets (startBindFlow,
  * REQUEST_BIND_APPWIDGET); a widget that needs configuring gets its configuration activity
- * (WidgetAddFlowHandler, REQUEST_CREATE_APPWIDGET); then it is added (completeAddAppWidget). A
- * cancelled flow deletes the id (completeTwoStageWidgetDrop).
+ * (WidgetAddFlowHandler, REQUEST_CREATE_APPWIDGET); then it is added (completeAddAppWidget) in the
+ * cell and with the spans Launcher.addPendingItem gave the item. A cancelled flow deletes the id
+ * (completeTwoStageWidgetDrop). While an activity is in front, the flow (Launcher.mPendingRequestArgs)
+ * and a result that waits for the home screen to load (mPendingActivityResult) are kept in the
+ * activity's saved state, in case it is created again meanwhile.
  *
- * TextLauncher: a widget that is configured is added once its configuration activity comes back,
- * in the first free cell then; Launcher3 adds a pending widget view at once
- * (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
+ * TextLauncher: a widget that is configured is added once its configuration activity comes back;
+ * Launcher3 adds a pending widget view at once (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
  */
 internal class HomeWidgetAddFlow(private val home: HomeController) {
     private val activity get() = home.context as Activity
     private val appWidgetManager = AppWidgetManager.getInstance(home.context)
 
-    /** Launcher.mPendingRequestArgs: the widget id of the add flow in progress. */
-    private var pendingAddWidgetId = -1
+    /** Launcher.mPendingRequestArgs: the add flow waiting for an activity's result. */
+    private var pendingRequestArgs: PendingRequestArgs? = null
 
     /** Launcher.mPendingActivityResult: a result that came while the home screen was loading. */
     private var pendingActivityResult: ActivityResultInfo? = null
+
+    /** Launcher.setWaitingForResult */
+    private fun setWaitingForResult(args: PendingRequestArgs?) {
+        pendingRequestArgs = args
+    }
+
+    /** Launcher.restoreState for the add flow. */
+    fun restoreState(savedState: Bundle?) {
+        if (savedState == null) return
+        savedState.getBundle(RUNTIME_STATE_PENDING_REQUEST_ARGS)?.let {
+            setWaitingForResult(PendingRequestArgs.fromBundle(it))
+        }
+        pendingActivityResult = savedState.getBundle(RUNTIME_STATE_PENDING_ACTIVITY_RESULT)
+            ?.let(ActivityResultInfo::fromBundle)
+    }
+
+    /** Launcher.onSaveInstanceState for the add flow. */
+    fun onSaveInstanceState(outState: Bundle) {
+        pendingRequestArgs?.let { outState.putBundle(RUNTIME_STATE_PENDING_REQUEST_ARGS, it.toBundle()) }
+        pendingActivityResult?.let { outState.putBundle(RUNTIME_STATE_PENDING_ACTIVITY_RESULT, it.toBundle()) }
+    }
 
     /**
      * Launcher.addAppWidgetFromDrop: binds the widget to a new id, or asks the user whether the
@@ -189,19 +125,19 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
 
         val success = WidgetManagerHelper(home.context).bindAppWidgetIdIfAllowed(appWidgetId, info.info, options)
         if (success) {
-            addAppWidgetImpl(appWidgetId)
+            addAppWidgetImpl(appWidgetId, info)
         } else {
-            startBindFlow(appWidgetId, info.info)
+            startBindFlow(appWidgetId, info)
         }
     }
 
     /** WidgetAddFlowHandler.startBindFlow with LauncherWidgetHolder.startBindFlow. */
-    private fun startBindFlow(appWidgetId: Int, info: AppWidgetProviderInfo) {
-        pendingAddWidgetId = appWidgetId
+    private fun startBindFlow(appWidgetId: Int, info: PendingAddWidgetInfo) {
+        setWaitingForResult(PendingRequestArgs.forWidgetInfo(appWidgetId, info))
         val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND)
             .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, info.provider)
-            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, info.profile)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, info.info.provider)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, info.info.profile)
         // TODO: we need to make sure that this accounts for the options bundle.
         // intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_OPTIONS, options);
         try {
@@ -209,7 +145,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
             activity.startActivityForResult(intent, REQUEST_BIND_APPWIDGET)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "No activity to bind the widget", e)
-            pendingAddWidgetId = -1
+            setWaitingForResult(null)
             cancel(appWidgetId)
         }
     }
@@ -218,30 +154,31 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
      * Launcher.addAppWidgetImpl: the widget's configuration activity if it needs one
      * (WidgetAddFlowHandler.startConfigActivity), or else the widget is added.
      */
-    private fun addAppWidgetImpl(appWidgetId: Int) {
-        val info = appWidgetManager.getAppWidgetInfo(appWidgetId)
-        if (info == null) {
+    private fun addAppWidgetImpl(appWidgetId: Int, info: ItemInfo) {
+        // WidgetAddFlowHandler.getProviderInfo
+        val providerInfo = appWidgetManager.getAppWidgetInfo(appWidgetId)
+        if (providerInfo == null) {
             cancel(appWidgetId)
             return
         }
-        if (needsConfigure(info)) {
-            pendingAddWidgetId = appWidgetId
+        if (needsConfigure(providerInfo)) {
+            setWaitingForResult(PendingRequestArgs.forWidgetInfo(appWidgetId, info))
             try {
                 home.widgetHost.startAppWidgetConfigureActivityForResult(
                     activity, appWidgetId, 0, REQUEST_CREATE_APPWIDGET, null,
                 )
             } catch (e: ActivityNotFoundException) {
                 Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
-                pendingAddWidgetId = -1
+                setWaitingForResult(null)
                 cancel(appWidgetId)
             } catch (e: SecurityException) {
                 Toast.makeText(activity, R.string.activity_not_available, Toast.LENGTH_SHORT).show()
-                pendingAddWidgetId = -1
+                setWaitingForResult(null)
                 cancel(appWidgetId)
             }
             return
         }
-        completeAddAppWidget(appWidgetId, info)
+        completeAddAppWidget(appWidgetId, info, providerInfo)
     }
 
     /**
@@ -284,10 +221,11 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         // each activity rather than once per process, so the ids of an add flow in progress, and
         // of its result waiting for the load, are not ghosts.
         val validWidgets = home.model.allItems().filterIsInstance<WidgetItemInfo>().map { it.appWidgetId }.toMutableSet()
-        if (pendingAddWidgetId >= 0) validWidgets += pendingAddWidgetId
+        pendingRequestArgs?.widgetId?.takeIf { it >= 0 }?.let { validWidgets += it }
         pendingActivityResult?.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
             ?.takeIf { it >= 0 }?.let { validWidgets += it }
         home.widgetHost.removeGhostWidgets(validWidgets)
+        // Launcher.processActivityResult
         pendingActivityResult?.let {
             pendingActivityResult = null
             handleActivityResult(it.requestCode, it.resultCode, it.data)
@@ -296,13 +234,21 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
 
     /** Launcher.handleActivityResult for the widget requests. */
     private fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // Reset the startActivity waiting flag
+        val requestArgs = pendingRequestArgs
+        setWaitingForResult(null)
+        if (requestArgs == null) {
+            return
+        }
+
+        val pendingAddWidgetId = requestArgs.widgetId
         val widgetId = data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
+        // TextLauncher: the bind result's id too falls back to the flow's.
         val appWidgetId = if (widgetId < 0) pendingAddWidgetId else widgetId
-        pendingAddWidgetId = -1
         if (requestCode == REQUEST_BIND_APPWIDGET) {
             // This is called only if the user did not previously have permissions to bind widgets
             if (resultCode == Activity.RESULT_OK && appWidgetId >= 0) {
-                addAppWidgetImpl(appWidgetId)
+                addAppWidgetImpl(appWidgetId, requestArgs)
             } else {
                 cancel(appWidgetId)
             }
@@ -313,12 +259,13 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
             cancel(appWidgetId)
             return
         }
+        // Launcher.completeAdd for REQUEST_CREATE_APPWIDGET
         val info = appWidgetManager.getAppWidgetInfo(appWidgetId)
         if (info == null) {
             cancel(appWidgetId)
             return
         }
-        completeAddAppWidget(appWidgetId, info)
+        completeAddAppWidget(appWidgetId, requestArgs, info)
     }
 
     /** Launcher.completeTwoStageWidgetDrop with RESULT_CANCELED: the id is given back. */
@@ -340,20 +287,24 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     }
 
     /**
-     * Launcher.completeAddAppWidget: the widget's item in the first free cell with its default
-     * spans, its view, and its size. TextLauncher: with no free cell, the widget is not added
-     * (Launcher3 would add a page).
+     * Launcher.completeAddAppWidget: the widget's item with the spans and cell of [itemInfo] (the
+     * PendingAddWidgetInfo, or the flow's PendingRequestArgs made from it), its view, and its
+     * size. TextLauncher: when there is no room for it, the widget is not added (Launcher3 would
+     * add a page).
      */
-    private fun completeAddAppWidget(appWidgetId: Int, info: AppWidgetProviderInfo) {
-        val spans = home.widgetSizes.initSpans(info)
-        val item = WidgetItemInfo(appWidgetId, info.provider.flattenToString()).apply {
-            spanX = spans.spanX
-            spanY = spans.spanY
-            minSpanX = spans.minSpanX
-            minSpanY = spans.minSpanY
-            user = info.profile
+    private fun completeAddAppWidget(appWidgetId: Int, itemInfo: ItemInfo, appWidgetInfo: AppWidgetProviderInfo) {
+        val launcherInfo = WidgetItemInfo(appWidgetId, appWidgetInfo.provider.flattenToString())
+        launcherInfo.spanX = itemInfo.spanX
+        launcherInfo.spanY = itemInfo.spanY
+        launcherInfo.minSpanX = itemInfo.minSpanX
+        launcherInfo.minSpanY = itemInfo.minSpanY
+        launcherInfo.user = appWidgetInfo.profile
+        if (itemInfo is PendingAddWidgetInfo) {
+            launcherInfo.sourceContainer = itemInfo.sourceContainer
+        } else if (itemInfo is PendingRequestArgs) {
+            launcherInfo.sourceContainer = itemInfo.widgetSourceContainer
         }
-        if (!home.addWidget(item)) {
+        if (!home.addWidget(launcherInfo, itemInfo.cellX, itemInfo.cellY)) {
             Toast.makeText(activity, R.string.out_of_space, Toast.LENGTH_SHORT).show()
             cancel(appWidgetId)
         }
@@ -366,8 +317,94 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         const val REQUEST_CREATE_APPWIDGET = 5
         const val REQUEST_BIND_APPWIDGET = 11
         const val REQUEST_RECONFIGURE_APPWIDGET = 13
+
+        /** LauncherConstants.SavedInstanceKeys */
+        const val RUNTIME_STATE_PENDING_REQUEST_ARGS = "launcher.request_args"
+        const val RUNTIME_STATE_PENDING_ACTIVITY_RESULT = "launcher.activity_result"
     }
 
-    /** ActivityResultInfo */
-    private class ActivityResultInfo(val requestCode: Int, val resultCode: Int, val data: Intent?)
+    /**
+     * PendingRequestArgs.forWidgetInfo: the widget id of an add flow, the container it came from,
+     * and the item it adds. TextLauncher: no WidgetAddFlowHandler in it (the provider is looked up
+     * by the id), and it is saved as a Bundle rather than parceled.
+     */
+    private class PendingRequestArgs private constructor(
+        val widgetId: Int,
+        val widgetSourceContainer: Int,
+    ) : ItemInfo() {
+        fun toBundle(): Bundle = Bundle().apply {
+            putInt(KEY_WIDGET_ID, widgetId)
+            putInt(KEY_SOURCE_CONTAINER, widgetSourceContainer)
+            putInt(KEY_ITEM_TYPE, itemType)
+            putInt(KEY_CONTAINER, container)
+            putInt(KEY_CELL_X, cellX)
+            putInt(KEY_CELL_Y, cellY)
+            putInt(KEY_SPAN_X, spanX)
+            putInt(KEY_SPAN_Y, spanY)
+            putInt(KEY_MIN_SPAN_X, minSpanX)
+            putInt(KEY_MIN_SPAN_Y, minSpanY)
+            putParcelable(KEY_USER, user)
+        }
+
+        companion object {
+            fun forWidgetInfo(appWidgetId: Int, info: ItemInfo): PendingRequestArgs {
+                var sourceContainer = LauncherSettings.Favorites.CONTAINER_UNKNOWN
+                if (info is PendingAddWidgetInfo) {
+                    sourceContainer = info.sourceContainer
+                } else if (info is PendingRequestArgs) {
+                    // TextLauncher: a flow that goes on (bind, then configure) keeps its source.
+                    sourceContainer = info.widgetSourceContainer
+                }
+                val args = PendingRequestArgs(appWidgetId, sourceContainer)
+                args.copyFrom(info)
+                return args
+            }
+
+            fun fromBundle(b: Bundle): PendingRequestArgs =
+                PendingRequestArgs(b.getInt(KEY_WIDGET_ID), b.getInt(KEY_SOURCE_CONTAINER)).apply {
+                    itemType = b.getInt(KEY_ITEM_TYPE)
+                    container = b.getInt(KEY_CONTAINER)
+                    cellX = b.getInt(KEY_CELL_X)
+                    cellY = b.getInt(KEY_CELL_Y)
+                    spanX = b.getInt(KEY_SPAN_X)
+                    spanY = b.getInt(KEY_SPAN_Y)
+                    minSpanX = b.getInt(KEY_MIN_SPAN_X)
+                    minSpanY = b.getInt(KEY_MIN_SPAN_Y)
+                    b.getParcelable(KEY_USER, UserHandle::class.java)?.let { user = it }
+                }
+
+            private const val KEY_WIDGET_ID = "widgetId"
+            private const val KEY_SOURCE_CONTAINER = "sourceContainer"
+            private const val KEY_ITEM_TYPE = "itemType"
+            private const val KEY_CONTAINER = "container"
+            private const val KEY_CELL_X = "cellX"
+            private const val KEY_CELL_Y = "cellY"
+            private const val KEY_SPAN_X = "spanX"
+            private const val KEY_SPAN_Y = "spanY"
+            private const val KEY_MIN_SPAN_X = "minSpanX"
+            private const val KEY_MIN_SPAN_Y = "minSpanY"
+            private const val KEY_USER = "user"
+        }
+    }
+
+    /** ActivityResultInfo, saved as a Bundle rather than parceled. */
+    private class ActivityResultInfo(val requestCode: Int, val resultCode: Int, val data: Intent?) {
+        fun toBundle(): Bundle = Bundle().apply {
+            putInt(KEY_REQUEST_CODE, requestCode)
+            putInt(KEY_RESULT_CODE, resultCode)
+            putParcelable(KEY_DATA, data)
+        }
+
+        companion object {
+            fun fromBundle(b: Bundle) = ActivityResultInfo(
+                b.getInt(KEY_REQUEST_CODE),
+                b.getInt(KEY_RESULT_CODE),
+                b.getParcelable(KEY_DATA, Intent::class.java),
+            )
+
+            private const val KEY_REQUEST_CODE = "requestCode"
+            private const val KEY_RESULT_CODE = "resultCode"
+            private const val KEY_DATA = "data"
+        }
+    }
 }

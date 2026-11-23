@@ -20,7 +20,6 @@ import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
-import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppItemInfo
@@ -129,11 +128,7 @@ internal class HomeActivityContext(private val home: HomeController) :
 
     /** The widget's spans on the home grid, for the resize frame (LauncherAppWidgetProviderInfo). */
     override fun getLauncherAppWidgetInfo(info: AppWidgetProviderInfo?): LauncherAppWidgetProviderInfo? =
-        info?.let { home.widgetSizes.initSpans(it) }
-
-    /** WidgetSizeHandler.updateSizeRanges, while the resize frame resizes the widget. */
-    override fun updateWidgetSizeRanges(widgetView: LauncherAppWidgetHostView, spanX: Int, spanY: Int) =
-        home.widgetSizes.updateSizeRanges(widgetView, spanX, spanY)
+        info?.let { LauncherAppWidgetProviderInfo.fromProviderInfo(context, it) }
 
     /** The cells the resize frame gave the widget and the items it moved aside, saved. */
     override fun saveItemPlacement() = home.saveItemPlacement()

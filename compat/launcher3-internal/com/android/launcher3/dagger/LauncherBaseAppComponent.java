@@ -27,6 +27,7 @@ import com.android.launcher3.folder.FolderNameSuggestionLoader;
 import com.android.launcher3.notification.NotificationRepository;
 import com.android.launcher3.util.ScreenOnTracker;
 import com.android.launcher3.util.SettingsCache;
+import com.android.launcher3.widget.util.WidgetSizeHandler;
 import com.android.launcher3.widgetpicker.WidgetPickerComposeWrapper;
 
 import dagger.BindsInstance;
@@ -51,6 +52,7 @@ public interface LauncherBaseAppComponent {
     }
 
     WidgetPickerComposeWrapper getWidgetPickerComposeWrapper();
+    WidgetSizeHandler getWidgetSizeHandler();
     NotificationRepository getNotificationRepository();
 
     /** Builder for LauncherBaseAppComponent. */

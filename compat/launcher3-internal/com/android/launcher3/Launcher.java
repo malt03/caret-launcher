@@ -36,7 +36,6 @@ import com.android.launcher3.util.ContextTracker;
 import com.android.launcher3.util.RunnableList;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
-import com.android.launcher3.widget.LauncherAppWidgetHostView;
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 
 /**
@@ -141,10 +140,6 @@ public abstract class Launcher implements ActivityContext {
     @Nullable
     public abstract LauncherAppWidgetProviderInfo getLauncherAppWidgetInfo(
             @Nullable AppWidgetProviderInfo info);
-
-    /** TextLauncher: WidgetSizeHandler.updateSizeRanges, which tells the widget its size. */
-    public abstract void updateWidgetSizeRanges(LauncherAppWidgetHostView widgetView, int spanX,
-            int spanY);
 
     /**
      * TextLauncher: the database writes of CellLayout.commitTempPlacement. The home screen saves

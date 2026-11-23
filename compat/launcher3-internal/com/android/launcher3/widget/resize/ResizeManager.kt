@@ -34,6 +34,7 @@ import com.android.launcher3.dragndrop.DragLayer
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.util.WidgetSizeHandler.Companion.updateSizeRanges
 import kotlin.math.abs
 
 /**
@@ -59,7 +60,7 @@ class ResizeManager(
 
     private val resizeSession: ResizeSession = ResizeSession()
 
-    // TextLauncher: the launcher, for the widget's spans, its size updates and the model.
+    // TextLauncher: the launcher, for the widget's spans and the model.
     private val launcher: Launcher = Launcher.getLauncher(cellLayout.context)
 
     init {
@@ -388,8 +389,7 @@ class ResizeManager(
             resizeSession.runningHInc += hSpanDelta
 
             if (!commit) {
-                // TextLauncher: the home screen updates the size ranges (WidgetSizeHandler).
-                launcher.updateWidgetSizeRanges(widgetView, spanX, spanY)
+                widgetView.updateSizeRanges(spanX, spanY)
             } else {
                 // TextLauncher: CellLayout.commitTempPlacement writes the cells in Launcher3.
                 launcher.saveItemPlacement()

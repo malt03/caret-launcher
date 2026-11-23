@@ -21,11 +21,18 @@
 
 package com.android.launcher3.model.data;
 
+import com.android.launcher3.LauncherSettings;
+
 /**
  * Represents a widget (either instantiated or about to be) in the Launcher.
  *
  * <p>Stand-in for Launcher3's LauncherAppWidgetInfo (android-17.0.0_r1). TextLauncher: the home
- * screen's widget item (the app's WidgetItemInfo) extends it; nothing of it is ported yet.
+ * screen's widget item (the app's WidgetItemInfo) extends it; only the container it was added
+ * from is ported, and it is not saved (the home database has no APPWIDGET_SOURCE).
  */
 public class LauncherAppWidgetInfo extends ItemInfo {
+    /**
+     * The container from which this widget was added (e.g. widgets tray, pin widget, search)
+     */
+    public int sourceContainer = LauncherSettings.Favorites.CONTAINER_UNKNOWN;
 }
