@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Konversationer"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Anteckna"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Widgets är inaktiverade i felsäkert läge"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} har # avisering}other{{app_name} har # aviseringar}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> har inaktiverats"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Visa aviseringsprickar"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Aviseringsprickar"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Åtkomst till aviseringar krävs"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Aktivera appaviseringar för <xliff:g id="NAME">%1$s</xliff:g> om du vill att aviseringsprickar ska visas"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Ändra inställningar"</string>
 </resources>

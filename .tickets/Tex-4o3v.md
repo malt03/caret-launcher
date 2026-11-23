@@ -1,6 +1,6 @@
 ---
 id: Tex-4o3v
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-21T16:39:28Z
@@ -37,3 +37,9 @@ tags: [icons]
 - [ ] システムの通知ドットの設定をオフにすると、ドットが出ない
 - [ ] 許可を求める入口がある
 
+
+## Notes
+
+**2026-11-23T08:20:24Z**
+
+Launcher3 の通知ドットを移した（NotificationListener・NotificationRepository・DotInfo などは上流のまま、PopupDataProvider・BubbleTextView・FolderIcon に上流のドットのコードを移した）。許可の入口は空いている場所の長押しメニューの「通知ドット」（許可がない間だけ。2026-11-23 決定）で、Launcher3 の設定画面と同じダイアログから OS の通知へのアクセスの画面を開く。エミュレータで、メニューの項目とダイアログ、許可後にホーム・全アプリ一覧・検索結果・フォルダにドットが付くこと、通知を消すとすぐ消えること、許可後に項目が消えることを確かめた。OS の通知ドットの設定をオフにしたときの動き（listener が外れてドットが消え、オンで戻る）は試していない。

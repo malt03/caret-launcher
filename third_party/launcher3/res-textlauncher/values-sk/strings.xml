@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Konverzácie"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Zapisovanie poznámok"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Miniaplikácie sú v núdzovom režime zakázané"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{Aplikácia {app_name} má # upozornenie}few{Aplikácia {app_name} má # upozornenia}many{{app_name} has # notifications}other{Aplikácia {app_name} má # upozornení}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> je deaktivovaná"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Zobrazovať bodky upozornení"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Bodky upozornení"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Vyžaduje sa prístup k upozorneniam"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Ak chcete, aby sa zobrazovali bodky upozornení, zapnite upozornenia aplikácie <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Zmeniť nastavenia"</string>
 </resources>

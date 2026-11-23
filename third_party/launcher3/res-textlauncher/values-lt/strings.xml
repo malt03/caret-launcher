@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Pokalbiai"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Užrašų kūrimas"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Valdikliai išjungti Saugiame režime"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{Programoje „{app_name}“ yra # pranešimas}one{Programoje „{app_name}“ yra # pranešimas}few{Programoje „{app_name}“ yra # pranešimai}many{Programoje „{app_name}“ yra # pranešimo}other{Programoje „{app_name}“ yra # pranešimų}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ išjungta"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Rodyti pranešimų taškus"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Pranešimų taškai"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Reikalinga prieiga prie pranešimų"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Kad būtų rodomi pranešimų taškai, įjunkite programos „<xliff:g id="NAME">%1$s</xliff:g>“ pranešimus."</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Keisti nustatymus"</string>
 </resources>

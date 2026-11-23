@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Conversations"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Prise de notes"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Les widgets sont désactivés en mode sécurisé."</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} a # notification}one{{app_name} a # notification}other{{app_name} a # notifications}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> est désactivé."</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Afficher les pastilles de notification"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Pastilles de notification"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Accès aux notifications requis"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Pour afficher les pastilles de notification, activez les notifications de l\'application <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Modifier les paramètres"</string>
 </resources>

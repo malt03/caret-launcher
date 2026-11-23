@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Görüşmeler"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Not alma"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Güvenli modda widget\'lar devre dışı"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} uygulamasının # bildirimi var}other{{app_name} uygulamasının # bildirimi var}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> devre dışı"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Bildirim noktalarını göster"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Bildirim noktaları"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Bildirim erişimi gerekli"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Bildirim Noktaları\'nı göstermek için <xliff:g id="NAME">%1$s</xliff:g> uygulamasının bildirimlerini açın"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Ayarları değiştir"</string>
 </resources>

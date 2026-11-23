@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"സംഭാഷണങ്ങൾ"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"കുറിപ്പ് രേഖപ്പെടുത്തൽ"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"സുരക്ഷിത മോഡിൽ വിജറ്റുകൾ പ്രവർത്തനരഹിതമാക്കി"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} ആപ്പിന് # അറിയിപ്പുണ്ട്}other{{app_name} ആപ്പിന് # അറിയിപ്പുകളുണ്ട്}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> പ്രവർത്തനരഹിതമാക്കി"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"അറിയിപ്പ് ഡോട്ടുകൾ കാണിക്കുക"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"അറിയിപ്പ് ഡോട്ടുകൾ"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"അറിയിപ്പിനായുള്ള ആക്‌സസ് ആവശ്യമാണ്"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"അറിയിപ്പ് ഡോട്ടുകൾ കാണിക്കുന്നതിന്, <xliff:g id="NAME">%1$s</xliff:g> എന്നയാളിനായുള്ള ആപ്പ് അറിയിപ്പുകൾ ഓണാക്കുക"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"ക്രമീകരണം മാറ്റുക"</string>
 </resources>

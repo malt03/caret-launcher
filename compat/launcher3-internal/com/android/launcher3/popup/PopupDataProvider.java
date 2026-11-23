@@ -20,28 +20,106 @@
 
 package com.android.launcher3.popup;
 
+import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
+
 import android.content.ComponentName;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.launcher3.BubbleTextView;
+import com.android.launcher3.allapps.AllAppsStore;
+import com.android.launcher3.dot.DotInfo;
+import com.android.launcher3.folder.Folder;
+import com.android.launcher3.folder.FolderIcon;
+import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.notification.NotificationRepository;
 import com.android.launcher3.shortcuts.ShortcutRequest;
+import com.android.launcher3.util.LauncherBindableItemsContainer.ItemOperator;
+import com.android.launcher3.util.PackageUserKey;
+import com.android.launcher3.util.SafeCloseable;
 import com.android.launcher3.util.ShortcutUtil;
+import com.android.launcher3.views.ActivityContext;
+
+import kotlin.Unit;
+
+import java.util.Arrays;
+import java.util.function.Predicate;
 
 /**
- * Stand-in for Launcher3's PopupDataProvider (android-17.0.0_r1): how many app shortcuts an item
- * has. getShortcutCountForItem is copied from PopupDataProvider.java.
+ * Provides data for the popup menu that appears after long-clicking on apps.
  *
- * TextLauncher: Launcher3 reads the count from the deep shortcut map that its model loads in the
- * background (published shortcuts per activity). There is no such model here, so the same query
- * runs when the menu opens.
+ * <p>Stand-in for Launcher3's PopupDataProvider (android-17.0.0_r1): the notification dots of the
+ * items and how many app shortcuts an item has. The members are copied from
+ * PopupDataProvider.java; changes are marked with "TextLauncher:".
+ *
+ * <p>TextLauncher: no Dagger activity component, so the app makes it with the notification
+ * repository and the all apps store, and closes it ({@link #close}) where Launcher3's
+ * ActivityContext.closeOnDestroy would.
  */
-public class PopupDataProvider {
-    private final Context mContext;
+public class PopupDataProvider implements SafeCloseable {
 
-    public PopupDataProvider(Context context) {
+    private final NotificationRepository mNotificationRepo;
+    private final ActivityContext mContext;
+    private final AllAppsStore mAppsStore;
+    // TextLauncher: the context for the shortcut queries (no BgDataModel).
+    private final Context mAppContext;
+    private final SafeCloseable mUpdateSubscription;
+
+    public PopupDataProvider(
+            Context appContext,
+            ActivityContext context,
+            NotificationRepository notificationRepository,
+            AllAppsStore appsStore) {
+        mAppContext = appContext;
         mContext = context;
+        mNotificationRepo = notificationRepository;
+        mAppsStore = appsStore;
+
+        // TextLauncher: ActivityContext.getUiExecutor is the main executor.
+        mUpdateSubscription = mNotificationRepo.getUpdateStream().forEach(
+                MAIN_EXECUTOR, this::updateNotificationDots);
     }
 
+    /** TextLauncher: ActivityContext.closeOnDestroy */
+    @Override
+    public void close() {
+        mUpdateSubscription.close();
+    }
+
+    private Unit updateNotificationDots(Predicate<PackageUserKey> updatedDots) {
+        final PackageUserKey packageUserKey = new PackageUserKey(null, null);
+        Predicate<ItemInfo> matcher = info -> !packageUserKey.updateFromItemInfo(info)
+                || updatedDots.test(packageUserKey);
+
+        ItemOperator op = (info, v) -> {
+            if (v instanceof BubbleTextView btv && info != null && matcher.test(info)) {
+                btv.applyDotState(info, true /* animate */);
+            } else if (v instanceof FolderIcon icon
+                    && info instanceof FolderInfo fi && fi.anyMatch(matcher)) {
+                icon.updateDotInfo();
+            }
+
+            // process all the shortcuts
+            return false;
+        };
+
+        mContext.getContent().mapOverItems(op);
+        Folder folder = Folder.getOpen(mContext);
+        if (folder != null) {
+            folder.mapOverItems(op);
+        }
+        mAppsStore.updateNotificationDots(updatedDots);
+        return null;
+    }
+
+    /**
+     * TextLauncher: Launcher3 reads the count from the deep shortcut map that its model loads in
+     * the background (published shortcuts per activity). There is no such model here, so the same
+     * query runs when the menu opens.
+     */
     public int getShortcutCountForItem(ItemInfo info) {
         if (!ShortcutUtil.supportsDeepShortcuts(info)) {
             return 0;
@@ -51,9 +129,37 @@ public class PopupDataProvider {
             return 0;
         }
 
-        return new ShortcutRequest(mContext, info.user)
+        return new ShortcutRequest(mAppContext, info.user)
                 .withContainer(component)
                 .query(ShortcutRequest.PUBLISHED)
                 .size();
+    }
+
+    public @Nullable DotInfo getDotInfoForItem(@NonNull ItemInfo info) {
+        if (!ShortcutUtil.supportsShortcuts(info)) {
+            return null;
+        }
+        DotInfo dotInfo = mNotificationRepo.getPackageUserToDotInfos()
+                .get(PackageUserKey.fromItemInfo(info));
+        if (dotInfo == null) {
+            return null;
+        }
+
+        // If the item represents a pinned shortcut, ensure that there is a notification
+        // for this shortcut
+        String shortcutId = ShortcutUtil.getShortcutIdIfPinnedShortcut(info);
+        if (shortcutId == null) {
+            return dotInfo;
+        }
+        String[] personKeys = ShortcutUtil.getPersonKeysIfPinnedShortcut(info);
+        return (dotInfo.getNotificationKeys().stream().anyMatch(notification -> {
+            if (notification.shortcutId != null) {
+                return notification.shortcutId.equals(shortcutId);
+            }
+            if (notification.personKeysFromNotification.length != 0) {
+                return Arrays.equals(notification.personKeysFromNotification, personKeys);
+            }
+            return false;
+        })) ? dotInfo : null;
     }
 }

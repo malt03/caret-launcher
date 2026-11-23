@@ -24,7 +24,9 @@ import android.content.Context;
 
 import com.android.launcher3.InvariantDeviceProfile;
 import com.android.launcher3.folder.FolderNameSuggestionLoader;
+import com.android.launcher3.notification.NotificationRepository;
 import com.android.launcher3.util.ScreenOnTracker;
+import com.android.launcher3.util.SettingsCache;
 import com.android.launcher3.widgetpicker.WidgetPickerComposeWrapper;
 
 import dagger.BindsInstance;
@@ -39,6 +41,7 @@ import dagger.BindsInstance;
  * copied code asks for. TextLauncher: no icons database name or safe mode in the builder.
  */
 public interface LauncherBaseAppComponent {
+    SettingsCache getSettingsCache();
     ScreenOnTracker getScreenOnTracker();
     InvariantDeviceProfile getIDP();
 
@@ -48,6 +51,7 @@ public interface LauncherBaseAppComponent {
     }
 
     WidgetPickerComposeWrapper getWidgetPickerComposeWrapper();
+    NotificationRepository getNotificationRepository();
 
     /** Builder for LauncherBaseAppComponent. */
     interface Builder {

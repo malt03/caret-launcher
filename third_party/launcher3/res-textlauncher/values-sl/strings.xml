@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Pogovori"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Ustvarjanje zapiskov"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Pripomočki so onemogočeni v varnem načinu"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} ima # obvestilo.}one{{app_name} ima # obvestilo.}two{{app_name} ima # obvestili.}few{{app_name} ima # obvestila.}other{{app_name} ima # obvestil.}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je onemogočena"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Pokaži obvestilne pike"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Obvestilne pike"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Potreben je dostop do obvestil"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Za prikaz obvestilnih pik vklopite obvestila aplikacije <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Spremeni nastavitve"</string>
 </resources>

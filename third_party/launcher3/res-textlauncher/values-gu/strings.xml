@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"વાતચીતો"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"નોંધ લેવી"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"સુરક્ષિત મોડમાં વિજેટ્સ અક્ષમ કર્યા"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name}ના # નોટિફિકેશન છે}one{{app_name}ના # નોટિફિકેશન છે}other{{app_name}ના # નોટિફિકેશન છે}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> અક્ષમ કરી"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"નોટિફિકેશન માટેના ચિહ્ન બતાવો"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"નોટિફિકેશન ડૉટ"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"નોટિફિકેશનનો ઍક્સેસની જરૂરી છે"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"નોટિફિકેશન માટેનું ચિહ્ન બતાવવા હેતુ, <xliff:g id="NAME">%1$s</xliff:g> માટેની ઍપ્લિકેશન નોટિફિકેશન ચાલુ કરો"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"સેટિંગ બદલો"</string>
 </resources>

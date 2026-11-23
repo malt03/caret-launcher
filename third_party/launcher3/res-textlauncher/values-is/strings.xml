@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Samtöl"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Glósugerð"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Græjur eru óvirkar í öruggri stillingu"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} er með # tilkynningu}one{{app_name} er með # tilkynningu}other{{app_name} er með # tilkynningar}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Óvirkt <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Sýna tilkynningapunkta"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Tilkynningapunktar"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Aðgangs að tilkynningum er krafist"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Til að sýna tilkynningarpunkta skaltu kveikja á forritstilkynningum fyrir <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Breyta stillingum"</string>
 </resources>

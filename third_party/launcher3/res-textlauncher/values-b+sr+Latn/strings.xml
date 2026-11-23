@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Konverzacije"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Pravljenje beležaka"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Vidžeti su onemogućeni u Bezbednom režimu"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name}, ima # obaveštenje}one{{app_name}, ima # obaveštenje}few{{app_name}, ima # obaveštenja}other{{app_name}, ima # obaveštenja}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je onemogućena"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Prikazuj tačke za obaveštenja"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Tačke za obaveštenja"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Potreban je pristup za obaveštenja"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Da biste prikazali tačke za obaveštenja, uključite obaveštenja za aplikaciju <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Promenite podešavanja"</string>
 </resources>

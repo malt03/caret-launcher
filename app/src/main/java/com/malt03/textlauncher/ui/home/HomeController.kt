@@ -19,6 +19,7 @@ import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.LauncherSettings
+import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.Workspace
@@ -188,6 +189,20 @@ class HomeController(
 
     fun destroy() {
         loader.destroy()
+        // ActivityContext.closeOnDestroy: PopupDataProvider stops listening for notification dots.
+        launcher.activityComponent.popupDataProvider.close()
+    }
+
+    /**
+     * Workspace.mapOverItems: the home screen's item views (icons, folders and widgets), until [op]
+     * returns true. Returns that view.
+     */
+    internal fun mapOverItems(op: LauncherBindableItemsContainer.ItemOperator): View? {
+        for (i in 0 until grid.childCount) {
+            val view = grid.getChildAt(i)
+            if (op.evaluate(view.tag as? ItemInfo, view)) return view
+        }
+        return null
     }
 
     /** Re-creates every view, e.g. after the icon theme changed. */

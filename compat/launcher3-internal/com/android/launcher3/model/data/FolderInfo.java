@@ -39,6 +39,14 @@ public class FolderInfo extends ItemInfo {
         itemType = ITEM_TYPE_FOLDER;
     }
 
+    /**
+     * Convenience function. Checks contents to see if any match a given predicate.
+     * TextLauncher: CollectionInfo.anyMatch (no CollectionInfo).
+     */
+    public boolean anyMatch(java.util.function.Predicate<ItemInfo> matcher) {
+        return getContents().stream().anyMatch(matcher);
+    }
+
     public List<ItemInfo> getContents() {
         return mContents;
     }

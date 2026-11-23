@@ -23,17 +23,25 @@ import static com.android.launcher3.model.data.AppInfo.COMPONENT_KEY_COMPARATOR;
 import static com.android.launcher3.model.data.AppInfo.EMPTY_ARRAY;
 
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.model.data.AppInfo;
+import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.util.ComponentKey;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * A utility class to maintain the collection of all apps.
@@ -51,6 +59,8 @@ public class AllAppsStore {
     private @NonNull AppInfo[] mApps = EMPTY_ARRAY;
 
     private final List<OnUpdateListener> mUpdateListeners = new CopyOnWriteArrayList<>();
+    private final ArrayList<ViewGroup> mIconContainers = new ArrayList<>();
+    private PackageUserKey mTempKey = new PackageUserKey(null, null);
 
     public AppInfo[] getApps() {
         return mApps;
@@ -94,6 +104,41 @@ public class AllAppsStore {
         Log.d(TAG, "notifyUpdate: notifying listeners");
         for (OnUpdateListener listener : mUpdateListeners) {
             listener.onAppsUpdated();
+        }
+    }
+
+    public void registerIconContainer(ViewGroup container) {
+        if (container != null && !mIconContainers.contains(container)) {
+            mIconContainers.add(container);
+        }
+    }
+
+    public void unregisterIconContainer(ViewGroup container) {
+        mIconContainers.remove(container);
+    }
+
+    public void updateNotificationDots(Predicate<PackageUserKey> updatedDots) {
+        updateAllIcons((child) -> {
+            if (child.getTag() instanceof ItemInfo) {
+                ItemInfo info = (ItemInfo) child.getTag();
+                if (mTempKey.updateFromItemInfo(info) && updatedDots.test(mTempKey)) {
+                    child.applyDotState(info, true /* animate */);
+                }
+            }
+        });
+    }
+
+    private void updateAllIcons(Consumer<BubbleTextView> action) {
+        for (int i = mIconContainers.size() - 1; i >= 0; i--) {
+            ViewGroup parent = mIconContainers.get(i);
+            int childCount = parent.getChildCount();
+
+            for (int j = 0; j < childCount; j++) {
+                View child = parent.getChildAt(j);
+                if (child instanceof BubbleTextView) {
+                    action.accept((BubbleTextView) child);
+                }
+            }
         }
     }
 

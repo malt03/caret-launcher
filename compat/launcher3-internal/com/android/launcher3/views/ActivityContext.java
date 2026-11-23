@@ -25,12 +25,15 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.dagger.ActivityComponent;
+import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DragController;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.LauncherBindableItemsContainer;
 import com.android.launcher3.util.RunnableList;
 
 /** Stand-in for Launcher3's ActivityContext. Only what copied code uses. */
@@ -95,5 +98,17 @@ public interface ActivityContext {
 
     default ActivityComponent getActivityComponent() {
         return new ActivityComponent();
+    }
+
+    /**
+     * Returns the primary content of this context
+     */
+    @NonNull
+    default LauncherBindableItemsContainer getContent() {
+        return op -> null;
+    }
+
+    default DotInfo getDotInfoForItem(ItemInfo info) {
+        return getActivityComponent().getPopupDataProvider().getDotInfoForItem(info);
     }
 }

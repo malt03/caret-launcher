@@ -46,7 +46,8 @@ class AllAppsView(
     private val iconLoader: AppIconLoader,
     grid: GridSpec,
 ) : FrameLayout(context) {
-    private val appsStore = AllAppsStore()
+    /** The activity's AllAppsStore, which also updates the icons' notification dots. */
+    private val appsStore: AllAppsStore = activityContext.activityComponent.appsStore
     private val appsList = AlphabeticalAppsList(activityContext, appsStore)
     private val adapter = AllAppsGridAdapter(
         activityContext, LayoutInflater.from(context), appsList, DefaultSearchAdapterProvider(activityContext),
@@ -90,6 +91,8 @@ class AllAppsView(
         recyclerView.setHasFixedSize(true)
         // No animations will occur when changes occur to the items in this RecyclerView.
         recyclerView.itemAnimator = null
+        // ActivityAllAppsContainerView.setupHeader: the list's icons get notification dot updates.
+        appsStore.registerIconContainer(recyclerView)
         val focusedItemDecorator = FocusedItemDecorator(recyclerView)
         recyclerView.addItemDecoration(focusedItemDecorator)
         adapter.setIconFocusListener(focusedItemDecorator.focusListener)

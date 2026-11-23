@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Cuộc trò chuyện"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Ghi chú"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Tiện ích bị vô hiệu hóa ở chế độ an toàn"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} có # thông báo}other{{app_name} có # thông báo}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Đã vô hiệu hóa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Hiện dấu chấm thông báo"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Dấu chấm thông báo"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Cần quyền truy cập thông báo"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Để hiển thị Dấu chấm thông báo, hãy bật thông báo ứng dụng cho <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Thay đổi cài đặt"</string>
 </resources>

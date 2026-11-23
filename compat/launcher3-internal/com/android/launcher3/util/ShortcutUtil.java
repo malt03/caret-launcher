@@ -39,6 +39,23 @@ public class ShortcutUtil {
         return isActive(info) && isApp(info) && !!WIDGETS_ENABLED;
     }
 
+    /**
+     * Returns the shortcut id if the item is a pinned shortcut.
+     */
+    public static String getShortcutIdIfPinnedShortcut(ItemInfo info) {
+        return isActive(info) && isPinnedShortcut(info)
+                ? com.android.launcher3.shortcuts.ShortcutKey.fromItemInfo(info).getId() : null;
+    }
+
+    /**
+     * Returns the person keys associated with the item. (Has no function right now.)
+     */
+    public static String[] getPersonKeysIfPinnedShortcut(ItemInfo info) {
+        return isActive(info) && isPinnedShortcut(info)
+                ? ((WorkspaceItemInfo) info).getPersonKeys()
+                : com.android.launcher3.Utilities.EMPTY_STRING_ARRAY;
+    }
+
     private static boolean isActive(ItemInfo info) {
         boolean isLoading = info instanceof WorkspaceItemInfo
                 && ((WorkspaceItemInfo) info).hasPromiseIconUi();

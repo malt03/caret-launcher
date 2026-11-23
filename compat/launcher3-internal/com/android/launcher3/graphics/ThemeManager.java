@@ -22,6 +22,7 @@ package com.android.launcher3.graphics;
 
 import android.content.Context;
 
+import com.android.launcher3.icons.DotRenderer.IconShapeInfo;
 import com.android.launcher3.icons.IconShape;
 
 /**
@@ -53,6 +54,17 @@ public class ThemeManager {
     /** ThemeManager.getIconShapeData().getValue(): the selected icon shape at the icon size. */
     public IconShape getIconShapeData() {
         return mIconShapeData;
+    }
+
+    /**
+     * IconState.iconShapeInfo: where the notification dot goes on the icon shape.
+     * TextLauncher: from the selected shape's path (IconShape), as Launcher3 does with the shape's
+     * ShapeDelegate path.
+     */
+    public IconShapeInfo getIconShapeInfo() {
+        return mIconShapeData != null
+                ? IconShapeInfo.fromPath(mIconShapeData.path, mIconShapeData.pathSize)
+                : IconShapeInfo.DEFAULT;
     }
 
     /**

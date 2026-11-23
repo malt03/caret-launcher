@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Beszélgetések"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Jegyzetelés"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"A modulok ki vannak kapcsolva Csökkentett módban"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{A(z) {app_name} alkalmazásnak # értesítése van}other{A(z) {app_name} alkalmazásnak # értesítése van}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> letiltva"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Értesítési pöttyök megjelenítése"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Értesítési pöttyök"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Értesítésekhez való hozzáférésre van szükség"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Az értesítési pöttyök megjelenítéséhez kapcsolja be a(z) <xliff:g id="NAME">%1$s</xliff:g> alkalmazás értesítéseit"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Beállítások módosítása"</string>
 </resources>

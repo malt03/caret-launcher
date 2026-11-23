@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Bisedat"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Mbajtja e shënimeve"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Miniaplikacionet janë të çaktivizuara në modalitetin e sigurt"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} ka # njoftim}other{{app_name} ka # njoftime}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> u çaktivizua"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Shfaq pikat e njoftimeve"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Pikat e njoftimeve"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Nevojitet qasja në njoftime"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Për të shfaqur \"Pikat e njoftimeve\", aktivizo njoftimet e aplikacionit për <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Ndrysho cilësimet"</string>
 </resources>

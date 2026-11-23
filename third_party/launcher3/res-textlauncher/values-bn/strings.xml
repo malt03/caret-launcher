@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"কথোপকথন"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"নোট নেওয়া"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"সুরক্ষিত মোডে উইজেট নিষ্ক্রিয় থাকে"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name}-এর #টি বিজ্ঞপ্তি আছে}one{{app_name}-এর #টি বিজ্ঞপ্তি আছে}other{{app_name}-এর #টি বিজ্ঞপ্তি আছে}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> অক্ষম করা হয়েছে"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"বিজ্ঞপ্তির ডট দেখুন"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"বিজ্ঞপ্তি ডট"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"বিজ্ঞপ্তিতে অ্যাক্সেস প্রয়োজন"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"বিজ্ঞপ্তির ডটগুলি দেখানোর জন্য, <xliff:g id="NAME">%1$s</xliff:g> এর অ্যাপ বিজ্ঞপ্তি চালু করুন"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"সেটিংস পরিবর্তন করুন"</string>
 </resources>

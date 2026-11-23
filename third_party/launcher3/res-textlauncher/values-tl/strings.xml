@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Mga Pag-uusap"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Pagtatala"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Naka-disable ang mga widget sa Safe mode"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{May # notification ang {app_name}}one{May # notification ang {app_name}}other{May # na notification ang {app_name}}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"Naka-disable ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Ipakita ang mga notification dot"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Mga notification dot"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Kinakailangan ng access sa notification"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Upang ipakita ang Mga Notification Dot, i-on ang mga notification ng app para sa <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Baguhin ang mga setting"</string>
 </resources>

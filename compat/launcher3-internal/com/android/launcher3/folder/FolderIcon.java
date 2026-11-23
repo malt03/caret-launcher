@@ -25,10 +25,14 @@ import static com.android.launcher3.folder.ClippedFolderIconLayoutRule.MAX_NUM_I
 import static com.android.launcher3.folder.FolderGridOrganizer.createFolderGridOrganizer;
 import static com.android.launcher3.model.data.FolderInfo.willAcceptItemType;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.util.Property;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -38,15 +42,20 @@ import com.android.launcher3.CellLayout;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.R;
 import com.android.launcher3.Reorderable;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.dot.FolderDotInfo;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.dragndrop.DragView;
 import com.android.launcher3.dragndrop.DraggableView;
+import com.android.launcher3.graphics.ThemeManager;
+import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.MultiTranslateDelegate;
+import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 
 import java.util.ArrayList;
@@ -59,7 +68,7 @@ import java.util.function.Predicate;
  * PreviewItemManager; the members below are copied from FolderIcon.java, changes are marked with
  * "TextLauncher:".
  *
- * TextLauncher: folders have no names and no notification dots (docs/spec.md 5.2). As in
+ * TextLauncher: folders have no names (docs/spec.md 5.2). As in
  * Launcher3, a {@link Folder} is bound to the icon ({@link Folder#bindToIcon}).
  */
 public abstract class FolderIcon extends View implements DraggableView, Reorderable {
@@ -85,6 +94,29 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     Folder mFolder;
 
+    private boolean mForceHideDot;
+    @NonNull
+    private final FolderDotInfo mDotInfo = new FolderDotInfo();
+    private DotRenderer mDotRenderer;
+    @NonNull
+    private final DotRenderer.DrawParams mDotParams;
+    private float mDotScale;
+    private Animator mDotScaleAnim;
+
+    private static final Property<FolderIcon, Float> DOT_SCALE_PROPERTY
+            = new Property<FolderIcon, Float>(Float.TYPE, "dotScale") {
+        @Override
+        public Float get(FolderIcon folderIcon) {
+            return folderIcon.mDotScale;
+        }
+
+        @Override
+        public void set(FolderIcon folderIcon, Float value) {
+            folderIcon.mDotScale = value;
+            folderIcon.invalidate();
+        }
+    };
+
     // TextLauncher: FolderIcon(Context) and inflateIcon in one.
     public FolderIcon(Context context, ActivityContext activity, FolderInfo folderInfo) {
         super(context);
@@ -96,6 +128,89 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
         mPreviewVerifier.setFolderInfo(mInfo);
         updatePreviewItems(false);
+
+        mDotParams = new DotRenderer.DrawParams();
+        mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
+        mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
+        mDotRenderer = new DotRenderer(
+                activity.getDeviceProfile().getWorkspaceProfile().getIconSizePx()
+        );
+
+        updateDotInfo();
+    }
+
+    /** Keep the notification dot up to date with the sum of all the content's dots. */
+    public void updateDotInfo() {
+        boolean hadDot = mDotInfo.hasDot();
+        mDotInfo.reset();
+        for (ItemInfo si : mInfo.getContents()) {
+            mDotInfo.addDotInfo(mActivity.getDotInfoForItem(si));
+        }
+        boolean isDotted = mDotInfo.hasDot();
+        float newDotScale = isDotted ? 1f : 0f;
+        // Animate when a dot is first added or when it is removed.
+        if ((hadDot ^ isDotted) && isShown()) {
+            animateDotScale(newDotScale);
+        } else {
+            cancelDotScaleAnim();
+            mDotScale = newDotScale;
+            invalidate();
+        }
+    }
+
+    /** TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg). */
+    public void setForceHideDot(boolean forceHideDot) {
+        if (mForceHideDot == forceHideDot) {
+            return;
+        }
+        mForceHideDot = forceHideDot;
+
+        if (forceHideDot) {
+            invalidate();
+        } else if (hasDot()) {
+            animateDotScale(0, 1);
+        }
+    }
+
+    private void cancelDotScaleAnim() {
+        if (mDotScaleAnim != null) {
+            mDotScaleAnim.cancel();
+        }
+    }
+
+    public void animateDotScale(float... dotScales) {
+        cancelDotScaleAnim();
+        mDotScaleAnim = ObjectAnimator.ofFloat(this, DOT_SCALE_PROPERTY, dotScales);
+        mDotScaleAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mDotScaleAnim = null;
+            }
+        });
+        mDotScaleAnim.start();
+    }
+
+    public boolean hasDot() {
+        return mDotInfo != null && mDotInfo.hasDot();
+    }
+
+    public void drawDot(Canvas canvas) {
+        if (!mForceHideDot && ((mDotInfo != null && mDotInfo.hasDot()) || mDotScale > 0)) {
+            Rect iconBounds = mDotParams.iconBounds;
+            // FolderIcon draws the icon to be top-aligned (with padding) & horizontally-centered
+            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
+            iconBounds.left = (getWidth() - iconSize) / 2;
+            iconBounds.right = iconBounds.left + iconSize;
+            iconBounds.top = getPaddingTop();
+            iconBounds.bottom = iconBounds.top + iconSize;
+
+            float iconScale = (float) mBackground.previewSize / iconSize;
+            Utilities.scaleRectAboutCenter(iconBounds, iconScale);
+
+            // If we are animating to the accepting state, animate the dot out.
+            mDotParams.scale = Math.max(0, mDotScale - mBackground.getAcceptScaleProgress());
+            mDotRenderer.draw(canvas, mDotParams);
+        }
     }
 
     public FolderInfo getFolderInfo() {
@@ -359,7 +474,8 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         if (!mBackground.drawingDelegated()) {
             mBackground.drawBackgroundStroke(canvas);
         }
-        // TextLauncher: no notification dots.
+
+        drawDot(canvas);
     }
 
     /**
@@ -389,6 +505,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     public void onItemsChanged(boolean animate) {
         updatePreviewItems(false);
+        updateDotInfo();
         updatePreviewItems(animate);
         invalidate();
         requestLayout();

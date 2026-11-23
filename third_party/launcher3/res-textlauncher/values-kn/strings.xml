@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"ಸಂಭಾಷಣೆಗಳು"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"ಟಿಪ್ಪಣಿ ತೆಗೆದುಕೊಳ್ಳುವುದು"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"ಸುರಕ್ಷಿತ ಮೋಡ್‌ನಲ್ಲಿ ವಿಜೆಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} ಆ್ಯಪ್ # ಅಧಿಸೂಚನೆಯನ್ನು ಹೊಂದಿದೆ}one{{app_name} ಆ್ಯಪ್ # ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿದೆ}other{{app_name} ಆ್ಯಪ್ # ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿದೆ}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"ನೋಟಿಫಿಕೇಶನ್ ಡಾಟ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"ನೋಟಿಫಿಕೇಶನ್ ಡಾಟ್‌ಗಳು"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"ನೋಟಿಫಿಕೇಶನ್ ಆ್ಯಕ್ಸೆಸ್ ಅಗತ್ಯವಿದೆ"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"ನೋಟಿಫಿಕೇಶನ್ ಚುಕ್ಕೆಗಳನ್ನು ತೋರಿಸಲು, <xliff:g id="NAME">%1$s</xliff:g> ಗೆ ಆ್ಯಪ್ ನೋಟಿಫಿಕೇಶನ್‍ಗಳನ್ನು ಆನ್‌ ಮಾಡಿ"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"ಸೆಟ್ಟಿಂಗ್‌‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ"</string>
 </resources>

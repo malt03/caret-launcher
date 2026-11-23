@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"සංවාද"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"සටහන් කර ගැනීම"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"සුරක්ෂිත ආකාරය තුළ විජටය අබල කරන ලදි"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} හට දැනුම්දීම් #ක් ඇත}one{{app_name} හට දැනුම්දීම් #ක් ඇත}other{{app_name} හට දැනුම්දීම් #ක් ඇත}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> අබල කෙරිණි"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"දැනුම්දීම් තිත් පෙන්වන්න"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"දැනුම්දීම් තිත්"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"දැනුම්දීම් ප්‍රවේශය අවශ්‍යයි"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"දැනුම්දීම් තිත් පෙන්වීමට, <xliff:g id="NAME">%1$s</xliff:g> සඳහා යෙදුම් දැනුම්දීම් සබල කරන්න"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"සැකසීම් වෙනස් කරන්න"</string>
 </resources>

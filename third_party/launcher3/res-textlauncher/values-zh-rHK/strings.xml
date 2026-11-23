@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"對話"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"做筆記"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"在安全模式中無法使用小工具"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{「{app_name}」有 # 項通知}other{「{app_name}」有 # 項通知}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」已停用"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"顯示通知圓點"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"通知圓點"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"需要獲取通知存取權"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"如要顯示「通知圓點」，請開啟「<xliff:g id="NAME">%1$s</xliff:g>」的應用程式通知功能"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"變更設定"</string>
 </resources>

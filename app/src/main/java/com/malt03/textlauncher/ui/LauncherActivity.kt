@@ -171,6 +171,12 @@ class LauncherActivity :
             onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
             inAllApps = true,
         )
+        // ActivityAllAppsContainerView.setupHeader: the search results' icons (AdapterHolder.SEARCH)
+        // get notification dot updates too.
+        home.activityContext.activityComponent.appsStore.apply {
+            registerIconContainer(results.view)
+            registerIconContainer(allAppsResults.view)
+        }
         allAppsTransition = AllAppsTransitionController(root)
         if (!isTwoPanels) {
             root.allAppsSheet.setSearchResults(allAppsResults.view)

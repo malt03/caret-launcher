@@ -34,6 +34,8 @@ import android.view.FocusFinder;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.DragSource;
@@ -46,6 +48,7 @@ import com.android.launcher3.graphics.PathWrapper;
 import com.android.launcher3.graphics.ThemeManager;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.LauncherBindableItemsContainer.ItemOperator;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.BaseDragLayer;
 import com.android.launcher3.views.ClipPathView;
@@ -529,6 +532,11 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
 
     View getViewForInfo(final ItemInfo item) {
         return mContent.iterateOverItems((info, view) -> info == item);
+    }
+
+    /** Folder.mapOverItems (LauncherBindableItemsContainer) */
+    public View mapOverItems(@NonNull ItemOperator op) {
+        return mContent.iterateOverItems(op);
     }
 
     public ArrayList<View> getIconsInReadingOrder() {

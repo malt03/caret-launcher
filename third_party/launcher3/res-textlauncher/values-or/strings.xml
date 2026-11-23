@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"ନୋଟ-ଟେକିଂ"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"ନିରାପଦ ମୋଡରେ ୱିଜେଟ୍‌ ଅକ୍ଷମ କରାଗଲା"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name}ର #ଟି ବିଜ୍ଞପ୍ତି ଅଛି}other{{app_name}ର #ଟି ବିଜ୍ଞପ୍ତି ଅଛି}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> ଅକ୍ଷମ କରାଗଲା"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"ବିଜ୍ଞପ୍ତି ଡଟ୍‌ଗୁଡ଼ିକୁ ଦେଖାନ୍ତୁ"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"ବିଜ୍ଞପ୍ତି ଡଟ୍ସ"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"ବିଜ୍ଞପ୍ତି ଆକ୍ସେସ୍‌ ଆବଶ୍ୟକ ଅଟେ"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"ବିଜ୍ଞପ୍ତି ବିନ୍ଦୁ ଦେଖାଇବାକୁ, <xliff:g id="NAME">%1$s</xliff:g> ପାଇଁ ଆପ୍‌ ବିଜ୍ଞପ୍ତି ଅନ୍‌ କରନ୍ତୁ"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"ସେଟିଂସ ପରିବର୍ତ୍ତନ କରନ୍ତୁ"</string>
 </resources>

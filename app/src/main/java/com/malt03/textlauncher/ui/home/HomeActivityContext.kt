@@ -11,12 +11,14 @@ import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
+import com.android.launcher3.dagger.LauncherComponentProvider
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.touch.ItemClickHandler
+import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
@@ -57,8 +59,19 @@ internal class HomeActivityContext(private val home: HomeController) :
         LauncherAppState.getIDP(context).setDeviceProfile(gridSpec.columns, gridSpec.rows, it)
     }
     private val activityComponent = ActivityComponent().apply {
-        setPopupDataProvider(PopupDataProvider(context))
+        // PopupDataProvider: the long-press menu's app shortcuts and the notification dots
+        // (NotificationRepository, filled by NotificationListener).
+        setPopupDataProvider(
+            PopupDataProvider(
+                context, this@HomeActivityContext,
+                LauncherComponentProvider.get(context).notificationRepository, appsStore,
+            ),
+        )
     }
+
+    /** Launcher.getContent (Workspace): the home screen's items, for the notification dots. */
+    override fun getContent(): LauncherBindableItemsContainer =
+        LauncherBindableItemsContainer { op -> home.mapOverItems(op) }
     override fun getDeviceProfile(): DeviceProfile = deviceProfile
     override fun getActivityComponent(): ActivityComponent = activityComponent
 

@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"대화"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"메모"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"안전 모드에서 위젯 사용 중지됨"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} 알림 #개}other{{app_name} 알림 #개}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> 사용 안함"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"알림 표시 점 보기"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"알림 표시 점"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"알림 액세스 권한 필요"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"알림 표시점을 표시하려면 <xliff:g id="NAME">%1$s</xliff:g>의 앱 알림을 사용 설정하세요."</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"설정 변경"</string>
 </resources>

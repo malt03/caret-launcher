@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Զրույցներ"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Նշումների ստեղծում"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Վիջեթներն անջատված են անվտանգ ռեժիմում"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{«{app_name}» հավելվածն ունի # ծանուցում}one{«{app_name}» հավելվածն ունի # ծանուցում}other{«{app_name}» հավելվածն ունի # ծանուցում}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածն անջատված է"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Ցուցադրել ծանուցումների կետիկները"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Ծանուցումների կետիկներ"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Անհրաժեշտ է ծանուցման թույլտվություն"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Ծանուցումների կետիկները ցուցադրելու համար միացրեք ծանուցումները <xliff:g id="NAME">%1$s</xliff:g>-ի համար"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Փոխել կարգավորումները"</string>
 </resources>

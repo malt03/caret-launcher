@@ -48,4 +48,16 @@
     <string name="widget_category_conversations">Conversations</string>
     <string name="widget_category_note_taking">Note-taking</string>
     <string name="safemode_widget_error">Widgets disabled in Safe mode</string>
+    <string name="dotted_app_label">
+        {count, plural,
+            =1      {{app_name} has # notification}
+            other   {{app_name} has # notifications}
+        }
+    </string>
+    <string name="disabled_app_label">Disabled <xliff:g id="app_name" example="Messenger">%1$s</xliff:g></string>
+    <string name="notification_dots_service_title">Show notification dots</string>
+    <string name="notification_dots_title">Notification dots</string>
+    <string name="title_missing_notification_access">Notification access needed</string>
+    <string name="msg_missing_notification_access">To show Notification Dots, turn on app notifications for <xliff:g id="name" example="My App">%1$s</xliff:g></string>
+    <string name="title_change_settings">Change settings</string>
 </resources>

@@ -1,6 +1,11 @@
 package com.malt03.textlauncher
 
 import android.app.Application
+import android.content.ComponentName
+import com.android.launcher3.notification.NotificationListener
+import com.android.launcher3.util.Executors.MAIN_EXECUTOR
+import com.android.launcher3.util.SettingsCache
+import com.android.launcher3.util.SettingsCache.NOTIFICATION_BADGING_URI
 import com.malt03.textlauncher.data.AppRepository
 import com.malt03.textlauncher.data.HomeModel
 import com.malt03.textlauncher.data.LauncherDatabase
@@ -40,5 +45,14 @@ class TextLauncherApplication : Application() {
         appRepository = AppRepository(this, iconLoader)
         shortcutRepository = ShortcutRepository(this)
         homeModel = HomeModel(database, ioExecutor, shortcutRepository, iconLoader.iconCache)
+
+        // ModelInitializer: when notification dots are turned back on, the listener (which unbinds
+        // itself when they are turned off) is bound again.
+        SettingsCache.INSTANCE.get(this).getListenableRef(NOTIFICATION_BADGING_URI).forEach(MAIN_EXECUTOR) {
+                dotsEnabled ->
+            if (dotsEnabled) {
+                NotificationListener.requestRebind(ComponentName(this, NotificationListener::class.java))
+            }
+        }
     }
 }

@@ -21,27 +21,49 @@
 package com.android.launcher3.dagger
 
 import android.content.Context
+import android.net.Uri
 import com.android.launcher3.InvariantDeviceProfile
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.concurrent.annotations.Background
 import com.android.launcher3.concurrent.annotations.BackgroundContext
+import com.android.launcher3.concurrent.annotations.LightweightBackground
+import com.android.launcher3.concurrent.annotations.LightweightBackgroundPriority
 import com.android.launcher3.icons.IconCache
 import com.android.launcher3.pm.UserCache
 import com.android.launcher3.util.Executors
+import com.android.launcher3.util.LooperExecutor
+import com.android.launcher3.util.SettingsCache.NOTIFICATION_BADGING_URI
 import com.android.launcher3.util.ScreenOnTracker
 import com.android.launcher3.widgetpicker.LauncherWidgetPickerModule
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoSet
 import java.util.concurrent.Executor
+import javax.inject.Named
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.asCoroutineDispatcher
 
 /**
  * Stand-in for Launcher3's LauncherAppModule (android-17.0.0_r1). TextLauncher: of
- * BootUnsafeModules only LauncherWidgetPickerModule; the rest is [TextLauncherAppModule].
+ * BootUnsafeModules only LauncherWidgetPickerModule, of BootSafeModules only [SettingsModule]; the
+ * rest is [TextLauncherAppModule].
  */
-@Module(includes = [LauncherWidgetPickerModule::class, TextLauncherAppModule::class])
+@Module(
+    includes = [LauncherWidgetPickerModule::class, SettingsModule::class, TextLauncherAppModule::class]
+)
 class LauncherAppModule
+
+/**
+ * Stand-in for Launcher3's SettingsModule (android-17.0.0_r1): the settings that are on when they
+ * have no value. TextLauncher: only notification dots (no touchpad).
+ */
+@Module
+object SettingsModule {
+    @Provides
+    @IntoSet
+    @Named("SETTINGS_ENABLED_BY_DEFAULT")
+    fun provideNotificationBadgingDefaults(): Uri = NOTIFICATION_BADGING_URI
+}
 
 /**
  * TextLauncher: what the widget picker needs from modules that are not ported. The executors are
@@ -62,6 +84,12 @@ object TextLauncherAppModule {
     @BackgroundContext
     fun provideBackgroundContext(): CoroutineContext =
         Executors.ORDERED_BG_EXECUTOR.asCoroutineDispatcher()
+
+    /** LauncherExecutorsModule: @LightweightBackground(UI) is Executors.UI_HELPER_EXECUTOR. */
+    @Provides
+    @LauncherAppSingleton
+    @LightweightBackground(LightweightBackgroundPriority.UI)
+    fun provideUiHelperLooperExecutor(): LooperExecutor = Executors.UI_HELPER_EXECUTOR
 
     @Provides
     fun provideIDP(@ApplicationContext context: Context): InvariantDeviceProfile =

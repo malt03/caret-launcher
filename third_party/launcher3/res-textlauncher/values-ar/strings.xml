@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"المحادثات"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"تدوين الملاحظات"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"التطبيقات المصغَّرة غير مفعّلة في الوضع الآمن"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{هناك إشعار واحد في التطبيق {app_name}.}zero{هناك # إشعار في التطبيق {app_name}.}two{هناك إشعارَان في التطبيق {app_name}.}few{هناك # إشعارات في التطبيق {app_name}.}many{هناك # إشعارًا في التطبيق {app_name}.}other{هناك # إشعار في التطبيق {app_name}.}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"تم إيقاف <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"عرض نقاط الإشعارات"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"نقاط الإشعارات"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"يلزم تمكين الوصول إلى الإشعارات"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"لعرض نقاط الإشعارات، يجب تفعيل إشعارات التطبيق في <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"تغيير الإعدادات"</string>
 </resources>

@@ -45,6 +45,8 @@ public final class Utilities {
 
     private Utilities() {}
 
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
+
     public static boolean isBinderSizeError(Exception e) {
         return e.getCause() instanceof android.os.TransactionTooLargeException
                 || e.getCause() instanceof android.os.DeadObjectException;

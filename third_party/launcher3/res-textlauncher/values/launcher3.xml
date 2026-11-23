@@ -13,6 +13,11 @@
         <attr name="folderPreviewColor" />
         <attr name="folderIconBorderColor" />
     </declare-styleable>
+    <!-- Launcher3 attrs.xml and colors.xml: the notification dots -->
+    <attr name="notificationDotColor" format="color" />
+    <color name="notification_dot_color_light">#6DD58C</color>
+    <color name="notification_dot_color_dark">#C4EED0</color>
+
     <color name="folder_background_light">#EFEDED</color>
     <color name="folder_background_dark">#1F2020</color>
     <color name="folder_preview_light">#7FCFFF</color>

@@ -50,6 +50,14 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
      */
     public CharSequence disabledMessage;
 
+    /**
+     * A set of person's Id associated with the WorkspaceItemInfo, this is only used if the item
+     * represents a deep shortcut.
+     * TextLauncher: always empty, as with ApiWrapper.getPersons outside the system image
+     * (ShortcutInfo.getPersons is not public).
+     */
+    @NonNull private String[] personKeys = com.android.launcher3.Utilities.EMPTY_STRING_ARRAY;
+
     public WorkspaceItemInfo() {
     }
 
@@ -57,7 +65,8 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         super(info);
         title = info.title;
         intent = new Intent(info.intent);
-        // TextLauncher: no status or person keys.
+        // TextLauncher: no status.
+        personKeys = info.personKeys.clone();
     }
 
     public WorkspaceItemInfo(ShortcutInfo shortcutInfo, Context context) {
@@ -115,6 +124,11 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
      */
     public boolean isDisabledVersionLower() {
         return (runtimeStatusFlags & FLAG_DISABLED_VERSION_LOWER) != 0;
+    }
+
+    @NonNull
+    public String[] getPersonKeys() {
+        return personKeys;
     }
 
     /** Returns the WorkspaceItemInfo id associated with the deep shortcut. */

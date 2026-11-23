@@ -1,11 +1,16 @@
 package com.malt03.textlauncher.ui.home
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.NotificationManager
 import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
+import android.os.Bundle
+import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
 import android.view.GestureDetector
@@ -16,9 +21,12 @@ import android.view.ViewConfiguration
 import android.widget.Toast
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.R
+import com.android.launcher3.notification.NotificationListener
 import com.android.launcher3.popup.PopupCategory
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.popup.PopupData
+import com.android.launcher3.util.SettingsCache
+import com.android.launcher3.util.SettingsCache.NOTIFICATION_BADGING_URI
 
 /**
  * WorkspaceTouchListener: a long press on the home screen's empty space shows the launcher's
@@ -129,7 +137,9 @@ internal class HomeOptionsMenu(private val home: HomeController) :
     /**
      * WorkspaceLongPressOptions.getAll: "Wallpaper & style", "Widgets" and "Apps list".
      * TextLauncher: no "Home settings" (docs/spec.md 8), and no "Apps list" with two panels,
-     * where the list is always shown (docs/spec.md 5.5).
+     * where the list is always shown (docs/spec.md 5.5). In place of the home settings'
+     * "Notification dots" (NotificationDotsPreference), "Notification dots" is shown while the
+     * dots are on but the launcher may not read the notifications (docs/spec.md 7.5).
      */
     private fun getAll(): List<PopupData> = buildList {
         add(
@@ -142,6 +152,16 @@ internal class HomeOptionsMenu(private val home: HomeController) :
                 home.openWidgetPicker()
             },
         )
+        if (isNotificationAccessMissing()) {
+            add(
+                PopupData(R.drawable.ic_setting, R.string.notification_dots_title, PopupCategory.SYSTEM_SHORTCUT) { activityContext, _, _ ->
+                    // TextLauncher: Launcher3 shows the dialog in its settings activity, so the menu
+                    // has closed (Launcher.onStop); here it is shown over the home screen.
+                    AbstractFloatingView.closeAllOpenViews(activityContext)
+                    showNotificationAccessConfirmation()
+                },
+            )
+        }
         home.host.openAllApps?.let { openAllApps ->
             add(
                 PopupData(R.drawable.ic_apps, R.string.all_apps_button_label, PopupCategory.SYSTEM_SHORTCUT) { _, _, _ ->
@@ -149,6 +169,49 @@ internal class HomeOptionsMenu(private val home: HomeController) :
                 },
             )
         }
+    }
+
+    /**
+     * NotificationDotsPreference.onSettingsChanged: the system's notification dots are on, but the
+     * launcher's NotificationListener is not an enabled notification listener.
+     * TextLauncher: asks NotificationManager.isNotificationListenerAccessGranted instead of reading
+     * Settings.Secure.ENABLED_NOTIFICATION_LISTENERS, which apps may not read.
+     */
+    private fun isNotificationAccessMissing(): Boolean {
+        val context = home.context
+        if (!SettingsCache.INSTANCE.get(context).getValue(NOTIFICATION_BADGING_URI)) return false
+        val listener = ComponentName(context, NotificationListener::class.java)
+        return !context.getSystemService(NotificationManager::class.java)
+            .isNotificationListenerAccessGranted(listener)
+    }
+
+    /**
+     * NotificationDotsPreference.NotificationAccessConfirmation: the dialog that takes the user to
+     * the system's notification access settings.
+     */
+    private fun showNotificationAccessConfirmation() {
+        val context = home.context
+        val msg = context.getString(
+            R.string.msg_missing_notification_access,
+            context.getString(com.malt03.textlauncher.R.string.app_name),
+        )
+        AlertDialog.Builder(context)
+            .setTitle(R.string.title_missing_notification_access)
+            .setMessage(msg)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.title_change_settings) { _, _ ->
+                val cn = ComponentName(context, NotificationListener::class.java)
+                val showFragmentArgs = Bundle()
+                showFragmentArgs.putString(EXTRA_FRAGMENT_HIGHLIGHT_KEY, cn.flattenToString())
+
+                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(EXTRA_FRAGMENT_HIGHLIGHT_KEY, cn.flattenToString())
+                    .putExtra(EXTRA_SHOW_FRAGMENT_ARGS, showFragmentArgs)
+                context.startActivity(intent)
+            }
+            .create()
+            .show()
     }
 
     /**
@@ -194,6 +257,12 @@ internal class HomeOptionsMenu(private val home: HomeController) :
         const val STATE_REQUESTED = 1
         const val STATE_PENDING_PARENT_INFORM = 2
         const val STATE_COMPLETED = 3
+
+        /** SettingsActivity.EXTRA_FRAGMENT_HIGHLIGHT_KEY */
+        const val EXTRA_FRAGMENT_HIGHLIGHT_KEY = ":settings:fragment_args_key"
+
+        /** NotificationDotsPreference.EXTRA_SHOW_FRAGMENT_ARGS */
+        const val EXTRA_SHOW_FRAGMENT_ARGS = ":settings:show_fragment_args"
 
         // An intent extra to indicate the horizontal scroll of the wallpaper.
         const val EXTRA_WALLPAPER_OFFSET = "com.android.launcher3.WALLPAPER_OFFSET"

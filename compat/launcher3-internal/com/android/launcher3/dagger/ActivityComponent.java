@@ -1,5 +1,6 @@
 package com.android.launcher3.dagger;
 
+import com.android.launcher3.allapps.AllAppsStore;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -14,6 +15,16 @@ import com.android.launcher3.popup.PopupDataProvider;
  */
 public class ActivityComponent {
     private PopupDataProvider mPopupDataProvider;
+
+    /**
+     * TextLauncher: Launcher3's @ActivityContextSingleton AllAppsStore, which the all apps list and
+     * the notification dots (PopupDataProvider) share.
+     */
+    private final AllAppsStore mAppsStore = new AllAppsStore();
+
+    public AllAppsStore getAppsStore() {
+        return mAppsStore;
+    }
 
     /** TextLauncher: the popup data provider is made by the app, which knows the context. */
     public void setPopupDataProvider(PopupDataProvider provider) {

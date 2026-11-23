@@ -35,12 +35,12 @@ import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.graphics.PathWrapper;
 import com.android.launcher3.keyboard.ViewGroupFocusHelper;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.LauncherBindableItemsContainer.ItemOperator;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.views.ClipPathView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
@@ -194,12 +194,11 @@ public class FolderPagedView extends ViewGroup implements ClipPathView {
     /**
      * Iterates over all its items in a reading order.
      * @return the view for which the operator returned true.
-     * TextLauncher: a BiPredicate stands in for LauncherBindableItemsContainer.ItemOperator.
      */
-    public View iterateOverItems(BiPredicate<ItemInfo, View> op) {
+    public View iterateOverItems(ItemOperator op) {
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
-            if (op.test((ItemInfo) v.getTag(), v)) {
+            if (op.evaluate((ItemInfo) v.getTag(), v)) {
                 return v;
             }
         }

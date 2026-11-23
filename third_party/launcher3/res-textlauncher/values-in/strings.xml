@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Percakapan"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Pembuatan catatan"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Widget dinonaktifkan dalam mode Aman"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} memiliki # notifikasi}other{{app_name} memiliki # notifikasi}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> dinonaktifkan"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Tampilkan titik notifikasi"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Titik notifikasi"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Perlu akses notifikasi"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Guna menampilkan Titik Notifikasi, aktifkan notifikasi aplikasi untuk <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Ubah setelan"</string>
 </resources>

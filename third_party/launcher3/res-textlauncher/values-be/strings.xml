@@ -43,4 +43,11 @@
     <string name="widget_category_conversations" msgid="8894438636213590446">"Размовы"</string>
     <string name="widget_category_note_taking" msgid="3469689394504266039">"Стварэнне нататак"</string>
     <string name="safemode_widget_error" msgid="4863470563535682004">"Віджэты адключаны ў Бяспечным рэжыме"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{У праграмы \"{app_name}\" ёсць # апавяшчэнне}one{У праграмы \"{app_name}\" ёсць # апавяшчэнне}few{У праграмы \"{app_name}\" ёсць # апавяшчэнні}many{У праграмы \"{app_name}\" ёсць # апавяшчэнняў}other{У праграмы \"{app_name}\" ёсць # апавяшчэння}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> адключана"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Паказваць значкі апавяшчэнняў"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Значкі апавяшчэнняў"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Патрабуецца доступ да апавяшчэнняў"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Каб паказваліся значкі апавяшчэнняў, уключыце апавяшчэнні праграм для <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Змяніць налады"</string>
 </resources>
