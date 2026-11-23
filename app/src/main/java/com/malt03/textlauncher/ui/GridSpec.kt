@@ -56,6 +56,13 @@ data class GridSpec(
     /** The smallest home cell height: the icon with its padding (the cells have no labels). */
     val homeMinCellHeightPx: Int,
     /**
+     * The home cells in the smallest window the displays have (the size the grid is chosen for),
+     * as HomeGridView measures them there: the cell size of DeviceProfile before the grid is
+     * measured.
+     */
+    val homeCellWidthPx: Int,
+    val homeCellHeightPx: Int,
+    /**
      * DeviceProfile.isTwoPanels: the window is a large screen on a device that also has a phone
      * sized display (a foldable's inner screen). Launcher3 shows two pages side by side;
      * TextLauncher shows the all apps list on the left and the home page on the right
@@ -110,9 +117,10 @@ data class GridSpec(
             val bar = res.getDimensionPixelSize(R.dimen.search_bar_height) +
                 res.getDimensionPixelSize(R.dimen.search_bar_margin_vertical) * 2
             val page = minHeightPx - bar - paddingPx * 2
+            val rows = max(page / minCellHeightPx, 1)
             return GridSpec(
                 columns = option.grid.numColumns,
-                rows = max(page / minCellHeightPx, 1),
+                rows = rows,
                 iconSizePx = iconSizePx,
                 iconTextSizeSp = option.iconTextSize,
                 allAppsCellHeightPx = ResourceUtils.pxFromDp(option.allAppsCellHeight, metrics),
@@ -120,6 +128,8 @@ data class GridSpec(
                 folderRows = option.grid.numFolderRows,
                 homePaddingPx = paddingPx,
                 homeMinCellHeightPx = minCellHeightPx,
+                homeCellWidthPx = (minWidthPx - paddingPx * 2) / option.grid.numColumns,
+                homeCellHeightPx = max(page / rows, minCellHeightPx),
                 isTwoPanels = isLargeScreen(windowBounds) && isMultiDisplay,
                 isLargeScreen = isLargeScreen(windowBounds),
             )

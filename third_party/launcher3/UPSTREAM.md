@@ -357,6 +357,7 @@ ref=src/com/android/launcher3/Launcher.java app/src/main/java/com/malt03/textlau
 ref=src/com/android/launcher3/widget/WidgetAddFlowHandler.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
 ref=src/com/android/launcher3/widget/util/WidgetSizeHandler.kt app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
 ref=src/com/android/launcher3/widget/LauncherWidgetHolder.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
+ref=src/com/android/launcher3/model/DatabaseHelper.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
 ref=src/com/android/launcher3/allapps/AllAppsTransitionController.java app/src/main/java/com/malt03/textlauncher/ui/allapps/AllAppsTransitionController.kt
 ref=modules/widgetpicker/build.gradle.kts third_party/launcher3/modules/widgetpicker/build.gradle.kts
 ref=modules/widgetpicker/Android.bp third_party/launcher3/modules/widgetpicker/build.gradle.kts

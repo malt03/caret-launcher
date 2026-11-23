@@ -35,7 +35,39 @@ internal class HomeWidgetHost(context: Context) : AppWidgetHost(context.applicat
     override fun onCreateView(context: Context, appWidgetId: Int, appWidget: AppWidgetProviderInfo?): AppWidgetHostView =
         LauncherAppWidgetHostView(context)
 
+    /**
+     * DatabaseHelper.removeGhostWidgets: removes widgets which are registered to the Launcher's
+     * host, but are not present in our model ([validWidgets], the home model's widget ids).
+     */
+    fun removeGhostWidgets(validWidgets: Set<Int>) {
+        // Get all existing widget ids.
+        val allWidgets = appWidgetIds
+        var isAnyWidgetRemoved = false
+        for (widgetId in allWidgets) {
+            if (widgetId !in validWidgets) {
+                try {
+                    Log.d(TAG, "Deleting widget not found in db: appWidgetId=$widgetId")
+                    deleteAppWidgetId(widgetId)
+                    isAnyWidgetRemoved = true
+                } catch (e: RuntimeException) {
+                    // Ignore
+                }
+            }
+        }
+        if (isAnyWidgetRemoved) {
+            Log.d(
+                TAG,
+                "One or more widgets was removed: " +
+                    " allLauncherHostWidgetIds=${allWidgets.contentToString()}" +
+                    ", allValidLauncherDbWidgetIds=$validWidgets",
+            )
+        }
+    }
+
     companion object {
+        /** DatabaseHelper.TAG */
+        private const val TAG = "DatabaseHelper"
+
         /** LauncherWidgetHolder.APPWIDGET_HOST_ID */
         const val APPWIDGET_HOST_ID = 1024
     }
@@ -142,7 +174,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     private var pendingAddWidgetId = -1
 
     /** Launcher.mPendingActivityResult: a result that came while the home screen was loading. */
-    private var pendingActivityResult: (() -> Unit)? = null
+    private var pendingActivityResult: ActivityResultInfo? = null
 
     /**
      * Launcher.addAppWidgetFromDrop: binds the widget to a new id, or asks the user whether the
@@ -236,17 +268,29 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         // not restored, so there is nothing to do.
         if (requestCode == REQUEST_RECONFIGURE_APPWIDGET) return true
         if (requestCode != REQUEST_BIND_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET) return false
-        val result = { handleActivityResult(requestCode, resultCode, data) }
         // Launcher.handleActivityResult: process the result once the workspace has loaded.
-        if (home.isLoaded) result() else pendingActivityResult = result
+        if (home.isLoaded) {
+            handleActivityResult(requestCode, resultCode, data)
+        } else {
+            pendingActivityResult = ActivityResultInfo(requestCode, resultCode, data)
+        }
         return true
     }
 
     /** Called once the home screen is loaded. */
     fun onLoaded() {
+        // LoaderTask.sanitizeWidgetsShortcutsAndPackages: remove any ghost widgets, e.g. those the
+        // grid migration or checkItemPlacement left out. TextLauncher: the home screen loads with
+        // each activity rather than once per process, so the ids of an add flow in progress, and
+        // of its result waiting for the load, are not ghosts.
+        val validWidgets = home.model.allItems().filterIsInstance<WidgetItemInfo>().map { it.appWidgetId }.toMutableSet()
+        if (pendingAddWidgetId >= 0) validWidgets += pendingAddWidgetId
+        pendingActivityResult?.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+            ?.takeIf { it >= 0 }?.let { validWidgets += it }
+        home.widgetHost.removeGhostWidgets(validWidgets)
         pendingActivityResult?.let {
             pendingActivityResult = null
-            it()
+            handleActivityResult(it.requestCode, it.resultCode, it.data)
         }
     }
 
@@ -323,4 +367,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         const val REQUEST_BIND_APPWIDGET = 11
         const val REQUEST_RECONFIGURE_APPWIDGET = 13
     }
+
+    /** ActivityResultInfo */
+    private class ActivityResultInfo(val requestCode: Int, val resultCode: Int, val data: Intent?)
 }

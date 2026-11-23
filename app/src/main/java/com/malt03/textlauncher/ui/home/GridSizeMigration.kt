@@ -1,9 +1,14 @@
 package com.malt03.textlauncher.ui.home
 
+import android.content.ComponentName
 import android.content.Context
+import android.graphics.Point
 import android.util.Log
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.util.CellAndSpan
 import com.android.launcher3.util.GridOccupancy
+import com.android.launcher3.widget.WidgetManagerHelper
+import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 
 /**
@@ -54,7 +59,7 @@ internal object GridSizeMigration {
             false
         } else {
             Log.d(TAG, "Begin grid migration. srcDeviceState: $src, destDeviceState: $dest")
-            migrateGrid(srcSize[0], srcSize[1], grid.columns, grid.rows, items)
+            migrateGrid(context, srcSize[0], srcSize[1], grid.columns, grid.rows, items)
             true
         }
         // Save current configuration, so that the migration does not run again.
@@ -62,7 +67,8 @@ internal object GridSizeMigration {
         return changed
     }
 
-    private fun migrateGrid(srcColumns: Int, srcRows: Int, columns: Int, rows: Int, items: MutableList<ItemInfo>) {
+    private fun migrateGrid(context: Context, srcColumns: Int, srcRows: Int, columns: Int, rows: Int, items: MutableList<ItemInfo>) {
+        loadAllEntries(context, items)
         // shouldMigrateToStrictlyTallerGrid: "We want to add the extra row(s) to the top of the
         // screen, so we shift the grid down."
         if (srcColumns == columns && srcRows < rows) {
@@ -74,9 +80,34 @@ internal object GridSizeMigration {
         // .compareTo; there is one screen).
         val toPlace = items.sortedWith(compareBy({ it.cellY }, { it.cellX })).toMutableList()
         val placed = solveGridPlacement(columns, rows, toPlace)
-        // TextLauncher: the items that are left would go on new pages.
+        // TextLauncher: the items that are left would go on new pages. A widget's id is given
+        // back once the home screen is loaded (LoaderTask's removeGhostWidgets).
         for (item in toPlace) Log.d(TAG, "No room for $item in the ${columns}x$rows grid")
         items.retainAll(placed.toSet())
+    }
+
+    /**
+     * DbReader.loadAllEntries: the min spans of the items, which they are placed with. A widget's
+     * are its provider's (LauncherAppWidgetProviderInfo.getMinSpans, for the cells of the
+     * destination grid), or its span in a direction it does not resize in; when its provider is
+     * not known, it is assumed that it can be resized down to 2x2. The other items' are 1x1
+     * (ItemInfo's).
+     */
+    private fun loadAllEntries(context: Context, items: List<ItemInfo>) {
+        val widgetManagerHelper = WidgetManagerHelper(context)
+        for (entry in items) {
+            if (entry !is WidgetItemInfo) continue
+            val cn = ComponentName.unflattenFromString(entry.provider)
+            val spans: Point? = widgetManagerHelper.getLauncherAppWidgetInfo(entry.appWidgetId, cn)?.minSpans
+            if (spans != null) {
+                entry.minSpanX = if (spans.x > 0) spans.x else entry.spanX
+                entry.minSpanY = if (spans.y > 0) spans.y else entry.spanY
+            } else {
+                // Assume that the widget be resized down to 2x2
+                entry.minSpanY = 2
+                entry.minSpanX = entry.minSpanY
+            }
+        }
     }
 
     /** GridSizeMigrationLogic.solveGridPlacement for the one page. */
@@ -88,14 +119,15 @@ internal object GridSizeMigration {
         val iterator = sortedItemsToPlace.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
-            // DbEntry's minSpanX and minSpanY: the item's span (there are no widgets).
-            if (entry.spanX > trgX || entry.spanY > trgY) {
+            if (entry.minSpanX > trgX || entry.minSpanY > trgY) {
                 iterator.remove()
                 continue
             }
             val cell = findPlacementForEntry(entry, nextX, nextY, trgX, trgY, occupied) ?: continue
-            entry.cellX = cell.first
-            entry.cellY = cell.second
+            entry.cellX = cell.cellX
+            entry.cellY = cell.cellY
+            entry.spanX = cell.spanX
+            entry.spanY = cell.spanY
             occupied.markCells(entry, true)
             nextX = entry.cellX + entry.spanX
             nextY = entry.cellY
@@ -113,11 +145,13 @@ internal object GridSizeMigration {
         trgX: Int,
         trgY: Int,
         occupied: GridOccupancy,
-    ): Pair<Int, Int>? {
+    ): CellAndSpan? {
         var newStartPosX = startPosX
         for (y in startPosY until trgY) {
             for (x in newStartPosX until trgX) {
-                if (occupied.isRegionVacant(x, y, entry.spanX, entry.spanY)) return x to y
+                if (occupied.isRegionVacant(x, y, entry.minSpanX, entry.minSpanY)) {
+                    return (CellAndSpan(x, y, entry.minSpanX, entry.minSpanY))
+                }
             }
             newStartPosX = 0
         }

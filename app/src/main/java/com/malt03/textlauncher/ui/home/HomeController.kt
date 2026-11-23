@@ -176,6 +176,9 @@ class HomeController(
         // DeviceProfile's cell size and widget padding (WorkspaceProfile), which the widget sizes
         // and the widget picker read.
         val widgetPadding = ShortcutAndWidgetContainer.getWidgetPadding(context, android.graphics.Point(0, 0))
+        // TextLauncher: until the grid is measured (loading and the grid migration may come
+        // first), the cells it has in the smallest window of the displays.
+        launcher.deviceProfile.workspaceProfile.setCellSize(gridSpec.homeCellWidthPx, gridSpec.homeCellHeightPx, widgetPadding)
         grid.onCellSizeChanged = { width, height ->
             launcher.deviceProfile.workspaceProfile.setCellSize(width, height, widgetPadding)
         }

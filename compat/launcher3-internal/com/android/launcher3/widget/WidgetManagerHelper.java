@@ -65,6 +65,27 @@ public class WidgetManagerHelper {
     }
 
     /**
+     * @see AppWidgetManager#getAppWidgetInfo(int)
+     */
+    @Nullable
+    public LauncherAppWidgetProviderInfo getLauncherAppWidgetInfo(
+            int appWidgetId, ComponentName componentName) {
+
+        // TextLauncher: no custom widgets.
+
+        AppWidgetProviderInfo info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
+        if (info == null) {
+            // TextLauncher: Log rather than FileLog.
+            Log.w(TAG,
+                    "getLauncherAppWidgetInfo: AppWidgetManager returned null AppWidgetInfo for"
+                            + " appWidgetId=" + appWidgetId
+                            + ", componentName=" + componentName);
+            return null;
+        }
+        return LauncherAppWidgetProviderInfo.fromProviderInfo(mContext, info);
+    }
+
+    /**
      * @see AppWidgetManager#getInstalledProvidersForPackage(String, UserHandle)
      */
     public List<AppWidgetProviderInfo> getAllProviders(@Nullable PackageUserKey packageUser) {
