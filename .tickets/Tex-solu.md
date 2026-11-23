@@ -1,6 +1,6 @@
 ---
 id: Tex-solu
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:57:38Z
@@ -17,3 +17,9 @@ parent: Tex-mdus
 
 直し方: マニフェストのテーマを @style/AppTheme にする（AppTheme の親は Theme.TextLauncher なので互換クラスは変えない）
 
+
+## Notes
+
+**2026-11-23T15:53:35Z**
+
+マニフェストの application のテーマを Launcher3 と同じ @style/AppTheme にした。WallpaperThemeManager は AppTheme から始めるので、色のヒントが 0 のとき（setTheme されないとき）も workspaceTextColor などが入り、検索結果のアプリ名、シートのハンドル、システムバーのアイコンが透明にならない。ビルドと単体テストのみ確認（端末では未確認）
