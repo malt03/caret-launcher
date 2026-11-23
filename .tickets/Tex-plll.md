@@ -27,3 +27,9 @@ parent: Tex-vs8t
 重複:
 - LauncherActivity の launch と startShortcut が同じ範囲とオプションを作っている
 
+
+## Notes
+
+**2026-11-23T07:00:29Z**
+
+- LauncherAppState の説明（「フォルダの PreviewItemManager が読むアイコンのキャッシュだけ」）が古い。今はウィジェットピッカー用に InvariantDeviceProfile も持つ
