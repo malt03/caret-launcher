@@ -26,3 +26,9 @@ tags: [launcher3, upstream, home]
 - HomeDragController は余裕があれば LauncherDragController の derived=
 - 残す書き写し（GridSizeMigration、GridSpec、HomeLoader、ItemLongClickListener、SpringLoadedListener、HomeWidgets の追加フロー）は、上の「上流の追跡を広げる」チケットの ref= に載せる
 
+
+## Notes
+
+**2026-11-23T12:17:52Z**
+
+2026-11-23: これらの書き写しは Tex-hpdq で ref= に載り、更新時に上流の差分が出るようになった。derived= の互換クラスにする作業はまだ（Tex-n0ut で互換の Folder・CellLayout などを derived= にした形に合わせる）

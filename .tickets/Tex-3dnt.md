@@ -28,3 +28,9 @@ Launcher3 の形:
 - HomeLoader.onShortcutsChanged を ShortcutsChangedTask.execute に近い形で移し直す
 - HomeController.bindItemChanged をなくして updateContainerItems にする
 
+
+## Notes
+
+**2026-11-23T12:17:52Z**
+
+2026-11-23: Tex-a8os の応急の直しが入った。アプリ・ショートカットの変化と rebuild の始めにドラッグを取り消し、HomeLoader.removeItems は中身を外したフォルダーだけを畳み、読み込み時の1つだけのフォルダーは Folder.bind（上流）で置き換わる。部分バインドにするときは、モデルでの畳み込みをやめて Folder.removeFolderContent → replaceFolderWithFinalItem の1本にし、全体の取り消しも外す

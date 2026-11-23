@@ -32,3 +32,7 @@ Workspace の役割が、互換の Workspace（HomeController の匿名サブク
 **2026-11-23T09:06:57Z**
 
 2026-11-23: HomeWorkspace は「互換の Workspace を継承」だけでなく、Workspace.java の derived=（ドラッグとドロップのメンバー）にする方向で（Tex-ydua）。ウィジェットのサイズも互換の DeviceProfile／IDP を唯一の元にする（Tex-qnof）
+
+**2026-11-23T12:17:52Z**
+
+2026-11-23: P0 の応急の直し（Tex-536b・Tex-twu9）が入った。HomeModel.save() は読み込み前は何もせず、ドラッグの間は後回し（deferSaves）、固定の更新はキーの集合が変わったときだけ。モデルを丸ごと書く形とモデル・View の削除の混在はそのままなので、ここで1か所にまとめるときに deferSaves を ModelWriter 相当の書き込みに置き換える

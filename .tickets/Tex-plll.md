@@ -33,3 +33,7 @@ parent: Tex-vs8t
 **2026-11-23T07:00:29Z**
 
 - LauncherAppState の説明（「フォルダの PreviewItemManager が読むアイコンのキャッシュだけ」）が古い。今はウィジェットピッカー用に InvariantDeviceProfile も持つ
+
+**2026-11-23T12:17:52Z**
+
+2026-11-23 整理: CellLayout.setGridSize の二重の Javadoc（上流に戻した）と HomeWorkspace.onDragStart の rebuildOccupied の理由は直した（Tex-n0ut）。ほかはまだ
