@@ -40,6 +40,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.states.RotationHelper
+import com.android.launcher3.touch.WorkspaceTouchListener
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
@@ -70,8 +71,8 @@ import com.malt03.textlauncher.ui.statehandlers.DepthController
  * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget and
  *   shortcut adding (the widget sizes are Launcher3's WidgetSizes and WidgetSizeHandler, with the
  *   device profile's cells)
- * - [HomeOptionsMenu]: WorkspaceTouchListener and WorkspaceLongPressOptions, the empty space's
- *   long-press menu
+ * - [NotificationAccessConfirmation]: the dialog of the empty space's long-press menu (Launcher3's
+ *   WorkspaceTouchListener and WorkspaceLongPressOptions)
  */
 class HomeController(
     internal val app: TextLauncherApplication,
@@ -249,7 +250,7 @@ class HomeController(
         dropTargetBar.setup(dragController)
         // DragLayer.recreateControllers: the activity sets them (Launcher.createTouchControllers).
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
-        scrollView.setOnTouchListener(HomeOptionsMenu(this))
+        scrollView.setOnTouchListener(WorkspaceTouchListener(launcher, scrollView))
 
         loader.start()
     }
@@ -338,26 +339,6 @@ class HomeController(
     /** Launcher.onActivityResult for the widget add flow. Returns whether it was for it. */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
         widgetAddFlow.onActivityResult(requestCode, resultCode, data)
-
-    /**
-     * The empty space's menu's "Widgets" (WorkspaceLongPressOptions.openWidgetPicker): the widget
-     * picker activity (WidgetPickerActivity), which adds the chosen widget through
-     * Launcher.ACTIVITY_TRACKER and [addToWorkspace].
-     */
-    internal fun openWidgetPicker(): Boolean {
-        if (context.packageManager.isSafeMode) {
-            Toast.makeText(context, com.android.launcher3.R.string.safemode_widget_error, Toast.LENGTH_SHORT).show()
-            return false
-        } else {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.setPackage(context.packageName)
-            if (context !is android.app.Activity) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-            return true
-        }
-    }
 
     fun cancelDrag() {
         dragController.cancelDrag()

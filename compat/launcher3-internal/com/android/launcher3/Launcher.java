@@ -24,6 +24,7 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -38,6 +39,8 @@ import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.popup.PopupContainer;
+import com.android.launcher3.popup.WorkspaceLongPressOptions;
 import com.android.launcher3.states.RotationHelper;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
@@ -254,6 +257,43 @@ public abstract class Launcher implements ActivityContext {
      */
     public abstract void addPendingItem(PendingAddItemInfo info, int container, int screenId,
             int[] cell, int spanX, int spanY);
+
+    /**
+     * The empty space's long-press menu (WorkspaceTouchListener), at the point in the drag layer's
+     * coordinates.
+     */
+    public void showDefaultOptions(float x, float y) {
+        Rect pos = new Rect();
+        pos.offsetTo((int) x, (int) y);
+        pos.inset(-20, -20);
+        PopupContainer.Companion.showForMenuItems(
+                this,
+                getRootView(),
+                WorkspaceLongPressOptions.getAll(asContext()), // TextLauncher: not a Context.
+                pos
+        );
+    }
+
+    /** Activity.getRootView: the home activity's root view, which holds the popups. */
+    public abstract View getRootView();
+
+    /** TextLauncher: StateManager's isInState(NORMAL), for WorkspaceTouchListener. */
+    public abstract boolean isInNormalState();
+
+    /**
+     * TextLauncher: whether the empty space's menu has "Apps list": not with two panels, where the
+     * list is always shown (docs/spec.md 5.5).
+     */
+    public abstract boolean canOpenAllApps();
+
+    /** TextLauncher: StateManager.goToState(ALL_APPS), the menu's "Apps list". */
+    public abstract void openAllApps();
+
+    /**
+     * TextLauncher: NotificationDotsPreference.NotificationAccessConfirmation, the dialog that takes
+     * the user to the notification access settings (the menu's "Notification dots").
+     */
+    public abstract void showNotificationAccessConfirmation();
 
     @Override
     public DropTargetHandler getDropTargetHandler() {

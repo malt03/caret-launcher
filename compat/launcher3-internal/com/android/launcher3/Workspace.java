@@ -20,8 +20,10 @@
 
 package com.android.launcher3;
 
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -38,8 +40,17 @@ import java.util.function.Predicate;
 public abstract class Workspace<T> extends FrameLayout {
     public static final int REORDER_TIMEOUT = 650;
 
+    private final int[] mTempXY = new int[2];
+    private final WallpaperManager mWallpaperManager;
+
     public Workspace(Context context) {
         super(context);
+        mWallpaperManager = WallpaperManager.getInstance(context);
+    }
+
+    /** TextLauncher: one page, so the wallpaper is not scrolled. */
+    public float getWallpaperOffsetForCenterPage() {
+        return 0;
     }
 
     /** TextLauncher: no state transitions between pages and overview, so never switching. */
@@ -109,6 +120,20 @@ public abstract class Workspace<T> extends FrameLayout {
      */
     @Nullable
     public abstract View getViewByItemId(int id);
+
+    public void onWallpaperTap(MotionEvent ev) {
+        final int[] position = mTempXY;
+        getLocationOnScreen(position);
+
+        int pointerIndex = ev.getActionIndex();
+        position[0] += (int) ev.getX(pointerIndex);
+        position[1] += (int) ev.getY(pointerIndex);
+
+        mWallpaperManager.sendWallpaperCommand(getWindowToken(),
+                ev.getAction() == MotionEvent.ACTION_UP
+                        ? WallpaperManager.COMMAND_TAP : WallpaperManager.COMMAND_SECONDARY_TAP,
+                position[0], position[1], 0, null);
+    }
 
     public void setPivotToScaleWithSelf(View sibling) {
         sibling.setPivotY(getPivotY() + getTop()

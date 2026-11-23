@@ -24,6 +24,7 @@ import static com.android.launcher3.Flags.enableMouseInteractionChanges;
 import static com.android.launcher3.Flags.reduceWorkspaceBlurUsage;
 
 import android.app.ActivityOptions;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -238,6 +239,10 @@ public final class Utilities {
      */
     public static float boundToRange(float value, float lowerBound, float upperBound) {
         return Math.max(lowerBound, Math.min(value, upperBound));
+    }
+
+    public static boolean isWallpaperAllowed(Context context) {
+        return context.getSystemService(WallpaperManager.class).isSetWallpaperAllowed();
     }
 
     public static boolean isBinderSizeError(Exception e) {

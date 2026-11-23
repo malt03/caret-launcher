@@ -150,6 +150,20 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun goToNormalState(animated: Boolean, onDone: Runnable?) =
         home.host.showHome { onDone?.run() }
 
+    /** The root view, which holds the empty space's menu (Launcher.showDefaultOptions). */
+    override fun getRootView(): View = home.root
+
+    /** The NORMAL state, with no drag (WorkspaceTouchListener.canHandleLongPress). */
+    override fun isInNormalState(): Boolean = home.host.canShowOptions() && !home.isDragging
+
+    override fun canOpenAllApps(): Boolean = home.host.openAllApps != null
+
+    override fun openAllApps() {
+        home.host.openAllApps?.invoke()
+    }
+
+    override fun showNotificationAccessConfirmation() = NotificationAccessConfirmation.show(context)
+
     /** Launcher.addPendingItem: a widget or shortcut dropped from the widget picker. */
     override fun addPendingItem(info: PendingAddItemInfo, container: Int, screenId: Int, cell: IntArray?, spanX: Int, spanY: Int) =
         home.addPendingItem(info, container, cell, spanX, spanY)
