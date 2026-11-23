@@ -66,7 +66,7 @@ class WallpaperColorHints private constructor(private val context: Context) {
             this.colors = colors
             val newHints = hints
             if (oldHints != newHints) {
-                onColorHintsChangedListeners.toList().forEach { it.onColorHintsChanged(newHints) }
+                onColorHintsChangedListeners.forEach { it.onColorHintsChanged(newHints) }
             }
         }
     }

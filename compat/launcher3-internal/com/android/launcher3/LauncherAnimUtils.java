@@ -27,8 +27,8 @@ import android.view.View;
 import com.android.launcher3.util.MultiScalePropertyFactory;
 
 /**
- * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1). Only the members that copied code uses, copied from
- * LauncherAnimUtils.java.
+ * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1), made from LauncherAnimUtils.java
+ * by deleting what TextLauncher does not use.
  */
 public class LauncherAnimUtils {
     public static final FloatProperty<View> SCALE_PROPERTY = getScaleProperty();
@@ -98,11 +98,11 @@ public class LauncherAnimUtils {
     public static final int SCALE_INDEX_WORKSPACE_STATE = 2;
     public static final int SCALE_INDEX_FOLDER_ANIM = 5;
 
-    public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);
-    public static final FloatProperty<View> VIEW_ALPHA = convert(View.ALPHA);
-
     public static final FloatProperty<View> VIEW_TRANSLATE_X = convert(View.TRANSLATION_X);
     public static final FloatProperty<View> VIEW_TRANSLATE_Y = convert(View.TRANSLATION_Y);
+    public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);
+
+    public static final FloatProperty<View> VIEW_ALPHA = convert(View.ALPHA);
 
     private static FloatProperty<View> convert(Property<View, Float> property) {
         if (property instanceof FloatProperty<View> f) return f;

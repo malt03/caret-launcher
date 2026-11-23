@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2008 The Android Open Source Project
  *
@@ -20,18 +21,27 @@
 
 package com.android.launcher3.dragndrop;
 
+import static android.animation.ObjectAnimator.ofFloat;
+
+import static com.android.app.animation.Interpolators.DECELERATE_1_5;
+import static com.android.launcher3.LauncherAnimUtils.VIEW_TRANSLATE_X;
+import static com.android.launcher3.LauncherAnimUtils.VIEW_TRANSLATE_Y;
+import static com.android.launcher3.Utilities.mapRange;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
+import android.animation.TypeEvaluator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.animation.Interpolator;
 
-import com.android.app.animation.Interpolators;
+import androidx.annotation.Nullable;
+
 import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
 import com.android.launcher3.ShortcutAndWidgetContainer;
@@ -39,21 +49,36 @@ import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.views.BaseDragLayer;
 
 /**
- * Stand-in for Launcher3's DragLayer (android-17.0.0_r1): the drag layer of the home screen, with
- * the drop animations copied from DragLayer.java. TextLauncher's drag layer sits over the home
- * screen instead of holding it; see {@link BaseDragLayer}.
+ * A ViewGroup that coordinates dragging across its descendants
+ *
+ * <p>Stand-in for Launcher3's DragLayer (android-17.0.0_r1), made from DragLayer.java by deleting
+ * what TextLauncher does not use (everything but the drop animations: setup, touch and hover
+ * handling, accessibility, child drawing order, the focus outline, the scrim and the overlay
+ * callbacks); changes are marked with "TextLauncher:". TextLauncher's drag layer sits over the
+ * home screen instead of holding it; see {@link BaseDragLayer}.
  */
+// TextLauncher: not a LauncherOverlayCallbacks (no -1 screen overlay).
 public class DragLayer extends BaseDragLayer<Launcher> {
 
     public static final int ANIMATION_END_DISAPPEAR = 0;
     public static final int ANIMATION_END_REMAIN_VISIBLE = 2;
 
     private DragController mDragController;
+
+    // Variables relating to animation of views after drop
     private Animator mDropAnim = null;
+
     private DragView mDropView = null;
 
-    public void setDragController(DragController dragController) {
-        mDragController = dragController;
+    /**
+     * TextLauncher: created in code, over the home screen. No alpha channels, multitouch is not
+     * kept from splitting, the children keep their drawing order, and the home grid draws the
+     * focus outline.
+     *
+     * @param context The application's context.
+     */
+    public DragLayer(Context context) {
+        super(context);
     }
 
     public void animateViewIntoPosition(DragView dragView, final View child, int duration,
@@ -67,11 +92,12 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         float coord[] = new float[2];
         float childScale = child.getScaleX();
 
-        // TextLauncher: the home grid's padding is CellLayout's, so its cells start inside it.
-        coord[0] = childParent.getPaddingLeft() + lp.x
-                + (child.getMeasuredWidth() * (1 - childScale) / 2);
-        coord[1] = childParent.getPaddingTop() + lp.y
-                + (child.getMeasuredHeight() * (1 - childScale) / 2);
+        coord[0] = lp.x + (child.getMeasuredWidth() * (1 - childScale) / 2);
+        coord[1] = lp.y + (child.getMeasuredHeight() * (1 - childScale) / 2);
+        // TextLauncher: no translation provider. The home grid's padding is CellLayout's, so its
+        // cells start inside it.
+        coord[0] += childParent.getPaddingLeft();
+        coord[1] += childParent.getPaddingTop();
 
         // Since the child hasn't necessarily been laid out, we force the lp to be updated with
         // the correct coordinates (above) and use these to determine the final location
@@ -89,8 +115,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
             // This code is fairly subtle. Please verify drag and drop is pixel-perfect in a number
             // of scenarios before modifying (from all apps, from workspace, different grid-sizes,
             // shortcuts from in and out of Launcher etc).
-            DraggableView d =
-                    (DraggableView) child;
+            DraggableView d = (DraggableView) child;
             Rect destRect = new Rect();
             d.getWorkspaceVisualDragBounds(destRect);
 
@@ -114,6 +139,9 @@ public class DragLayer extends BaseDragLayer<Launcher> {
                 onCompleteRunnable, ANIMATION_END_DISAPPEAR, duration, anchorView);
     }
 
+    /**
+     * This method animates a view at the end of a drag and drop animation.
+     */
     public void animateViewIntoPosition(final DragView view,
             final int toX, final int toY, float finalAlpha,
             float finalScaleX, float finalScaleY, Runnable onCompleteRunnable,
@@ -124,14 +152,26 @@ public class DragLayer extends BaseDragLayer<Launcher> {
     }
 
     /**
-     * TextLauncher: DragLayer builds this with PendingAnimation. Here the same animators (values,
-     * interpolators, duration) are put in a plain AnimatorSet; the anchor scroll compensation is
-     * left out since the home grid does not scroll horizontally.
+     * This method animates a view at the end of a drag and drop animation.
+     * @param view The view to be animated. This view is drawn directly into DragLayer, and so
+     *        doesn't need to be a child of DragLayer.
+     * @param to The final location of the view. Only the left and top parameters are used. This
+*        location doesn't account for scaling, and so should be centered about the desired
+*        final location (including scaling).
+     * @param finalAlpha The final alpha of the view, in case we want it to fade as it animates.
+     * @param finalScaleX The final scale of the view. The view is scaled about its center.
+     * @param finalScaleY The final scale of the view. The view is scaled about its center.
+     * @param duration The duration of the animation.
+     * @param motionInterpolator The interpolator to use for the location of the view.
+     * @param onCompleteRunnable Optional runnable to run on animation completion.
+     * @param animationEndStyle Whether or not to fade out the view once the animation completes.
+*        {@link #ANIMATION_END_DISAPPEAR} or {@link #ANIMATION_END_REMAIN_VISIBLE}.
+     * @param anchorView If not null, this represents the view which the animated view stays
      */
     public void animateView(final DragView view, final Rect to,
             final float finalAlpha, final float finalScaleX, final float finalScaleY, int duration,
-            final Interpolator motionInterpolator,
-            final Runnable onCompleteRunnable, final int animationEndStyle, View anchorView) {
+            final Interpolator motionInterpolator, final Runnable onCompleteRunnable,
+            final int animationEndStyle, View anchorView) {
         view.cancelAnimation();
         view.requestLayout();
 
@@ -146,39 +186,46 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         if (duration < 0) {
             duration = res.getInteger(R.integer.config_dropAnimMaxDuration);
             if (dist < maxDist) {
-                duration *= Interpolators.DECELERATE_1_5
-                        .getInterpolation(dist / maxDist);
+                duration *= DECELERATE_1_5.getInterpolation(dist / maxDist);
             }
-            duration = Math.max(duration,
-                    res.getInteger(R.integer.config_dropAnimMinDuration));
+            duration = Math.max(duration, res.getInteger(R.integer.config_dropAnimMinDuration));
         }
 
         // Fall back to cubic ease out interpolator for the animation if none is specified
-        TimeInterpolator interpolator = motionInterpolator == null
-                ? Interpolators.DECELERATE_1_5 : motionInterpolator;
+        TimeInterpolator interpolator =
+                motionInterpolator == null ? DECELERATE_1_5 : motionInterpolator;
 
+        // Animate the view
+        // TextLauncher: no PendingAnimation. The same animators are played together in an
+        // AnimatorSet, which gives each of them the duration and the interpolator; the alpha is
+        // animated even when it does not change, and the view's visibility is not updated.
         AnimatorSet anim = new AnimatorSet();
-        anim.playTogether(
-                ObjectAnimator.ofFloat(view, View.SCALE_X, finalScaleX),
-                ObjectAnimator.ofFloat(view, View.SCALE_Y, finalScaleY),
-                ObjectAnimator.ofFloat(view, View.ALPHA, finalAlpha),
-                ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, to.top),
-                ObjectAnimator.ofFloat(view, View.TRANSLATION_X, to.left));
+        anim.play(ofFloat(view, View.SCALE_X, finalScaleX));
+        anim.play(ofFloat(view, View.SCALE_Y, finalScaleY));
+        anim.play(ofFloat(view, View.ALPHA, finalAlpha));
+        anim.play(ofFloat(view, VIEW_TRANSLATE_Y, to.top));
+
+        ObjectAnimator xMotion = ofFloat(view, VIEW_TRANSLATE_X, to.left);
+        if (anchorView != null) {
+            final int startScroll = anchorView.getScrollX();
+            TypeEvaluator<Float> evaluator = (f, s, e) -> mapRange(f, s, e)
+                    + (anchorView.getScaleX() * (startScroll - anchorView.getScrollX()));
+            xMotion.setEvaluator(evaluator);
+        }
+        // TextLauncher: an AnimatorSet (see above).
+        anim.play(xMotion);
         anim.setDuration(duration);
         anim.setInterpolator(interpolator);
         if (onCompleteRunnable != null) {
-            anim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    onCompleteRunnable.run();
-                }
-            });
+            anim.addListener(forEndCallback(onCompleteRunnable));
         }
         playDropAnimation(view, anim, animationEndStyle);
     }
 
-    public void playDropAnimation(final DragView view,
-            Animator animator, int animationEndStyle) {
+    /**
+     * Runs a previously constructed drop animation
+     */
+    public void playDropAnimation(final DragView view, Animator animator, int animationEndStyle) {
         // Clean up the previous animations
         if (mDropAnim != null) mDropAnim.cancel();
 
@@ -186,23 +233,19 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         mDropView = view;
         // Create and start the animation
         mDropAnim = animator;
-        mDropAnim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mDropAnim = null;
-            }
-        });
+        mDropAnim.addListener(forEndCallback(() -> mDropAnim = null));
         if (animationEndStyle == ANIMATION_END_DISAPPEAR) {
-            mDropAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    clearAnimatedView();
-                }
-            });
+            mDropAnim.addListener(forEndCallback(this::clearAnimatedView));
         }
         mDropAnim.start();
     }
 
+    /**
+     * Remove the drop view and end the drag animation.
+     *
+     * @return {@link DragView} that is removed.
+     */
+    @Nullable
     public DragView clearAnimatedView() {
         if (mDropAnim != null) {
             mDropAnim.cancel();
@@ -217,7 +260,26 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         return ret;
     }
 
-    public DragLayer(Context context) {
-        super(context);
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * Sets the drag controller, which Launcher3 passes to {@code setup} together with the
+     * workspace; TextLauncher's drag layer has no touch controllers or scrim to set up.
+     */
+    public void setDragController(DragController dragController) {
+        mDragController = dragController;
+    }
+
+    /**
+     * AnimatorListeners.forEndCallback(Runnable), which TextLauncher does not have: runs the
+     * callback when the animation ends, also after a cancel.
+     */
+    private static Animator.AnimatorListener forEndCallback(Runnable callback) {
+        return new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                callback.run();
+            }
+        };
     }
 }

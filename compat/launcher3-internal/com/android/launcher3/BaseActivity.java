@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,16 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.util.SystemUiController.UI_STATE_FULLSCREEN_TASK;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.os.Bundle;
 import android.window.OnBackInvokedDispatcher;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
 import androidx.savedstate.SavedStateRegistry;
 import androidx.savedstate.SavedStateRegistryController;
@@ -41,16 +43,15 @@ import com.android.launcher3.views.ActivityContext;
 import java.util.ArrayList;
 
 /**
- * Stand-in for Launcher3's BaseActivity (android-17.0.0_r1): an Activity that is its own lifecycle
- * and saved state owner (for Compose), with the device profile, the system UI controller and the
- * top resumed callbacks. TextLauncher's home screen is not a BaseActivity; the widget picker is.
+ * Launcher BaseActivity
+ *
+ * <p>Stand-in for Launcher3's BaseActivity (android-17.0.0_r1), made from BaseActivity.java by
+ * deleting what TextLauncher does not use; changes are marked with "TextLauncher:". TextLauncher's
+ * home screen is not a BaseActivity; the widget picker is.
  */
+// TextLauncher: ActivityContext is not a SavedStateRegistryOwner here, so this activity is one.
 public abstract class BaseActivity extends Activity
-        implements ActivityContext, LifecycleOwner, SavedStateRegistryOwner {
-
-    public static final int ACTIVITY_STATE_STARTED = 1 << 0;
-    public static final int ACTIVITY_STATE_RESUMED = 1 << 1;
-    public static final int ACTIVITY_STATE_IS_TOP_RESUMED = 1 << 6;
+        implements ActivityContext, SavedStateRegistryOwner {
 
     private final SavedStateRegistryController mSavedStateRegistryController =
             SavedStateRegistryController.create(this);
@@ -59,9 +60,16 @@ public abstract class BaseActivity extends Activity
     protected volatile DeviceProfile mDeviceProfile;
     protected SystemUiController mSystemUiController;
     private StatsLogManager mStatsLogManager;
+
+    public static final int ACTIVITY_STATE_STARTED = 1 << 0;
+    public static final int ACTIVITY_STATE_RESUMED = 1 << 1;
+
+    public static final int ACTIVITY_STATE_IS_TOP_RESUMED = 1 << 7;
+
     private int mActivityFlags;
 
-    // Callbacks to be run when the top resumed activity state changes.
+    // List of persistent callbacks (i.e. the list is not cleared when callbacks are first run) to
+    // be run when the top resumed activity state changes.
     private final ArrayList<Runnable> mTopResumedChangedCallbacks = new ArrayList<Runnable>();
 
     public BaseActivity() {
@@ -93,12 +101,10 @@ public abstract class BaseActivity extends Activity
     }
 
     @Override
-    public Context asContext() {
-        return this;
-    }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-    @Override
-    public void hideKeyboard() {
+        registerBackDispatcher();
     }
 
     @Override
@@ -109,26 +115,31 @@ public abstract class BaseActivity extends Activity
 
     @Override
     protected void onResume() {
-        addActivityFlags(ACTIVITY_STATE_RESUMED);
+        addActivityFlags(ACTIVITY_STATE_RESUMED); // TextLauncher: setResumed without user activity.
         super.onResume();
     }
 
     @Override
-    protected void onPause() {
-        removeActivityFlags(ACTIVITY_STATE_RESUMED);
-        super.onPause();
-    }
-
-    @Override
     protected void onStop() {
-        removeActivityFlags(ACTIVITY_STATE_STARTED);
+        removeActivityFlags(ACTIVITY_STATE_STARTED); // TextLauncher: no ACTIVITY_STATE_USER_ACTIVE.
         super.onStop();
+
+
+        // Reset the overridden sysui flags used for the task-swipe launch animation, this is a
+        // catch all for if we do not get resumed (and therefore not paused below)
+        getSystemUiController().updateUiState(UI_STATE_FULLSCREEN_TASK, 0);
     }
 
     @Override
-    protected void onCreate(android.os.Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        registerBackDispatcher();
+    protected void onPause() {
+        removeActivityFlags(ACTIVITY_STATE_RESUMED); // TextLauncher: setPaused without deferred.
+        super.onPause();
+
+        // Reset the overridden sysui flags used for the task-swipe launch animation, we do this
+        // here instead of at the end of the animation because the start of the new activity does
+        // not happen immediately, which would cause us to reset to launcher's sysui flags and then
+        // back to the new app (causing a flash)
+        getSystemUiController().updateUiState(UI_STATE_FULLSCREEN_TASK, 0);
     }
 
     @Override
@@ -147,8 +158,13 @@ public abstract class BaseActivity extends Activity
     }
 
     protected void registerBackDispatcher() {
-        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::onBackPressed);
+        if (Utilities.ATLEAST_T) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    () -> {
+                        onBackPressed();
+                    });
+        }
     }
 
     public boolean isStarted() {
@@ -177,7 +193,7 @@ public abstract class BaseActivity extends Activity
         mActivityFlags &= ~toRemove;
     }
 
-    /** Adds a callback to be run when the top resumed activity state changes. */
+    /** Adds a callback to run when top resumed activity state changes. */
     public void addTopResumedChangedCallback(Runnable callback) {
         mTopResumedChangedCallbacks.add(callback);
     }

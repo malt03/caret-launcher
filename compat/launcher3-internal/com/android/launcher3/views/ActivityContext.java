@@ -17,7 +17,6 @@
  * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
-
 package com.android.launcher3.views;
 
 import android.content.Context;
@@ -36,69 +35,30 @@ import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.LauncherBindableItemsContainer;
 import com.android.launcher3.util.RunnableList;
 
-/** Stand-in for Launcher3's ActivityContext. Only what copied code uses. */
+/**
+ * An interface to be used along with a context for various activities in Launcher. This allows a
+ * generic class to depend on Context subclass instead of an Activity.
+ *
+ * <p>Stand-in for Launcher3's ActivityContext (android-17.0.0_r1), made from ActivityContext.java
+ * by deleting what TextLauncher does not use; changes are marked with "TextLauncher:".
+ */
+// TextLauncher: not a SavedStateRegistryOwner; the home screen's Launcher is not an activity.
 public interface ActivityContext {
-    DeviceProfile getDeviceProfile();
 
-    BaseDragLayer getDragLayer();
-
-    Context asContext();
-
-    /**
-     * Hides the keyboard if it is visible
-     */
-    void hideKeyboard();
-
-    /** ActivityContext.lookupContext: TextLauncher's activity holds the ActivityContext. */
-    static ActivityContext lookupContext(Context context) {
-        Context c = context;
-        while (c instanceof ContextWrapper) {
-            if (c instanceof Provider) return ((Provider) c).getActivityContext();
-            c = ((ContextWrapper) c).getBaseContext();
-        }
-        throw new IllegalArgumentException("Cannot find ActivityContext in parent tree");
+    /** Returns the dagger graph for this UI context */
+    // TextLauncher: the ActivityComponent stand-in, not Dagger's; an empty one by default.
+    default ActivityComponent getActivityComponent() {
+        return new ActivityComponent();
     }
 
-    /** TextLauncher: implemented by the activity to give its ActivityContext. */
-    interface Provider {
-        ActivityContext getActivityContext();
-    }
-
-    /** Called when the drag layer sees a new touch (ActivityContext.finishAutoCancelActionMode). */
     default boolean finishAutoCancelActionMode() {
         return false;
     }
 
-    default boolean canUseMultipleShadesForPopup() {
-        return true;
-    }
-
-    /** Long click listener used for All Apps items. */
-    default View.OnLongClickListener getAllAppsItemLongClickListener() {
-        return v -> false;
-    }
-
     /**
-     * Safely starts an activity. TextLauncher: the home screen starts it (Launcher).
+     * The root view to support drag-and-drop and popup support.
      */
-    default RunnableList startActivitySafely(View v, Intent intent, @Nullable ItemInfo item) {
-        return null;
-    }
-
-    default View.OnClickListener getItemOnClickListener() {
-        return v -> {
-            // No op.
-        };
-    }
-
-    /** Launcher3's ActivityContext.getDragController. */
-    default DragController getDragController() {
-        return null;
-    }
-
-    default ActivityComponent getActivityComponent() {
-        return new ActivityComponent();
-    }
+    BaseDragLayer getDragLayer();
 
     /**
      * Returns the primary content of this context
@@ -108,7 +68,86 @@ public interface ActivityContext {
         return op -> null;
     }
 
+    DeviceProfile getDeviceProfile();
+
+    /**
+     * Controller for supporting item drag-and-drop
+     */
+    default DragController getDragController() {
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if popups can use a range of color shades instead of a singular color.
+     */
+    default boolean canUseMultipleShadesForPopup() {
+        return true;
+    }
+
+    default View.OnClickListener getItemOnClickListener() {
+        return v -> {
+            // No op.
+        };
+    }
+
+    /** Long-click callback used for All Apps items. */
+    default View.OnLongClickListener getAllAppsItemLongClickListener() {
+        return v -> false;
+    }
+
     default DotInfo getDotInfoForItem(ItemInfo info) {
         return getActivityComponent().getPopupDataProvider().getDotInfoForItem(info);
+    }
+
+    /**
+     * Hides the keyboard if it is visible
+     */
+    default void hideKeyboard() {
+        // TextLauncher: no KeyboardStateManager; a context with a keyboard to hide overrides this.
+    }
+
+    /**
+     * Safely starts an activity.
+     *
+     * @param v View starting the activity.
+     * @param intent Base intent being launched.
+     * @param item Item associated with the view.
+     * @return RunnableList for listening for animation finish if the activity was properly
+     *         or started, {@code null} if the launch finished
+     */
+    default RunnableList startActivitySafely(
+            View v, Intent intent, @Nullable ItemInfo item) {
+        // TextLauncher: the home screen (Launcher) starts activities; nothing else does.
+        return null;
+    }
+
+    /** Returns the current ActivityContext as context */
+    default Context asContext() {
+        return (Context) this;
+    }
+
+    /**
+     * Returns the ActivityContext associated with the given Context, or throws an exception if
+     * the Context is not associated with any ActivityContext.
+     */
+    // TextLauncher: the home screen's ActivityContext is not a Context; the activity holding it
+    // gives it (Provider).
+    static ActivityContext lookupContext(Context context) {
+        Context c = context;
+        while (c instanceof ContextWrapper) {
+            if (c instanceof Provider) return ((Provider) c).getActivityContext();
+            c = ((ContextWrapper) c).getBaseContext();
+        }
+        throw new IllegalArgumentException("Cannot find ActivityContext in parent tree");
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * Implemented by the activity that holds an ActivityContext which is not itself a Context
+     * (the home screen's Launcher), so {@link #lookupContext} can find it.
+     */
+    interface Provider {
+        ActivityContext getActivityContext();
     }
 }

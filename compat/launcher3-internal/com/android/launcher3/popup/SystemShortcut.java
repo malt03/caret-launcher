@@ -43,10 +43,16 @@ import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.views.ActivityContext;
 
 /**
- * Stand-in for Launcher3's SystemShortcut (android-17.0.0_r1): an option in the long-press menu,
- * such as App info. The base class and {@link AppInfo} are copied from SystemShortcut.java;
- * changes are marked with "TextLauncher:". The other options (widgets, install, split screen,
- * private space, ...) do not apply to TextLauncher.
+ * Represents a system shortcut for a given app. The shortcut should have a label and icon, and an
+ * onClickListener that depends on the item that the shortcut services.
+ *
+ * Example system shortcuts, defined as inner classes, include Widgets and AppInfo.
+ *
+ * <p>Stand-in for Launcher3's SystemShortcut (android-17.0.0_r1), made from SystemShortcut.java by
+ * deleting what TextLauncher does not use (the factories and every option but App info); changes
+ * are marked with "TextLauncher:".
+ *
+ * @param <T> extends {@link ActivityContext}
  */
 public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         implements View.OnClickListener {
@@ -82,14 +88,15 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         mIsCollapsible = isCollapsible;
     }
 
+    /** @return the resource id of the icon **/
     public int getIconResId() {
         return mIconResId;
     }
 
+    /** @return the resource id of the label **/
     public int getLabelResId() {
         return mLabelResId;
     }
-
     public void setIconAndLabelFor(View iconView, TextView labelView) {
         iconView.setBackgroundResource(mIconResId);
         labelView.setText(mLabelResId);
@@ -109,18 +116,6 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         return mAccessibilityActionId == action;
     }
 
-    protected void dismissTaskMenuView() {
-        mAbstractFloatingViewHelper.closeOpenViews(mTarget, true,
-                AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
-    }
-
-    /** Stand-in for SystemShortcut.Widgets, which PopupContainerWithArrow looks for by type. */
-    public abstract static class Widgets<T extends ActivityContext> extends SystemShortcut<T> {
-        public Widgets(T target, ItemInfo itemInfo, @NonNull View originalView) {
-            super(0, 0, target, itemInfo, originalView);
-        }
-    }
-
     public static class AppInfo<T extends ActivityContext> extends SystemShortcut<T> {
 
         public AppInfo(T target, ItemInfo itemInfo, @NonNull View originalView) {
@@ -129,7 +124,7 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         }
 
         /**
-         * Returns the drawable id for the App Info shortcut.
+         * @return drawable for App Info shortcut icon
          */
         public static int getDrawableId() {
             return R.drawable.info_24px;
@@ -140,23 +135,32 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
             Rect sourceBounds = Utilities.getViewBounds(view);
             // TextLauncher: no launch animation to wait for; the menu is dismissed right away.
             dismissTaskMenuView();
-            startDetailsActivityForInfo(view.getContext(), mItemInfo, sourceBounds);
+            startDetailsActivityForInfo(view.getContext(), mItemInfo,
+                    sourceBounds); // TextLauncher: see startDetailsActivityForInfo below; no log.
         }
+    }
 
-        /**
-         * PackageManagerHelper.startDetailsActivityForInfo. TextLauncher: every item here is an
-         * installed app's WorkspaceItemInfo.
-         */
-        private static void startDetailsActivityForInfo(Context context, ItemInfo info,
-                Rect sourceBounds) {
-            ComponentName componentName = info.getTargetComponent();
-            if (componentName != null) {
-                try {
-                    context.getSystemService(LauncherApps.class).startAppDetailsActivity(
-                            componentName, info.user, sourceBounds, null);
-                } catch (SecurityException | ActivityNotFoundException e) {
-                    Log.e(TAG, "Unable to launch settings", e);
-                }
+    protected void dismissTaskMenuView() {
+        mAbstractFloatingViewHelper.closeOpenViews(mTarget, true,
+                AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * PackageManagerHelper.startDetailsActivityForInfo, which TextLauncher does not have: opens the
+     * app's details in Settings. Every item here is an installed app, so there is no install
+     * session or widget case, and no launch options.
+     */
+    private static void startDetailsActivityForInfo(Context context, ItemInfo info,
+            Rect sourceBounds) {
+        ComponentName componentName = info.getTargetComponent();
+        if (componentName != null) {
+            try {
+                context.getSystemService(LauncherApps.class).startAppDetailsActivity(
+                        componentName, info.user, sourceBounds, null);
+            } catch (SecurityException | ActivityNotFoundException e) {
+                Log.e(TAG, "Unable to launch settings", e);
             }
         }
     }

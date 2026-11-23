@@ -56,6 +56,7 @@ class WidgetPickerAddItemListener(private val container: Int, private val widget
                 is WidgetInfo.AppWidgetInfo -> {
                     val launcherProviderInfo =
                         LauncherAppWidgetProviderInfo.fromProviderInfo(
+                            // TextLauncher: the launcher is not a Context.
                             launcher.asContext(),
                             widgetInfo.appWidgetProviderInfo,
                         )
@@ -76,6 +77,7 @@ class WidgetPickerAddItemListener(private val container: Int, private val widget
                 }
             }
 
+        // TextLauncher: the launcher is not a Context.
         val view = View(launcher.asContext())
         view.tag = pendingAddItemInfo
 

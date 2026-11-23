@@ -122,6 +122,11 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 - Launcher3 の他の部分（`Launcher`、`DeviceProfile`、`LauncherPrefs`、機能フラグなど）への依存は、`third_party/` の外に置いた代わりのクラス（互換層）で受け止める
 - 互換層では同じパッケージ名・クラス名で、使われる部分だけを実装する
 - どうしても書き換えが必要な場合は、該当箇所に `// TextLauncher:` で始まるコメントを付ける
+- 上流のコードを持ってきた互換クラスは、上流のファイルから使わない部分を削って作り（`UPSTREAM.md` の `derived=`）、更新時に3方向マージできるようにする
+  - 残す部分は上流の順・書き方（改行やインデントも）のまま。並べ替えたり書き直したりしない
+  - 変えたところには、その場に `TextLauncher:` の印を付ける（クラスの説明にまとめて書くだけにしない）
+  - TextLauncher だけのメンバーは、クラスの最後の `// TextLauncher: members TextLauncher adds.` の下にまとめる
+  - 名前とシグネチャだけの互換クラスは `ref=` にして、上流の差分だけを見る
 - 機能フラグ（`Flags.xxx()` など）は、基準タグのリリースでの値に固定する
   - 値は、AOSP の `build/release` の該当リリースの設定を参照する（`scripts/check-upstream.py` が `Flags` の互換クラスと `flag=` の行を突き合わせる）
   - 確認できないものは Pixel の実機の挙動に合わせる
@@ -144,7 +149,7 @@ Launcher3 と `frameworks/libs/systemui` は Apache License 2.0 である。
 新しいリリースのタグが出たときの手順。
 
 1. `scripts/update-upstream.sh third_party/launcher3 <新しいタグ>`（`third_party/systemui` も同じ）を実行する
-   - `UPSTREAM.md` の `path=` に挙げたファイルと、`derived=` に挙げた互換クラス（上流のファイルから削って作ったもの）を、`git merge-file`（ours = こちら、base = 前回のタグ、theirs = 新しいタグ）で3方向マージする。削った部分で上流が変わると衝突として出るので、取り込むかどうかを判断する
+   - `UPSTREAM.md` の `path=` に挙げたファイルと、`derived=` に挙げた互換クラス（上流のファイルから削って作ったもの）を、`git merge-file`（ours = こちら、base = 前回のタグ、theirs = 新しいタグ）で3方向マージする。削った部分で上流が変わると衝突として出るので、取り込むかどうかを判断する（多くは削ったままでよい。使っている部分に関わる修正なら取り込む）
    - 上流で増えたファイルはコピーし、消えたファイルは、こちらで手を入れていなければ消す（移動先の候補も出す）
    - 続けて `scripts/check-upstream.py <dir> --to <新しいタグ>` が、マージの対象にならないものの上流の変化を出す（下記）
    - 衝突やエラーがあると `UPSTREAM.md` のタグは前回のまま残る。直してから同じコマンドをもう一度実行する（残った衝突の印も衝突として数える）。すべて通ったときだけタグを書き換える

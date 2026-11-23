@@ -38,10 +38,12 @@ import java.util.Comparator;
 /**
  * Represents an app in AllAppsView.
  *
- * <p>Stand-in for Launcher3's AppInfo (android-17.0.0_r1): what IconCache and the all apps list
- * use. TextLauncher: the runtime flags are the suspended state only (no quiet mode, archived apps,
- * install sessions or automation), and the user comes from the caller (no UserCache).
+ * <p>Stand-in for Launcher3's AppInfo (android-17.0.0_r1), made from AppInfo.java by deleting what
+ * TextLauncher does not have (copies, workspace items, the user cache, quiet mode, archived apps,
+ * install progress, automation and App Lock); changes are marked with "TextLauncher:".
  */
+@SuppressWarnings("NewApi")
+// TextLauncher: not a WorkspaceItemFactory (makeWorkspaceItem is not used).
 public class AppInfo extends ItemInfoWithIcon {
 
     public static final AppInfo[] EMPTY_ARRAY = new AppInfo[0];
@@ -74,13 +76,17 @@ public class AppInfo extends ItemInfoWithIcon {
     }
 
     @Override
+    @Nullable
     public Intent getIntent() {
         return intent;
     }
 
-    /** TextLauncher: AppInfo(LauncherActivityInfo, CachedUserInfo, ...) without the user cache. */
+    /**
+     * TextLauncher: AppInfo(LauncherActivityInfo, CachedUserInfo, ...) with the user from the
+     * caller (no UserCache), and of the runtime flags only the suspended state (no quiet mode,
+     * archived apps, install progress, automation or App Lock).
+     */
     public AppInfo(LauncherActivityInfo info, UserHandle user) {
-        this();
         this.componentName = info.getComponentName();
         this.container = CONTAINER_ALL_APPS;
         this.user = user;

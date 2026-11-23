@@ -46,6 +46,7 @@ import com.android.launcher3.util.window.WindowManagerProxy;
  * in place of DisplayController and the device profile listener, and whether the screen is large
  * is LauncherDisplayInfo.isLargeScreen with the display's real bounds.
  */
+// TextLauncher: not a DeviceProfile.OnDeviceProfileChangeListener (see onConfigurationChanged).
 public class RotationHelper {
 
     public static final int REQUEST_NONE = 0;
@@ -54,6 +55,7 @@ public class RotationHelper {
 
     private boolean mIsFixedLandscape = false;
 
+    // TextLauncher: any Activity; LauncherActivity is not a BaseActivity.
     @NonNull
     private final Activity mActivity;
     private final Handler mRequestOrientationHandler;
@@ -63,7 +65,7 @@ public class RotationHelper {
 
     /**
      * Rotation request made by
-     * ContextTracker.SchedulerCallback.
+     * {@link ContextTracker.SchedulerCallback}.
      * This supersedes any other request.
      */
     private int mStateHandlerRequest = REQUEST_NONE;
@@ -83,6 +85,7 @@ public class RotationHelper {
     // Initialize mLastActivityFlags to a value not used by SCREEN_ORIENTATION flags
     private int mLastActivityFlags = -999;
 
+    // TextLauncher: any Activity.
     public RotationHelper(@NonNull Activity activity) {
         mActivity = activity;
         mRequestOrientationHandler =
@@ -101,19 +104,6 @@ public class RotationHelper {
      */
     public void onConfigurationChanged(Configuration config) {
         onIgnoreAutoRotateChanged(isLargeScreen());
-    }
-
-    /**
-     * TextLauncher: LauncherDisplayInfo.isLargeScreen(realBounds) (whether the device is a desktop
-     * is not known to an app).
-     */
-    private boolean isLargeScreen() {
-        Rect bounds = mActivity.getSystemService(WindowManager.class)
-                .getMaximumWindowMetrics().getBounds();
-        float smallestSizeDp = Math.min(bounds.width(), bounds.height())
-                / mActivity.getResources().getDisplayMetrics().density;
-        return smallestSizeDp >= WindowManagerProxy.MIN_TABLET_WIDTH
-                || mActivity.getDisplay().getDisplayId() != Display.DEFAULT_DISPLAY;
     }
 
     private void onIgnoreAutoRotateChanged(boolean ignoreAutoRotateSettings) {
@@ -164,6 +154,8 @@ public class RotationHelper {
     public void initialize() {
         if (mInitialized) return;
         mInitialized = true;
+        // TextLauncher: no DisplayController and no device profile listener; the activity passes
+        // on its configuration changes (onConfigurationChanged).
         setIgnoreAutoRotateSettings(isLargeScreen());
         notifyChange();
     }
@@ -171,6 +163,7 @@ public class RotationHelper {
     public void destroy() {
         if (mDestroyed) return;
         mDestroyed = true;
+        // TextLauncher: no listeners to remove.
     }
 
     private void notifyChange() {
@@ -203,6 +196,7 @@ public class RotationHelper {
             mLastActivityFlags = activityFlags;
             mRequestOrientationHandler.sendEmptyMessage(activityFlags);
         }
+        // TextLauncher: no debug log for b/475447538.
     }
 
     @WorkerThread
@@ -231,5 +225,20 @@ public class RotationHelper {
                 mStateHandlerRequest, mCurrentStateRequest, mLastActivityFlags,
                 mIgnoreAutoRotateSettings, mForceAllowRotationForTesting,
                 mDestroyed, mIsFixedLandscape);
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * TextLauncher: LauncherDisplayInfo.isLargeScreen(realBounds) (whether the device is a desktop
+     * is not known to an app).
+     */
+    private boolean isLargeScreen() {
+        Rect bounds = mActivity.getSystemService(WindowManager.class)
+                .getMaximumWindowMetrics().getBounds();
+        float smallestSizeDp = Math.min(bounds.width(), bounds.height())
+                / mActivity.getResources().getDisplayMetrics().density;
+        return smallestSizeDp >= WindowManagerProxy.MIN_TABLET_WIDTH
+                || mActivity.getDisplay().getDisplayId() != Display.DEFAULT_DISPLAY;
     }
 }

@@ -34,11 +34,13 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.Property;
 import android.view.View;
+import android.view.ViewDebug;
 
 import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
 import com.android.launcher3.CellLayout;
+import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.DropTarget.DragObject;
 import com.android.launcher3.Flags;
 import com.android.launcher3.Launcher;
@@ -56,6 +58,7 @@ import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.Themes;
+import com.android.launcher3.util.Thunk;
 import com.android.launcher3.views.ActivityContext;
 
 import java.util.ArrayList;
@@ -63,17 +66,23 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Stand-in for Launcher3's FolderIcon (android-17.0.0_r1): the folder on the home screen.
- * TextLauncher's folder icon view extends this. The preview is drawn by the copied
- * PreviewItemManager; the members below are copied from FolderIcon.java, changes are marked with
- * "TextLauncher:".
+ * An icon that can appear on in the workspace representing an {@link Folder}.
  *
- * TextLauncher: folders have no names (docs/spec.md 5.2). As in
- * Launcher3, a {@link Folder} is bound to the icon ({@link Folder#bindToIcon}).
+ * <p>Stand-in for Launcher3's FolderIcon (android-17.0.0_r1), made from FolderIcon.java by
+ * deleting what TextLauncher does not use (the folder name and its suggestions, touch handling,
+ * popups, floating icons, leave-behinds, spring loading, accessibility titles); changes are marked
+ * with "TextLauncher:". TextLauncher's folder icon view extends this. Folders have no names
+ * (docs/spec.md 5.2). As in Launcher3, a {@link Folder} is bound to the icon
+ * ({@link Folder#bindToIcon}).
  */
+// TextLauncher: a View with no name label, which the app's folder icon view extends; no popups,
+// floating icons or custom touch handling.
 public abstract class FolderIcon extends View implements DraggableView, Reorderable {
-    protected ActivityContext mActivity;
-    protected FolderInfo mInfo;
+
+    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
+    @Thunk ActivityContext mActivity;
+    @Thunk Folder mFolder;
+    public FolderInfo mInfo;
 
     static final int DROP_IN_ANIMATION_DURATION = 400;
 
@@ -88,20 +97,16 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     boolean mAnimating = false;
 
-    private float mScaleForReorderBounce = 1f;
-
-    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
-
-    Folder mFolder;
-
     private boolean mForceHideDot;
-    @NonNull
+    @ViewDebug.ExportedProperty(category = "launcher", deepExport = true)
     private final FolderDotInfo mDotInfo = new FolderDotInfo();
     private DotRenderer mDotRenderer;
-    @NonNull
+    @ViewDebug.ExportedProperty(category = "launcher", deepExport = true)
     private final DotRenderer.DrawParams mDotParams;
     private float mDotScale;
     private Animator mDotScaleAnim;
+
+    private float mScaleForReorderBounce = 1f;
 
     private static final Property<FolderIcon, Float> DOT_SCALE_PROPERTY
             = new Property<FolderIcon, Float>(Float.TYPE, "dotScale") {
@@ -117,141 +122,53 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         }
     };
 
-    // TextLauncher: FolderIcon(Context) and inflateIcon in one.
+
+    // TextLauncher: FolderIcon(Context, AttributeSet) and inflateIcon in one, since the app's view
+    // extends this instead of being inflated. The app sets the click listener; there is no
+    // content description, accessibility delegate or custom actions listener.
     public FolderIcon(Context context, ActivityContext activity, FolderInfo folderInfo) {
         super(context);
-        mActivity = activity;
-        mInfo = folderInfo;
-        setTag(folderInfo);
+
         mPreviewLayoutRule = new ClippedFolderIconLayoutRule();
         mPreviewItemManager = new PreviewItemManager(this);
-        mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
-        mPreviewVerifier.setFolderInfo(mInfo);
-        updatePreviewItems(false);
-
         mDotParams = new DotRenderer.DrawParams();
         mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
+        // TextLauncher: the ThemeManager stand-in gives the shape info itself (no IconState).
         mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
+
+        // TextLauncher: from inflateIcon.
+        DeviceProfile grid = activity.getDeviceProfile();
+        setTag(folderInfo);
+        mInfo = folderInfo;
+        mActivity = activity;
         mDotRenderer = new DotRenderer(
-                activity.getDeviceProfile().getWorkspaceProfile().getIconSizePx()
+                grid.getWorkspaceProfile().getIconSizePx()
         );
 
         updateDotInfo();
+
+        mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
+        mPreviewVerifier.setFolderInfo(folderInfo);
+        updatePreviewItems(false);
     }
 
-    /** Keep the notification dot up to date with the sum of all the content's dots. */
-    public void updateDotInfo() {
-        boolean hadDot = mDotInfo.hasDot();
-        mDotInfo.reset();
-        for (ItemInfo si : mInfo.getContents()) {
-            mDotInfo.addDotInfo(mActivity.getDotInfoForItem(si));
-        }
-        boolean isDotted = mDotInfo.hasDot();
-        float newDotScale = isDotted ? 1f : 0f;
-        // Animate when a dot is first added or when it is removed.
-        if ((hadDot ^ isDotted) && isShown()) {
-            animateDotScale(newDotScale);
-        } else {
-            cancelDotScaleAnim();
-            mDotScale = newDotScale;
-            invalidate();
-        }
+    public void animateBgShadowAndStroke() {
+        mBackground.fadeInBackgroundShadow();
+        mBackground.animateBackgroundStroke();
     }
 
-    /** TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg). */
-    public void setForceHideDot(boolean forceHideDot) {
-        if (mForceHideDot == forceHideDot) {
-            return;
-        }
-        mForceHideDot = forceHideDot;
-
-        if (forceHideDot) {
-            invalidate();
-        } else if (hasDot()) {
-            animateDotScale(0, 1);
-        }
-    }
-
-    private void cancelDotScaleAnim() {
-        if (mDotScaleAnim != null) {
-            mDotScaleAnim.cancel();
-        }
-    }
-
-    public void animateDotScale(float... dotScales) {
-        cancelDotScaleAnim();
-        mDotScaleAnim = ObjectAnimator.ofFloat(this, DOT_SCALE_PROPERTY, dotScales);
-        mDotScaleAnim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mDotScaleAnim = null;
-            }
-        });
-        mDotScaleAnim.start();
-    }
-
-    public boolean hasDot() {
-        return mDotInfo != null && mDotInfo.hasDot();
-    }
-
-    public void drawDot(Canvas canvas) {
-        if (!mForceHideDot && ((mDotInfo != null && mDotInfo.hasDot()) || mDotScale > 0)) {
-            Rect iconBounds = mDotParams.iconBounds;
-            // FolderIcon draws the icon to be top-aligned (with padding) & horizontally-centered
-            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
-            iconBounds.left = (getWidth() - iconSize) / 2;
-            iconBounds.right = iconBounds.left + iconSize;
-            iconBounds.top = getPaddingTop();
-            iconBounds.bottom = iconBounds.top + iconSize;
-
-            float iconScale = (float) mBackground.previewSize / iconSize;
-            Utilities.scaleRectAboutCenter(iconBounds, iconScale);
-
-            // If we are animating to the accepting state, animate the dot out.
-            mDotParams.scale = Math.max(0, mDotScale - mBackground.getAcceptScaleProgress());
-            mDotRenderer.draw(canvas, mDotParams);
-        }
-    }
-
-    public FolderInfo getFolderInfo() {
-        return mInfo;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        boolean shouldCenterIcon = mActivity.getDeviceProfile().getWorkspaceProfile()
-                .getIconCenterVertically();
-        if (shouldCenterIcon) {
-            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
-            // TextLauncher: no folder name, so only the icon is centered.
-            int cellHeightPx = iconSize;
-            setPadding(getPaddingLeft(), (MeasureSpec.getSize(heightMeasureSpec)
-                    - cellHeightPx) / 2, getPaddingRight(), getPaddingBottom());
-        }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
-    public MultiTranslateDelegate getTranslateDelegate() {
-        return mTranslateDelegate;
-    }
-
-    @Override
-    public void setReorderBounceScale(float scale) {
-        mScaleForReorderBounce = scale;
-        super.setScaleX(scale);
-        super.setScaleY(scale);
-    }
-
-    @Override
-    public float getReorderBounceScale() {
-        return mScaleForReorderBounce;
+    public void getPreviewBounds(Rect outBounds) {
+        mPreviewItemManager.recomputePreviewDrawingParams();
+        mBackground.getBounds(outBounds);
+        // The preview items go outside of the bounds of the background.
+        Utilities.scaleRectAboutCenter(outBounds, ICON_OVERLAP_FACTOR);
     }
 
     public Folder getFolder() {
         return mFolder;
     }
 
+    // TextLauncher: not private; Folder.bindToIcon calls it (inflateFolderAndIcon in Launcher3).
     public void setFolder(Folder folder) {
         mFolder = folder;
     }
@@ -264,10 +181,9 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return !mFolder.isDestroyed() && willAcceptItem(dragInfo);
     }
 
-    /**
-     * TextLauncher: the folder does not open while an item is held over it (SPRING_LOADING_ENABLED
-     * in Launcher3), because the open folder is not a drop target here.
-     */
+    // TextLauncher: the caller passes the CellLayout (the icon's parent is the home grid, whose
+    // parent is not a CellLayout). The folder does not open while an item is held over it
+    // (SPRING_LOADING_ENABLED in Launcher3), because the open folder is not a drop target here.
     public void onDragEnter(ItemInfo dragInfo, CellLayout cl) {
         if (mFolder.isDestroyed() || !willAcceptItem(dragInfo)) return;
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) getLayoutParams();
@@ -386,6 +302,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
             if (!itemAdded) mPreviewItemManager.hidePreviewItem(index, true);
             // TextLauncher: no folder name suggestions.
+
         } else {
             getFolder().addFolderContent(item);
         }
@@ -401,12 +318,67 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         );
     }
 
+    /** Keep the notification dot up to date with the sum of all the content's dots. */
+    public void updateDotInfo() {
+        boolean hadDot = mDotInfo.hasDot();
+        mDotInfo.reset();
+        for (ItemInfo si : mInfo.getContents()) {
+            mDotInfo.addDotInfo(mActivity.getDotInfoForItem(si));
+        }
+        boolean isDotted = mDotInfo.hasDot();
+        float newDotScale = isDotted ? 1f : 0f;
+        // Animate when a dot is first added or when it is removed.
+        if ((hadDot ^ isDotted) && isShown()) {
+            animateDotScale(newDotScale);
+        } else {
+            cancelDotScaleAnim();
+            mDotScale = newDotScale;
+            invalidate();
+        }
+    }
+
     public ClippedFolderIconLayoutRule getLayoutRule() {
         if (Flags.enableExpressiveFolderExpansion() && mPreviewLayoutRule.getIconSize() == 0) {
             // Make sure the layout rule is initialized
             mPreviewItemManager.recomputePreviewDrawingParams();
         }
         return mPreviewLayoutRule;
+    }
+
+    // TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg).
+    public void setForceHideDot(boolean forceHideDot) {
+        if (mForceHideDot == forceHideDot) {
+            return;
+        }
+        mForceHideDot = forceHideDot;
+
+        if (forceHideDot) {
+            invalidate();
+        } else if (hasDot()) {
+            animateDotScale(0, 1);
+        }
+    }
+
+    private void cancelDotScaleAnim() {
+        if (mDotScaleAnim != null) {
+            mDotScaleAnim.cancel();
+        }
+    }
+
+    public void animateDotScale(float... dotScales) {
+        cancelDotScaleAnim();
+        mDotScaleAnim = ObjectAnimator.ofFloat(this, DOT_SCALE_PROPERTY, dotScales);
+        mDotScaleAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mDotScaleAnim = null;
+            }
+        });
+        mDotScaleAnim.start();
+    }
+
+    public boolean hasDot() {
+        return mDotInfo != null && mDotInfo.hasDot();
     }
 
     private float getLocalCenterForIndex(int index, int curNumItems, int[] center) {
@@ -430,6 +402,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         mBackground.setInvalidateDelegate(this);
     }
 
+    // TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg).
     public void setIconVisible(boolean visible) {
         mBackgroundIsVisible = visible;
         invalidate();
@@ -445,13 +418,6 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     public PreviewItemManager getPreviewItemManager() {
         return mPreviewItemManager;
-    }
-
-    public void getPreviewBounds(Rect outBounds) {
-        mPreviewItemManager.recomputePreviewDrawingParams();
-        mBackground.getBounds(outBounds);
-        // The preview items go outside of the bounds of the background.
-        Utilities.scaleRectAboutCenter(outBounds, ICON_OVERLAP_FACTOR);
     }
 
     @Override
@@ -476,6 +442,39 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         }
 
         drawDot(canvas);
+    }
+
+    public void drawDot(Canvas canvas) {
+        if (!mForceHideDot && ((mDotInfo != null && mDotInfo.hasDot()) || mDotScale > 0)) {
+            Rect iconBounds = mDotParams.iconBounds;
+            // FolderIcon draws the icon to be top-aligned (with padding) & horizontally-centered
+            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
+            iconBounds.left = (getWidth() - iconSize) / 2;
+            iconBounds.right = iconBounds.left + iconSize;
+            iconBounds.top = getPaddingTop();
+            iconBounds.bottom = iconBounds.top + iconSize;
+
+            float iconScale = (float) mBackground.previewSize / iconSize;
+            Utilities.scaleRectAboutCenter(iconBounds, iconScale);
+
+            // If we are animating to the accepting state, animate the dot out.
+            mDotParams.scale = Math.max(0, mDotScale - mBackground.getAcceptScaleProgress());
+            mDotRenderer.draw(canvas, mDotParams);
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        boolean shouldCenterIcon = mActivity.getDeviceProfile().getWorkspaceProfile()
+                .getIconCenterVertically();
+        if (shouldCenterIcon) {
+            int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
+            // TextLauncher: no folder name, so only the icon is centered.
+            int cellHeightPx = iconSize;
+            setPadding(getPaddingLeft(), (MeasureSpec.getSize(heightMeasureSpec)
+                    - cellHeightPx) / 2, getPaddingRight(), getPaddingBottom());
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     /**
@@ -506,9 +505,31 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     public void onItemsChanged(boolean animate) {
         updatePreviewItems(false);
         updateDotInfo();
+        // TextLauncher: no content description (no folder titles).
         updatePreviewItems(animate);
         invalidate();
         requestLayout();
+    }
+
+    public void onFolderClose(int currentPage) {
+        mPreviewItemManager.onFolderClose(currentPage);
+    }
+
+    @Override
+    public MultiTranslateDelegate getTranslateDelegate() {
+        return mTranslateDelegate;
+    }
+
+    @Override
+    public void setReorderBounceScale(float scale) {
+        mScaleForReorderBounce = scale;
+        super.setScaleX(scale);
+        super.setScaleY(scale);
+    }
+
+    @Override
+    public float getReorderBounceScale() {
+        return mScaleForReorderBounce;
     }
 
     @Override
@@ -519,6 +540,13 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     @Override
     public void getWorkspaceVisualDragBounds(Rect bounds) {
         getPreviewBounds(bounds);
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /** TextLauncher: the folder's info for callers outside the package (Launcher3 reads mInfo). */
+    public FolderInfo getFolderInfo() {
+        return mInfo;
     }
 
     /**

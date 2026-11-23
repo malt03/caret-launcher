@@ -55,6 +55,7 @@ import com.android.launcher3.shortcuts.ShortcutRequest
 import com.android.launcher3.util.ApplicationInfoWrapper
 import com.android.launcher3.util.CancellableTask
 import com.android.launcher3.util.ComponentKey
+import com.android.launcher3.util.Executors
 import com.android.launcher3.widget.WidgetSections
 import java.util.concurrent.Executor
 import java.util.function.Supplier
@@ -94,6 +95,7 @@ class IconCache(
         // TextLauncher: the main executor of the context (Executors.MAIN_EXECUTOR).
         CancellableTask<Any?>({ null }, context.mainExecutor, {}).apply { cancel() }
 
+    // TextLauncher: the platform UserManager instead of the injected UserCache.
     private val userManager: UserManager = context.getSystemService(UserManager::class.java)!!
 
     private val widgetCategoryBitmapInfos = SparseArray<BitmapInfo>()
@@ -122,7 +124,7 @@ class IconCache(
     /** Closes the cache DB. This will clear any in-memory cache. */
     fun close() {
         // Close the actual DB on the same thread where the cache is used.
-        workerHandler.post {
+        Executors.MODEL_EXECUTOR.execute {
             // This will clear all pending updates
             getUpdateHandler()
             iconDb.close()
@@ -299,6 +301,20 @@ class IconCache(
         }
     }
 
+    /** Loads and returns the icon for the provided object without adding it to memCache */
+    @Synchronized
+    fun getTitleNoCache(info: CachedObject): String {
+        val entry =
+            cacheLocked(
+                info.component,
+                info.user,
+                { info },
+                CachedObjectCachingLogic,
+                CacheLookupFlag.DEFAULT_LOOKUP_FLAG.withUseLowRes().withSkipAddToMemCache(),
+            )
+        return Utilities.trim(entry.title)
+    }
+
     /** Fill in {@param mWorkspaceItemInfo} with the icon and label for {@param info} */
     @Synchronized
     fun getTitleAndIcon(
@@ -315,20 +331,6 @@ class IconCache(
                 lookupFlag,
             )
         applyCacheEntry(entry, infoInOut)
-    }
-
-    /** Returns the title of [info] without adding it to the in-memory cache (the widget picker). */
-    @Synchronized
-    fun getTitleNoCache(info: CachedObject): String {
-        val entry =
-            cacheLocked(
-                info.component,
-                info.user,
-                { info },
-                CachedObjectCachingLogic,
-                CacheLookupFlag.DEFAULT_LOOKUP_FLAG.withUseLowRes().withSkipAddToMemCache(),
-            )
-        return Utilities.trim(entry.title)
     }
 
     // TextLauncher: no bulk loading (getTitlesAndIconsInBulk) for LoaderTask.

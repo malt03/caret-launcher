@@ -21,11 +21,11 @@
 package com.android.launcher3;
 
 import static com.android.launcher3.icons.BitmapInfo.FLAG_NO_BADGE;
+import static com.android.launcher3.icons.BitmapInfo.FLAG_SKIP_USER_BADGE;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_THEMED;
 import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
-import static com.android.launcher3.icons.cache.CacheLookupFlag.DEFAULT_LOOKUP_FLAG;
-
 import static com.android.launcher3.icons.IconNormalizer.ICON_VISIBLE_AREA_FACTOR;
+import static com.android.launcher3.icons.cache.CacheLookupFlag.DEFAULT_LOOKUP_FLAG;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -41,22 +41,29 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.icu.text.MessageFormat;
 import android.text.TextUtils;
+import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewDebug;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.graphics.ThemeManager;
+import com.android.launcher3.icons.BitmapInfo.DrawableCreationFlags;
 import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.icons.DotRenderer.IconShapeInfo;
 import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.icons.IconCache.ItemInfoUpdateReceiver;
+import com.android.launcher3.icons.PlaceHolderDrawableDelegate;
 import com.android.launcher3.icons.cache.CacheLookupFlag;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
@@ -74,40 +81,29 @@ import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * Stand-in for Launcher3's BubbleTextView (android-17.0.0_r1): a TextView that shows an icon.
- * Members are copied from BubbleTextView.java; changes are marked with "TextLauncher:".
+ * TextView that draws a bubble behind the text. We cannot use a LineBackgroundSpan
+ * because we want to make the bubble taller than the text and TextView's clip is
+ * too aggressive.
  *
- * TextLauncher: the home screen's icons have no label, so the app's icon view draws its icon
- * itself; the text is only used where Launcher3 inflates a BubbleTextView from a layout, as in the
- * long-press menu's rows (layout/system_shortcut_content.xml).
+ * <p>Stand-in for Launcher3's BubbleTextView (android-17.0.0_r1), made from BubbleTextView.java
+ * by deleting what TextLauncher does not have (the device profile's sizes, the taskbar, two-line
+ * labels, app title contrast tiles, archived, pending and automated icons, minimal popups, custom
+ * touch handling and the long-press helper); changes are marked with "TextLauncher:".
+ *
+ * <p>TextLauncher: the home screen's icons (the app's AppIconView) have no label; the app says so
+ * with getCellSpecMaxTextLineCount and applyLabel. The search results' icons and the long-press
+ * menu's rows show their text.
  */
-public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, DraggableView,
-        Reorderable, IconViewController {
+public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
+        // TextLauncher: no floating icon views, Poppable or custom touch delegates.
+        DraggableView, Reorderable, IconViewController {
+
     public static final int DISPLAY_WORKSPACE = 0;
     public static final int DISPLAY_ALL_APPS = 1;
     public static final int DISPLAY_FOLDER = 2;
-    public static final int DISPLAY_SEARCH_RESULT_APP_ROW = 9;
-
-    private static final int TEXT_ALPHA_CHANNEL_COUNT = 2;
-    private static final int TEXT_ALPHA_INDEX_CONTAINER_VISIBILITY = 0;
-    private static final int TEXT_ALPHA_INDEX_TRANSITION = 1;
-
-    public static final int DISPLAY_SHORTCUT_POPUP = 4;
     public static final int DISPLAY_TASKBAR = 5;
-
-    private int mTextColor;
-    private ColorStateList mTextColorStateList;
-    private boolean mHideBadge = false;
-
-    private final boolean mLayoutHorizontal;
-    private int mIconSize;
-    private final int mDisplay;
-    private FastBitmapDrawable mIcon;
-    private boolean mIsIconVisible = true;
-    private boolean mCenterVertically;
-
-    private boolean mHighResUpdateInProgress = false;
-    private CancellableTask mIconLoadRequest;
+    public static final int DISPLAY_SEARCH_RESULT_SMALL = 7;
+    public static final int DISPLAY_SEARCH_RESULT_APP_ROW = 9;
 
     private float mScaleForReorderBounce = 1f;
 
@@ -125,14 +121,37 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         }
     };
 
+    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
+    private FastBitmapDrawable mIcon;
+    private boolean mCenterVertically;
+
+    protected int mDisplay;
+
+    private boolean mLayoutHorizontal;
+    private final boolean mIsRtl;
+    private final int mIconSize;
+
+    @ViewDebug.ExportedProperty(category = "launcher")
+    private boolean mHideBadge = false;
+    @ViewDebug.ExportedProperty(category = "launcher")
+    private boolean mSkipUserBadge = false;
+    @ViewDebug.ExportedProperty(category = "launcher")
+    protected boolean mIsIconVisible = true;
+    @ViewDebug.ExportedProperty(category = "launcher")
+    private int mTextColor;
+    @ViewDebug.ExportedProperty(category = "launcher")
+    private ColorStateList mTextColorStateList;
+    @ViewDebug.ExportedProperty(category = "launcher")
     private DotInfo mDotInfo;
-    // TextLauncher: made when the icon size is known (see getDotRenderer).
-    private DotRenderer mDotRenderer;
-    protected final DotRenderer.DrawParams mDotParams = new DotRenderer.DrawParams();
+    private final DotRenderer mDotRenderer;
+    @ViewDebug.ExportedProperty(category = "launcher", deepExport = true)
+    protected final DotRenderer.DrawParams mDotParams;
     private Animator mDotScaleAnim;
     private boolean mForceHideDot;
 
-    private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
+    private static final int TEXT_ALPHA_CHANNEL_COUNT = 2;
+    private static final int TEXT_ALPHA_INDEX_CONTAINER_VISIBILITY = 0;
+    private static final int TEXT_ALPHA_INDEX_TRANSITION = 1;
 
     private final AnimatedFloat mTextAlpha = new AnimatedFloat(() -> {
         if (mTextColorStateList != null) {
@@ -149,6 +168,31 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
                     (a, b) -> a * b,
                     1f);
 
+    /**
+     * Sets the visibility of the text container for a BubbleTextView
+     *
+     * @param visible defines whether we should make the container visible or invisible.
+     */
+    public void setContainerTextVisibility(boolean visible) {
+        mTextAlphaMultiPropertyFactory.get(TEXT_ALPHA_INDEX_CONTAINER_VISIBILITY).setValue(
+                visible ? 1f : 0f);
+    }
+
+    /**
+     * Gets the alpha for text inside a BubbleTextView.
+     *
+     * @return a MultiProperty that has the alpha for the text.
+     */
+    @NonNull
+    @Override
+    public MultiPropertyFactory<AnimatedFloat>.MultiProperty getFloatingViewTextAlpha() {
+        return mTextAlphaMultiPropertyFactory.get(TEXT_ALPHA_INDEX_TRANSITION);
+    }
+
+    private CancellableTask mIconLoadRequest;
+
+    private boolean mHighResUpdateInProgress = false;
+
     public BubbleTextView(Context context) {
         this(context, null, 0);
     }
@@ -159,62 +203,56 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
 
     public BubbleTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.BubbleTextView, defStyle, 0);
         mLayoutHorizontal = a.getBoolean(R.styleable.BubbleTextView_layoutHorizontal, false);
+        mIsRtl = (getResources().getConfiguration().getLayoutDirection()
+                == View.LAYOUT_DIRECTION_RTL);
+        mCenterVertically = a.getBoolean(R.styleable.BubbleTextView_centerVertically, false);
+
         mDisplay = a.getInteger(R.styleable.BubbleTextView_iconDisplay, DISPLAY_WORKSPACE);
-        // TextLauncher: the default size comes from the device profile in Launcher3; the views
-        // that draw an icon here give its size (iconSizeOverride, or getIconSize in the app).
-        mIconSize = a.getDimensionPixelSize(R.styleable.BubbleTextView_iconSizeOverride, 0);
+        // TextLauncher: no device profile for the text size, the drawable padding and the
+        // default icon size; the views that draw an icon give its size (iconSizeOverride, or the
+        // constructor with the icon size).
+        final int defaultIconSize = 0;
+
+
+        mIconSize = a.getDimensionPixelSize(R.styleable.BubbleTextView_iconSizeOverride,
+                defaultIconSize);
         a.recycle();
-        initDotParams(context);
-    }
 
-    /**
-     * TextLauncher: views created in code give their icon size, which Launcher3 takes from the
-     * device profile.
-     */
-    public BubbleTextView(Context context, int iconSize) {
-        this(context, iconSize, DISPLAY_WORKSPACE);
-    }
-
-    /** TextLauncher: also the display (iconDisplay in the layouts of Launcher3). */
-    public BubbleTextView(Context context, int iconSize, int display) {
-        super(context, null, 0);
-        mLayoutHorizontal = false;
-        mDisplay = display;
-        mIconSize = iconSize;
-        initDotParams(context);
-    }
-
-    /** TextLauncher: BubbleTextView's constructor's dot setup, for both constructors. */
-    private void initDotParams(Context context) {
+        mDotParams = new DotRenderer.DrawParams();
         mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
 
         if (mDisplay == DISPLAY_ALL_APPS) {
+            // TextLauncher: the view's icon size, which Launcher3 takes from the device profile.
+            mDotRenderer = new DotRenderer(mIconSize);
+
             // Do not use normalized info, as we account for normalization in iconBounds
             mDotParams.shapeInfo = IconShapeInfo.DEFAULT;
         } else {
+            // TextLauncher: the view's icon size, which Launcher3 takes from the device profile.
+            mDotRenderer = new DotRenderer(mIconSize);
+            // TextLauncher: ThemeManager gives the shape info itself (no IconState).
             mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
         }
+
+        setEllipsize(TruncateAt.END);
+
+        setContainerTextVisibility(mDisplay != DISPLAY_TASKBAR);
     }
 
-    /**
-     * TextLauncher: Launcher3 makes the renderer in the constructor with the device profile's icon
-     * size (all apps or workspace); here it is the view's icon size, which may only be known once
-     * the app's view gives it.
-     */
-    private DotRenderer getDotRenderer() {
-        if (mDotRenderer == null) {
-            mDotRenderer = new DotRenderer(getIconSize());
-        }
-        return mDotRenderer;
+    public void setHideBadge(boolean hideBadge) {
+        mHideBadge = hideBadge;
+    }
+
+    public void setSkipUserBadge(boolean skipUserBadge) {
+        mSkipUserBadge = skipUserBadge;
     }
 
     /**
      * Resets the view so it can be recycled.
-     *
-     * <p>TextLauncher: no minimal popups or line indicators.
      */
     public void reset() {
         mDotInfo = null;
@@ -222,6 +260,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         mDotParams.scale = 0f;
         mForceHideDot = false;
         setBackground(null);
+        // TextLauncher: no minimal popups and no taskbar line indicators.
 
         setTag(null);
         if (mIconLoadRequest != null) {
@@ -235,18 +274,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         setTranslationY(0);
         setMaxLines(1);
         setVisibility(VISIBLE);
-    }
-
-    @UiThread
-    public void applyFromApplicationInfo(AppInfo info) {
-        applyIconAndLabel(info);
-        setItemInfo(info);
-
-        // Verify high res immediately
-        verifyHighRes();
-
-        applyDotState(info, false /* animate */);
-        // TextLauncher: no download states.
     }
 
     private void cancelDotScaleAnim() {
@@ -267,6 +294,31 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         mDotScaleAnim.start();
     }
 
+    @UiThread
+    public void applyFromWorkspaceItem(WorkspaceItemInfo info) {
+        applyIconAndLabel(info);
+        setItemInfo(info);
+
+        // NOTE: We do not verify high res immediately for workspace items as doing so would result
+        // in eager loading of icons for foldered items which should instead be lazily loaded on
+        // first open.
+
+        applyDotState(info, false /* animate */);
+        // TextLauncher: no download states.
+    }
+
+    @UiThread
+    public void applyFromApplicationInfo(AppInfo info) {
+        applyIconAndLabel(info);
+        setItemInfo(info);
+
+        // Verify high res immediately
+        verifyHighRes();
+
+        applyDotState(info, false /* animate */);
+        // TextLauncher: no download states.
+    }
+
     /**
      * Apply label and tag using a generic {@link ItemInfoWithIcon}
      */
@@ -282,15 +334,317 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         // TextLauncher: no download states.
     }
 
+    protected void setItemInfo(ItemInfoWithIcon itemInfo) {
+        setTag(itemInfo);
+    }
+
+    // TextLauncher: no automated or pending icons, so this is always setStandardIcon (for other
+    // icons hasPendingAnimationCompleted is true) without the automated icon's exit animation.
+    @VisibleForTesting
+    @UiThread
+    public void applyIconAndLabel(ItemInfoWithIcon info) {
+        FastBitmapDrawable iconDrawable =
+                info.newIcon(getContext(), getIconCreationFlagsForInfo(info));
+        setIcon(iconDrawable);
+        applyLabel(info);
+    }
+
+    /**
+     * Returns the creation flags to be used when generating icons for this view
+     */
+    @DrawableCreationFlags
+    public int getIconCreationFlagsForInfo(ItemInfoWithIcon info) {
+        // Set nonPendingIcon acts as a restart which should refresh the flag state when applicable.
+        int flags = shouldUseTheme() ? FLAG_THEMED : 0;
+        // Remove badge on icons smaller than 48dp. Except for in 2026 refresh which uses 40dp
+        // for small icon.
+        if (mHideBadge || mDisplay == DISPLAY_SEARCH_RESULT_SMALL) {
+            flags |= FLAG_NO_BADGE;
+        }
+        if (mSkipUserBadge) {
+            flags |= FLAG_SKIP_USER_BADGE;
+        }
+        return flags;
+    }
+
+    protected boolean shouldUseTheme() {
+        return mDisplay == DISPLAY_WORKSPACE || mDisplay == DISPLAY_FOLDER
+                || mDisplay == DISPLAY_TASKBAR;
+    }
+
+    /**
+     * @return The number of lines the that the cell spec associated with the BubbleTextView
+     * declared it can support.
+     */
+    // TextLauncher: protected, so that a view without a label (the app's AppIconView) can say 0.
+    protected int getCellSpecMaxTextLineCount() {
+        // TextLauncher: enableScalabilityForDesktopExperience is disabled in the release config.
+        return 1;
+    }
+
+    @UiThread
+    public void applyLabel(ItemInfo info) {
+        // TextLauncher: no archived apps.
+        applyLabel(info.title, info.contentDescription,
+                false, info.isDisabled());
+    }
+
+    private void applyLabel(@Nullable CharSequence label, @Nullable CharSequence contentDescription,
+            boolean isTextWithArchivingIcon, boolean isItemDisabled) {
+        if (label != null) {
+            // TextLauncher: no two-line labels and no archived apps.
+            setText(label);
+        }
+        if (contentDescription != null) {
+            setContentDescription(isItemDisabled
+                    ? getContext().getString(R.string.disabled_app_label, contentDescription)
+                    : contentDescription);
+        }
+    }
+
+    /** Returns the icon for this view. */
+    public FastBitmapDrawable getIcon() {
+        return mIcon;
+    }
+
+    /**
+     * Returns true if the touch down at the provided position be ignored
+     */
+    protected boolean shouldIgnoreTouchDown(MotionEvent event) {
+        if (mDisplay == DISPLAY_TASKBAR) {
+            // Allow touching within padding on taskbar, given icon sizes are smaller.
+            return false;
+        }
+        return event.getY() < getPaddingTop()
+                || event.getX() < getPaddingLeft()
+                || event.getY() > getHeight() - getPaddingBottom()
+                || event.getX() > getWidth() - getPaddingRight();
+    }
+
+    public void clearPressedBackground() {
+        setPressed(false);
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        // TextLauncher: no selection highlight (keyboard focus draws an outline) and no taskbar.
+        super.onDraw(canvas);
+        drawDotIfNecessary(canvas);
+    }
+
+    /**
+     * Draws the notification dot in the top right corner of the icon bounds.
+     *
+     * @param canvas The canvas to draw to.
+     */
+    protected void drawDotIfNecessary(Canvas canvas) {
+        if (!mForceHideDot && (hasDot() || mDotParams.scale > 0)) {
+            getIconBounds(mDotParams.iconBounds);
+            Utilities.scaleRectAboutCenter(mDotParams.iconBounds, ICON_VISIBLE_AREA_FACTOR);
+            final int scrollX = getScrollX();
+            final int scrollY = getScrollY();
+            canvas.translate(scrollX, scrollY);
+            mDotRenderer.draw(canvas, mDotParams);
+            canvas.translate(-scrollX, -scrollY);
+        }
+    }
+
+    @Override
+    public void setForceHideDot(boolean forceHideDot) {
+        if (mForceHideDot == forceHideDot) {
+            return;
+        }
+        mForceHideDot = forceHideDot;
+
+        if (forceHideDot) {
+            invalidate();
+        } else if (hasDot()) {
+            animateDotScale(0, 1);
+        }
+    }
+
+    @VisibleForTesting
+    public boolean getForceHideDot() {
+        return mForceHideDot;
+    }
+
+    public boolean hasDot() {
+        return mDotInfo != null;
+    }
+
+    /**
+     * Get the icon bounds on the view depending on the layout type.
+     */
+    public void getIconBounds(Rect outBounds) {
+        getIconBounds(mIconSize, outBounds);
+    }
+
+    /**
+     * Get the icon bounds on the view depending on the layout type.
+     */
+    public void getIconBounds(int iconSize, Rect outBounds) {
+        outBounds.set(0, 0, iconSize, iconSize);
+        if (mLayoutHorizontal) {
+            int top = (getHeight() - iconSize) / 2;
+            if (mIsRtl) {
+                outBounds.offsetTo(getWidth() - iconSize - getPaddingRight(), top);
+            } else {
+                outBounds.offsetTo(getPaddingLeft(), top);
+            }
+        } else {
+            outBounds.offset((getWidth() - iconSize) / 2, getPaddingTop());
+        }
+    }
+
+    /**
+     * Sets whether to vertically center the content.
+     */
+    public void setCenterVertically(boolean centerVertically) {
+        mCenterVertically = centerVertically;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        if (mCenterVertically) {
+            Paint.FontMetrics fm = getPaint().getFontMetrics();
+            int cellHeightPx = mIconSize + getCompoundDrawablePadding() +
+                    (int) Math.ceil(fm.bottom - fm.top) * getCellSpecMaxTextLineCount();
+            setPadding(getPaddingLeft(), (height - cellHeightPx) / 2, getPaddingRight(),
+                    getPaddingBottom());
+        }
+        // TextLauncher: no app title contrast tiles and no two-line labels.
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    public void setTextColor(int color) {
+        mTextColor = color;
+        mTextColorStateList = null;
+        super.setTextColor(getModifiedColor());
+    }
+
+    @Override
+    public void setTextColor(ColorStateList colors) {
+        // TextLauncher: no app title contrast tiles.
+        mTextColor = colors.getDefaultColor();
+        mTextColorStateList = colors;
+
+        // mTextAlpha could be null if setTextColor is called before BubbleTextView is initialized.
+        if (mTextAlpha != null && Float.compare(mTextAlpha.value, 1f) == 0) {
+            super.setTextColor(colors);
+        } else {
+            super.setTextColor(getModifiedColor());
+        }
+    }
+
+    @Override
+    public int getIconHeight() {
+        if (mIcon == null) {
+            return 0;
+        }
+
+        return mIcon.getBounds().height();
+    }
+
+    private int getModifiedColor() {
+        if (mTextAlpha != null && mTextAlpha.value == 0f) {
+            // Special case to prevent text shadows in high contrast mode
+            return Color.TRANSPARENT;
+        }
+        return setColorAlphaBound(mTextColor, Math.round(Color.alpha(mTextColor)
+                * (mTextAlpha != null ? mTextAlpha.value : 1f)));
+    }
+
+    public void applyDotState(ItemInfo itemInfo, boolean animate) {
+        if (mIcon != null) {
+            boolean wasDotted = mDotInfo != null;
+            // TextLauncher: no mActivity field; the ActivityContext is looked up here.
+            mDotInfo = ActivityContext.lookupContext(getContext()).getDotInfoForItem(itemInfo);
+            boolean isDotted = mDotInfo != null;
+            float newDotScale = isDotted ? 1f : 0;
+            if (wasDotted || isDotted) {
+                // Animate when a dot is first added or when it is removed.
+                if (animate && (wasDotted ^ isDotted) && isShown()) {
+                    animateDotScale(newDotScale);
+                } else {
+                    cancelDotScaleAnim();
+                    mDotParams.scale = newDotScale;
+                    invalidate();
+                }
+            }
+            if (!TextUtils.isEmpty(itemInfo.contentDescription)) {
+                if (itemInfo.isDisabled()) {
+                    setContentDescription(getContext().getString(R.string.disabled_app_label,
+                            itemInfo.contentDescription));
+                // TextLauncher: no archived apps.
+                } else if (hasDot()) {
+                    int count = mDotInfo.getNotificationCount();
+                    setContentDescription(
+                            getAppLabelPluralString(itemInfo.contentDescription.toString(), count));
+                } else {
+                    setContentDescription(itemInfo.contentDescription);
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the icon for this view based on the layout direction.
+     */
+    protected void setIcon(FastBitmapDrawable icon) {
+        if (mIsIconVisible) {
+            applyCompoundDrawables(icon);
+        }
+        mIcon = icon;
+        if (mIcon != null) {
+            mIcon.setVisible(getWindowVisibility() == VISIBLE && isShown(), false);
+            mIcon.setHoverScaleEnabledForDisplay(mDisplay != DISPLAY_TASKBAR);
+        }
+    }
+
+    @Override
+    public void setIconVisible(boolean visible) {
+        mIsIconVisible = visible;
+        if (!mIsIconVisible) {
+            resetIconScale();
+        }
+        Drawable icon = getIconOrTransparentColor();
+        applyCompoundDrawables(icon);
+    }
+
+    private Drawable getIconOrTransparentColor() {
+        return mIsIconVisible ? mIcon : new ColorDrawable(Color.TRANSPARENT);
+    }
+
+    protected void applyCompoundDrawables(Drawable icon) {
+        if (icon == null) {
+            // Icon can be null when we use the BubbleTextView for text only.
+            return;
+        }
+
+        // TextLauncher: relayout is not held off while the icon is applied.
+
+        icon.setBounds(0, 0, mIconSize, mIconSize);
+
+        updateIcon(icon);
+
+        // If the current icon is a placeholder color, animate its update.
+        if (mIcon != null
+                && (mIcon.getDelegate() instanceof PlaceHolderDrawableDelegate delegate)
+                && mHighResUpdateInProgress) {
+            delegate.animateIconUpdate(icon);
+        }
+    }
+
     /**
      * Applies the item info if it is same as what the view is pointing to currently.
-     *
-     * <p>TextLauncher: relayout is not held off while the icon is applied.
      */
     @Override
     public void reapplyItemInfo(ItemInfoWithIcon info) {
         if (getTag() == info) {
             mIconLoadRequest = null;
+            // TextLauncher: relayout is not held off while the icon is applied.
             mHighResUpdateInProgress = true;
 
             // Optimization: Starting in N, pre-uploads the bitmap to RenderThread.
@@ -328,306 +682,8 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         return mIconSize;
     }
 
-    /** Returns the icon for this view. */
-    public FastBitmapDrawable getIcon() {
-        return mIcon;
-    }
-
     public int getIconDisplay() {
         return mDisplay;
-    }
-
-    public void applyFromWorkspaceItem(WorkspaceItemInfo info) {
-        applyIconAndLabel(info);
-        setItemInfo(info);
-
-        // NOTE: We do not verify high res immediately for workspace items as doing so would result
-        // in eager loading of icons for foldered items which should instead be lazily loaded on
-        // first open.
-
-        applyDotState(info, false /* animate */);
-        // TextLauncher: no download states.
-    }
-
-    protected void setItemInfo(ItemInfoWithIcon itemInfo) {
-        setTag(itemInfo);
-    }
-
-    /** TextLauncher: no automated or pending icons, so always BubbleTextView.setStandardIcon. */
-    public void applyIconAndLabel(ItemInfoWithIcon info) {
-        FastBitmapDrawable iconDrawable =
-                info.newIcon(getContext(), getIconCreationFlagsForInfo(info));
-        setIcon(iconDrawable);
-        applyLabel(info);
-    }
-
-    /**
-     * Returns the creation flags for the icon of the given info.
-     */
-    public int getIconCreationFlagsForInfo(ItemInfoWithIcon info) {
-        // Set nonPendingIcon acts as a restart which should refresh the flag state when applicable.
-        int flags = shouldUseTheme() ? FLAG_THEMED : 0;
-        // Remove badge on icons smaller than 48dp.
-        if (mHideBadge) {
-            flags |= FLAG_NO_BADGE;
-        }
-        return flags;
-    }
-
-    protected boolean shouldUseTheme() {
-        return mDisplay == DISPLAY_WORKSPACE || mDisplay == DISPLAY_FOLDER
-                || mDisplay == DISPLAY_TASKBAR;
-    }
-
-    public void applyLabel(ItemInfo info) {
-        CharSequence label = info.title;
-        if (label != null) {
-            setText(label);
-        }
-        if (info.contentDescription != null) {
-            setContentDescription(info.contentDescription);
-        }
-    }
-
-    protected void setIcon(FastBitmapDrawable icon) {
-        if (mIsIconVisible) {
-            applyCompoundDrawables(icon);
-        }
-        mIcon = icon;
-        if (mIcon != null) {
-            mIcon.setVisible(getWindowVisibility() == VISIBLE && isShown(), false);
-        }
-    }
-
-    protected void applyCompoundDrawables(Drawable icon) {
-        if (icon == null) {
-            // Icon can be null when we use the BubbleTextView for text only.
-            return;
-        }
-
-        icon.setBounds(0, 0, mIconSize, mIconSize);
-
-        updateIcon(icon);
-    }
-
-    private void updateIcon(Drawable newIcon) {
-        if (mLayoutHorizontal) {
-            setCompoundDrawablesRelative(newIcon, null, null, null);
-        } else {
-            setCompoundDrawables(null, newIcon, null, null);
-        }
-    }
-
-    protected boolean shouldIgnoreTouchDown(MotionEvent event) {
-        if (mDisplay == DISPLAY_TASKBAR) {
-            // Allow touching within padding on taskbar, given icon sizes are smaller.
-            return false;
-        }
-        return event.getY() < getPaddingTop()
-                || event.getX() < getPaddingLeft()
-                || event.getY() > getHeight() - getPaddingBottom()
-                || event.getX() > getWidth() - getPaddingRight();
-    }
-
-    /**
-     * Sets whether to vertically center the content.
-     */
-    public void setCenterVertically(boolean centerVertically) {
-        mCenterVertically = centerVertically;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        if (mCenterVertically) {
-            Paint.FontMetrics fm = getPaint().getFontMetrics();
-            int cellHeightPx = mIconSize + getCompoundDrawablePadding() +
-                    (int) Math.ceil(fm.bottom - fm.top) * getCellSpecMaxTextLineCount();
-            setPadding(getPaddingLeft(), (height - cellHeightPx) / 2, getPaddingRight(),
-                    getPaddingBottom());
-        }
-        // TextLauncher: no app contrast tiles and no two-line labels.
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    /**
-     * @return The number of lines the that the cell spec associated with the BubbleTextView
-     * declared it can support.
-     *
-     * TextLauncher: 1 as with enableScalabilityForDesktopExperience disabled; protected so that a
-     * view without a label can say 0.
-     */
-    protected int getCellSpecMaxTextLineCount() {
-        return 1;
-    }
-
-    @Override
-    public void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawDotIfNecessary(canvas);
-    }
-
-    /**
-     * Draws the notification dot in the top right corner of the icon bounds.
-     *
-     * @param canvas The canvas to draw to.
-     */
-    protected void drawDotIfNecessary(Canvas canvas) {
-        if (!mForceHideDot && (hasDot() || mDotParams.scale > 0)) {
-            getIconBounds(getIconSize(), mDotParams.iconBounds);
-            Utilities.scaleRectAboutCenter(mDotParams.iconBounds, ICON_VISIBLE_AREA_FACTOR);
-            final int scrollX = getScrollX();
-            final int scrollY = getScrollY();
-            canvas.translate(scrollX, scrollY);
-            getDotRenderer().draw(canvas, mDotParams);
-            canvas.translate(-scrollX, -scrollY);
-        }
-    }
-
-    public void setHideBadge(boolean hideBadge) {
-        mHideBadge = hideBadge;
-    }
-
-    public void clearPressedBackground() {
-        setPressed(false);
-    }
-
-    /**
-     * Sets the visibility of the text container for a BubbleTextView
-     *
-     * @param visible defines whether we should make the container visible or invisible.
-     */
-    public void setContainerTextVisibility(boolean visible) {
-        mTextAlphaMultiPropertyFactory.get(TEXT_ALPHA_INDEX_CONTAINER_VISIBILITY).setValue(
-                visible ? 1f : 0f);
-    }
-
-    /**
-     * Gets the alpha for text inside a BubbleTextView.
-     *
-     * @return a MultiProperty that has the alpha for the text.
-     */
-    @NonNull
-    @Override
-    public MultiPropertyFactory<AnimatedFloat>.MultiProperty getFloatingViewTextAlpha() {
-        return mTextAlphaMultiPropertyFactory.get(TEXT_ALPHA_INDEX_TRANSITION);
-    }
-
-    @Override
-    public void setTextColor(int color) {
-        mTextColor = color;
-        mTextColorStateList = null;
-        super.setTextColor(getModifiedColor());
-    }
-
-    @Override
-    public void setTextColor(ColorStateList colors) {
-        // TextLauncher: no app title contrast tiles.
-        mTextColor = colors.getDefaultColor();
-        mTextColorStateList = colors;
-
-        // mTextAlpha could be null if setTextColor is called before BubbleTextView is initialized.
-        if (mTextAlpha != null && Float.compare(mTextAlpha.value, 1f) == 0) {
-            super.setTextColor(colors);
-        } else {
-            super.setTextColor(getModifiedColor());
-        }
-    }
-
-    private int getModifiedColor() {
-        if (mTextAlpha != null && mTextAlpha.value == 0f) {
-            // Special case to prevent text shadows in high contrast mode
-            return Color.TRANSPARENT;
-        }
-        return setColorAlphaBound(mTextColor, Math.round(Color.alpha(mTextColor)
-                * (mTextAlpha != null ? mTextAlpha.value : 1f)));
-    }
-
-    @Override
-    public void setForceHideDot(boolean forceHideDot) {
-        if (mForceHideDot == forceHideDot) {
-            return;
-        }
-        mForceHideDot = forceHideDot;
-
-        if (forceHideDot) {
-            invalidate();
-        } else if (hasDot()) {
-            animateDotScale(0, 1);
-        }
-    }
-
-    public boolean getForceHideDot() {
-        return mForceHideDot;
-    }
-
-    public boolean hasDot() {
-        return mDotInfo != null;
-    }
-
-    public void applyDotState(ItemInfo itemInfo, boolean animate) {
-        if (mIcon != null) {
-            boolean wasDotted = mDotInfo != null;
-            mDotInfo = ActivityContext.lookupContext(getContext()).getDotInfoForItem(itemInfo);
-            boolean isDotted = mDotInfo != null;
-            float newDotScale = isDotted ? 1f : 0;
-            if (wasDotted || isDotted) {
-                // Animate when a dot is first added or when it is removed.
-                if (animate && (wasDotted ^ isDotted) && isShown()) {
-                    animateDotScale(newDotScale);
-                } else {
-                    cancelDotScaleAnim();
-                    mDotParams.scale = newDotScale;
-                    invalidate();
-                }
-            }
-            if (!TextUtils.isEmpty(itemInfo.contentDescription)) {
-                if (itemInfo.isDisabled()) {
-                    setContentDescription(getContext().getString(R.string.disabled_app_label,
-                            itemInfo.contentDescription));
-                } else if (hasDot()) {
-                    int count = mDotInfo.getNotificationCount();
-                    setContentDescription(
-                            getAppLabelPluralString(itemInfo.contentDescription.toString(), count));
-                } else {
-                    setContentDescription(itemInfo.contentDescription);
-                }
-            }
-        }
-    }
-
-    private String getAppLabelPluralString(String appName, int notificationCount) {
-        MessageFormat icuCountFormat = new MessageFormat(
-                getResources().getString(R.string.dotted_app_label),
-                Locale.getDefault());
-        HashMap<String, Object> args = new HashMap();
-        args.put("app_name", appName);
-        args.put("count", notificationCount);
-        return icuCountFormat.format(args);
-    }
-
-    @Override
-    public void setIconVisible(boolean visible) {
-        mIsIconVisible = visible;
-        if (!mIsIconVisible) {
-            resetIconScale();
-        }
-        Drawable icon = getIconOrTransparentColor();
-        applyCompoundDrawables(icon);
-    }
-
-    private Drawable getIconOrTransparentColor() {
-        return mIsIconVisible ? mIcon : new ColorDrawable(Color.TRANSPARENT);
-    }
-
-    @Override
-    public int getIconHeight() {
-        FastBitmapDrawable icon = getIcon();
-        if (icon == null) {
-            return 0;
-        }
-
-        return icon.getBounds().height();
     }
 
     @Override
@@ -652,23 +708,13 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
         return DRAGGABLE_ICON;
     }
 
-    /**
-     * Returns the bounds of the icon. TextLauncher: never laid out horizontally; the icon is at
-     * the top padding, like a vertical BubbleTextView.
-     */
-    public void getIconBounds(int iconSize, Rect outBounds) {
-        outBounds.set(0, 0, iconSize, iconSize);
-        outBounds.offset((getWidth() - iconSize) / 2, getPaddingTop());
-    }
-
     @Override
     public void getWorkspaceVisualDragBounds(Rect bounds) {
-        getIconBounds(getIconSize(), bounds);
+        getIconBounds(mIconSize, bounds);
     }
 
-    @Override
     public void getSourceVisualDragBounds(Rect bounds) {
-        getIconBounds(getIconSize(), bounds);
+        getIconBounds(mIconSize, bounds);
     }
 
     @Override
@@ -680,9 +726,64 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver, 
     }
 
     private void resetIconScale() {
-        FastBitmapDrawable icon = getIcon();
-        if (icon != null) {
-            icon.resetScale();
+        if (mIcon != null) {
+            mIcon.resetScale();
+        }
+    }
+
+    private void updateIcon(Drawable newIcon) {
+        if (mLayoutHorizontal) {
+            setCompoundDrawablesRelative(newIcon, null, null, null);
+        } else {
+            setCompoundDrawables(null, newIcon, null, null);
+        }
+    }
+
+    private String getAppLabelPluralString(String appName, int notificationCount) {
+        MessageFormat icuCountFormat = new MessageFormat(
+                getResources().getString(R.string.dotted_app_label),
+                Locale.getDefault());
+        HashMap<String, Object> args = new HashMap();
+        args.put("app_name", appName);
+        args.put("count", notificationCount);
+        return icuCountFormat.format(args);
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * The iconDisplay of the long-press menu's rows (shortcut_popup in the BubbleTextView
+     * attributes), which Launcher3 has no constant for.
+     */
+    public static final int DISPLAY_SHORTCUT_POPUP = 4;
+
+    /**
+     * For views created in code, which give their icon size; Launcher3 takes it from the device
+     * profile.
+     */
+    public BubbleTextView(Context context, int iconSize) {
+        this(context, iconSize, DISPLAY_WORKSPACE);
+    }
+
+    /**
+     * Also the display (iconDisplay in Launcher3's layouts). Sets up the view as the constructor
+     * with attributes does, with the given icon size and display and no layout attributes.
+     */
+    public BubbleTextView(Context context, int iconSize, int display) {
+        super(context, null, 0);
+        mIsRtl = (getResources().getConfiguration().getLayoutDirection()
+                == View.LAYOUT_DIRECTION_RTL);
+        mDisplay = display;
+        mIconSize = iconSize;
+
+        mDotParams = new DotRenderer.DrawParams();
+        mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
+        mDotRenderer = new DotRenderer(mIconSize);
+        if (mDisplay == DISPLAY_ALL_APPS) {
+            // Do not use normalized info, as we account for normalization in iconBounds
+            mDotParams.shapeInfo = IconShapeInfo.DEFAULT;
+        } else {
+            mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
         }
     }
 }

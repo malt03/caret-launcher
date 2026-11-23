@@ -34,9 +34,13 @@ import com.android.launcher3.R
  * saved (Launcher3 reads it back to skip the transition).
  */
 class WallpaperThemeManager(private val activity: Activity) :
+    // TextLauncher: ActivityLifecycleCallbacks, with the callbacks written out at the end (no
+    // ActivityLifecycleCallbacksAdapter).
     OnColorHintListener, ActivityLifecycleCallbacks, ComponentCallbacks {
 
     private var themeRes: Int = R.style.AppTheme
+
+    // TextLauncher: no recreateToUpdateTheme flag (see onActivitySaveInstanceState).
 
     init {
         // Update theme
@@ -51,14 +55,15 @@ class WallpaperThemeManager(private val activity: Activity) :
         activity.registerComponentCallbacks(this)
     }
 
-    override fun onActivityDestroyed(unused: Activity) {
+    // TextLauncher: the recreate flag is not saved; Launcher3 reads it back
+    // (RUNTIME_STATE_RECREATE_TO_UPDATE_THEME) to skip the transition, TextLauncher does not.
+    override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
+
+    override fun onActivityDestroyed(unused: Activity) =
         WallpaperColorHints.get(activity).unregisterOnColorsChangedListener(this)
-        activity.unregisterComponentCallbacks(this)
-    }
 
     override fun onConfigurationChanged(config: Configuration) = updateTheme()
 
-    @Deprecated("Deprecated in Java")
     override fun onLowMemory() {}
 
     override fun onColorHintsChanged(colorHints: Int) = updateTheme()
@@ -70,18 +75,38 @@ class WallpaperThemeManager(private val activity: Activity) :
     }
 
     fun recreateToUpdateTheme() {
+        // TextLauncher: no recreate flag to set.
         activity.recreate()
     }
 
+    companion object {
+
+        /**
+         * Sets a wallpaper dependent theme on this activity. The activity is automatically
+         * recreated when a wallpaper change can potentially change the theme.
+         */
+        @JvmStatic
+        fun Activity.setWallpaperDependentTheme() {
+            if (!isDestroyed) {
+                WallpaperThemeManager(this)
+            }
+        }
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
 
+    /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityStarted(activity: Activity) {}
 
+    /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityResumed(activity: Activity) {}
 
+    /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityPaused(activity: Activity) {}
 
+    /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityStopped(activity: Activity) {}
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 }

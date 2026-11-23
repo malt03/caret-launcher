@@ -119,9 +119,10 @@ class AllAppsView(
             val index = AlphabeticIndexCompat(LocaleList.getDefault())
             val apps = entries.map { entry ->
                 AllAppsAppInfo(entry).apply {
-                    title = Utilities.trim(entry.label)
-                    contentDescription = title
-                    sectionName = index.computeSectionName(title)
+                    val label = Utilities.trim(entry.label)
+                    title = label
+                    contentDescription = label
+                    sectionName = index.computeSectionName(label)
                     iconLoader.cached(entry)?.let { bitmap = it }
                 }
             }.sortedWith(AppInfo.COMPONENT_KEY_COMPARATOR)

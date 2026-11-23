@@ -35,9 +35,17 @@ class AppIconView(context: Context, iconSizePx: Int) : BubbleTextView(context, i
     /** No label (docs/spec.md 5.2), so only the icon is centered. */
     override fun getCellSpecMaxTextLineCount(): Int = 0
 
-    /** BubbleTextView.applyLabel without the text (docs/spec.md 5.2): only the description. */
+    /**
+     * BubbleTextView.applyLabel without the text (docs/spec.md 5.2): only the description, which
+     * says "Disabled" for a disabled item as Launcher3's does.
+     */
     override fun applyLabel(info: ItemInfo) {
-        contentDescription = info.contentDescription ?: info.title
+        val description = info.contentDescription ?: info.title ?: return
+        contentDescription = if (info.isDisabled) {
+            context.getString(com.android.launcher3.R.string.disabled_app_label, description)
+        } else {
+            description
+        }
     }
 }
 

@@ -2,8 +2,6 @@ package com.malt03.textlauncher.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.GradientDrawable
-import androidx.core.content.res.ResourcesCompat
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
@@ -28,12 +26,6 @@ class HomeFolder(
         // field (docs/spec.md 1, 2.6): only keys give it the focus.
         isFocusableInTouchMode = false
 
-        // Folder: R.drawable.round_rect_folder
-        val drawable = ResourcesCompat.getDrawable(
-            resources, com.android.launcher3.R.drawable.round_rect_folder, context.theme,
-        ) as GradientDrawable
-        mBackground.color = drawable.color
-        mBackground.cornerRadius = drawable.cornerRadius
         val padding = (16 * resources.displayMetrics.density).toInt()
         mContent.setPadding(padding, padding, padding, padding)
     }

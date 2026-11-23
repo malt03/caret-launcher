@@ -32,8 +32,8 @@ import androidx.annotation.Nullable;
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
-import com.android.launcher3.util.PackageUserKey;
 import com.android.launcher3.util.ComponentKey;
+import com.android.launcher3.util.PackageUserKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,31 +46,38 @@ import java.util.function.Predicate;
 /**
  * A utility class to maintain the collection of all apps.
  *
- * <p>Stand-in for Launcher3's AllAppsStore (android-17.0.0_r1): the apps and their update
- * listeners. TextLauncher: the app sets the apps (AppsListRepository in Launcher3); no deferred
- * updates, uids, model flags, notification dots or download progress.
+ * <p>Stand-in for Launcher3's AllAppsStore (android-17.0.0_r1), made from AllAppsStore.java by
+ * deleting what TextLauncher does not have (Dagger, deferred updates, uids, model flags, download
+ * progress and the dump); changes are marked with "TextLauncher:".
  */
 public class AllAppsStore {
 
     private static final String TAG = "AllAppsStore";
 
+    private PackageUserKey mTempKey = new PackageUserKey(null, null);
     private AppInfo mTempInfo = new AppInfo();
 
     private @NonNull AppInfo[] mApps = EMPTY_ARRAY;
 
     private final List<OnUpdateListener> mUpdateListeners = new CopyOnWriteArrayList<>();
     private final ArrayList<ViewGroup> mIconContainers = new ArrayList<>();
-    private PackageUserKey mTempKey = new PackageUserKey(null, null);
 
     public AppInfo[] getApps() {
         return mApps;
     }
 
+    // TextLauncher: ActivityComponent makes it, and the app sets the apps (setApps) instead of
+    // AppsListRepository.
+    public AllAppsStore() {
+    }
+
     /**
-     * Sets the current set of apps.
+     * Sets the current set of apps and sets mapping for {@link PackageUserKey} to Uid for
+     * the current set of apps.
      *
      * <p>Param: apps are required to be sorted using the comparator COMPONENT_KEY_COMPARATOR
      * in order to enable binary search on the mApps store
+     * TextLauncher: without the model flags and the uid map.
      */
     public void setApps(@Nullable AppInfo[] apps) {
         mApps = apps == null ? EMPTY_ARRAY : apps;
@@ -101,10 +108,19 @@ public class AllAppsStore {
     }
 
     private void notifyUpdate() {
+        // TextLauncher: no deferred updates.
         Log.d(TAG, "notifyUpdate: notifying listeners");
         for (OnUpdateListener listener : mUpdateListeners) {
             listener.onAppsUpdated();
         }
+    }
+
+    public void addUpdateListener(OnUpdateListener listener) {
+        mUpdateListeners.add(listener);
+    }
+
+    public void removeUpdateListener(OnUpdateListener listener) {
+        mUpdateListeners.remove(listener);
     }
 
     public void registerIconContainer(ViewGroup container) {
@@ -140,14 +156,6 @@ public class AllAppsStore {
                 }
             }
         }
-    }
-
-    public void addUpdateListener(OnUpdateListener listener) {
-        mUpdateListeners.add(listener);
-    }
-
-    public void removeUpdateListener(OnUpdateListener listener) {
-        mUpdateListeners.remove(listener);
     }
 
     public interface OnUpdateListener {

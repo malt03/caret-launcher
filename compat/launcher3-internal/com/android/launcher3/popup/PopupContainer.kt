@@ -172,6 +172,8 @@ open class PopupContainer<T : ActivityContext>(
         handleClose(/* animate */ true)
     }
 
+    // TextLauncher: `View?`, since DragController.cancelDrag passes a null target, and the Gradle
+    // Kotlin build's parameter null check would throw on it for a non-null `View`.
     override fun onDropCompleted(target: View?, d: DragObject, success: Boolean) {}
 
     @CallSuper

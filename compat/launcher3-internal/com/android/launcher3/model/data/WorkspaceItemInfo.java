@@ -27,38 +27,43 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
+import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.LauncherSettings.Favorites;
+import com.android.launcher3.Utilities;
 import com.android.launcher3.shortcuts.ShortcutKey;
 
 /**
- * Stand-in for Launcher3's WorkspaceItemInfo (android-17.0.0_r1): an app, or an app shortcut in
- * the long-press menu. The app shortcut members are copied from WorkspaceItemInfo.java; changes
- * are marked with "TextLauncher:".
+ * Represents a launchable icon on the workspaces and in folders.
+ *
+ * <p>Stand-in for Launcher3's WorkspaceItemInfo (android-17.0.0_r1), made from
+ * WorkspaceItemInfo.java by deleting what TextLauncher does not have (the database, restore and
+ * install status, promise icons, archived apps, bubbles and private space); changes are marked
+ * with "TextLauncher:".
  */
 public class WorkspaceItemInfo extends ItemInfoWithIcon {
-    private static final String TAG = "WorkspaceItemInfo";
 
-    /** The intent used to start the application. */
+    /**
+     * The intent used to start the application.
+     */
     @NonNull
+    // TextLauncher: never null; the app's item for an app (AppItemInfo) has no intent.
     public Intent intent = new Intent();
 
     /**
-     * If isDisabled(), this field may contain a message that describes why the item is disabled.
-     * TextLauncher: as in Launcher3 (android-17.0.0_r1), nothing sets it.
+     * A message to display when the user tries to start a disabled shortcut.
+     * This is currently only used for deep shortcuts.
      */
     public CharSequence disabledMessage;
 
     /**
      * A set of person's Id associated with the WorkspaceItemInfo, this is only used if the item
      * represents a deep shortcut.
-     * TextLauncher: always empty, as with ApiWrapper.getPersons outside the system image
-     * (ShortcutInfo.getPersons is not public).
      */
-    @NonNull private String[] personKeys = com.android.launcher3.Utilities.EMPTY_STRING_ARRAY;
+    @NonNull private String[] personKeys = Utilities.EMPTY_STRING_ARRAY;
 
     public WorkspaceItemInfo() {
+        itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION;
     }
 
     public WorkspaceItemInfo(WorkspaceItemInfo info) {
@@ -69,6 +74,9 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         personKeys = info.personKeys.clone();
     }
 
+    /**
+     * Creates a {@link WorkspaceItemInfo} from a {@link ShortcutInfo}.
+     */
     public WorkspaceItemInfo(ShortcutInfo shortcutInfo, Context context) {
         user = shortcutInfo.getUserHandle();
         itemType = Favorites.ITEM_TYPE_DEEP_SHORTCUT;
@@ -77,11 +85,20 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
     }
 
     @Override
+    @NonNull
     public Intent getIntent() {
         return intent;
     }
 
-    /** TextLauncher: only installed apps are shown, so there are no promise icons. */
+    /**
+     * Returns true if the workspace item supports promise icon UI. There are a few cases where they
+     * are supported:
+     * 1. Icons to be restored via backup/restore.
+     * 2. Icons added as an auto-install app.
+     * 3. Icons added due to it being an active install session created by the user.
+     * 4. Icons for archived apps.
+     * TextLauncher: only installed apps are shown, so there are no promise icons.
+     */
     public boolean hasPromiseIconUi() {
         return false;
     }
@@ -102,6 +119,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
             contentDescription = null;
             Log.e(TAG, "Failed to get content description", e);
         }
+
         if (shortcutInfo.isEnabled()) {
             runtimeStatusFlags &= ~FLAG_DISABLED_BY_PUBLISHER;
         } else {
@@ -116,7 +134,9 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         } else {
             runtimeStatusFlags &= ~FLAG_DISABLED_VERSION_LOWER;
         }
-        // TextLauncher: no person keys.
+
+        // TextLauncher: no person keys; ApiWrapper.getPersons is empty outside the system image
+        // (ShortcutInfo.getPersons is not public).
     }
 
     /**
@@ -126,15 +146,15 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         return (runtimeStatusFlags & FLAG_DISABLED_VERSION_LOWER) != 0;
     }
 
-    @NonNull
-    public String[] getPersonKeys() {
-        return personKeys;
-    }
-
     /** Returns the WorkspaceItemInfo id associated with the deep shortcut. */
     public String getDeepShortcutId() {
         return itemType == Favorites.ITEM_TYPE_DEEP_SHORTCUT
                 ? getIntent().getStringExtra(ShortcutKey.EXTRA_SHORTCUT_ID) : null;
+    }
+
+    @NonNull
+    public String[] getPersonKeys() {
+        return personKeys;
     }
 
     @Override

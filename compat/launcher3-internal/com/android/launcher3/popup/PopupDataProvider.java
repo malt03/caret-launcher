@@ -51,9 +51,9 @@ import java.util.function.Predicate;
 /**
  * Provides data for the popup menu that appears after long-clicking on apps.
  *
- * <p>Stand-in for Launcher3's PopupDataProvider (android-17.0.0_r1): the notification dots of the
- * items and how many app shortcuts an item has. The members are copied from
- * PopupDataProvider.java; changes are marked with "TextLauncher:".
+ * <p>Stand-in for Launcher3's PopupDataProvider (android-17.0.0_r1), made from
+ * PopupDataProvider.java by deleting what TextLauncher does not have (Dagger and BgDataModel);
+ * changes are marked with "TextLauncher:".
  *
  * <p>TextLauncher: no Dagger activity component, so the app makes it with the notification
  * repository and the all apps store, and closes it ({@link #close}) where Launcher3's
@@ -66,27 +66,23 @@ public class PopupDataProvider implements SafeCloseable {
     private final AllAppsStore mAppsStore;
     // TextLauncher: the context for the shortcut queries (no BgDataModel).
     private final Context mAppContext;
+    // TextLauncher: the subscription that close() ends (ActivityContext.closeOnDestroy).
     private final SafeCloseable mUpdateSubscription;
 
+    // TextLauncher: an application context for the shortcut queries instead of BgDataModel.
     public PopupDataProvider(
             Context appContext,
             ActivityContext context,
             NotificationRepository notificationRepository,
             AllAppsStore appsStore) {
-        mAppContext = appContext;
         mContext = context;
         mNotificationRepo = notificationRepository;
         mAppsStore = appsStore;
+        mAppContext = appContext;
 
-        // TextLauncher: ActivityContext.getUiExecutor is the main executor.
+        // TextLauncher: kept for close(); ActivityContext.getUiExecutor is the main executor.
         mUpdateSubscription = mNotificationRepo.getUpdateStream().forEach(
                 MAIN_EXECUTOR, this::updateNotificationDots);
-    }
-
-    /** TextLauncher: ActivityContext.closeOnDestroy */
-    @Override
-    public void close() {
-        mUpdateSubscription.close();
     }
 
     private Unit updateNotificationDots(Predicate<PackageUserKey> updatedDots) {
@@ -115,11 +111,6 @@ public class PopupDataProvider implements SafeCloseable {
         return null;
     }
 
-    /**
-     * TextLauncher: Launcher3 reads the count from the deep shortcut map that its model loads in
-     * the background (published shortcuts per activity). There is no such model here, so the same
-     * query runs when the menu opens.
-     */
     public int getShortcutCountForItem(ItemInfo info) {
         if (!ShortcutUtil.supportsDeepShortcuts(info)) {
             return 0;
@@ -129,6 +120,9 @@ public class PopupDataProvider implements SafeCloseable {
             return 0;
         }
 
+        // TextLauncher: Launcher3 reads the count from the deep shortcut map that its model loads
+        // in the background (published shortcuts per activity). There is no such model here, so
+        // the same query runs when the menu opens.
         return new ShortcutRequest(mAppContext, info.user)
                 .withContainer(component)
                 .query(ShortcutRequest.PUBLISHED)
@@ -161,5 +155,13 @@ public class PopupDataProvider implements SafeCloseable {
             }
             return false;
         })) ? dotInfo : null;
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /** ActivityContext.closeOnDestroy: stops listening for notification dot updates. */
+    @Override
+    public void close() {
+        mUpdateSubscription.close();
     }
 }

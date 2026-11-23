@@ -29,17 +29,25 @@ import com.android.launcher3.model.data.ItemInfo;
 import java.util.function.Consumer;
 
 /**
- * Stand-in for Launcher3's LauncherAccessibilityDelegate (android-17.0.0_r1): only
- * {@link #addToWorkspace}, which the long-press menu's add button uses. TextLauncher's home
- * screen implements it; there are no accessibility actions.
+ * Stand-in for Launcher3's LauncherAccessibilityDelegate (android-17.0.0_r1), made from
+ * LauncherAccessibilityDelegate.java by deleting what TextLauncher does not use: only
+ * {@link #addToWorkspace}, which the long-press menu's add button uses, is left. Changes are
+ * marked with "TextLauncher:".
  */
+// TextLauncher: an interface that the home screen implements, not a BaseAccessibilityDelegate of
+// Launcher; there are no accessibility actions.
 public interface LauncherAccessibilityDelegate {
+
     /**
-     * Adds the item to the first free cell of the home screen and binds it.
+     * Functionality to add the item {@link ItemInfo} to the workspace
+     * @param item item to be added
+     * @param accessibility true if the first item to be added to the workspace
+     *     should be focused for accessibility.
+     * @param finishCallback Callback which will be run after this item has been added
+     *                       and the view has been transitioned to the workspace, or on failure.
      *
-     * @param accessibility whether the item is added by an accessibility action
-     * @param finishCallback called with whether the item was added
+     * @return true if the item could be successfully added
      */
-    boolean addToWorkspace(ItemInfo item, boolean accessibility,
-            @Nullable Consumer<Boolean> finishCallback);
+    public boolean addToWorkspace(ItemInfo item, boolean accessibility,
+            @Nullable Consumer<Boolean> finishCallback); // TextLauncher: the home screen adds it.
 }

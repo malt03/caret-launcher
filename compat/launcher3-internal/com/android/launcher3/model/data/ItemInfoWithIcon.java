@@ -26,18 +26,35 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.android.launcher3.Flags;
 import com.android.launcher3.graphics.ThemeManager;
 import com.android.launcher3.icons.BitmapInfo;
+import com.android.launcher3.icons.BitmapInfo.DrawableCreationFlags;
 import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.icons.IconShape;
 import com.android.launcher3.icons.cache.CacheLookupFlag;
 
 /**
- * Stand-in for Launcher3's ItemInfoWithIcon (android-17.0.0_r1). Only what copied code reads; the
- * method bodies are copied from ItemInfoWithIcon.java, changes are marked with "TextLauncher:".
+ * Represents an ItemInfo which also holds an icon.
+ *
+ * <p>Stand-in for Launcher3's ItemInfoWithIcon (android-17.0.0_r1), made from
+ * ItemInfoWithIcon.java by deleting what TextLauncher does not have (install progress, archived
+ * apps, multi-instance and resize flags, App Lock, automation and home screen files); changes are
+ * marked with "TextLauncher:".
  */
-public class ItemInfoWithIcon extends ItemInfo {
+public abstract class ItemInfoWithIcon extends ItemInfo {
+
+    public static final String TAG = "ItemInfoDebug";
+
+    /**
+     * The bitmap for the application icon
+     */
+    @NonNull
+    public BitmapInfo bitmap = BitmapInfo.LOW_RES_INFO;
+
     /**
      * Indicates that the icon is disabled due to safe mode restrictions.
      */
@@ -131,14 +148,18 @@ public class ItemInfoWithIcon extends ItemInfo {
             | FLAG_DISABLED_QUIET_USER | FLAG_DISABLED_BY_PUBLISHER | FLAG_DISABLED_LOCKED_USER
             | FLAG_DISABLED_VERSION_LOWER | FLAG_DISABLED_FILE_SYSTEM_NOT_READY;
 
+    /**
+     * Indicates that the package is currently being automated.
+     */
     public static final int FLAG_AUTOMATED = 1 << 18;
 
+    /**
+     * Status associated with the system state of the underlying item. This is calculated every
+     * time a new info is created and not persisted on the disk.
+     */
     public int runtimeStatusFlags = 0;
 
-    /** A bitmap version of the icon. */
-    public BitmapInfo bitmap = BitmapInfo.LOW_RES_INFO;
-
-    public ItemInfoWithIcon() {
+    protected ItemInfoWithIcon() {
     }
 
     protected ItemInfoWithIcon(ItemInfoWithIcon info) {
@@ -148,18 +169,47 @@ public class ItemInfoWithIcon extends ItemInfo {
         user = info.user;
     }
 
+    @Override
+    public boolean isDisabled() {
+        return (runtimeStatusFlags & FLAG_DISABLED_MASK) != 0;
+    }
+
+    /**
+     * Returns the lookup flag to match this current state of this info
+     */
     public CacheLookupFlag getMatchingLookupFlag() {
         return bitmap.getMatchingLookupFlag();
     }
 
+    /** Creates an intent to that launches the app store at this app's page. */
+    @Nullable
+    public Intent getMarketIntent(Context context) {
+        String targetPackage = getTargetPackage();
+
+        return targetPackage != null
+                // TextLauncher: ApiWrapper.getAppMarketActivityIntent's market intent, inline
+                // (without the referrer).
+                ? new Intent(Intent.ACTION_VIEW)
+                        .setData(new Uri.Builder()
+                                .scheme("market")
+                                .authority("details")
+                                .appendQueryParameter("id", targetPackage)
+                                .build())
+                : null;
+    }
+
+
+    /**
+     * Returns a FastBitmapDrawable with the icon.
+     */
     public FastBitmapDrawable newIcon(Context context) {
         return newIcon(context, 0);
     }
 
-    public FastBitmapDrawable newIcon(Context context, int creationFlags) {
+    public FastBitmapDrawable newIcon(Context context, @DrawableCreationFlags int creationFlags) {
         ThemeManager themeManager = ThemeManager.INSTANCE.get(context);
         IconShape iconShape = null;
-        // TextLauncher: no file system items.
+        // TextLauncher: no home screen files; ThemeManager.getIconShapeData() returns the value.
         if (supportsCustomShapes(creationFlags)) {
             iconShape = themeManager.getIconShapeData();
         }
@@ -174,35 +224,18 @@ public class ItemInfoWithIcon extends ItemInfo {
     /**
      * Returns true if the current BitmapInfo can support cropping to custom icon shapes.
      */
-    public boolean supportsCustomShapes(int creationFlags) {
+    public boolean supportsCustomShapes(@DrawableCreationFlags int creationFlags) {
         return Flags.enableLauncherIconShapes()
                 && (creationFlags & FLAG_THEMED) != 0
                 && bitmap.isFullBleed();
     }
 
-    @Override
-    public boolean isDisabled() {
-        return (runtimeStatusFlags & FLAG_DISABLED_MASK) != 0;
-    }
-
     /**
-     * Returns a market intent for the target package.
-     * TextLauncher: ApiWrapper.getAppMarketActivityIntent's market link, inline.
+     * Returns true if item is a Promise Icon or actively downloading, and the item is not an
+     * inactive archived app.
+     *
+     * TextLauncher: only installed apps are shown, so nothing is pending or downloading.
      */
-    public Intent getMarketIntent(Context context) {
-        String targetPackage = getTargetPackage();
-
-        return targetPackage != null
-                ? new Intent(Intent.ACTION_VIEW)
-                        .setData(new Uri.Builder()
-                                .scheme("market")
-                                .authority("details")
-                                .appendQueryParameter("id", targetPackage)
-                                .build())
-                : null;
-    }
-
-    /** TextLauncher: only installed apps are shown, so nothing is pending or downloading. */
     public boolean shouldShowPendingIcon() {
         return false;
     }

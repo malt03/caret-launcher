@@ -21,12 +21,14 @@
 package com.android.launcher3.popup
 
 import android.animation.LayoutTransition
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Typeface
 import android.graphics.PointF
+import android.graphics.Typeface
+import android.os.Handler
 import android.view.MotionEvent
 import android.view.View
-import android.os.Handler
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.LayoutRes
@@ -38,19 +40,23 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.shortcuts.DeepShortcutTextView
 import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.util.Executors
+import com.android.launcher3.views.ActivityContext
 import java.util.stream.Collectors
 import kotlin.math.max
-import com.android.launcher3.views.ActivityContext
 
 /**
- * Stand-in for Launcher3's PopupContainerWithArrow (android-17.0.0_r1): the long-press menu of an
- * app icon. The members that show system shortcut rows are copied from
- * PopupContainerWithArrow.kt; changes are marked with "TextLauncher:".
+ * A container for shortcuts to deep links associated with an app.
  *
- * TextLauncher: the Compose version (Flags.expandableLongPressMenu is disabled in the release
- * config) and live updates of the shortcuts are left out; configureForLauncher's drag handler
- * is set by the app.
+ * <p>Stand-in for Launcher3's PopupContainerWithArrow (android-17.0.0_r1), made from
+ * PopupContainerWithArrow.kt by deleting what TextLauncher does not use (the Compose version, which
+ * Flags.expandableLongPressMenu turns on and the release config disables; live updates of the
+ * shortcuts; the widget shortcut; the private space popup); changes are marked with
+ * "TextLauncher:".
+ * configureForLauncher's drag handler is set by the app (ItemLongClickListener).
+ *
+ * @param <T> The activity on with the popup shows </T>
  */
+@SuppressLint("ViewConstructor")
 class PopupContainerWithArrow<T : ActivityContext>
 private constructor(
     context: Context,
@@ -80,10 +86,6 @@ private constructor(
     var itemDragHandler: PopupItemDragHandler? = null
         private set
 
-    fun setPopupItemDragHandler(popupItemDragHandler: PopupItemDragHandler?) {
-        itemDragHandler = popupItemDragHandler
-    }
-
     var widgetContainer: ViewGroup? = null
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
@@ -93,6 +95,10 @@ private constructor(
         // Stop sending touch events to deep shortcut views if user moved beyond touch slop.
         return (Utilities.squaredHypot(interceptTouchDown.x - ev.x, interceptTouchDown.y - ev.y) >
             Utilities.squaredTouchSlop(context))
+    }
+
+    fun setPopupItemDragHandler(popupItemDragHandler: PopupItemDragHandler?) {
+        itemDragHandler = popupItemDragHandler
     }
 
     override fun handleClose(animate: Boolean) {
@@ -151,6 +157,8 @@ private constructor(
         // All views are added. Animate layout from now on.
         layoutTransition = LayoutTransition()
 
+        // TextLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
+        // release config), so only upstream's else branch is kept.
         // Load the shortcuts on a background thread and update the container as it animates.
         Executors.MODEL_EXECUTOR.handler.postAtFrontOfQueue(
             PopupPopulator.createUpdateRunnable(

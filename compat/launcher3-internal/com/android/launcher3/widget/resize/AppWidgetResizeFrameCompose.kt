@@ -86,6 +86,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
     override fun onNewResizeRequest(bounds: Rect) {
         // Adjust the floating view to the requested size, so frame also shows at the size.
+        // TextLauncher: the layout part is split out as setFrameBounds, for followWidget.
         setFrameBounds(bounds)
 
         isFocusableInTouchMode = true
@@ -102,36 +103,6 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         }
 
         requestLayout()
-    }
-
-    /**
-     * TextLauncher: the home grid scrolls, and moves as the keyboard comes and goes, which
-     * Launcher3's pages do not. While no edge is dragged, the frame keeps to the widget.
-     */
-    private val followWidget = Runnable {
-        if (!mIsOpen || viewModel.draggingHandles != null || widgetView.parent == null) return@Runnable
-        val bounds = resizeManager.getCurrentWidgetBounds()
-        val lp = layoutParams as BaseDragLayer.LayoutParams
-        if (lp.x != bounds.left - touchTargetSize || lp.y != bounds.top - touchTargetSize ||
-            lp.width != bounds.width() + 2 * touchTargetSize ||
-            lp.height != bounds.height() + 2 * touchTargetSize
-        ) {
-            setFrameBounds(bounds)
-        }
-    }
-    private val onGlobalLayout = ViewTreeObserver.OnGlobalLayoutListener { followWidget.run() }
-    private val onScrollChanged = ViewTreeObserver.OnScrollChangedListener { followWidget.run() }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        viewTreeObserver.addOnGlobalLayoutListener(onGlobalLayout)
-        viewTreeObserver.addOnScrollChangedListener(onScrollChanged)
-    }
-
-    override fun onDetachedFromWindow() {
-        viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayout)
-        viewTreeObserver.removeOnScrollChangedListener(onScrollChanged)
-        super.onDetachedFromWindow()
     }
 
     @VisibleForTesting fun getViewModelForTest() = viewModel
@@ -184,6 +155,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             // Mark the frame as closed before removing it from drag layer so drag layer knows not
             // to asynchronously call `close()` again (which happens with `AbstractFloatingView`s
             // that get removed without being closed).
+            // TextLauncher: the launcher hears that the frame closed (edit mode, docs/spec.md 5.4).
             val wasOpen = mIsOpen
             mIsOpen = false
             launcher.dragController.removeDragSessionListener(this)
@@ -206,6 +178,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             ResizeManager(
                     widgetView = widgetView,
                     cellLayout = cellLayout,
+                    // TextLauncher: no CellPosMapper and no stats logging.
                     dragLayer = dragLayer,
                     deviceProfile = launcher.deviceProfile,
                     touchPadding = touchTargetSize,
@@ -263,14 +236,13 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             closeAllOpenViewsExcept(activityContext, TYPE_ACTION_POPUP)
 
             val dragLayer = activityContext.dragLayer as DragLayer
-            // TextLauncher: ActivityContext.getLayoutInflater
             val resizeFrame =
-                LayoutInflater.from(activityContext.asContext())
-                    .inflate(
-                        R.layout.app_widget_resize_frame_compose,
-                        dragLayer,
-                        /*attachToRoot=*/ false,
-                    ) as AppWidgetResizeFrameCompose
+                // TextLauncher: no ActivityContext.getLayoutInflater.
+                LayoutInflater.from(activityContext.asContext()).inflate(
+                    R.layout.app_widget_resize_frame_compose,
+                    dragLayer,
+                    /*attachToRoot=*/ false,
+                ) as AppWidgetResizeFrameCompose
 
             // Save widget item info as tag on resize frame; so that, the accessibility
             // delegate can attach actions that typically happen on widget (e.g. resize,
@@ -290,11 +262,44 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
                 setup(widgetView, cellLayout, dragLayer)
                 dragLayer.addView(this)
                 mIsOpen = true
+                // TextLauncher: the launcher hears that the frame opened (edit mode).
                 launcher.onWidgetResizeFrameOpenChanged(true)
                 dragLayer.post { onNewResizeRequest(resizeManager.getCurrentWidgetBounds()) }
             }
 
             return resizeFrame
         }
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * TextLauncher: the home grid scrolls, and moves as the keyboard comes and goes, which
+     * Launcher3's pages do not. While no edge is dragged, the frame keeps to the widget.
+     */
+    private val followWidget = Runnable {
+        if (!mIsOpen || viewModel.draggingHandles != null || widgetView.parent == null) return@Runnable
+        val bounds = resizeManager.getCurrentWidgetBounds()
+        val lp = layoutParams as BaseDragLayer.LayoutParams
+        if (lp.x != bounds.left - touchTargetSize || lp.y != bounds.top - touchTargetSize ||
+            lp.width != bounds.width() + 2 * touchTargetSize ||
+            lp.height != bounds.height() + 2 * touchTargetSize
+        ) {
+            setFrameBounds(bounds)
+        }
+    }
+    private val onGlobalLayout = ViewTreeObserver.OnGlobalLayoutListener { followWidget.run() }
+    private val onScrollChanged = ViewTreeObserver.OnScrollChangedListener { followWidget.run() }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        viewTreeObserver.addOnGlobalLayoutListener(onGlobalLayout)
+        viewTreeObserver.addOnScrollChangedListener(onScrollChanged)
+    }
+
+    override fun onDetachedFromWindow() {
+        viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayout)
+        viewTreeObserver.removeOnScrollChangedListener(onScrollChanged)
+        super.onDetachedFromWindow()
     }
 }

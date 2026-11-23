@@ -23,6 +23,7 @@ package com.android.launcher3;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Trace;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -32,23 +33,27 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView;
 
 /**
  * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
- * and lays out the items of a {@link CellLayout}. Members are copied from
- * ShortcutAndWidgetContainer.java for icons and folders only (no widgets, no QSB, no translation
- * provider, no wallpaper drop command). TextLauncher's home grid extends this.
+ * and lays out the items of a {@link CellLayout}. TextLauncher's home grid extends it and measures
+ * its children itself. Made from ShortcutAndWidgetContainer.java by deleting what TextLauncher
+ * does not have (container types, the QSB, widget scaling and centering, the translation provider,
+ * the wallpaper drop command, folder leave-behinds); changes are marked with "TextLauncher:".
  */
-public abstract class ShortcutAndWidgetContainer extends ViewGroup {
+// TextLauncher: not a FolderIconParent (no folder leave-behind).
+public class ShortcutAndWidgetContainer extends ViewGroup {
 
     private int mCellWidth;
     private int mCellHeight;
-    private Point mBorderSpace = new Point();
+    private Point mBorderSpace;
 
     private int mCountX;
     private int mCountY;
 
     private boolean mInvertIfRtl = false;
 
+    // TextLauncher: no container type (the only container is the home grid).
     public ShortcutAndWidgetContainer(Context context) {
         super(context);
+        setClipChildren(false);
     }
 
     public void setCellDimensions(int cellWidth, int cellHeight, int countX, int countY,
@@ -76,8 +81,16 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
 
     public void setupLp(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
-        lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
-                mBorderSpace);
+        // TextLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
+        // multi-window) and get the workspace's widget padding from getWidgetPadding.
+        if (child instanceof LauncherAppWidgetHostView) {
+            lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                    1f, 1f, mBorderSpace,
+                    getWidgetPadding(getContext(), mBorderSpace));
+        } else {
+            lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
+                    mBorderSpace);
+        }
     }
 
     // Set whether or not to invert the layout horizontally if the layout is in RTL mode.
@@ -85,44 +98,25 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
         mInvertIfRtl = invert;
     }
 
-    /**
-     * TextLauncher: the icons center themselves in their cells (iconCenterVertically), so no cell
-     * padding is set on them. Widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
-     * multi-window), and get the workspace's widget padding ([getWidgetPadding]).
-     */
     public void measureChild(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+
+        // TextLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
+        // multi-window) and get the workspace's widget padding from getWidgetPadding.
         if (child instanceof LauncherAppWidgetHostView) {
             lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
-                    1f, 1f, mBorderSpace, getWidgetPadding(getContext(), mBorderSpace));
+                    1f, 1f, mBorderSpace,
+                    getWidgetPadding(getContext(), mBorderSpace));
         } else {
             lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
                     mBorderSpace);
+            // TextLauncher: no cell padding; the icons center themselves in their cells
+            // (iconCenterVertically).
         }
         int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(lp.width, MeasureSpec.EXACTLY);
         int childheightMeasureSpec = MeasureSpec.makeMeasureSpec(lp.height, MeasureSpec.EXACTLY);
         child.measure(childWidthMeasureSpec, childheightMeasureSpec);
     }
-
-    /**
-     * WorkspaceProfile's widgetPadding: when the cells have less than MIN_WIDGET_PADDING_DP
-     * between them, the widgets keep that much space from each other.
-     */
-    public static Rect getWidgetPadding(Context context, Point borderSpace) {
-        float minSpacing = ResourceUtils.pxFromDp(MIN_WIDGET_PADDING_DP,
-                context.getResources().getDisplayMetrics());
-        Rect widgetPadding = new Rect();
-        if (borderSpace.x < minSpacing || borderSpace.y < minSpacing) {
-            widgetPadding.right = Math.round(Math.max(0f, minSpacing - borderSpace.x));
-            widgetPadding.left = widgetPadding.right;
-            widgetPadding.bottom = Math.round(Math.max(0f, minSpacing - borderSpace.y));
-            widgetPadding.top = widgetPadding.bottom;
-        }
-        return widgetPadding;
-    }
-
-    /** WorkspaceProfile.MIN_WIDGET_PADDING_DP */
-    private static final float MIN_WIDGET_PADDING_DP = 6f;
 
     public boolean invertLayoutHorizontally() {
         return mInvertIfRtl && Utilities.isRtl(getResources());
@@ -130,6 +124,7 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        Trace.beginSection("ShortcutAndWidgetConteiner#onLayout");
         int count = getChildCount();
         for (int i = 0; i < count; i++) {
             final View child = getChildAt(i);
@@ -137,6 +132,7 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
                 layoutChild(child);
             }
         }
+        Trace.endSection();
     }
 
     /**
@@ -144,9 +140,13 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
      */
     public void layoutChild(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
+
         int childLeft = lp.x;
         int childTop = lp.y;
+
         child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
+
+        // TextLauncher: no wallpaper drop command.
     }
 
     @Override
@@ -174,5 +174,28 @@ public abstract class ShortcutAndWidgetContainer extends ViewGroup {
             final View child = getChildAt(i);
             child.cancelLongPress();
         }
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /** WorkspaceProfile.MIN_WIDGET_PADDING_DP */
+    private static final float MIN_WIDGET_PADDING_DP = 6f;
+
+    /**
+     * WorkspaceProfile's widgetPadding (there is no DeviceProfile to hold it): when the cells have
+     * less than MIN_WIDGET_PADDING_DP between them, the widgets keep that much space from each
+     * other.
+     */
+    public static Rect getWidgetPadding(Context context, Point borderSpace) {
+        float minSpacing = ResourceUtils.pxFromDp(MIN_WIDGET_PADDING_DP,
+                context.getResources().getDisplayMetrics());
+        Rect widgetPadding = new Rect();
+        if (borderSpace.x < minSpacing || borderSpace.y < minSpacing) {
+            widgetPadding.right = Math.round(Math.max(0f, minSpacing - borderSpace.x));
+            widgetPadding.left = widgetPadding.right;
+            widgetPadding.bottom = Math.round(Math.max(0f, minSpacing - borderSpace.y));
+            widgetPadding.top = widgetPadding.bottom;
+        }
+        return widgetPadding;
     }
 }

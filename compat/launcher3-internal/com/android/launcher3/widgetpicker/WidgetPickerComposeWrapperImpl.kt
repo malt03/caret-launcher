@@ -72,6 +72,10 @@ import kotlinx.coroutines.launch
  * [WidgetPickerActivity] when compose is available and widget picker refactor flags are on.
  *
  * Sets up the bindings necessary for widget picker component.
+ *
+ * <p>Stand-in for Launcher3's WidgetPickerComposeWrapperImpl (android-17.0.0_r1), made from
+ * WidgetPickerComposeWrapperImpl.kt by deleting what TextLauncher does not use (pin requests and
+ * dragging a widget out of the picker); changes are marked with "TextLauncher:".
  */
 class WidgetPickerComposeWrapperImpl
 @Inject
@@ -137,7 +141,10 @@ constructor(
         content: @Composable (WidgetPickerEventListeners, LauncherWidgetPickerCuiReporter) -> Unit,
     ) {
         val callbacks =
-            activity.buildEventListeners(widgetPickerConfig = widgetPickerConfig, apiWrapper = apiWrapper)
+            activity.buildEventListeners(
+                widgetPickerConfig = widgetPickerConfig,
+                apiWrapper = apiWrapper,
+            )
         val uiEventsReporter = LauncherWidgetPickerCuiReporter(activity.statsLogManager)
 
         val composeView = ComposeView(activity.asContext())
@@ -166,6 +173,7 @@ constructor(
                 }
 
                 DisposableEffect(view) {
+                    // TextLauncher: no pin requests (PinItemRequest).
                     scope.launch { initializeRepositories(widgetAppId) }
 
                     onDispose { cleanUpRepositories() }
@@ -206,7 +214,10 @@ constructor(
             )
     }
 
-    private fun initializeRepositories(widgetAppId: WidgetAppId? = null) {
+    private fun initializeRepositories(
+        widgetAppId: WidgetAppId? = null,
+    ) {
+        // TextLauncher: no pin requests (PinItemRequest).
         val loadAllData = widgetAppId == null
 
         widgetsRepository.initialize(
@@ -280,8 +291,12 @@ constructor(
                 }
 
                 override fun onWidgetInteraction(widgetInteractionInfo: WidgetInteractionInfo) {
+                    // TextLauncher: no pin requests, so no add button handler and no pin branch.
                     if (widgetPickerConfig.isForHomeScreen) {
-                        handleWidgetInteractionForHomeScreen(widgetInteractionInfo, apiWrapper)
+                        handleWidgetInteractionForHomeScreen(
+                            widgetInteractionInfo,
+                            apiWrapper,
+                        )
                     } else {
                         handleWidgetInteractionForExternalHost(widgetInteractionInfo)
                     }

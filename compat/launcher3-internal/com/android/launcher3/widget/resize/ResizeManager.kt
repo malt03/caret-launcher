@@ -32,6 +32,7 @@ import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
 import com.android.launcher3.dragndrop.DragLayer
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import kotlin.math.abs
 
@@ -62,7 +63,7 @@ class ResizeManager(
     private val launcher: Launcher = Launcher.getLauncher(cellLayout.context)
 
     init {
-        val itemInfo = widgetView.tag as ItemInfo
+        val itemInfo = widgetView.tag as LauncherAppWidgetInfo
 
         // TextLauncher: no custom widgets.
         val widgetProviderInfo = launcher.getLauncherAppWidgetInfo(widgetView.appWidgetInfo)
@@ -268,6 +269,8 @@ class ResizeManager(
         if (widgetView.layoutParams !is CellLayoutLayoutParams) return
 
         val wlp = widgetView.layoutParams as CellLayoutLayoutParams
+        // TextLauncher: when the cells are committed, the home screen's model is written
+        // (CellLayout.commitTempPlacement does it in Launcher3); no stats logging.
         if (
             cellLayout.createAreaForResize(
                 wlp.tmpCellX,
@@ -365,6 +368,7 @@ class ResizeManager(
                 resizeSession.directionVector[DIRECTION_VERTICAL]
         }
 
+        // TextLauncher: no pending widget views (PendingAppWidgetHostView).
         if (
             cellLayout.createAreaForResize(
                 cellX,
@@ -384,6 +388,7 @@ class ResizeManager(
             resizeSession.runningHInc += hSpanDelta
 
             if (!commit) {
+                // TextLauncher: the home screen updates the size ranges (WidgetSizeHandler).
                 launcher.updateWidgetSizeRanges(widgetView, spanX, spanY)
             } else {
                 // TextLauncher: CellLayout.commitTempPlacement writes the cells in Launcher3.
