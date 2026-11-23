@@ -1,6 +1,6 @@
 ---
 id: Tex-xr1z
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:58:38Z
@@ -32,3 +32,7 @@ parent: Tex-vs8t
 **2026-11-23T17:29:52Z**
 
 2026-11-24（ホームのモデルの作業と合わせて）: (2) を済ませた。AppItemInfo は本物の起動 Intent（AppInfo.makeLaunchIntent、favorites の intent 列として保存）を持ち、ItemInfo.getComponent() のフックをなくした（getTargetComponent は上流どおり intent から）。互換の AppInfo に updateRuntimeFlagsForActivityTarget（停止中とシステムのアプリのフラグ。アーカイブ・自動化・プライベートスペース・App Lock・進捗はなし）を置き、AppInfo のコンストラクタと AppItemInfo.bind から使う。システムのアプリには FLAG_SYSTEM_YES が付くので、アンインストールのドロップ先は上流と同じくフラグで先に判定する。残り: (1) AllAppsList 型の AppInfo の置き場（AppIconLoader の icons マップと AppRepository.find の置き換え。HomeModelTasks の PackageUpdatedTask はいま AppRepository.apps を起動画面の一覧として使う）、(3) AppEntry の縮小、(4) GridSpec.from() の重複
+
+**2026-11-23T18:01:24Z**
+
+2026-11-24: 残りの (1)(3)(4) を済ませた。(1) 上流の AllAppsList を削った互換クラス（compat/.../model/AllAppsList.java、derived=）を置き、AppRepository が上流と同じくモデルのスレッド（MODEL_EXECUTOR）で LoaderTask.loadAllApps（アイコンは1件ずつ）とパッケージの作業（PackageUpdatedTask の updateIconsForPkg と updatePackage、appsRemoved・appsUnavailable の removePackage、停止・再開の updateRuntimeFlags、CacheDataUpdatedTask の updateIconsAndLabels、テーマの切り替えでの読み直し）を行い、copyData をメインスレッドに渡す（bindAllApplications）。全アプリ一覧（AllAppsStore.setApps）・検索結果・ホームの引き当て（AppRepository.getApp(ComponentKey)、二分探索）はどれもこの AppInfo を使う。AppIconLoader の icons マップと AppRepository.find はなくし、ホームのアプリのアイコンは IconCache.getTitleAndIcon(info, DESKTOP_ICON_FLAG) でアイテムに直接引く（ビューを作るときは verifyHighRes と同じく足りないときだけ）。PackageUpdatedTask には上流と同じく updatePackage が返した起動画面を渡し、AppItemInfo は intent・FLAG_DISABLED_NOT_AVAILABLE の解除・updateRuntimeFlagsForActivityTarget を上流の順で受ける。読み込み時の引き当ては WorkspaceItemInfo(AppInfo) と同じく AppInfo の題名とフラグを写す。アプリの一覧の読み込みがホームより先に MODEL_EXECUTOR に積まれるので、ホームのバインドの時点でアプリの一覧がまだないことはなくなった。(3) AppEntry と AllAppsAppInfo はなくし、保存用の文字列のキーは AppKey（ComponentKey とユーザーの通し番号）にした。AppItemInfo は起動画面とユーザーの通し番号から作り、homeKey は intent から求める。Host.launch は ItemInfo、editSearchTerms は AppItemInfo を受ける。HomeController.onSearchResultLongPress（未使用）は消した。(4) LauncherActivity は自分で GridSpec を作らず、2パネルかどうかをホームの DeviceProfile から読む。全アプリ一覧と検索結果のセル（ResultIconView）は上流の BubbleTextView と同じく DeviceProfile.AllAppsProfile（iconTextSizePx を足した）からアイコンと文字の大きさを取り、AllAppsView と SearchResults は GridSpec を受けない。GridSpec.from は、ホームを作るとき（HomeController）、構成の変化での比較（InvariantDeviceProfile.onConfigChanged と同じ）、ホームのない間の HomeGridInitializer の3か所だけ。ホームの中（HomeGridView、HomeLoader、GridSizeMigration）は上流の InvariantDeviceProfile にあたる GridSpec を読むまま。下端の余白は、全アプリ一覧と一覧の中の検索結果のどちらにも LauncherRootLayout.onBottomInsetsChanged から渡す（2パネルでは前と同じく下マージン）。小さな違い: 読み込み時に SD カード上で使えないアプリも、ホームの上（フォルダの外）に灰色で出るようにした（docs/spec.md 5.2 の記述どおり。前はフォルダの中だけ出ていた）。ビルドと単体テストのみ確認（端末では未確認）

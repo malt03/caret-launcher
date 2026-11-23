@@ -7,7 +7,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.util.Themes
-import com.malt03.textlauncher.ui.GridSpec
+import com.android.launcher3.views.ActivityContext
 
 /**
  * The all-apps BubbleTextView (all_apps_icon.xml): the icon, and the app name below it, in the
@@ -16,8 +16,8 @@ import com.malt03.textlauncher.ui.GridSpec
  * BaseIcon.Workspace.Shadows, workspaceTextColor with workspaceShadowColor).
  */
 @SuppressLint("ViewConstructor")
-class ResultIconView(context: Context, grid: GridSpec, onSurface: Boolean = false) :
-    BubbleTextView(context, grid.iconSizePx, DISPLAY_ALL_APPS) {
+class ResultIconView(context: Context, onSurface: Boolean = false) :
+    BubbleTextView(context, allAppsProfile(context).iconSizePx, DISPLAY_ALL_APPS) {
     init {
         // BaseIconUnBounded: focusable, without the default focus highlight.
         isFocusable = true
@@ -28,7 +28,7 @@ class ResultIconView(context: Context, grid: GridSpec, onSurface: Boolean = fals
         val padding = (4 * density).toInt()
         setPadding(padding, padding, padding, padding)
         gravity = Gravity.CENTER_HORIZONTAL or Gravity.TOP
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, grid.iconTextSizeSp)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, allAppsProfile(context).iconTextSizePx)
         // BaseIcon: one line (not singleLine, which scrolls the text horizontally and moves the
         // focus outline with it).
         setLines(1)
@@ -45,5 +45,8 @@ class ResultIconView(context: Context, grid: GridSpec, onSurface: Boolean = fals
     private companion object {
         /** BaseIcon.Workspace.Shadows: android:shadowRadius. */
         const val SHADOW_RADIUS = 2f
+
+        /** BubbleTextView (DISPLAY_ALL_APPS): the icon and text sizes of the device profile. */
+        fun allAppsProfile(context: Context) = ActivityContext.lookupContext(context).deviceProfile.allAppsProfile
     }
 }

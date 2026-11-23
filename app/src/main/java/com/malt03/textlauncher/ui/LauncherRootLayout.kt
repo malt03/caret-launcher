@@ -71,10 +71,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         set(value) {
             check(field == null)
             field = value
-            value?.let {
-                it.setBottomInset(navBottom)
-                allAppsSheet.setList(it)
-            }
+            value?.let(allAppsSheet::setList)
             onAllAppsLayoutChanged?.invoke()
         }
 
@@ -127,8 +124,15 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             requestLayout()
         }
 
-    /** Called with the space at the bottom of the screen the keyboard or the navigation bar covers. */
-    var onBottomInsetChanged: ((Int) -> Unit)? = null
+    /**
+     * Called with the space at the bottom of the screen the navigation bar and the keyboard cover
+     * (the window insets), now and as they change.
+     */
+    var onBottomInsetsChanged: ((navBottom: Int, imeBottom: Int) -> Unit)? = null
+        set(value) {
+            field = value
+            value?.invoke(navBottom, imeBottom)
+        }
 
     /**
      * AllAppsTransitionController places the search field and the all apps sheet for its progress;
@@ -184,6 +188,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     var statusBarTop = 0
         private set
     private var navBottom = 0
+    private var imeBottom = 0
 
     /** The part of the window the keyboard covers; the drag layer ends above it. */
     private var overlayBottomCut = 0
@@ -246,14 +251,13 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         statusBarTop = insets.getInsets(WindowInsets.Type.statusBars()).top
         (dropTargetBar?.layoutParams as? MarginLayoutParams)?.topMargin = statusBarTop + dropTargetBarTopMargin
         navBottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-        allAppsView?.setBottomInset(navBottom)
-        val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
+        imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
         // Launcher3's DragLayer gets the system bar insets; floating views such as the long-press
         // menu keep inside them. TextLauncher: the keyboard is shown most of the time
         // (docs/spec.md 1.3), so the drag layer ends at its top (see onLayout), and floating
         // views placed or centered in it stay above it.
         overlayBottomCut = imeBottom
-        onBottomInsetChanged?.invoke(maxOf(imeBottom, navBottom))
+        onBottomInsetsChanged?.invoke(navBottom, imeBottom)
         overlay.setInsets(android.graphics.Rect(0, statusBarTop, 0, if (imeBottom > 0) 0 else navBottom))
         // KeyboardInsetAnimationCallback animates from the old to this value.
         targetBarTranslation = -(imeBottom - navBottom).coerceAtLeast(0).toFloat()

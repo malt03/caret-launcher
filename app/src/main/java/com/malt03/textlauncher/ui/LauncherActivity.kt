@@ -114,8 +114,11 @@ class LauncherActivity :
     /** Launcher.mRotationHelper */
     override val rotationHelper = RotationHelper(this)
 
-    /** InvariantDeviceProfile: the grid of the display the activity was created on. */
-    private lateinit var gridSpec: GridSpec
+    /**
+     * DeviceProfile.isTwoPanels of the home screen's device profile (Launcher.getDeviceProfile),
+     * which is made from the grid of the display the activity was created on.
+     */
+    private val isTwoPanels: Boolean get() = home.activityContext.deviceProfile.deviceProperties.isTwoPanels
 
     /** True between launching an app and coming back; keyboard changes are expected then. */
     private var isLaunching = false
@@ -134,14 +137,12 @@ class LauncherActivity :
             isAppearanceLightNavigationBars = darkText
         }
 
-        gridSpec = GridSpec.from(this)
         root = LauncherRootLayout(this)
         setContentView(root)
         depthController = DepthController(this, root, root.contentArea)
         // ActivityAllAppsContainerView.getBackgroundColor: the sheet's color with the blur.
         depthController.addBlurStateListener(root.allAppsSheet::setBlurEnabled)
 
-        val isTwoPanels = gridSpec.isTwoPanels
         home = HomeController(app, root, this)
         // Launcher.restoreState: a widget add flow that was waiting for an activity's result.
         home.restoreState(savedInstanceState)
@@ -150,12 +151,11 @@ class LauncherActivity :
             this,
             home.activityContext,
             app.searchStore,
-            gridSpec,
             // docs/spec.md 5.5: with two panels, the results replace the all apps list on its panel.
             inAllApps = isTwoPanels,
             fromBottom = true,
         )
-        allApps = AllAppsView(this, home.activityContext, gridSpec)
+        allApps = AllAppsView(this, home.activityContext)
         if (isTwoPanels) {
             // docs/spec.md 5.5: the all apps list is always shown on the left panel, and there is
             // no all apps sheet to open.
@@ -172,7 +172,7 @@ class LauncherActivity :
             root.contentArea.addView(results.view)
             root.allAppsView = allApps
         }
-        allAppsResults = SearchResults(this, home.activityContext, app.searchStore, gridSpec, inAllApps = true)
+        allAppsResults = SearchResults(this, home.activityContext, app.searchStore, inAllApps = true)
         // ActivityAllAppsContainerView.setupHeader: the search results' icons (AdapterHolder.SEARCH)
         // get notification dot updates too.
         home.activityContext.activityComponent.appsStore.apply {
@@ -185,7 +185,13 @@ class LauncherActivity :
         stateManager.stateHandlers = arrayOf(allAppsTransition, depthController)
         if (!isTwoPanels) {
             root.allAppsSheet.setSearchResults(allAppsResults.view)
-            root.onBottomInsetChanged = allAppsResults::setBottomInset
+            // ActivityAllAppsContainerView.setInsets: the list and the search results on the sheet
+            // leave the space at the bottom that the system covers (AdapterHolder.applyPadding);
+            // the keyboard can be up for the search.
+            root.onBottomInsetsChanged = { navBottom, imeBottom ->
+                allApps.setBottomInset(navBottom)
+                allAppsResults.setBottomInset(maxOf(imeBottom, navBottom))
+            }
             allAppsSwipe = AllAppsSwipeController(
                 this, root, allAppsTransition, stateManager, home.activityContext, allAppsSwipeCallbacks,
             )
@@ -256,7 +262,7 @@ class LauncherActivity :
         // InvariantDeviceProfile.onConfigChanged: another display (a foldable's) or a new display
         // size has another grid; Launcher.onIdpChanged reloads with it. TextLauncher: the activity
         // is created again, and loading migrates the items into the new grid.
-        if (GridSpec.from(this) != gridSpec) recreate()
+        if (GridSpec.from(this) != home.gridSpec) recreate()
     }
 
     override fun onDestroy() {
@@ -446,7 +452,7 @@ class LauncherActivity :
             // Launcher.onStateSetStart: the lock is cleared going back to NORMAL.
             rotationHelper.setCurrentStateRequest(REQUEST_NONE)
             // docs/spec.md 5.5: the all apps panel shows the icon a drag from it hid.
-            if (gridSpec.isTwoPanels) allApps.rebindCells()
+            if (isTwoPanels) allApps.rebindCells()
         } else {
             allApps.reset()
             refreshResults()
@@ -479,7 +485,7 @@ class LauncherActivity :
      * The empty space's menu's "Apps list" (docs/spec.md 5.3): none with two panels, where the
      * list is always shown (docs/spec.md 5.5).
      */
-    override val openAllApps: (() -> Unit)? get() = if (gridSpec.isTwoPanels) null else ::openAllApps
+    override val openAllApps: (() -> Unit)? get() = if (isTwoPanels) null else ::openAllApps
 
     /**
      * Launcher3's NORMAL state for the empty space's long press: the home screen is shown, not
@@ -491,7 +497,7 @@ class LauncherActivity :
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
     private fun openAllApps() {
         // docs/spec.md 5.5: with two panels, the list is always shown.
-        if (!stateManager.isInState(NORMAL) || gridSpec.isTwoPanels) return
+        if (!stateManager.isInState(NORMAL) || isTwoPanels) return
         stateManager.goToState(ALL_APPS, animated = true)
     }
 
@@ -515,7 +521,7 @@ class LauncherActivity :
     /** docs/spec.md 2.5: the results replace the home screen while there is a query. */
     private fun refreshResults() {
         val query = Normalizer.normalize(currentQuery())
-        if (gridSpec.isTwoPanels) {
+        if (isTwoPanels) {
             // docs/spec.md 5.5: the results replace the all apps list on the left panel, and the
             // home screen stays on the right.
             if (query.isEmpty()) {

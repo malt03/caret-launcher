@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Point
 import android.content.pm.ShortcutInfo
+import android.util.TypedValue
 import android.view.View
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DeviceProfile
@@ -175,7 +176,10 @@ internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfi
         DeviceProfile.DeviceProperties(
             context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
         ),
-        DeviceProfile.AllAppsProfile(gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx),
+        DeviceProfile.AllAppsProfile(
+            gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx,
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, gridSpec.iconTextSizeSp, context.resources.displayMetrics),
+        ),
     )
 }
 

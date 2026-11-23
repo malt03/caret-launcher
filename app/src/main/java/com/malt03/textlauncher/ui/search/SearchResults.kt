@@ -22,7 +22,6 @@ import com.malt03.textlauncher.data.SearchStore
 import com.malt03.textlauncher.search.Normalizer
 import com.malt03.textlauncher.search.Ranker
 import com.malt03.textlauncher.search.SearchCandidate
-import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.NoPressDelayRecyclerView
 
 /**
@@ -46,7 +45,6 @@ class SearchResults(
     context: Context,
     activityContext: ActivityContext,
     private val searchStore: SearchStore,
-    grid: GridSpec,
     private val inAllApps: Boolean = false,
     fromBottom: Boolean = !inAllApps,
 ) {
@@ -79,8 +77,9 @@ class SearchResults(
         // TextLauncher: the cells are made like the A-Z list's (all_apps_icon.xml), in this list's
         // text style.
         adapter.setIconFactory { parent: ViewGroup ->
-            ResultIconView(parent.context, grid, onSurface = inAllApps).apply {
-                layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
+            ResultIconView(parent.context, onSurface = inAllApps).apply {
+                // BaseAllAppsAdapter gives it the device profile's all apps cell height.
+                layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
         }
         appsList.setAdapter(adapter)

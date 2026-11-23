@@ -21,7 +21,6 @@ import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.views.RecyclerViewFastScroller
 import com.android.launcher3.views.RecyclerViewFastScroller.FastScrollerLocation.ALL_APPS_SCROLLER
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.search.ResultIconView
 
 /**
@@ -36,7 +35,6 @@ import com.malt03.textlauncher.ui.search.ResultIconView
 class AllAppsView(
     context: Context,
     activityContext: ActivityContext,
-    grid: GridSpec,
 ) : FrameLayout(context) {
     /** The activity's AllAppsStore, which also updates the icons' notification dots. */
     private val appsStore: AllAppsStore = activityContext.activityComponent.appsStore
@@ -61,8 +59,9 @@ class AllAppsView(
 
         // TextLauncher: the cells are made like the search results' (all_apps_icon.xml).
         adapter.setIconFactory { parent: ViewGroup ->
-            ResultIconView(parent.context, grid, onSurface = true).apply {
-                layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, grid.allAppsCellHeightPx)
+            ResultIconView(parent.context, onSurface = true).apply {
+                // BaseAllAppsAdapter gives it the device profile's all apps cell height.
+                layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
         }
         // AdapterHolder: the adapter, its layout manager and the list.

@@ -47,20 +47,27 @@ public class DeviceProfile {
         return mAllAppsProfile;
     }
 
-    /** DeviceProfile.AllAppsProfile: the all apps grid's columns and cell height. */
+    /** DeviceProfile.AllAppsProfile: the all apps grid's columns, cells and icons. */
     public static class AllAppsProfile {
         private final int mNumShownAllAppsColumns;
         private final int mCellHeightPx;
         private final int mIconSizePx;
+        private final float mIconTextSizePx;
 
-        public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx, int iconSizePx) {
+        public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx, int iconSizePx,
+                float iconTextSizePx) {
             mNumShownAllAppsColumns = numShownAllAppsColumns;
             mCellHeightPx = cellHeightPx;
             mIconSizePx = iconSizePx;
+            mIconTextSizePx = iconTextSizePx;
         }
 
         public int getIconSizePx() {
             return mIconSizePx;
+        }
+
+        public float getIconTextSizePx() {
+            return mIconTextSizePx;
         }
 
         public int getNumShownAllAppsColumns() {
