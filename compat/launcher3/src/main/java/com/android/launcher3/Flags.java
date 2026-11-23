@@ -30,9 +30,9 @@ public final class Flags {
         return false;
     }
 
-    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    /** Enabled in bp3a (cp1a inherits it). */
     public static boolean restoreArchivedAppIconsFromDb() {
-        return false;
+        return true;
     }
 
     /** Not set in bp4a / cp1a: declaration default (disabled). */

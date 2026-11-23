@@ -1,6 +1,6 @@
 ---
 id: Tex-hpdq
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-23T09:06:34Z
@@ -27,3 +27,9 @@ tags: [launcher3, upstream]
 4. widgetpicker は path=modules/widgetpicker/src・res のようにディレクトリで載せる（Tex-yonv の上書きのバグを直してから）。build.gradle.kts のヘッダーの食い違い（「そのままコピー（上流からはコピーしていない…）」）も直す
 5. 確認の道具（試作）：/private/tmp/claude-501/-Users-malt03-Documents-projects-TextLauncher/e0ae5bc5-e83b-44bc-a4c7-77f6ffa2d629/scratchpad の resvals.py・flags.py（スクラッチなので消えることがある）
 
+
+## Notes
+
+**2026-11-23T10:30:13Z**
+
+2026-11-23: 実装した。scripts/check-upstream.py（標準ライブラリだけ）を追加。UPSTREAM.md のブロックに ref=（launcher3 は互換 73 + アプリの書き写し + Android.bp/manifest、systemui は5）、values_root=（res、quickstep/res、systemui の dynamiccolors/res。全修飾子、android:featureFlag も見る）、release_repo=/release_config=cp1a/flags_file=/flag= を足し、widgetpicker を path= のディレクトリにした。--to <tag> で更新時の変化（フラグ、値、ref= の差分）を出し、update-upstream.sh がマージの後に呼ぶ。タグなしでは今のタグとの食い違いを出して 1 で終わる。今は launcher3・systemui とも食い違いなし（基本の values の色 16 を上流のフォールバック値に戻し、意図的な差に TextLauncher: の印、config_widgetPickerSupportsBlurTokens を quickstep の true に、restoreArchivedAppIconsFromDb を true に＝Tex-bqu2）。docs/launcher3-porting.md の「更新の手順」と各 UPSTREAM.md に説明を書いた。互換クラスの上流コードを derived= に移すのは Tex-n0ut、アプリの書き写しは Tex-ydua

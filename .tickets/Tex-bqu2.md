@@ -1,6 +1,6 @@
 ---
 id: Tex-bqu2
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:57:39Z
@@ -15,3 +15,9 @@ compat/launcher3/.../Flags.java は false（「bp4a / cp1a で未設定」）だ
 
 直し方: true にしてコメントを bp3a に直す。ほかのフラグは確認済みで正しい
 
+
+## Notes
+
+**2026-11-23T10:30:03Z**
+
+2026-11-23: Tex-hpdq で true にした（bp3a で有効、cp1a が継承）。check-upstream.py が今後は食い違いを出す

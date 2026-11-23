@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   TextLauncher: resources copied from Launcher3 res/values (android-17.0.0_r1) that the copied
-  folder and drag code uses: attrs.xml, colors.xml (values-v31 for the accent colors),
+  folder and drag code uses: attrs.xml, colors.xml (values-v31/launcher3.xml has their
+  dynamic colors),
   config.xml and dimens.xml, and styles.xml (FastScrollerPopup) for the all apps fast scroller.
   drawable/round_rect_folder.xml and drawable/bg_letter_list_text.xml are copied as is.
 -->
@@ -33,8 +34,8 @@
     <integer name="config_dropAnimMaxDist">800</integer>
     <!-- CellLayout drop location -->
     <attr name="workspaceAccentColor" format="color" />
-    <color name="workspace_accent_color_light">@android:color/system_accent1_100</color>
-    <color name="workspace_accent_color_dark">@android:color/system_accent1_900</color>
+    <color name="workspace_accent_color_light">#D3E3FD</color>
+    <color name="workspace_accent_color_dark">#041E49</color>
     <dimen name="grid_visualization_rounding_radius">16dp</dimen>
     <dimen name="grid_visualization_horizontal_cell_spacing">6dp</dimen>
     <dimen name="grid_visualization_vertical_cell_spacing">6dp</dimen>
@@ -45,10 +46,10 @@
     <dimen name="drag_distanceThreshold">30dp</dimen>
     <attr name="dropTargetHoverTextColor" format="color" />
     <attr name="dropTargetHoverButtonColor" format="color" />
-    <color name="drop_target_hover_text_color_light">@android:color/system_accent1_900</color>
-    <color name="drop_target_hover_text_color_dark">@android:color/system_accent1_100</color>
-    <color name="drop_target_hover_button_color_light">@android:color/system_accent1_100</color>
-    <color name="drop_target_hover_button_color_dark">@android:color/system_accent1_700</color>
+    <color name="drop_target_hover_text_color_light">#041E49</color>
+    <color name="drop_target_hover_text_color_dark">#D3E3FD</color>
+    <color name="drop_target_hover_button_color_light">#D3E3FD</color>
+    <color name="drop_target_hover_button_color_dark">#0842A0</color>
     <dimen name="dynamic_grid_drop_target_size">56dp</dimen>
     <dimen name="drop_target_top_margin">32dp</dimen>
     <dimen name="drop_target_bottom_margin">16dp</dimen>
@@ -114,13 +115,13 @@
         <attr name="layout_ignoreInsets" format="boolean" />
     </declare-styleable>
     <!-- values-v31/colors.xml -->
-    <color name="popup_color_primary_light">@android:color/system_accent2_50</color>
-    <color name="popup_color_secondary_light">@android:color/system_neutral2_100</color>
-    <color name="popup_color_tertiary_light">@android:color/system_neutral2_300</color>
-    <color name="popup_color_primary_dark">@android:color/system_neutral2_800</color>
-    <color name="popup_color_secondary_dark">@android:color/system_neutral1_900</color>
-    <color name="popup_color_tertiary_dark">@android:color/system_neutral2_700</color>
-    <color name="workspace_text_color_light">@android:color/system_neutral1_0</color>
+    <color name="popup_color_primary_light">#FFF</color>
+    <color name="popup_color_secondary_light">#F1F3F4</color>
+    <color name="popup_color_tertiary_light">#E0E0E0</color>
+    <color name="popup_color_primary_dark">#3C4043</color>
+    <color name="popup_color_secondary_dark">#202124</color>
+    <color name="popup_color_tertiary_dark">#757575</color>
+    <color name="workspace_text_color_light">#FFF</color>
     <!-- values-v34/colors.xml -->
     <color name="system_on_surface_light">@android:color/system_on_surface_light</color>
     <color name="system_on_surface_dark">@android:color/system_on_surface_dark</color>
@@ -161,8 +162,10 @@
     <dimen name="system_shortcut_header_icon_padding">14dp</dimen>
     <dimen name="system_shortcut_header_icon_padding_outer">16dp</dimen>
     <dimen name="system_shortcut_header_icon_padding_inner">12dp</dimen>
-    <!-- values/config.xml -->
+    <!-- TextLauncher: an id resource for the popup container, which Launcher3 declares with
+         @+id/popup_container in layout/longpress_options_menu.xml. -->
     <item type="id" name="popup_container" />
+    <!-- values/config.xml -->
     <string name="popup_container_iterate_children" translatable="false">popup_container_iterate_children</string>
     <!-- values/styles.xml -->
     <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
@@ -231,7 +234,9 @@
     <attr name="isWorkspaceDarkText" format="boolean" />
     <attr name="workspaceTextColor" format="color" />
     <attr name="workspaceShadowColor" format="color" />
-    <color name="workspace_text_color_dark">@android:color/system_neutral1_1000</color>
+    <color name="workspace_text_color_dark">#FF000000</color>
+    <!-- TextLauncher: declared without a parent for R.style; the app's res/values/themes.xml
+         defines them (Launcher3's styles.xml makes them LauncherTheme). -->
     <style name="AppTheme" />
     <style name="AppTheme.DarkMainColor" />
     <style name="AppTheme.DarkText" />
@@ -243,8 +248,8 @@
          drawable-v28/bg_celllayout.xml is copied as is (minSdk 33 always uses it), and
          color/cell_layout_bg_color.xml is copied as is. -->
     <attr name="workspaceSurfaceColor" format="color" />
-    <color name="workspace_surface_color">@android:color/system_accent1_100</color>
-    <color name="wallpaper_popup_scrim">@android:color/system_neutral1_900</color>
+    <color name="workspace_surface_color">#D3E3FD</color>
+    <color name="wallpaper_popup_scrim">?android:attr/colorAccent</color>
     <dimen name="spring_loaded_panel_border">2dp</dimen>
     <dimen name="spring_loaded_hotseat_top_margin">76dp</dimen>
     <dimen name="dynamic_grid_spring_loaded_min_next_space_visible">48dp</dimen>
@@ -264,7 +269,8 @@
     <dimen name="max_depth_blur_radius_enhanced">30dp</dimen>
     <item name="workspace_content_scale" format="float" type="dimen">0.97</item>
     <color name="materialColorOutlineVariant">@android:color/system_outline_variant_light</color>
-    <!-- dimens.xml, for util/window/WindowManagerProxy.java's window bounds estimate. -->
+    <!-- TextLauncher: dimens.xml's 0dp, for util/window/WindowManagerProxy.java's window bounds
+         estimate. quickstep/res sets the framework's taskbar_frame_height, which is private. -->
     <dimen name="taskbar_size">0dp</dimen>
     <dimen name="max_width_and_height_of_small_display_cutout">136px</dimen>
     <!-- The empty space's long-press menu icons (drawable/ic_apps.xml, ic_palette.xml,

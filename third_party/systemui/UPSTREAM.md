@@ -4,12 +4,19 @@
 
 `scripts/update-upstream.sh` は、次のブロックを読んで更新する。パスは、このディレクトリと上流のリポジトリで同じ。
 
+`ref=<上流のパス> <こちらのパス>` は、上流のファイルを元に書いたがマージはしないもの（互換層の代わりのクラスと、`Android.bp` を元にした `build.gradle.kts`）で、`scripts/check-upstream.py` が更新時に上流の差分を出す（docs/launcher3-porting.md の「更新の手順」）。
+
 ```upstream
 repo=https://android.googlesource.com/platform/frameworks/libs/systemui
 tag=android-17.0.0_r1
 path=iconloaderlib/src
 path=iconloaderlib/res
 path=msdllib/src
+ref=animationlib/src/com/android/app/animation/Interpolators.java compat/launcher3-internal/com/android/app/animation/Interpolators.java
+ref=usertypelib/src/com/android/users/UserType.kt compat/launcher3/src/main/java/com/android/users/UserType.kt
+ref=iconloaderlib/Android.bp third_party/systemui/iconloaderlib/build.gradle.kts
+ref=iconloaderlib/build.gradle.kts third_party/systemui/iconloaderlib/build.gradle.kts
+ref=msdllib/Android.bp third_party/systemui/msdllib/build.gradle.kts
 ```
 
 ## 取り込んでいないもの

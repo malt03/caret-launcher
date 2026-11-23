@@ -269,7 +269,10 @@
     </style>
     <string-array name="default_featured_widget_apps" translatable="false">
     </string-array>
-    <bool name="config_widgetPickerSupportsBlurTokens">false</bool>
+    <!-- quickstep/res/values/config.xml (Launcher3QuickStep, as Pixel Launcher): only read with
+         Flags.enableWidgetPickerBlur, which is off in the release. -->
+    <bool name="config_widgetPickerSupportsBlurTokens">true</bool>
+    <!-- values/config.xml -->
     <bool name="reduce_workspace_blur_usage">false</bool>
     <attr name="widgetPickerHeaderAppTitleColor" format="color"/>
     <attr name="widgetPickerHeaderAppSubtitleColor" format="color"/>

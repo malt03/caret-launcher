@@ -1,6 +1,7 @@
-// TextLauncher: build file for Launcher3's modules/widgetpicker (android-17.0.0_r1), copied as is
-// (not copied from upstream, whose build file needs the platform tree). Dagger runs with KSP, as
-// kapt does not work with AGP's built-in Kotlin.
+// TextLauncher: build file for Launcher3's modules/widgetpicker (android-17.0.0_r1), whose sources
+// are copied as is. Written from upstream's Android.bp and build.gradle.kts (which needs the
+// platform tree), tracked as ref= in UPSTREAM.md. Dagger runs with KSP, as kapt does not work with
+// AGP's built-in Kotlin.
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
