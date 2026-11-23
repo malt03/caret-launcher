@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"ਖੱਬੇ ਪਾਸੇ ਪੰਨਾਕਰਨ ਕਰੋ"</string>
     <string name="paginate_right" msgid="6701038155201975878">"ਸੱਜੇ ਪਾਸੇ ਪੰਨਾਕਰਨ ਕਰੋ"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"ਸਫ਼ਾ %2$d ਦਾ %1$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"ਹਟਾਓ"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"ਅਣਸਥਾਪਤ ਕਰੋ"</string>
 </resources>

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Point
 import android.content.pm.ShortcutInfo
@@ -20,6 +21,7 @@ import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
+import com.android.launcher3.deviceprofile.DropTargetProfile
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.IModelWriter
 import com.android.launcher3.model.data.AppInfo
@@ -31,6 +33,7 @@ import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
+import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -180,6 +183,7 @@ internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfi
             gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx,
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, gridSpec.iconTextSizeSp, context.resources.displayMetrics),
         ),
+        DropTargetProfile.createDropTargetProfile(context.resources, shouldApplyWidePortraitDimens = false),
     )
 }
 
@@ -197,4 +201,14 @@ internal object HomeGridInitializer : InvariantDeviceProfile.GridInitializer {
         deviceProfile.workspaceProfile.setCellSize(gridSpec.homeCellWidthPx, gridSpec.homeCellHeightPx, widgetPadding)
         idp.setDeviceProfile(gridSpec.columns, gridSpec.rows, deviceProfile)
     }
+}
+
+/**
+ * A context that gives [launcher] to ActivityContext.lookupContext (Launcher.getLauncher), for the
+ * Launcher3 views the home screen makes before the activity holds it (the drop target bar, which
+ * Launcher3 inflates in the launcher's own context).
+ */
+internal class LauncherContextWrapper(base: Context, private val launcher: Launcher) :
+    ContextWrapper(base), ActivityContext.Provider {
+    override fun getActivityContext(): ActivityContext = launcher
 }

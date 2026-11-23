@@ -255,6 +255,29 @@ public abstract class Launcher implements ActivityContext {
     public abstract void addPendingItem(PendingAddItemInfo info, int container, int screenId,
             int[] cell, int spanX, int spanY);
 
+    @Override
+    public DropTargetHandler getDropTargetHandler() {
+        return new DropTargetHandler(this);
+    }
+
+    private final RunnableList mResumedCallbacks = new RunnableList();
+
+    /**
+     * BaseActivity.addEventCallback. TextLauncher: only {@link BaseActivity#EVENT_RESUMED}, which
+     * the home screen dispatches with {@link #onResumed()}.
+     */
+    public void addEventCallback(int event, Runnable callback) {
+        if (event != BaseActivity.EVENT_RESUMED) {
+            throw new IllegalArgumentException("Unsupported event " + event);
+        }
+        mResumedCallbacks.add(callback);
+    }
+
+    /** TextLauncher: BaseActivity.onResume's dispatchActivityEvent(EVENT_RESUMED). */
+    public void onResumed() {
+        mResumedCallbacks.executeAllAndClear();
+    }
+
     /** No wallpaper zoom: it needs a system permission. */
     public DepthController getDepthController() {
         return null;

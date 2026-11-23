@@ -3,7 +3,8 @@
   TextLauncher: resources copied from Launcher3 res/values (android-17.0.0_r1) that the copied
   folder and drag code uses: attrs.xml, colors.xml (values-v31/launcher3.xml has their
   dynamic colors),
-  config.xml and dimens.xml, and styles.xml (FastScrollerPopup) for the all apps fast scroller.
+  config.xml, dimens.xml and id.xml, and styles.xml (FastScrollerPopup) for the all apps fast
+  scroller, DropTargetButton and HomeScreenElementTheme for the drop target bar.
   drawable/round_rect_folder.xml and drawable/bg_letter_list_text.xml are copied as is.
 -->
 <resources>
@@ -43,8 +44,8 @@
     <dimen name="grid_visualization_vertical_cell_spacing">6dp</dimen>
     <integer name="config_dragOutlineFadeTime">500</integer>
     <integer name="config_dragOutlineMaxAlpha">255</integer>
-    <!-- DropTargetBar, ButtonDropTarget (drawable/drop_target_*.xml, drawable/ic_*_no_shadow.xml
-         and color/drop_target_text.xml are copied as is) -->
+    <!-- DropTargetBar, ButtonDropTarget (layout/drop_target_bar.xml, drawable/drop_target_*.xml,
+         drawable/ic_*_no_shadow.xml and color/drop_target_text.xml are copied as is) -->
     <dimen name="drag_distanceThreshold">30dp</dimen>
     <attr name="dropTargetHoverTextColor" format="color" />
     <attr name="dropTargetHoverButtonColor" format="color" />
@@ -66,6 +67,28 @@
     <dimen name="drop_target_button_drawable_vertical_padding">8dp</dimen>
     <dimen name="drop_target_button_frame_radius">80dp</dimen>
     <dimen name="drop_target_button_gap">28dp</dimen>
+    <dimen name="drop_target_bottom_margin_wide_portrait">32dp</dimen>
+    <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
+    <string name="delete_package_intent" translatable="false">#Intent;action=android.intent.action.DELETE;launchFlags=0x10800000;end</string>
+    <item type="id" name="action_uninstall" />
+    <style name="DropTargetButtonBase" parent="@android:style/TextAppearance.DeviceDefault.Medium">
+        <item name="android:drawablePadding">@dimen/drop_target_button_drawable_padding</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/drop_target_text</item>
+        <item name="android:textSize">@dimen/drop_target_text_size</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:background">@drawable/drop_target_background</item>
+    </style>
+    <style name="DropTargetButton" parent="DropTargetButtonBase">
+        <item name="android:fontFamily">variable-title-medium</item>
+    </style>
+    <style name="HomeScreenElementTheme">
+        <item name="android:colorEdgeEffect">?attr/workspaceTextColor</item>
+        <item name="android:textColorPrimary">?attr/workspaceTextColor</item>
+        <item name="android:textColorSecondary">?attr/workspaceTextColor</item>
+    </style>
     <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
     <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
     <color name="materialColorOnSurfaceVariant">@android:color/system_on_surface_variant_light</color>

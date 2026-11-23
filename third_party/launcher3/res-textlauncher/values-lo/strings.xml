@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"ຈັດເລກໜ້າເບື້ອງຊ້າຍ"</string>
     <string name="paginate_right" msgid="6701038155201975878">"ຈັດເລກໜ້າເບື້ອງຂວາ"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"ໜ້າ %1$d ຈາກ %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"ເອົາ​ອອກ"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"ຖອນ​ການ​ຕິດ​ຕັ້ງ"</string>
 </resources>

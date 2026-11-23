@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"Podziel na strony po lewej"</string>
     <string name="paginate_right" msgid="6701038155201975878">"Podziel na strony po prawej"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"Strona %1$d z %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Usuń"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Odinstaluj"</string>
 </resources>

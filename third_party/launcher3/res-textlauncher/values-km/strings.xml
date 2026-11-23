@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"បែងចែកទំព័រទៅឆ្វេង"</string>
     <string name="paginate_right" msgid="6701038155201975878">"បែងចែកទំព័រទៅស្ដាំ"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"ទំព័រ %1$d នៃ %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"យកចេញ"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"លុប"</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TextLauncher: values from Launcher3 res/values-sw600dp/ (dimens.xml and config.xml, android-17.0.0_r1) for the resources
+<!-- TextLauncher: values from Launcher3 res/values-sw600dp/ (dimens.xml, config.xml and styles.xml, android-17.0.0_r1) for the resources
      res-textlauncher/values has. -->
 <resources>
     <dimen name="fastscroll_popup_width">75dp</dimen>
@@ -15,4 +15,7 @@
     <dimen name="grid_visualization_horizontal_cell_spacing">6dp</dimen>
     <dimen name="min_page_snap_velocity">3000dp</dimen>
     <integer name="config_pageSnapAnimationDuration">550</integer>
+    <style name="DropTargetButton" parent="DropTargetButtonBase">
+        <item name="android:fontFamily">variable-title-large</item>
+    </style>
 </resources>

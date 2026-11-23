@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"分頁靠左"</string>
     <string name="paginate_right" msgid="6701038155201975878">"分頁靠右"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"第 %1$d 頁，共 %2$d 頁"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"移除"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"解除安裝"</string>
 </resources>

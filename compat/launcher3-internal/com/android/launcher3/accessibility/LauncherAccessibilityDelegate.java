@@ -24,6 +24,7 @@ package com.android.launcher3.accessibility;
 
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.R;
 import com.android.launcher3.model.data.ItemInfo;
 
 import java.util.function.Consumer;
@@ -31,12 +32,15 @@ import java.util.function.Consumer;
 /**
  * Stand-in for Launcher3's LauncherAccessibilityDelegate (android-17.0.0_r1), made from
  * LauncherAccessibilityDelegate.java by deleting what TextLauncher does not use: only
- * {@link #addToWorkspace}, which the long-press menu's add button uses, is left. Changes are
- * marked with "TextLauncher:".
+ * {@link #addToWorkspace}, which the long-press menu's add button uses, and the action ids that
+ * SecondaryDropTarget uses are left. Changes are marked with "TextLauncher:".
  */
 // TextLauncher: an interface that the home screen implements, not a BaseAccessibilityDelegate of
 // Launcher; there are no accessibility actions.
 public interface LauncherAccessibilityDelegate {
+
+    public static final int UNINSTALL = R.id.action_uninstall;
+    public static final int INVALID = -1;
 
     /**
      * Functionality to add the item {@link ItemInfo} to the workspace

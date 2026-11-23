@@ -22,6 +22,8 @@ package com.android.launcher3;
 
 import android.graphics.Point;
 
+import com.android.launcher3.deviceprofile.DropTargetProfile;
+
 /**
  * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace, all apps
  * and device values that the copied code reads. TextLauncher sets them from its own grid.
@@ -34,13 +36,26 @@ public class DeviceProfile {
     private final WorkspaceProfile mWorkspaceProfile;
     private final DeviceProperties mDeviceProperties;
     private final AllAppsProfile mAllAppsProfile;
+    private final DropTargetProfile mDropTargetProfile;
 
     public DeviceProfile(FolderProfile folderProfile, WorkspaceProfile workspaceProfile,
-            DeviceProperties deviceProperties, AllAppsProfile allAppsProfile) {
+            DeviceProperties deviceProperties, AllAppsProfile allAppsProfile,
+            DropTargetProfile dropTargetProfile) {
         mFolderProfile = folderProfile;
         mWorkspaceProfile = workspaceProfile;
         mDeviceProperties = deviceProperties;
         mAllAppsProfile = allAppsProfile;
+        mDropTargetProfile = dropTargetProfile;
+    }
+
+    /** The drop target bar's dimensions (DropTargetProfile.createDropTargetProfile). */
+    public DropTargetProfile getDropTargetProfile() {
+        return mDropTargetProfile;
+    }
+
+    /** TextLauncher: no hotseat at the side, so never a vertical bar layout. */
+    public boolean isVerticalBarLayout() {
+        return false;
     }
 
     public AllAppsProfile getAllAppsProfile() {

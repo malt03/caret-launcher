@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"ડાબી બાજુએથી પાનાને ક્રમાંક આપો"</string>
     <string name="paginate_right" msgid="6701038155201975878">"જમણી બાજુએથી પાનાને ક્રમાંક આપો"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"%2$dમાંથી %1$d પેજ"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"કાઢી નાખો"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"અનઇન્સ્ટૉલ કરો"</string>
 </resources>

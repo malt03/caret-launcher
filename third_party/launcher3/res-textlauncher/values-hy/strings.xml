@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"Բաժանել էջերի դեպի ձախ"</string>
     <string name="paginate_right" msgid="6701038155201975878">"Բաժանել էջերի դեպի աջ"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"Էջ %1$d՝ %2$d-ից"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Հեռացնել"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Ապատեղադրել"</string>
 </resources>

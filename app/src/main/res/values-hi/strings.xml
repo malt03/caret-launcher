@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint, menu_app_info, drop_target_remove and drop_target_uninstall are taken from
-  Launcher3 res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint,
-  app_info_drop_target_label, remove_drop_target_label, uninstall_drop_target_label.
+  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
+  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"ऐप्लिकेशन खोजें"</string>
-    <string name="drop_target_remove">"हटाएं"</string>
-    <string name="drop_target_uninstall">"अनइंस्टॉल करें"</string>
     <string name="menu_search_terms">खोज शब्द बदलें</string>
     <string name="search_terms_title">%1$s के लिए खोज शब्द</string>
     <string name="search_terms_hint">शब्द जोड़ें</string>

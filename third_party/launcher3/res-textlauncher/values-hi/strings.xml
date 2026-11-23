@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"पिछले पेज पर जाएं"</string>
     <string name="paginate_right" msgid="6701038155201975878">"अगले पेज पर जाएं"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"पेज %2$d में से %1$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"हटाएं"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"अनइंस्टॉल करें"</string>
 </resources>

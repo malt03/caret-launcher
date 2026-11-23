@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.DeviceProfile;
+import com.android.launcher3.DropTargetHandler;
 import com.android.launcher3.dagger.ActivityComponent;
 import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DragController;
@@ -75,6 +76,13 @@ public interface ActivityContext {
      * Controller for supporting item drag-and-drop
      */
     default DragController getDragController() {
+        return null;
+    }
+
+    /**
+     * Handler for actions taken on drop targets that require launcher
+     */
+    default DropTargetHandler getDropTargetHandler() {
         return null;
     }
 

@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"Sidnumrera till vänster"</string>
     <string name="paginate_right" msgid="6701038155201975878">"Sidnumrera till höger"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"Sidan %1$d av %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Ta bort"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Avinstallera"</string>
 </resources>

@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"बायाँतिर पेजिनेट गर्नुहोस्"</string>
     <string name="paginate_right" msgid="6701038155201975878">"दायाँतिर पेजिनेट गर्नुहोस्"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"पृष्ठ %2$d को %1$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"हटाउनुहोस्"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"अनइन्स्टल गर्नुहोस्"</string>
 </resources>

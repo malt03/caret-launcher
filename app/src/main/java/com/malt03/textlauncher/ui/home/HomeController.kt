@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.UserHandle
 import android.graphics.drawable.GradientDrawable
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import com.android.launcher3.CellLayout
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
+import com.android.launcher3.DropTargetBar
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.util.LauncherBindableItemsContainer
@@ -48,7 +50,6 @@ import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.malt03.textlauncher.ui.NoPressDelayScrollView
-import com.malt03.textlauncher.ui.drag.DropTargetBar
 import com.malt03.textlauncher.ui.drag.HomeDragController
 import com.malt03.textlauncher.ui.statehandlers.DepthController
 
@@ -185,7 +186,13 @@ class HomeController(
     private val workspaceHost = WorkspaceHost()
     internal val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
     private val springLoadedListener = SpringLoadedListener(this)
-    private val dropTargetBar = DropTargetBar(context, { activityContext }, launcher, { dragController })
+    /**
+     * Launcher3's DropTargetBar (drop_target_bar.xml), inflated in a context that gives the
+     * launcher, as the activity holds the home screen only once it is made. The home screen places
+     * it (LauncherRootLayout.attachDropTargetBar).
+     */
+    private val dropTargetBar = LayoutInflater.from(context).cloneInContext(LauncherContextWrapper(context, launcher))
+        .inflate(com.android.launcher3.R.layout.drop_target_bar, null) as DropTargetBar
 
     internal val widgetHost = HomeWidgetHost(context)
     internal val widgetAddFlow = HomeWidgetAddFlow(this)
@@ -280,10 +287,13 @@ class HomeController(
     /** Re-creates every view, e.g. after the icon theme changed. */
     fun rebuild() = loader.rebuild()
 
-    /** Launcher.onResume: runs the uninstall drop target's deferred result. */
+    /**
+     * Launcher.onResume: the resumed callbacks (BaseActivity.EVENT_RESUMED), such as the uninstall
+     * drop target's deferred result.
+     */
     fun onResume() {
         isResumed = true
-        dropTargetBar.uninstall.onLauncherResume()
+        launcher.onResumed()
         runOnResume?.let {
             runOnResume = null
             it()

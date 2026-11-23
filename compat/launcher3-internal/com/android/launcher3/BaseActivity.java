@@ -68,6 +68,11 @@ public abstract class BaseActivity extends Activity
 
     private int mActivityFlags;
 
+    public static final int EVENT_STARTED = 0;
+    public static final int EVENT_RESUMED = 1;
+    public static final int EVENT_STOPPED = 2;
+    public static final int EVENT_DESTROYED = 3;
+
     // List of persistent callbacks (i.e. the list is not cleared when callbacks are first run) to
     // be run when the top resumed activity state changes.
     private final ArrayList<Runnable> mTopResumedChangedCallbacks = new ArrayList<Runnable>();

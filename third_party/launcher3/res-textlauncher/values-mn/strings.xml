@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"Зүүн тийш хуудас болгож хуваах"</string>
     <string name="paginate_right" msgid="6701038155201975878">"Баруун тийш хуудас болгож хуваах"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"%2$d-н %1$d хуудас"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Арилгах"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Устгах"</string>
 </resources>

@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"Разделување на страници налево"</string>
     <string name="paginate_right" msgid="6701038155201975878">"Разделување на страници надесно"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"Страница %1$d од %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Отстрани"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Деинсталирај"</string>
 </resources>

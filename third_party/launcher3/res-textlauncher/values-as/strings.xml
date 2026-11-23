@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"বাওঁফালে পৃষ্ঠা হিচাপে পৃথকীকৰণ কৰক"</string>
     <string name="paginate_right" msgid="6701038155201975878">"সোঁফালে পৃষ্ঠা হিচাপে পৃথকীকৰণ কৰক"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"%2$dৰ %1$d পৃষ্ঠা"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"আঁতৰাওক"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"আনইনষ্টল কৰক"</string>
 </resources>

@@ -53,4 +53,6 @@
     <string name="paginate_left" msgid="7915437358451360433">"ପୃଷ୍ଠାର ବାମପଟେ ପୃଷ୍ଠା ସଂଖ୍ୟା ଲେଖନ୍ତୁ"</string>
     <string name="paginate_right" msgid="6701038155201975878">"ପୃଷ୍ଠାର ଡାହାଣପଟେ ପୃଷ୍ଠା ସଂଖ୍ୟା ଲେଖନ୍ତୁ"</string>
     <string name="default_scroll_format" msgid="7475544710230993317">"ମୋଟ %2$dରୁ %1$d ନମ୍ବର ପୃଷ୍ଠା"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"କାଢ଼ି ଦିଅନ୍ତୁ"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"ଅନଇନଷ୍ଟଲ କରନ୍ତୁ"</string>
 </resources>
