@@ -77,8 +77,11 @@ class HomeController(
         fun editSearchTerms(entry: AppEntry)
         /** Edit mode (docs/spec.md 5.4) starts with a drag and ends after it. */
         fun onEditModeChanged(editing: Boolean)
-        /** Shows the home screen, leaving the search results (Launcher3's NORMAL state). */
-        fun showHome()
+        /**
+         * Shows the home screen, leaving the search results or the all apps list (Launcher3's
+         * goToState(NORMAL, true, forSuccessCallback(onDone))); [onDone] runs once it is shown.
+         */
+        fun showHome(onDone: () -> Unit = {})
         /** The empty space's menu's "Apps list" (docs/spec.md 5.3), or null when it has none. */
         val openAllApps: (() -> Unit)?
         /** Whether the empty space's long press may show its menu (Launcher3's NORMAL state). */
@@ -374,11 +377,12 @@ class HomeController(
             Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
             return false
         }
-        // TextLauncher: Launcher3 goes to the NORMAL state first.
-        host.showHome()
-        val view = workspaceHost.addItem(info, cell[0], cell[1])
-        model.save()
-        animateNewItem(view)
+        // Launcher3 goes to the NORMAL state first, and binds the item when it gets there.
+        host.showHome {
+            val view = workspaceHost.addItem(info, cell[0], cell[1])
+            model.save()
+            animateNewItem(view)
+        }
         return true
     }
 

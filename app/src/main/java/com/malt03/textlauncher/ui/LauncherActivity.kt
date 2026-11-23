@@ -470,19 +470,28 @@ class LauncherActivity :
 
     /**
      * docs/spec.md 6.6: closes the list; the field goes back above the keyboard with the focus
-     * ([focus]). Without [animate], at once (the home button, leaving the launcher).
+     * ([focus]). Without [animate], at once (the home button, leaving the launcher). [onClosed]
+     * runs once it is closed, and not when something stops the animation before that
+     * (forSuccessCallback).
      */
-    private fun closeAllApps(animate: Boolean, focus: Boolean = true) {
-        if (!root.isAllAppsShown && !isAllAppsOpen) return
+    private fun closeAllApps(animate: Boolean, focus: Boolean = true, onClosed: () -> Unit = {}) {
+        if (!root.isAllAppsShown && !isAllAppsOpen) {
+            onClosed()
+            return
+        }
         if (animate) {
             prepareAllAppsClose()
-            allAppsTransition.animateTo(open = false) { onAllAppsClosed(focus) }
+            allAppsTransition.animateTo(open = false) {
+                onAllAppsClosed(focus)
+                onClosed()
+            }
         } else {
             allAppsTransition.cancelAnimation()
             isAllAppsOpen = false
             clearQuery()
             allAppsTransition.progress = 0f
             onAllAppsClosed(focus)
+            onClosed()
         }
     }
 
@@ -562,8 +571,15 @@ class LauncherActivity :
 
     override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
 
-    /** An item added from the long-press menu shows on the home screen, so the query goes. */
-    override fun showHome() = clearQuery()
+    /**
+     * An item added from the long-press menu shows on the home screen, so the query goes, and the
+     * all apps list closes with its animation before the item is bound
+     * (LauncherAccessibilityDelegate.addToWorkspace: goToState(NORMAL, true, ...)).
+     */
+    override fun showHome(onDone: () -> Unit) {
+        clearQuery()
+        closeAllApps(animate = true, onClosed = onDone)
+    }
 
     /** ActivityContext.lookupContext finds Launcher3's ActivityContext through the activity. */
     override fun getActivityContext(): ActivityContext = home.activityContext
