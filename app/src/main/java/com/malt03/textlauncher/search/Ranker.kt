@@ -1,7 +1,6 @@
 package com.malt03.textlauncher.search
 
-import java.text.Collator
-import java.util.Locale
+import com.android.launcher3.util.LabelComparator
 
 /** Something that can be searched: the app label plus the user's search strings, all normalized. */
 data class SearchCandidate<T>(
@@ -15,12 +14,12 @@ data class SearchCandidate<T>(
 object Ranker {
     enum class Group { EXACT, LEARNED, PREFIX, PARTIAL }
 
-    private val collator: Collator = Collator.getInstance(Locale.JAPANESE)
-
-    val labelComparator: Comparator<String> = Comparator { a, b ->
-        val c = collator.compare(a, b)
-        if (c != 0) c else a.compareTo(b)
-    }
+    /**
+     * The app name order of the prefix and partial groups: the all apps list's (AppInfoComparator,
+     * docs/spec.md 6.4), Launcher3's LabelComparator, which puts the names that start with a letter
+     * or digit first and orders them with the current locale's Collator.
+     */
+    private val labelComparator: Comparator<String> = LabelComparator()
 
     /**
      * @param normalizedQuery the query after [Normalizer.normalize]

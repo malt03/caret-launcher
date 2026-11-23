@@ -61,6 +61,13 @@ class RankerTest {
     }
 
     @Test
+    fun namesStartingWithALetterOrDigitComeFirst() {
+        // LabelComparator, as in the all apps list.
+        val candidates = listOf(candidate("_Cam"), candidate("Acme"))
+        assertEquals(listOf("Acme", "_Cam"), rank("c", candidates))
+    }
+
+    @Test
     fun katakanaLabelMatchesHiraganaQuery() {
         assertEquals(listOf("カメラ"), rank("かめ", listOf(candidate("カメラ"), candidate("設定"))))
     }
