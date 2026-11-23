@@ -134,13 +134,11 @@ internal class HomeOptionsMenu(private val home: HomeController) :
     private fun getAll(): List<PopupData> = buildList {
         add(
             PopupData(R.drawable.ic_palette, R.string.styles_wallpaper_button_text, PopupCategory.SYSTEM_SHORTCUT) { _, _, v ->
-                home.closeFloatingViewsForActivity()
                 startWallpaperPicker(v)
             },
         )
         add(
             PopupData(R.drawable.ic_widget, R.string.widget_button_text, PopupCategory.SYSTEM_SHORTCUT) { _, _, _ ->
-                home.closeFloatingViewsForActivity()
                 home.openWidgetPicker()
             },
         )

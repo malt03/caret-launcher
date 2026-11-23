@@ -229,16 +229,6 @@ class HomeController(
         AbstractFloatingView.closeAllOpenViews(activityContext, animate)
     }
 
-    /**
-     * A menu item that opens another screen (the wallpaper picker, the widget picker, a widget's
-     * settings) closes the menu and the other floating views as it does. TextLauncher: Launcher3
-     * closes them only once the launcher is hidden (Launcher.onSaveInstanceState, after onStop),
-     * which TextLauncher does in onStop. Here the screens may be dialogs that leave the launcher
-     * visible (the chooser for ACTION_SET_WALLPAPER, as wallpaper_picker_package is empty, and the
-     * system's ACTION_APPWIDGET_PICK), which would leave the menu open over the launcher.
-     */
-    internal fun closeFloatingViewsForActivity() = closeFloatingViews(animate = true)
-
     /** The back gesture closes the long-press menu first, like Launcher3's floating views. */
     fun closeTopFloatingView(): Boolean {
         val top = AbstractFloatingView.getTopOpenView(activityContext) ?: return false
