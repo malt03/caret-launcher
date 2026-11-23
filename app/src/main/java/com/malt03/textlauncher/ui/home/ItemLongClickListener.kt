@@ -119,6 +119,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
         ) {
             add(
                 PopupData(L3R.drawable.ic_setting, L3R.string.widget_settings, PopupCategory.SYSTEM_SHORTCUT_FIXED) { _, _, v ->
+                    home.closeFloatingViewsForActivity()
                     if (v is LauncherAppWidgetHostView) home.widgetAddFlow.startReconfigure(v)
                 },
             )
