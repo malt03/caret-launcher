@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.UserHandle
 import android.graphics.drawable.GradientDrawable
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
@@ -32,6 +33,7 @@ import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
@@ -199,14 +201,27 @@ class HomeController(
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
-        // DragLayer.recreateControllers: the drag controller is the touch controller; open
-        // floating views (the long-press menu) are asked first.
-        root.overlay.setControllers(dragController)
+        // DragLayer.recreateControllers (QuickstepLauncher.createTouchControllers): the drag
+        // controller, then the status bar's swipe down; open floating views (the long-press menu,
+        // folders) are asked first. TextLauncher: the all apps swipe is the root's own interceptor.
+        root.overlay.setControllers(dragController, StatusBarTouchController(launcher, ::canSwipeDownToStatusBar))
         root.touchInterceptor = root.overlay::dispatchTouchEventFromParent
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(HomeOptionsMenu(this))
 
         loader.start()
+    }
+
+    /**
+     * StatusBarTouchController's isEnabledCheck: Launcher3's NORMAL state (QuickstepLauncher
+     * .createTouchControllers). TextLauncher: the home screen scrolls vertically, so the swipe down
+     * scrolls it until it is at its top (docs/spec.md 5.6); with two panels, the all apps panel's
+     * list scrolls with it.
+     */
+    private fun canSwipeDownToStatusBar(ev: MotionEvent): Boolean {
+        if (!host.canShowOptions() || scrollView.canScrollVertically(-1)) return false
+        val panel = root.allAppsPanel ?: return true
+        return !root.overlay.isEventOverView(panel, ev)
     }
 
     fun destroy() {

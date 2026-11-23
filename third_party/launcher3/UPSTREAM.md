@@ -119,6 +119,7 @@ path=src/com/android/launcher3/compat/AlphabeticIndexCompat.java
 path=src/com/android/launcher3/util/LabelComparator.java
 path=src/com/android/launcher3/util/ScrollableLayoutManager.java
 derived=src/com/android/launcher3/touch/ItemClickHandler.java compat/launcher3-internal/com/android/launcher3/touch/ItemClickHandler.java
+derived=quickstep/src/com/android/launcher3/uioverrides/touchcontrollers/StatusBarTouchController.java compat/launcher3-internal/com/android/launcher3/uioverrides/touchcontrollers/StatusBarTouchController.java
 derived=src/com/android/launcher3/popup/PopupContainer.kt compat/launcher3-internal/com/android/launcher3/popup/PopupContainer.kt
 derived=src/com/android/launcher3/popup/PopupContainerWithArrow.kt compat/launcher3-internal/com/android/launcher3/popup/PopupContainerWithArrow.kt
 derived=src/com/android/launcher3/icons/IconCache.kt compat/launcher3-internal/com/android/launcher3/icons/IconCache.kt
