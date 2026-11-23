@@ -44,23 +44,47 @@ internal class HomeLoader(private val home: HomeController) {
     private var rebuildGeneration = 0
     private val shortcutsListener: () -> Unit = ::onShortcutsChanged
 
+    /**
+     * The activity was destroyed (LauncherModel.removeCallbacks): what it started on other threads
+     * is dropped when it comes back, as an activity created again binds the model itself.
+     */
+    private var destroyed = false
+
+    /**
+     * LauncherModel.addCallbacksAndLoad: the model is read from the database once; an activity
+     * created again (docs/spec.md 7.2) binds the model that is already loaded (rebindCallbacks).
+     */
     fun start() {
         app.shortcutRepository.addChangeListener(shortcutsListener)
+        if (model.isLoaded) {
+            onModelLoaded()
+            return
+        }
         app.ioExecutor.execute {
             val items = model.loadBlocking()
             mainHandler.post {
-                model.setLoaded(items)
-                loaded = true
-                // LoaderTask (ModelDbController): the grid is migrated before the items are read.
-                if (GridSizeMigration.migrateGridIfNeeded(context, home.gridSpec, model.items)) model.save()
-                pruneMissingApps()
-                rebuild()
+                if (destroyed) return@post
+                if (!model.isLoaded) model.setLoaded(items)
+                onModelLoaded()
             }
         }
     }
 
+    private fun onModelLoaded() {
+        loaded = true
+        // LoaderTask (ModelDbController): the grid is migrated before the items are read.
+        // TextLauncher: also for a loaded model, as a new grid creates the activity again rather
+        // than reloading the model (Launcher.onIdpChanged).
+        if (GridSizeMigration.migrateGridIfNeeded(context, home.gridSpec, model.items)) model.save()
+        pruneMissingApps()
+        rebuild()
+    }
+
     fun destroy() {
         app.shortcutRepository.removeChangeListener(shortcutsListener)
+        destroyed = true
+        // The callbacks of a rebuild in progress see another generation and stop.
+        rebuildGeneration++
     }
 
     /**
@@ -68,6 +92,7 @@ internal class HomeLoader(private val home: HomeController) {
      * and its pinned shortcut lookup), the views are built once the shortcuts and icons are loaded.
      */
     fun rebuild() {
+        if (destroyed) return
         // ModelCallbacks.startBinding cancels the drag; here it is cancelled before the model
         // changes below (pruneMissing, checkItemPlacement), so that a dragged item goes back first.
         home.cancelDrag()
@@ -212,7 +237,7 @@ internal class HomeLoader(private val home: HomeController) {
      * are bound again (an app may have been suspended or unsuspended).
      */
     fun onAppsChanged() {
-        if (!loaded) return
+        if (!loaded || destroyed) return
         // ModelCallbacks.startBinding: the drag is cancelled before the model changes (rebuild).
         home.cancelDrag()
         pruneMissingApps()
@@ -224,12 +249,13 @@ internal class HomeLoader(private val home: HomeController) {
      * new labels, states and icons in place.
      */
     private fun onShortcutsChanged() {
-        if (!loaded) return
+        if (!loaded || destroyed) return
         val keys = model.shortcutKeys()
         if (keys.isEmpty()) return
         app.ioExecutor.execute {
             val found = app.shortcutRepository.loadBlocking(keys) ?: return@execute
             mainHandler.post {
+                if (destroyed) return@post
                 if (pruneMissing { it in keys && it !in found }) {
                     rebuild()
                     return@post
@@ -245,7 +271,7 @@ internal class HomeLoader(private val home: HomeController) {
                 var remaining = changed.size
                 for ((info, shortcut) in changed) {
                     loadShortcutIcon(info, shortcut) {
-                        home.bindItemChanged(info)
+                        if (!destroyed) home.bindItemChanged(info)
                         if (--remaining == 0) model.save()
                     }
                 }
