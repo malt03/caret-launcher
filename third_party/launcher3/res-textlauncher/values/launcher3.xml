@@ -627,4 +627,30 @@
     <dimen name="taskbar_button_margin_split">0dp</dimen>
     <dimen name="taskbar_button_margin_6_5">0dp</dimen>
     <style name="FolderStyleDefault" />
+    <!-- Folder pages: PagedView, pageindicators/PageIndicatorDots.java and PaginationArrow.kt, and
+         the folder footer (drawable/ic_circle.xml and drawable/ic_chevron_left_rounded_700.xml are
+         copied as is) -->
+    <declare-styleable name="PagedView">
+        <!-- The page indicator for this workspace -->
+        <attr name="pageIndicator" format="reference" />
+    </declare-styleable>
+    <attr name="pageIndicatorDotColor" format="color" />
+    <attr name="pageIndicatorArrowBgColor" format="color" />
+    <color name="page_indicator_arrow_bg_light">#000000</color>
+    <color name="page_indicator_arrow_bg_dark">#FFFFFF</color>
+    <integer name="config_pageSnapAnimationDuration">750</integer>
+    <bool name="desktop_form_factor">false</bool>
+    <dimen name="fling_threshold_velocity">500dp</dimen>
+    <dimen name="easy_fling_threshold_velocity">400dp</dimen>
+    <dimen name="min_fling_velocity">250dp</dimen>
+    <dimen name="min_page_snap_velocity">1500dp</dimen>
+    <dimen name="page_indicator_dot_size">6dp</dimen>
+    <dimen name="page_indicator_gap_width">4dp</dimen>
+    <dimen name="folder_title_min_width">100dp</dimen>
+    <dimen name="folder_footer_height_default">56dp</dimen>
+    <dimen name="folder_arrow_icon_length">24dp</dimen>
+    <dimen name="folder_footer_horiz_padding">20dp</dimen>
+    <dimen name="folder_footer_horiz_padding_minus_arrow_overlap">12dp</dimen> <!-- 20 - 8 -->
+    <dimen name="folder_arrow_touchbox_length">48dp</dimen>
+    <dimen name="folder_arrow_margin_compensation">-8dp</dimen>
 </resources>

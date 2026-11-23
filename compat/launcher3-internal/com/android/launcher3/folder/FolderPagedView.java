@@ -20,6 +20,8 @@
 
 package com.android.launcher3.folder;
 
+import static com.android.launcher3.AbstractFloatingView.TYPE_ALL;
+import static com.android.launcher3.AbstractFloatingView.TYPE_FOLDER;
 import static com.android.launcher3.folder.FolderGridOrganizer.createFolderGridOrganizer;
 
 import android.annotation.SuppressLint;
@@ -31,13 +33,16 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewDebug;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.PagedView;
+import com.android.launcher3.R;
 import com.android.launcher3.ShortcutAndWidgetContainer;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
@@ -45,6 +50,7 @@ import com.android.launcher3.graphics.PathWrapper;
 import com.android.launcher3.keyboard.ViewGroupFocusHelper;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.pageindicators.PageIndicatorDots;
 import com.android.launcher3.util.LauncherBindableItemsContainer.ItemOperator;
 import com.android.launcher3.util.Thunk;
 import com.android.launcher3.views.ActivityContext;
@@ -59,20 +65,25 @@ import java.util.stream.Collectors;
 
 /**
  * Stand-in for Launcher3's FolderPagedView (android-17.0.0_r1), made from
- * FolderPagedView.java by deleting what TextLauncher does not use (the page indicator and the
- * footer, page scrolling and its hints, the view cache, app pairs, accessibility page
- * descriptions); changes are marked with "TextLauncher:". TextLauncher's folders have one page:
- * the {@link PagedView} stand-in shows its first page and does not scroll. As in Launcher3, the
- * page is a {@link CellLayout} that holds its icons in a {@link ShortcutAndWidgetContainer}.
+ * FolderPagedView.java by deleting what TextLauncher does not use (the view cache, app pairs, the
+ * folder name in the footer, the checks for low-res icons, accessibility descriptions of the
+ * folder); changes are marked with "TextLauncher:". As in Launcher3, the folder has pages of
+ * columns x rows that scroll sideways ({@link PagedView}), with the page indicator in the folder's
+ * footer, and each page is a {@link CellLayout} that holds its icons in a
+ * {@link ShortcutAndWidgetContainer}.
  */
-// TextLauncher: no page indicator (PageIndicatorDots).
-public class FolderPagedView extends PagedView<Void> implements ClipPathView {
+public class FolderPagedView extends PagedView<PageIndicatorDots> implements ClipPathView {
 
     private static final String TAG = "FolderPagedView";
 
     private static final int REORDER_ANIMATION_DURATION = 230;
     private static final int START_VIEW_REORDER_DELAY = 30;
     private static final float VIEW_REORDER_DELAY_FACTOR = 0.9f;
+
+    /**
+     * Fraction of the width to scroll when showing the next page hint.
+     */
+    private static final float SCROLL_HINT_FRACTION = 0.07f;
 
     private static final int[] sTmpArray = new int[2];
 
@@ -97,6 +108,8 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
     // If the views are attached to the folder or not. A folder should be bound when its
     // animating or is open.
     private boolean mViewsBound = false;
+
+    private boolean mCanAnnouncePageDescription;
 
     /**
      * TextLauncher: made by the folder in code, with the activity context the folder has (the
@@ -128,7 +141,8 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
 
     public void setFolder(Folder folder) {
         mFolder = folder;
-        // TextLauncher: no page indicator.
+        mPageIndicator = folder.findViewById(R.id.folder_page_indicator);
+        initParentViews(folder);
     }
 
     /**
@@ -169,6 +183,15 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
         }
         arrangeChildren(items.stream().map(this::createNewView).collect(Collectors.toList()));
         mViewsBound = true;
+    }
+
+    private boolean canAnnouncePageDescriptionForFolder() {
+        return mCanAnnouncePageDescription;
+    }
+
+    @Override
+    protected boolean canAnnouncePageDescription() {
+        return super.canAnnouncePageDescription() && canAnnouncePageDescriptionForFolder();
     }
 
     /**
@@ -284,6 +307,19 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
         return page;
     }
 
+    @Override
+    protected int getChildGap(int fromIndex, int toIndex) {
+        return getPaddingLeft() + getPaddingRight();
+    }
+
+    public void setFixedSize(int width, int height) {
+        width -= (getPaddingLeft() + getPaddingRight());
+        height -= (getPaddingTop() + getPaddingBottom());
+        // TextLauncher: the pages fill this view inside its padding (generateDefaultLayoutParams
+        // below), which is the size Launcher3 fixes here; the CellLayout stand-in does not
+        // measure itself (no CellLayout.setFixedSize).
+    }
+
     public void removeItem(View v) {
         if (v == null) {
             return;
@@ -299,6 +335,12 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
             views.remove(v);
             arrangeChildren(views);
         }
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (mMaxScroll > 0) mPageIndicator.setScroll(l, mMaxScroll);
     }
 
     /**
@@ -362,12 +404,15 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
             setCurrentPage(0);
         }
 
-        // TextLauncher: no page scrolling to overscroll.
+        setEnableOverscroll(getPageCount() > 1);
 
         // Update the focus chain for all icons to ensure proper keyboard navigation.
         arrangeChildrenFocus(list);
 
-        // TextLauncher: no footer (page indicator and folder name) to update.
+        // Update footer
+        mPageIndicator.setVisibility(getPageCount() > 1 ? View.VISIBLE : View.GONE);
+        mFolder.onIndicatorVisibilityChanged();
+        // TextLauncher: no folder name to align (its gravity follows the page count in Launcher3).
     }
 
     /**
@@ -413,6 +458,10 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
 
     public View getFirstItem() {
         return getViewInCurrentPage(c -> 0);
+    }
+
+    public View getLastItem() {
+        return getViewInCurrentPage(c -> c.getChildCount() - 1);
     }
 
     private View getViewInCurrentPage(ToIntFunction<ShortcutAndWidgetContainer> rankProvider) {
@@ -462,6 +511,36 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
         firstChild.requestFocus();
     }
 
+    @Override
+    protected void notifyPageSwitchListener(int prevPage) {
+        super.notifyPageSwitchListener(prevPage);
+        if (mFolder != null) {
+            mFolder.updateTextViewFocus();
+            mFolder.updateArrowAlphas();
+        }
+    }
+
+    /**
+     * Scrolls the current view by a fraction
+     */
+    public void showScrollHint(int direction) {
+        float fraction = (direction == Folder.SCROLL_LEFT) ^ mIsRtl
+                ? -SCROLL_HINT_FRACTION : SCROLL_HINT_FRACTION;
+        int hint = (int) (fraction * getWidth());
+        int scroll = getScrollForPage(getNextPage()) + hint;
+        int delta = scroll - getScrollX();
+        if (delta != 0) {
+            mScroller.startScroll(getScrollX(), 0, delta, 0, Folder.SCROLL_HINT_DURATION);
+            invalidate();
+        }
+    }
+
+    public void clearScrollHint() {
+        if (getScrollX() != getScrollForPage(getNextPage())) {
+            snapToPage(getNextPage());
+        }
+    }
+
     /**
      * Finish animation all the views which are animating across pages
      */
@@ -479,6 +558,9 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
         int p = rank / mOrganizer.getMaxItemsPerPage();
         return p == getNextPage();
     }
+
+    // TextLauncher: no onPageBeginTransition and verifyVisibleHighResIcons: the home screen loads
+    // the icons of the items in folders in full (AppIconLoader).
 
     /**
      * Reorders the items such that the {@param empty} spot moves to {@param target}
@@ -606,6 +688,12 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
         }
     }
 
+    @Override
+    protected boolean canScroll(float absVScroll, float absHScroll) {
+        return AbstractFloatingView.getTopOpenViewWithType(mFolder.mActivityContext,
+                TYPE_ALL & ~TYPE_FOLDER) == null;
+    }
+
     public int itemsPerPage() {
         return mOrganizer.getMaxItemsPerPage();
     }
@@ -617,6 +705,16 @@ public class FolderPagedView extends PagedView<Void> implements ClipPathView {
     }
 
     // TextLauncher: members TextLauncher adds.
+
+    /**
+     * The pages fill this view inside its padding: Launcher3's pages are WRAP_CONTENT (the
+     * PagedView default) and take the size setFixedSize gives them.
+     */
+    @Override
+    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+        return new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    }
 
     /**
      * The icons show their pressed state at once, as every ancestor of TextLauncher's icons says

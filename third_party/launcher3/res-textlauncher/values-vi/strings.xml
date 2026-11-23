@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Cần quyền truy cập thông báo"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Để hiển thị Dấu chấm thông báo, hãy bật thông báo ứng dụng cho <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Thay đổi cài đặt"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Chuyển trang sang trái"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Chuyển trang sang phải"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Trang %1$d / %2$d"</string>
 </resources>

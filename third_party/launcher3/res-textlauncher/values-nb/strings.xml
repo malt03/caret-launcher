@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Tilgang til varsler er nødvendig"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Slå på appvarsler for <xliff:g id="NAME">%1$s</xliff:g> for å vise varselsprikker"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Endre innstillingene"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Paginer til venstre"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Paginer til høyre"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Side %1$d av %2$d"</string>
 </resources>

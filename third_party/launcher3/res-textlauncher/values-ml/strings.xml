@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"അറിയിപ്പിനായുള്ള ആക്‌സസ് ആവശ്യമാണ്"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"അറിയിപ്പ് ഡോട്ടുകൾ കാണിക്കുന്നതിന്, <xliff:g id="NAME">%1$s</xliff:g> എന്നയാളിനായുള്ള ആപ്പ് അറിയിപ്പുകൾ ഓണാക്കുക"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ക്രമീകരണം മാറ്റുക"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ഇടത്തേക്ക് പേജിനേറ്റ് ചെയ്യുക"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"വലത്തേക്ക് പേജിനേറ്റ് ചെയ്യുക"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"പേജ് %1$d / %2$d"</string>
 </resources>

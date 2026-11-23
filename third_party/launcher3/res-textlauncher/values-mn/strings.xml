@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Мэдэгдлийн хандалт шаардлагатай"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Мэдэгдлийн цэгийг харуулахын тулд <xliff:g id="NAME">%1$s</xliff:g>-д аппын мэдэгдлийг асаана уу"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Тохиргоог өөрчлөх"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Зүүн тийш хуудас болгож хуваах"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Баруун тийш хуудас болгож хуваах"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$d-н %1$d хуудас"</string>
 </resources>

@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"اطلاعاتی رسائی درکار ہے"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"اطلاعاتی ڈاٹس دکھانے کی خاطر <xliff:g id="NAME">%1$s</xliff:g> کیلئے ایپ کی اطلاعات آن کریں"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ترتیبات تبدیل کریں"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"صفحہ بندی بائیں طرف کریں"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"صفحہ بندی دائیں طرف کریں"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"‏صفحہ ‎%1$d از ‎%2$d"</string>
 </resources>

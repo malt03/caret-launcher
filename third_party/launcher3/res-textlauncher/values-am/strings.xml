@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"የማሳወቂያ መዳረሻ ያስፈልጋል"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"የማሳወቂያ ነጥቦችን ለማሳየት የመተግብሪያ ማሳወቂያዎችን ለ<xliff:g id="NAME">%1$s</xliff:g> ያብሩ"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ቅንብሮችን ቀይር"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ወደ ግራ ገፅ ይስጡ"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ወደ ቀኝ ገፅ ይስጡ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"ገፅ %1$d ከ%2$d"</string>
 </resources>

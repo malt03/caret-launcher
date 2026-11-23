@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Необходим е достъп до известията"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"За да се показват точки за известия, включете известията за приложението <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Промяна на настройките"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Страниране наляво"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Страниране надясно"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Страница %1$d от %2$d"</string>
 </resources>

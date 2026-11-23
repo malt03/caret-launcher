@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Notification access needed"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"To show Notification Dots, turn on app notifications for <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Change settings"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Paginate left"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Paginate right"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Page %1$d of %2$d"</string>
 </resources>

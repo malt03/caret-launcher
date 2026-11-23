@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Bildirim erişimi gerekli"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Bildirim Noktaları\'nı göstermek için <xliff:g id="NAME">%1$s</xliff:g> uygulamasının bildirimlerini açın"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Ayarları değiştir"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Solu sayfalandır"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Sağı sayfalandır"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Sayfa %1$d / %2$d"</string>
 </resources>

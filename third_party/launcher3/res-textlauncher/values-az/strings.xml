@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Bildiriş girişi tələb edilir"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Bildiriş Nöqtələrini göstərmək üçün <xliff:g id="NAME">%1$s</xliff:g> bildirişlərini aktiv edin"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Ayarları dəyişin"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Sola doğru səhifələmə"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Sağa doğru səhifələmə"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Səhifə %1$d of %2$d"</string>
 </resources>

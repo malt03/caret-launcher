@@ -21,12 +21,15 @@
 
 package com.android.launcher3.config;
 
+import static com.android.launcher3.config.FeatureFlags.BooleanFlag.DISABLED;
+
 /**
  * Defines a set of flags used to control various launcher behaviors.
  * <p>
  * <p>All the flags should be defined here with appropriate default values.
  *
- * <p>Stand-in for Launcher3's FeatureFlags (android-17.0.0_r1): only IS_STUDIO_BUILD.
+ * <p>Stand-in for Launcher3's FeatureFlags (android-17.0.0_r1): only IS_STUDIO_BUILD and
+ * FOLDABLE_SINGLE_PAGE (pageindicators/PageIndicatorDots.java).
  */
 public final class FeatureFlags {
 
@@ -38,4 +41,31 @@ public final class FeatureFlags {
      * that only debug builds of Launcher3 make are not made.
      */
     public static final boolean IS_STUDIO_BUILD = false;
+
+    // TODO(Block 11): Clean up flags
+    public static final BooleanFlag FOLDABLE_SINGLE_PAGE = getDebugFlag(270395274,
+            "FOLDABLE_SINGLE_PAGE", DISABLED, "Use a single page for the workspace");
+
+    public static BooleanFlag getDebugFlag(
+            int bugId, String key, BooleanFlag flagState, String description) {
+        return flagState;
+    }
+
+    /**
+     * Enabled state for a flag
+     */
+    public enum BooleanFlag {
+        ENABLED(true),
+        DISABLED(false);
+
+        private final boolean mValue;
+
+        BooleanFlag(boolean value) {
+            mValue = value;
+        }
+
+        public boolean get() {
+            return mValue;
+        }
+    }
 }

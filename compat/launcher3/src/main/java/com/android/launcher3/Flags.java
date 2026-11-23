@@ -84,4 +84,9 @@ public final class Flags {
     public static boolean oneGridRotationHandling() {
         return false;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean enableMouseInteractionChanges() {
+        return false;
+    }
 }

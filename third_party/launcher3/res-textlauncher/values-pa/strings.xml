@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"ਸੂਚਨਾ ਪਹੁੰਚ ਲੋੜੀਂਦੀ ਹੈ"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"ਸੂਚਨਾ ਬਿੰਦੂਆਂ ਦਿਖਾਉਣ ਲਈ, <xliff:g id="NAME">%1$s</xliff:g> ਲਈ ਐਪ ਸੂਚਨਾਵਾਂ ਚਾਲੂ ਕਰੋ"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ਸੈਟਿੰਗਾਂ ਬਦਲੋ"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ਖੱਬੇ ਪਾਸੇ ਪੰਨਾਕਰਨ ਕਰੋ"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ਸੱਜੇ ਪਾਸੇ ਪੰਨਾਕਰਨ ਕਰੋ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"ਸਫ਼ਾ %2$d ਦਾ %1$d"</string>
 </resources>

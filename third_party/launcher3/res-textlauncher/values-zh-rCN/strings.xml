@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"需要获取通知使用权"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"要显示通知圆点，请开启<xliff:g id="NAME">%1$s</xliff:g>的应用通知功能"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"更改设置"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"左侧分页"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"右侧分页"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"第%1$d页，共%2$d页"</string>
 </resources>

@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Nevojitet qasja në njoftime"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Për të shfaqur \"Pikat e njoftimeve\", aktivizo njoftimet e aplikacionit për <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Ndrysho cilësimet"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Ndaj në faqe majtas"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Ndaj në faqe djathtas"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Faqja: %1$d nga gjithsej %2$d"</string>
 </resources>

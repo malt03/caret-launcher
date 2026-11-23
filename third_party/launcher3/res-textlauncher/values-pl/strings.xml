@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Wymagany jest dostęp do powiadomień"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Aby pokazywać kropki powiadomień, włącz powiadomienia aplikacji <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Zmień ustawienia"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Podziel na strony po lewej"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Podziel na strony po prawej"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Strona %1$d z %2$d"</string>
 </resources>

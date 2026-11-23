@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Je třeba udělit přístup k oznámením"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Chcete-li zobrazovat puntíky s oznámením, zapněte oznámení z aplikace <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Změnit nastavení"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Stránkovat vlevo"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Stránkovat vpravo"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Strana %1$d z %2$d"</string>
 </resources>

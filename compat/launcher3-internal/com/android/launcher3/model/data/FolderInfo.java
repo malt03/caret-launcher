@@ -30,9 +30,15 @@ import java.util.List;
 
 /**
  * Stand-in for Launcher3's FolderInfo. Only the contents, as FolderGridOrganizer and the folder
- * icon read them. Folders have no titles in TextLauncher (docs/spec.md 5.2).
+ * icon read them, and the options the open folder reads (FLAG_MULTI_PAGE_ANIMATION). Folders have
+ * no titles in TextLauncher (docs/spec.md 5.2).
  */
 public class FolderInfo extends ItemInfo {
+
+    public static final int FLAG_MULTI_PAGE_ANIMATION = 0x00000004;
+
+    public int options;
+
     private final List<ItemInfo> mContents = new ArrayList<>();
 
     public FolderInfo() {
@@ -49,6 +55,24 @@ public class FolderInfo extends ItemInfo {
 
     public List<ItemInfo> getContents() {
         return mContents;
+    }
+
+    public boolean hasOption(int optionFlag) {
+        return (options & optionFlag) != 0;
+    }
+
+    /**
+     * @param option flag to set or clear
+     * @param isEnabled whether to set or clear the flag
+     * TextLauncher: no model writer. The options are not saved (the home model has no column for
+     * them), so they last while the process lives.
+     */
+    public void setOption(int option, boolean isEnabled) {
+        if (isEnabled) {
+            options |= option;
+        } else {
+            options &= ~option;
+        }
     }
 
     public static boolean willAcceptItemType(int itemType) {

@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Bildirishnomalarga ruxsat berilmagan"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Bildirishnoma belgilarini ko‘rsatish uchun <xliff:g id="NAME">%1$s</xliff:g> ilovasida bildirishnomalarni yoqing"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Sozlamalarni o‘zgartirish"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Chapga sahifalash"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Oʻngga sahifalash"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$ddan %1$d ta sahifa"</string>
 </resources>

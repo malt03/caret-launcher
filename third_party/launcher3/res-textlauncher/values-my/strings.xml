@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"အကြောင်းကြားချက် အသုံးပြုခွင့် လိုအပ်သည်"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"အကြောင်းကြားချက် အစက်များကို ပြသရန် <xliff:g id="NAME">%1$s</xliff:g> အတွက် အက်ပ်အကြောင်းကြားချက်များကို ဖွင့်ပါ"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ဆက်တင်များ ပြောင်းရန်"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ဘယ်ဘက်သို့ စာမျက်နှာများအဖြစ် ခွဲထုတ်ရန်"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ညာဘက်သို့ စာမျက်နှာများအဖြစ် ခွဲထုတ်ရန်"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"စာမျက်နှာ %1$d မှ %2$d"</string>
 </resources>

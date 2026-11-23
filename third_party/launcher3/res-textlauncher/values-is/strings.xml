@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Aðgangs að tilkynningum er krafist"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Til að sýna tilkynningarpunkta skaltu kveikja á forritstilkynningum fyrir <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Breyta stillingum"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Birta blaðsíðutal til vinstri"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Birta blaðsíðutal til hægri"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Síða %1$d af %2$d"</string>
 </resources>

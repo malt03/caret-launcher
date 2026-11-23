@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Անհրաժեշտ է ծանուցման թույլտվություն"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Ծանուցումների կետիկները ցուցադրելու համար միացրեք ծանուցումները <xliff:g id="NAME">%1$s</xliff:g>-ի համար"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Փոխել կարգավորումները"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Բաժանել էջերի դեպի ձախ"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Բաժանել էջերի դեպի աջ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Էջ %1$d՝ %2$d-ից"</string>
 </resources>

@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"জাননীৰ এক্সেছৰ প্ৰয়োজন"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"জাননী সম্পৰ্কীয় বিন্দুবোৰ দেখুৱাবলৈ <xliff:g id="NAME">%1$s</xliff:g>ৰ বাবে এপৰ জাননীসমূহ অন কৰক"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ছেটিং সলনি কৰক"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"বাওঁফালে পৃষ্ঠা হিচাপে পৃথকীকৰণ কৰক"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"সোঁফালে পৃষ্ঠা হিচাপে পৃথকীকৰণ কৰক"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$dৰ %1$d পৃষ্ঠা"</string>
 </resources>

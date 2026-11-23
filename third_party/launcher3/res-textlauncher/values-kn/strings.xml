@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"ನೋಟಿಫಿಕೇಶನ್ ಆ್ಯಕ್ಸೆಸ್ ಅಗತ್ಯವಿದೆ"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"ನೋಟಿಫಿಕೇಶನ್ ಚುಕ್ಕೆಗಳನ್ನು ತೋರಿಸಲು, <xliff:g id="NAME">%1$s</xliff:g> ಗೆ ಆ್ಯಪ್ ನೋಟಿಫಿಕೇಶನ್‍ಗಳನ್ನು ಆನ್‌ ಮಾಡಿ"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ಸೆಟ್ಟಿಂಗ್‌‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ಎಡಕ್ಕೆ ಪುಟ ವಿಂಗಡಿಸಿ"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ಬಲಕ್ಕೆ ಪುಟ ವಿಂಗಡಿಸಿ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$d ರಲ್ಲಿ %1$d ಪುಟ"</string>
 </resources>

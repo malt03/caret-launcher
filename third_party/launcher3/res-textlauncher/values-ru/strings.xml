@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Нужен доступ к уведомлениям"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Чтобы показывать значки уведомлений, включите уведомления в приложении \"<xliff:g id="NAME">%1$s</xliff:g>\""</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Изменить настройки"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Перейти на предыдущую страницу"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Перейти на следующую страницу"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Стр. %1$d из %2$d"</string>
 </resources>

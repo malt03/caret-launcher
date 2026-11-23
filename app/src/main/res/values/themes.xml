@@ -18,6 +18,9 @@
         <item name="folderBackgroundColor">@color/folder_background_light</item>
         <item name="folderIconBorderColor">?android:attr/colorPrimary</item>
         <item name="notificationDotColor">@color/notification_dot_color_light</item>
+        <!-- LauncherTheme: the folder's page indicator and its arrows -->
+        <item name="pageIndicatorDotColor">@color/page_indicator_dot_color_light</item>
+        <item name="pageIndicatorArrowBgColor">@color/page_indicator_arrow_bg_light</item>
         <!-- LauncherTheme and LauncherTheme.Dark; only the DarkText themes (light wallpapers) use _dark -->
         <item name="workspaceAccentColor">@color/workspace_accent_color_light</item>
         <item name="dropTargetHoverTextColor">@color/drop_target_hover_text_color_light</item>

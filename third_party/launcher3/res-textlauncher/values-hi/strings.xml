@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"सूचना के ऐक्सेस की ज़रूरत है"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"सूचना बिंदु दिखाने के लिए, <xliff:g id="NAME">%1$s</xliff:g> के ऐप्लिकेशन सूचना चालू करें"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"सेटिंग बदलें"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"पिछले पेज पर जाएं"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"अगले पेज पर जाएं"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"पेज %2$d में से %1$d"</string>
 </resources>

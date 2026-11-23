@@ -20,6 +20,7 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.Flags.enableMouseInteractionChanges;
 import static com.android.launcher3.Flags.reduceWorkspaceBlurUsage;
 
 import android.app.ActivityOptions;
@@ -272,6 +273,15 @@ public final class Utilities {
         int[] pos = new int[2];
         v.getLocationOnScreen(pos);
         return new Rect(pos[0], pos[1], pos[0] + v.getWidth(), pos[1] + v.getHeight());
+    }
+
+    /**
+     * Returns whether mouse interaction changes intended for the desktop form factor should be
+     * enabled.
+     */
+    public static boolean shouldEnableMouseInteractionChanges(Context context) {
+        return enableMouseInteractionChanges() && context.getResources().getBoolean(
+                R.bool.desktop_form_factor);
     }
 
     /**

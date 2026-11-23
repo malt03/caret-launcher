@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Хабарландыруға кіру рұқсаты қажет"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Хабарландыру белгілерін көрсету үшін <xliff:g id="NAME">%1$s</xliff:g> қолданбасының қолданба хабарландыруларын қосыңыз"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Параметрлерді өзгерту"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Солға қарай бетке бөлу"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Оңға қарай бетке бөлу"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%1$d бет, барлығы %2$d"</string>
 </resources>

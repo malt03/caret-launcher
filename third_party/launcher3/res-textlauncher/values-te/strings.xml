@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"నోటిఫికేషన్ యాక్సెస్ అవసరం"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"నోటిఫికేషన్ డాట్‌లను చూపించడానికి <xliff:g id="NAME">%1$s</xliff:g>కు యాప్ నోటిఫికేషన్‌లను ఆన్ చేయండి"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"సెట్టింగ్‌లను మార్చు"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"పేజీని ఎడమ వైపునకు స్క్రోల్ చేయండి"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"పేజీని కుడి వైపునకు స్క్రోల్ చేయండి"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$dలో %1$dవ పేజీ"</string>
 </resources>

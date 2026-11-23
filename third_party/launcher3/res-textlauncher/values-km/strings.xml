@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"តម្រូវ​ឲ្យមាន​សិទ្ធិចូល​ប្រើប្រាស់​ការជូនដំណឹង"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"ដើម្បីបង្ហាញស្លាកជូនដំណឹង សូមបើកការជូនដំណឹងកម្មវិធីសម្រាប់ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ប្ដូរ​ការកំណត់"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"បែងចែកទំព័រទៅឆ្វេង"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"បែងចែកទំព័រទៅស្ដាំ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"ទំព័រ %1$d នៃ %2$d"</string>
 </resources>

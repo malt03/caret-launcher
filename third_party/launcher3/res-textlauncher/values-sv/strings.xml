@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Åtkomst till aviseringar krävs"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Aktivera appaviseringar för <xliff:g id="NAME">%1$s</xliff:g> om du vill att aviseringsprickar ska visas"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Ändra inställningar"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Sidnumrera till vänster"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Sidnumrera till höger"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Sidan %1$d av %2$d"</string>
 </resources>

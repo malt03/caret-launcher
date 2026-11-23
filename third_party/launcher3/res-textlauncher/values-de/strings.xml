@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Benachrichtigungszugriff erforderlich"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Um dir Benachrichtigungspunkte anzeigen zu lassen, aktiviere die Benachrichtigungen für die App \"<xliff:g id="NAME">%1$s</xliff:g>\""</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Einstellungen ändern"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Links paginieren"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Rechts paginieren"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Seite %1$d von %2$d"</string>
 </resources>

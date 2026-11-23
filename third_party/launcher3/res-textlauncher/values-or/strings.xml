@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"ବିଜ୍ଞପ୍ତି ଆକ୍ସେସ୍‌ ଆବଶ୍ୟକ ଅଟେ"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"ବିଜ୍ଞପ୍ତି ବିନ୍ଦୁ ଦେଖାଇବାକୁ, <xliff:g id="NAME">%1$s</xliff:g> ପାଇଁ ଆପ୍‌ ବିଜ୍ଞପ୍ତି ଅନ୍‌ କରନ୍ତୁ"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"ସେଟିଂସ ପରିବର୍ତ୍ତନ କରନ୍ତୁ"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ପୃଷ୍ଠାର ବାମପଟେ ପୃଷ୍ଠା ସଂଖ୍ୟା ଲେଖନ୍ତୁ"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ପୃଷ୍ଠାର ଡାହାଣପଟେ ପୃଷ୍ଠା ସଂଖ୍ୟା ଲେଖନ୍ତୁ"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"ମୋଟ %2$dରୁ %1$d ନମ୍ବର ପୃଷ୍ଠା"</string>
 </resources>

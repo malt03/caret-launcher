@@ -2,6 +2,7 @@ package com.malt03.textlauncher.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.FocusFinder
 import android.view.View
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.folder.Folder
@@ -12,9 +13,10 @@ import kotlin.math.max
 
 /**
  * The folder of a folder icon on the home screen (docs/spec.md 5.2): the apps and shortcuts inside,
- * icons only. Launcher3's Folder (the stand-in) opens, closes, drags, reorders and takes drops with
- * the copied code and its expressive folder animation; this class gives it TextLauncher's look, its
- * item views, its focus rule and keeps it inside the drag layer as the keyboard comes back.
+ * icons only. Launcher3's Folder (the stand-in) opens, closes, pages, drags, reorders and takes
+ * drops with the copied code and its expressive folder animation; this class gives it
+ * TextLauncher's look, its item views, its focus rules and keeps it inside the drag layer as the
+ * keyboard comes back.
  */
 @SuppressLint("ViewConstructor")
 class HomeFolder(
@@ -63,6 +65,17 @@ class HomeFolder(
      * then does it go back to the icon.
      */
     override fun shouldFocusIconOnClose(hadFocus: Boolean): Boolean = hadFocus
+
+    /**
+     * Arrow keys move the focus among the folder's views only (docs/spec.md 2.6), as
+     * Folder.focusSearch(int) does from the folder itself. The home grid behind the open folder
+     * stays focusable (as Launcher3's workspace does in its normal state), and a home icon beside
+     * the focused one would otherwise take the focus before the folder's next page, which
+     * PagedView.addFocusables offers off to the side (PagedView.requestChildFocus then scrolls to
+     * it, and dispatchUnhandledMove turns the page at the last column).
+     */
+    override fun focusSearch(focused: View?, direction: Int): View? =
+        FocusFinder.getInstance().findNextFocus(this, focused, direction)
 
     /** R.layout.folder_application: an icon without a label, focusable like Launcher3's icons. */
     override fun inflateIcon(): BubbleTextView = AppIconView(context, iconSizePx).apply {

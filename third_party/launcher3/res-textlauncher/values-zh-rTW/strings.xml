@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"需要取得通知存取權"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"如要顯示通知圓點，請開啟「<xliff:g id="NAME">%1$s</xliff:g>」的應用程式通知功能"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"變更設定"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"分頁靠左"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"分頁靠右"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"第 %1$d 頁，共 %2$d 頁"</string>
 </resources>

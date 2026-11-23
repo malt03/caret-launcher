@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"ต้องได้รับสิทธิ์เข้าถึงการแจ้งเตือน"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"เปิดการแจ้งเตือนแอปของ <xliff:g id="NAME">%1$s</xliff:g> เพื่อแสดงเครื่องหมายจุดแสดงการแจ้งเตือน"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"เปลี่ยนการตั้งค่า"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ใส่เลขหน้าด้านซ้าย"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ใส่เลขหน้าด้านขวา"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"หน้า %1$d จาก %2$d"</string>
 </resources>

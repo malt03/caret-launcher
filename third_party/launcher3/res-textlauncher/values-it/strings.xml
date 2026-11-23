@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"Accesso alle notifiche necessario"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"Per mostrare gli indicatori di notifica, attiva le notifiche per l\'app <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"Modifica impostazioni"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Impagina a sinistra"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Impagina a destra"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Pagina %1$d di %2$d"</string>
 </resources>

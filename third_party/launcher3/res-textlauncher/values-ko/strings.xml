@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"알림 액세스 권한 필요"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"알림 표시점을 표시하려면 <xliff:g id="NAME">%1$s</xliff:g>의 앱 알림을 사용 설정하세요."</string>
     <string name="title_change_settings" msgid="1376365968844349552">"설정 변경"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"왼쪽 페이지로 나누기"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"오른쪽 페이지로 나누기"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"페이지 %1$d/%2$d"</string>
 </resources>

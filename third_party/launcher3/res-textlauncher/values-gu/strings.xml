@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"નોટિફિકેશનનો ઍક્સેસની જરૂરી છે"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"નોટિફિકેશન માટેનું ચિહ્ન બતાવવા હેતુ, <xliff:g id="NAME">%1$s</xliff:g> માટેની ઍપ્લિકેશન નોટિફિકેશન ચાલુ કરો"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"સેટિંગ બદલો"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ડાબી બાજુએથી પાનાને ક્રમાંક આપો"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"જમણી બાજુએથી પાનાને ક્રમાંક આપો"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$dમાંથી %1$d પેજ"</string>
 </resources>

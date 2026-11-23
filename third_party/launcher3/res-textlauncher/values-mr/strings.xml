@@ -50,4 +50,7 @@
     <string name="title_missing_notification_access" msgid="7503287056163941064">"सूचनांच्या अ‍ॅक्सेसची आवश्यकता आहे"</string>
     <string name="msg_missing_notification_access" msgid="281113995110910548">"सूचना बिंदू दाखवण्यासाठी, <xliff:g id="NAME">%1$s</xliff:g> साठी अ‍ॅप सूचना सुरू करा"</string>
     <string name="title_change_settings" msgid="1376365968844349552">"सेटिंग्ज बदला"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"डावीकडील पेजनुसार विभागणी"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"उजवीकडील पेजनुसार विभागणी"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"%2$d पैकी %1$d पेज"</string>
 </resources>
