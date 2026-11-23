@@ -23,31 +23,31 @@ package com.android.launcher3.popup
 import android.animation.AnimatorSet
 import android.content.Context
 import android.graphics.Rect
-import android.view.Gravity
+import android.os.Trace
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget.DragObject
+import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_CUSTOM_VIEW
 import com.android.launcher3.R
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
-import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_CUSTOM_VIEW
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.views.ActivityContext
 
 /**
- * Stand-in for Launcher3's PopupContainer (android-17.0.0_r1): the long-press menu. The members
- * are copied from PopupContainer.kt; changes are marked with "TextLauncher:".
+ * Base popup container for shortcuts associated with the item {@code originalView}
  *
- * TextLauncher: the Compose version of the menu (showComposePopup, PopupViewModel), which
- * Flags.expandableLongPressMenu turns on, is left out: the flag is disabled in the release
- * config, so Launcher3 shows the View version. Deep shortcut clicks and stats logging are left
- * out too. [PopupData] and [PopupCategory] are from PopupDataMapper.kt, without the event ids.
+ * <p>Stand-in for Launcher3's PopupContainer (android-17.0.0_r1), made from PopupContainer.kt by
+ * deleting what TextLauncher does not use (the Compose version of the menu, which
+ * Flags.expandableLongPressMenu turns on and the release config disables; deep shortcut clicks
+ * and the add button, which only the Compose version has; stats logging; dismissInvalidPopup);
+ * changes are marked with "TextLauncher:". [PopupData] and [PopupCategory] are from
+ * PopupDataMapper.kt, at the end of this file.
  *
  * @param <T> The activity on which the popup shows </T>
  * @param context The context in which the popup is created.
@@ -73,37 +73,36 @@ open class PopupContainer<T : ActivityContext>(
 
     private var fixedDragLayerPos: Rect? = null
 
+    fun showForSystemShortcuts(
+        systemShortcuts: List<PopupData>,
+        activityContext: ActivityContext,
+        itemView: View,
+    ) {
+        // TextLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
+        // release config), so only upstream's else branch is kept.
+        run {
+            systemShortcutContainer = inflateAndAdd(R.layout.system_shortcut_rows_container, this)
+            systemShortcuts.forEach { systemShortcut ->
+                val view: DeepShortcutView =
+                    inflateAndAdd(R.layout.system_shortcut, systemShortcutContainer)
+
+                view.iconView.setBackgroundResource(systemShortcut.iconResId)
+                view.bubbleText.setText(systemShortcut.labelResId)
+
+                view.tag = systemShortcut
+                view.setOnClickListener {
+                    // TextLauncher: no stats logging (PopupData has no eventId).
+                    systemShortcut.popupAction.invoke(activityContext, itemInfo, itemView)
+                }
+            }
+            show()
+        }
+    }
+
     @CallSuper
     override fun handleClose(animate: Boolean) {
+        Trace.beginAsyncSection("dismissPopupMenu", hashCode())
         super.handleClose(animate)
-    }
-
-    /**
-     * TextLauncher: the drag layer ends above the keyboard (LauncherRootLayout), so it grows and
-     * shrinks when the keyboard goes down or comes back while the menu is open (a widget's resize
-     * frame puts it down, docs/spec.md 5.4). A menu above its item is placed from the drag layer's
-     * bottom (orientAboutObject), so it keeps its place on the screen by the same amount.
-     */
-    private val keepPlaceOnScreen =
-        View.OnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
-            val delta = (bottom - top) - (oldBottom - oldTop)
-            val lp = layoutParams as? FrameLayout.LayoutParams ?: return@OnLayoutChangeListener
-            if (delta == 0 || oldBottom == oldTop || lp.gravity != Gravity.BOTTOM) {
-                return@OnLayoutChangeListener
-            }
-            lp.bottomMargin += delta
-            (mArrow.layoutParams as FrameLayout.LayoutParams).bottomMargin += delta
-            post { requestLayout() }
-        }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        popupContainer.addOnLayoutChangeListener(keepPlaceOnScreen)
-    }
-
-    override fun onDetachedFromWindow() {
-        popupContainer.removeOnLayoutChangeListener(keepPlaceOnScreen)
-        super.onDetachedFromWindow()
     }
 
     @CallSuper
@@ -115,6 +114,8 @@ open class PopupContainer<T : ActivityContext>(
             iconViewController?.getFloatingViewTextAlpha()?.value = 1f
             iconViewController?.setForceHideDot(false)
         }
+        // TextLauncher: no stats logging.
+        Trace.endAsyncSection("dismissPopupMenu", hashCode())
     }
 
     @CallSuper
@@ -233,31 +234,6 @@ open class PopupContainer<T : ActivityContext>(
         }
     }
 
-    /**
-     * Shows the [systemShortcuts] as rows (the View version; Flags.expandableLongPressMenu is
-     * disabled). TextLauncher: no stats logging.
-     */
-    fun showForSystemShortcuts(
-        systemShortcuts: List<PopupData>,
-        activityContext: ActivityContext,
-        itemView: View,
-    ) {
-        systemShortcutContainer = inflateAndAdd(R.layout.system_shortcut_rows_container, this)
-        systemShortcuts.forEach { systemShortcut ->
-            val view: DeepShortcutView =
-                inflateAndAdd(R.layout.system_shortcut, systemShortcutContainer)
-
-            view.iconView.setBackgroundResource(systemShortcut.iconResId)
-            view.bubbleText.setText(systemShortcut.labelResId)
-
-            view.tag = systemShortcut
-            view.setOnClickListener {
-                systemShortcut.popupAction.invoke(activityContext, itemInfo, itemView)
-            }
-        }
-        show()
-    }
-
     companion object {
         /** Returns a PopupContainer which is already open or null */
         @JvmStatic
@@ -316,7 +292,45 @@ open class PopupContainer<T : ActivityContext>(
                 }
         }
     }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * The drag layer ends above the keyboard (LauncherRootLayout), so it grows and shrinks when the
+     * keyboard goes down or comes back while the menu is open (a widget's resize frame puts it
+     * down, docs/spec.md 5.4). A menu above its item is placed from the drag layer's bottom
+     * (orientAboutObject), so it keeps its place on the screen by the same amount.
+     */
+    private val keepPlaceOnScreen =
+        View.OnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            val delta = (bottom - top) - (oldBottom - oldTop)
+            val lp =
+                layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: return@OnLayoutChangeListener
+            if (delta == 0 || oldBottom == oldTop || lp.gravity != android.view.Gravity.BOTTOM) {
+                return@OnLayoutChangeListener
+            }
+            lp.bottomMargin += delta
+            (mArrow.layoutParams as android.widget.FrameLayout.LayoutParams).bottomMargin += delta
+            post { requestLayout() }
+        }
+
+    /** Starts [keepPlaceOnScreen] following the drag layer's height. */
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        popupContainer.addOnLayoutChangeListener(keepPlaceOnScreen)
+    }
+
+    /** Stops [keepPlaceOnScreen]. */
+    override fun onDetachedFromWindow() {
+        popupContainer.removeOnLayoutChangeListener(keepPlaceOnScreen)
+        super.onDetachedFromWindow()
+    }
 }
+
+// TextLauncher: PopupCategory and PopupData are from PopupDataMapper.kt (android-17.0.0_r1), which
+// is not copied (PopupDataMapper itself is not used). PopupData has no eventId: TextLauncher logs
+// no stats, and its StatsLogManager has no LauncherEvent.IGNORE.
 
 /**
  * Enum for the category of popup we have, as we handle different categories of shortcuts

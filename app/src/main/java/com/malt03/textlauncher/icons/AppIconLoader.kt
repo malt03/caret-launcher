@@ -82,12 +82,12 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
 
     /**
      * ThemeManager.parseIconState: the icon state that ItemInfoWithIcon.newIcon reads, and the
-     * folder shape, which follows the icon shape's folderRadiusRatio.
+     * icon and folder shapes (the folder's follows the icon shape's folderRadiusRatio).
      */
     private fun updateThemeManager() {
         val themeManager = ThemeManager.INSTANCE.get(context)
         themeManager.setIconState(isThemed, iconShape)
-        themeManager.setFolderRadiusRatio(settings.shape.folderRadiusRatio)
+        themeManager.setShapes(settings.shape.pathString, settings.shape.folderRadiusRatio)
     }
 
     /** Called on the main thread when every icon has to be rebound. */

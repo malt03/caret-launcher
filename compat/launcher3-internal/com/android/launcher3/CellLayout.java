@@ -247,29 +247,11 @@ public class CellLayout extends FrameLayout {
                 mBorderSpace);
     }
 
-    /**
-     * TextLauncher: keeps the occupancy of the cells inside both the old and the new size, and
-     * does nothing for the same size; Launcher3's CellLayout starts with empty occupancy here.
-     * TextLauncher's grid view calls it once, before it has any items.
-     */
     public void setGridSize(int x, int y) {
-        // TextLauncher: keep the occupancy (see the javadoc).
-        if (x == mCountX && y == mCountY) return;
-        GridOccupancy oldOccupied = mOccupied;
-        GridOccupancy oldTmpOccupied = mTmpOccupied;
-        int oldCountX = mCountX;
-        int oldCountY = mCountY;
         mCountX = x;
         mCountY = y;
         mOccupied = new GridOccupancy(mCountX, mCountY);
         mTmpOccupied = new GridOccupancy(mCountX, mCountY);
-        // TextLauncher: keep the occupancy (see the javadoc).
-        for (int i = 0; i < Math.min(oldCountX, x); i++) {
-            for (int j = 0; j < Math.min(oldCountY, y); j++) {
-                mOccupied.cells[i][j] = oldOccupied.cells[i][j];
-                mTmpOccupied.cells[i][j] = oldTmpOccupied.cells[i][j];
-            }
-        }
         mShortcutsAndWidgets.setCellDimensions(mCellWidth, mCellHeight, mCountX, mCountY,
                 mBorderSpace);
         requestLayout();

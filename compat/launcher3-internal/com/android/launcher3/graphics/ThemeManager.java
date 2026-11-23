@@ -27,20 +27,22 @@ import com.android.launcher3.icons.IconShape;
 
 /**
  * Stand-in for Launcher3's ThemeManager. Holds the icon state (theme on/off and shape) and the
- * folder shape, which TextLauncher derives from the selected icon shape the same way
- * ThemeManager.parseIconState does (folderRadiusRatio).
+ * icon and folder shapes, which TextLauncher derives from the selected icon shape the same way
+ * ThemeManager.parseIconState does (pickBestShape, folderRadiusRatio).
  */
 public class ThemeManager {
     public static final Instance INSTANCE = new Instance();
 
+    private ShapeDelegate mIconShape = new ShapeDelegate.Circle();
     private ShapeDelegate mFolderShape = new ShapeDelegate.Circle();
 
-    public ShapeDelegate getFolderShape() {
-        return mFolderShape;
+    /** IconState.iconShape: the selected icon shape (DragView masks dragged icons with it). */
+    public ShapeDelegate getIconShape() {
+        return mIconShape;
     }
 
-    /** Only read by DragView for spring icons, which TextLauncher does not use. */
-    public ShapeDelegate getIconShape() {
+    /** IconState.folderShape: the folder shape that goes with the selected icon shape. */
+    public ShapeDelegate getFolderShape() {
         return mFolderShape;
     }
 
@@ -77,8 +79,13 @@ public class ThemeManager {
         mIconShapeData = iconShapeData;
     }
 
-    /** TextLauncher: ThemeManager.parseIconState's folder shape for the given radius ratio. */
-    public void setFolderRadiusRatio(float folderRadius) {
+    /**
+     * TextLauncher: ThemeManager.parseIconState's icon and folder shapes for the selected shape
+     * (IconShapeModel.pathString and folderRadiusRatio), which the app reads from Wallpaper &
+     * style instead of LauncherPrefs.
+     */
+    public void setShapes(String iconMask, float folderRadius) {
+        mIconShape = ShapeDelegate.Companion.pickBestShape(iconMask);
         mFolderShape = folderRadius == 1f
                 ? new ShapeDelegate.Circle()
                 : new ShapeDelegate.RoundedSquare(folderRadius);

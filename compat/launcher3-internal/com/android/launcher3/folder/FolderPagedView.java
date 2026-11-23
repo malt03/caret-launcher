@@ -161,13 +161,13 @@ public class FolderPagedView extends ViewGroup implements ClipPathView {
         }
     }
 
-    /** TextLauncher: removing an item when no drag is in progress rearranges the rest. */
     public void removeItem(View v) {
         if (v == null) {
             return;
         }
         if (mFolder.getIsDragInProgress()) {
             // A drag is in progress, so we shouldn't immediately reshuffle the folder.
+            // TextLauncher: one page, so the view is a child of this view.
             removeView(v);
         } else {
             // This is a permanent removal, so rearrange the items immediately.

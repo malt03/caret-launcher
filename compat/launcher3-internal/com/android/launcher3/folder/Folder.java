@@ -530,9 +530,7 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
 
     private void closeComplete(boolean wasAnimated) {
         mIsOpen = false;
-        // TextLauncher: Launcher3's open folder always has the focus. TextLauncher's has it only
-        // when it was opened with keys and nothing took it since (the home button gives it to
-        // the search field), and only then does it go back to the icon.
+        // TextLauncher: whether the folder had the focus, for shouldFocusIconOnClose.
         boolean hadFocus = hasFocus();
 
         // TODO: Clear all active animations.
@@ -551,8 +549,8 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
                 if (mFolderIcon.hasDot()) {
                     mFolderIcon.animateDotScale(0f, 1f);
                 }
-                // TextLauncher: only when the folder had the focus (see hadFocus).
-                if (hadFocus) mFolderIcon.requestFocus();
+                // TextLauncher: the app decides (shouldFocusIconOnClose).
+                if (shouldFocusIconOnClose(hadFocus)) mFolderIcon.requestFocus();
             }
         }
 
@@ -599,10 +597,10 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             // The drag failed, we need to return the item to the folder
             ItemInfo info = d.dragInfo;
             // TextLauncher: the folder closed when the drag started and kept the item's view
-            // (onDragStart), so the item goes back through its icon only: while the icon is on
-            // the home screen, and once the drag had started (a long press that never moved did
-            // not take the item out).
-            if (mFolderIcon.getParent() != null && !mInfo.getContents().contains(info)) {
+            // (onDragStart), so the item goes back through its icon only, once the drag had
+            // started (a long press that never moved did not take the item out) and when the app
+            // allows it (canReturnItemOnFailedDrop).
+            if (!mInfo.getContents().contains(info) && canReturnItemOnFailedDrop(d)) {
                 executeWithContentUpdateSuppressed(
                         () -> mFolderIcon.onDrop(d, true /* itemReturnedOnFailedDrop */));
             }
@@ -910,6 +908,24 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         setFolderIcon(icon);
         bind(icon.getFolderInfo());
         icon.setFolder(this);
+    }
+
+    /**
+     * Whether the icon takes the focus when the folder has closed with an animation. Launcher3's
+     * open folder always has the focus and always gives it back to the icon.
+     *
+     * @param hadFocus whether the folder had the focus just before it closed
+     */
+    protected boolean shouldFocusIconOnClose(boolean hadFocus) {
+        return true;
+    }
+
+    /**
+     * Whether an item whose drag from this folder failed goes back into it through the icon, as in
+     * Launcher3.
+     */
+    protected boolean canReturnItemOnFailedDrop(DragObject d) {
+        return true;
     }
 
     /**

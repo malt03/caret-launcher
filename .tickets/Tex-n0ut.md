@@ -1,6 +1,6 @@
 ---
 id: Tex-n0ut
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:58:38Z
@@ -39,3 +39,7 @@ CellLayout（1152行。performReorder、animateItemsToSolution、visualizeDropLo
 **2026-11-23T11:16:42Z**
 
 2026-11-23: 1・2 を行った。上流のコードを抱える互換クラス 18（Folder、FolderIcon、BubbleTextView、CellLayout、ShortcutAndWidgetContainer、DragLayer、ItemInfo、ItemInfoWithIcon、WorkspaceItemInfo、AppInfo、AllAppsStore、PopupDataProvider、SystemShortcut、BaseActivity、ActivityContext、LauncherAnimUtils、LauncherAppWidgetHostView、Utilities）を、上流のファイルから削った形（上流の順・書き方、変更はその場に TextLauncher: の印、TextLauncher だけのメンバーはクラスの最後）に作り直し、ref= から derived= に移した。LauncherAccessibilityDelegate は本文もそろえたが、インターフェースなので ref= のまま。上の印のない変更は、上流に戻すか印を付けた（Folder: handleClose・removeFolderContent・getContentAreaHeight・dispatchDraw・getFolderAnimationManager・closeComplete のドットのアニメーションなどを上流に。BubbleTextView: 無効なアプリの読み上げ（AppIconView も）・getIconCreationFlagsForInfo を上流に。CellLayout: markCells* の親の確認を上流に）。既存の derived=（PopupContainerWithArrow、IconCache、ResizeManager、WidgetPickerComposeWrapperImpl、RotationHelper、AppWidgetResizeFrameCompose、WidgetPickerAddItemListener）と WallpaperThemeManager・WallpaperColorHints も上流の書き方に戻すか印を付けた。PopupContainer.onDropCompleted の View? は、ポップアップからのドラッグの取り消しで null が来るので印を付けて残した。エミュレータで、フォルダーの開閉とドット、フォルダーから出す・最後の1つで置き換え・作成・追加、押しのけ、ウィジェットのメニューと枠、App info、ウィジェットピッカーを確かめた。残り: 3（アプリの都合をフックに出す）。案: CellLayout.setGridSize は上流に戻し、アプリがサイズを変えるときに rebuildOccupied を呼ぶ（今は items のない init でしか呼ばないので占有の引き継ぎは効いていない）、Folder.closeComplete のフォーカスは protected boolean shouldFocusIconOnClose()、onDropCompleted の失敗時は canReturnItemOnFailedDrop(DragObject)、FolderIcon.onDragEnter のばねは shouldSpringLoad(ItemInfo)（上流の mOpenAlarm などを戻す）、FolderPagedView.removeItem、ThemeManager.getIconShape。PopupContainer の showForSystemShortcuts・PopupData・keepPlaceOnScreen はまだ上流の位置にない。16_r4→17_r1 の試算では derived= の衝突はファイルごとに数か所〜30か所ほど（削った部分の上流の変更）
+
+**2026-11-23T11:33:13Z**
+
+2026-11-23: 3 を行った。CellLayout.setGridSize は上流に戻した（グリッドの大きさは起動時に一度だけ決まり、占有は addItemView・removeView が保つ。HomeWorkspace.onDragStart の rebuildOccupied は念のための作り直しとして残し、古いコメントを直した）。Folder の closeComplete のフォーカスは shouldFocusIconOnClose(hadFocus)、失敗したドラッグの戻し方は canReturnItemOnFailedDrop(DragObject) のフックにして、HomeFolder が決める（キーで開いたときだけアイコンにフォーカスを戻す、フォルダーアイコンがホームにあるときだけ戻す）。ThemeManager.getIconShape はフォルダーの形ではなく、選んだアイコン形状から pickBestShape で作った形を返す（DragView のマスク）。FolderPagedView.removeItem は1ページなだけで上流と同じなので、印だけ直した。FolderIcon.onDragEnter でフォルダーが開かないのは、開いたフォルダーがドロップ先にならない（外からのドラッグを受けない）という構造の違いなので、印を付けたまま残す。PopupContainer.kt も上流の順に並べ直した（showForSystemShortcuts は View 版の枝だけ、PopupData・PopupCategory と keepPlaceOnScreen は最後に）。keepPlaceOnScreen・followWidget・canShowHome は derived= の最後の TextLauncher だけのブロックにまとまっているので、そのままにする。エミュレータで、タッチとキーでのフォルダーの開閉のフォーカス、長押しメニュー2種、ドラッグ中のアイコン、全アプリ一覧からの追加を確かめた

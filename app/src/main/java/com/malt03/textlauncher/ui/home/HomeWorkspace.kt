@@ -245,8 +245,8 @@ class HomeWorkspace(
     // ---- DragController.DragListener ----
 
     override fun onDragStart(dragObject: DragObject, options: DragOptions) {
-        // TextLauncher: the grid's rows come and go with its content, so the occupancy is rebuilt
-        // from the items first.
+        // TextLauncher: the occupancy is rebuilt from the grid's views first, as a safeguard;
+        // Launcher3 relies on addInScreen and removeView alone to keep it.
         layout.rebuildOccupied(null)
         mDragInfo?.let { layout.markCellsAsUnoccupiedForView(it.cell) }
     }
