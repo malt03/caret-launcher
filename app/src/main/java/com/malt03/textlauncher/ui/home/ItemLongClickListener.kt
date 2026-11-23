@@ -76,9 +76,15 @@ internal class ItemLongClickListener(private val home: HomeController) {
         home.homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(view, info))
     }
 
+    /**
+     * ItemLongClickListener.INSTANCE_WORKSPACE for a folder. With Flags.homeScreenEditImprovements
+     * (enabled in the release), Workspace.startDrag shows the folder's menu
+     * (PopupControllerForExtraHomeScreenItems), and the drag starts once the finger moves.
+     */
     fun onHomeFolderLongPress(view: FolderIconView) {
         if (!canStartDrag()) return
-        home.homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
+        val info = view.folderInfo
+        home.homeWorkspace.startDrag(view, info, DragOptions()) { showExtraHomeScreenItemPopup(view, info) }
     }
 
     /**
@@ -100,44 +106,66 @@ internal class ItemLongClickListener(private val home: HomeController) {
 
     /**
      * PopupControllerForExtraHomeScreenItems.show and Popup.createPreDragCondition: the menu with
-     * the item's actions, and the widget's resize frame.
+     * the item's actions, and a widget's resize frame.
      */
-    private fun showExtraHomeScreenItemPopup(view: LauncherAppWidgetHostView, itemInfo: ItemInfo): DragOptions.PreDragCondition {
+    private fun showExtraHomeScreenItemPopup(view: View, itemInfo: ItemInfo): DragOptions.PreDragCondition {
         val container = PopupContainer.create<ActivityContext>(
             context = view.context,
             originalView = view,
             itemInfo = itemInfo,
         )
         home.dragController.addDragListener(container)
-        container.showForSystemShortcuts(appWidgetSystemShortcuts(view), activityContext, view)
+        getAllSupportedPopupActions(itemInfo, view)?.let {
+            container.showForSystemShortcuts(it, activityContext, view)
+        }
         // showResizeFrameIfNeeded with DefaultPopupResizeStrategy: a widget on the home screen.
-        AppWidgetResizeFrame.showForWidget(view, home.grid.cellLayout)
+        if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, home.grid.cellLayout)
         return container.createPreDragCondition()
     }
 
     /**
-     * AppWidgetSystemShortcuts.getPopupDataByItemInfo: "Remove" (PopupDataSource.removePopupData),
-     * and "Settings" for a reconfigurable widget.
+     * PopupDataRepository.getAllSupportedPopupActions with the home screen's mappers:
+     * FolderSystemShortcuts and AppWidgetSystemShortcuts (TextLauncher has no app pairs or files).
      */
-    private fun appWidgetSystemShortcuts(view: LauncherAppWidgetHostView): List<PopupData> = buildList {
-        add(
-            PopupData(L3R.drawable.ic_remove_no_shadow, L3R.string.remove_system_shortcut_label, PopupCategory.SYSTEM_SHORTCUT_FIXED) { activityContext, _, v ->
-                AbstractFloatingView.closeAllOpenViews(activityContext)
-                // TextLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
-                home.removeHomeItem(v)
-            },
-        )
+    private fun getAllSupportedPopupActions(itemInfo: ItemInfo, view: View): List<PopupData>? =
+        listOfNotNull(folderSystemShortcuts(itemInfo), appWidgetSystemShortcuts(itemInfo, view))
+            .flatten().ifEmpty { null }
+
+    /** PopupDataSource.removePopupData: "Remove". */
+    private val removePopupData = PopupData(
+        L3R.drawable.ic_remove_no_shadow, L3R.string.remove_system_shortcut_label, PopupCategory.SYSTEM_SHORTCUT_FIXED,
+    ) { activityContext, _, v ->
+        AbstractFloatingView.closeAllOpenViews(activityContext)
+        // TextLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
+        home.removeHomeItem(v)
+    }
+
+    /** FolderSystemShortcuts.getPopupDataByItemInfo: "Remove". */
+    private fun folderSystemShortcuts(itemInfo: ItemInfo): List<PopupData>? =
+        if (itemInfo.itemType == LauncherSettings.Favorites.ITEM_TYPE_FOLDER) listOf(removePopupData) else null
+
+    /**
+     * AppWidgetSystemShortcuts.getPopupDataByItemInfo: "Remove", and "Settings" for a
+     * reconfigurable widget.
+     */
+    private fun appWidgetSystemShortcuts(itemInfo: ItemInfo, view: View): List<PopupData>? {
+        if (itemInfo.itemType != LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET) return null
         // LauncherAppWidgetInfo.isReconfigurable (LauncherAppWidgetProviderInfo.isReconfigurable)
-        val info = view.appWidgetInfo
-        if (info != null && info.configure != null &&
+        val info = (view as? LauncherAppWidgetHostView)?.appWidgetInfo
+        return if (info != null && info.configure != null &&
             info.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_RECONFIGURABLE != 0
         ) {
-            add(
-                PopupData(L3R.drawable.ic_setting, L3R.string.widget_settings, PopupCategory.SYSTEM_SHORTCUT_FIXED) { _, _, v ->
-                    if (v is LauncherAppWidgetHostView) home.widgetAddFlow.startReconfigure(v)
-                },
-            )
+            listOf(removePopupData, widgetSettingsPopupData)
+        } else {
+            listOf(removePopupData)
         }
+    }
+
+    /** AppWidgetSystemShortcuts.widgetSettingsPopupData: "Settings". */
+    private val widgetSettingsPopupData = PopupData(
+        L3R.drawable.ic_setting, L3R.string.widget_settings, PopupCategory.SYSTEM_SHORTCUT_FIXED,
+    ) { _, _, v ->
+        if (v is LauncherAppWidgetHostView) home.widgetAddFlow.startReconfigure(v)
     }
 
     /**

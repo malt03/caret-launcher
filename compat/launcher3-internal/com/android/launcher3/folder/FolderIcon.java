@@ -37,6 +37,7 @@ import android.view.View;
 import android.view.ViewDebug;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
 import com.android.launcher3.Alarm;
@@ -49,6 +50,7 @@ import com.android.launcher3.OnAlarmListener;
 import com.android.launcher3.R;
 import com.android.launcher3.Reorderable;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.dot.FolderDotInfo;
 import com.android.launcher3.dragndrop.DragLayer;
@@ -58,6 +60,10 @@ import com.android.launcher3.graphics.ThemeManager;
 import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.popup.IconViewController;
+import com.android.launcher3.popup.Poppable;
+import com.android.launcher3.popup.PoppableType;
+import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.Thunk;
@@ -73,14 +79,15 @@ import java.util.function.Predicate;
  *
  * <p>Stand-in for Launcher3's FolderIcon (android-17.0.0_r1), made from FolderIcon.java by
  * deleting what TextLauncher does not use (the folder name and its suggestions, touch handling,
- * popups, floating icons, leave-behinds, accessibility titles); changes are marked
+ * floating icons, leave-behinds, accessibility titles); changes are marked
  * with "TextLauncher:". TextLauncher's folder icon view extends this. Folders have no names
  * (docs/spec.md 5.2). As in Launcher3, a {@link Folder} is bound to the icon
  * ({@link Folder#bindToIcon}).
  */
-// TextLauncher: a View with no name label, which the app's folder icon view extends; no popups,
-// floating icons or custom touch handling.
-public abstract class FolderIcon extends View implements DraggableView, Reorderable {
+// TextLauncher: a View with no name label, which the app's folder icon view extends; no floating
+// icons or custom touch handling.
+public abstract class FolderIcon extends View implements DraggableView, Reorderable, Poppable,
+        IconViewController {
 
     private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
     @Thunk ActivityContext mActivity;
@@ -372,7 +379,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return mPreviewLayoutRule;
     }
 
-    // TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg).
+    @Override
     public void setForceHideDot(boolean forceHideDot) {
         if (mForceHideDot == forceHideDot) {
             return;
@@ -429,7 +436,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         mBackground.setInvalidateDelegate(this);
     }
 
-    // TextLauncher: IconViewController's, which this does not implement yet (Tex-ukrg).
+    @Override
     public void setIconVisible(boolean visible) {
         mBackgroundIsVisible = visible;
         invalidate();
@@ -504,6 +511,13 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
+    @Override
+    public int getIconHeight() {
+        Rect rect = new Rect();
+        getPreviewBounds(rect);
+        return rect.height();
+    }
+
     /**
      * Returns the list of items which should be visible in the preview
      */
@@ -567,6 +581,19 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     @Override
     public void getWorkspaceVisualDragBounds(Rect bounds) {
         getPreviewBounds(bounds);
+    }
+
+    @NonNull
+    @Override
+    public PoppableType getPoppableType() {
+        return PoppableType.FOLDER;
+    }
+
+    // TextLauncher: no folder name, so there is no text alpha to animate.
+    @Nullable
+    @Override
+    public MultiPropertyFactory<AnimatedFloat>.MultiProperty getFloatingViewTextAlpha() {
+        return null;
     }
 
     // TextLauncher: members TextLauncher adds.

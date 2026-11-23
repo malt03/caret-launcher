@@ -27,9 +27,13 @@ import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.android.launcher3.CheckLongPressHelper;
 import com.android.launcher3.R;
 import com.android.launcher3.dragndrop.DraggableView;
+import com.android.launcher3.popup.Poppable;
+import com.android.launcher3.popup.PoppableType;
 import com.android.launcher3.util.Themes;
 
 /**
@@ -45,10 +49,10 @@ import com.android.launcher3.util.Themes;
  * the drag type and bounds (widgets are not scaled, so getScaleToFit is always 1).
  */
 // TextLauncher: extends AppWidgetHostView instead of BaseLauncherAppWidgetHostView and
-// NavigableAppWidgetHostView, and has no touch complete listener, deferred updates, popup or
-// custom events.
+// NavigableAppWidgetHostView, and has no touch complete listener, deferred updates or custom
+// events.
 public class LauncherAppWidgetHostView extends AppWidgetHostView
-        implements DraggableView, View.OnLongClickListener {
+        implements DraggableView, View.OnLongClickListener, Poppable {
 
     private final CheckLongPressHelper mLongPressHelper;
 
@@ -102,6 +106,12 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
         super.cancelLongPress();
         // TextLauncher: Flags.enableCursorDrivenWorkflows is disabled in the release.
         mLongPressHelper.cancelLongPress();
+    }
+
+    @NonNull
+    @Override
+    public PoppableType getPoppableType() {
+        return PoppableType.WIDGET;
     }
 
     // TextLauncher: members TextLauncher adds.

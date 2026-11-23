@@ -32,6 +32,7 @@ import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.popup.Poppable
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.views.ActivityContext
@@ -214,9 +215,10 @@ class HomeWorkspace(
         if (child is BubbleTextView && !dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
             dragOptions.preDragCondition = startLongPressAction?.invoke()
             // TextLauncher: search results use the home icon size, so no preDragEndScale.
-        } else if (child is LauncherAppWidgetHostView && !dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
-            // Flags.homeScreenEditImprovements and a Poppable child: the popup controller for home
-            // screen items shows the menu, whose pre-drag condition starts the drag.
+        } else if (child is Poppable && !dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
+            // Flags.homeScreenEditImprovements (enabled in the release) and a Poppable child (a
+            // folder or a widget): the popup controller for home screen items shows the menu,
+            // whose pre-drag condition starts the drag.
             dragOptions.preDragCondition = startLongPressAction?.invoke()
         }
 
