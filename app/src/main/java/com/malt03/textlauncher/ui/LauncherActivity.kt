@@ -14,7 +14,6 @@ import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.text.method.TextKeyListener
 import android.view.KeyEvent
-import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -33,15 +32,12 @@ import com.malt03.textlauncher.TextLauncherApplication
 import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.AbstractFloatingView
-import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.states.RotationHelper.REQUEST_LOCK
 import com.android.launcher3.states.RotationHelper.REQUEST_NONE
-import com.android.launcher3.util.MSDLPlayerWrapper
 import com.android.launcher3.util.Themes
 import com.android.launcher3.util.WallpaperThemeManager
-import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
 import com.malt03.textlauncher.ui.allapps.AllAppsView
@@ -400,12 +396,6 @@ class LauncherActivity :
             isInSearchBar(ev) || root.allAppsSheet.shouldContainerScroll(ev, root)
 
         override fun onThresholdCrossed(opening: Boolean) {
-            // AllAppsTransitionController.setStateWithAnimation: the haptic for going to all apps.
-            if (Flags.msdlFeedback()) {
-                MSDLPlayerWrapper.INSTANCE.get(this@LauncherActivity).playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
-            } else {
-                root.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
-            }
             // docs/spec.md 6.2: the keyboard goes down as the field comes up.
             if (opening) prepareAllAppsOpen()
         }

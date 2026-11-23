@@ -177,11 +177,26 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      * AllAppsTransitionController's progress, from 0 (closed: the field is above the keyboard) to 1
      * (open: the field is at the top of the screen, with the list under it).
      */
-    var allAppsProgress = 0f
-        set(value) {
-            field = value
-            applyAllAppsProgress()
-        }
+    var allAppsProgress: Float
+        get() = verticalProgress
+        set(value) = setAllAppsProgress(value, value)
+    private var verticalProgress = 0f
+
+    /**
+     * The progress that the home screen's scale and the depth follow with ALL_APPS_SHEET_DEPTH
+     * (ANIM_WORKSPACE_SCALE and ANIM_DEPTH): the state animation's fraction. The same as
+     * [allAppsProgress] with a gesture; without one, [allAppsProgress] goes through its own
+     * interpolator (ANIM_VERTICAL_PROGRESS).
+     */
+    var allAppsDepthProgress = 0f
+        private set
+
+    /** Sets [allAppsProgress] and [allAppsDepthProgress]. */
+    fun setAllAppsProgress(progress: Float, depthProgress: Float) {
+        verticalProgress = progress
+        allAppsDepthProgress = depthProgress
+        applyAllAppsProgress()
+    }
 
     /** True while the all apps list is open or opening (docs/spec.md 6.4). */
     val isAllAppsShown: Boolean get() = allAppsProgress > 0f
@@ -430,8 +445,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      * AllAppsTransitionController.setProgress: the field goes from [closedBarTop] to [openBarTop]
      * (the keyboard goes down), and the sheet follows right under it, coming out from behind the
      * keyboard. The home screen stays, shrunk to workspace_content_scale and blurred with the depth
-     * (AllAppsSwipeController.applyNormalToAllAppsAnimConfig: ALL_APPS_SHEET_DEPTH for the
-     * workspace scale and the depth).
+     * (AllAppsSwipeController.applyNormalToAllAppsAnimConfig: ALL_APPS_SHEET_DEPTH of
+     * [allAppsDepthProgress] for the workspace scale and the depth).
      */
     private fun applyAllAppsProgress() {
         val progress = allAppsProgress
@@ -443,7 +458,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         // the keyboard as the field goes up (docs/spec.md 6.4). It is laid out open, where the
         // field is at the top of the screen.
         allAppsSheet.translationY = barTop - openBarTop
-        val sheetDepth = ALL_APPS_SHEET_DEPTH.getInterpolation(progress)
+        val sheetDepth = ALL_APPS_SHEET_DEPTH.getInterpolation(allAppsDepthProgress)
         val scale = 1f - (1f - workspaceContentScale) * sheetDepth
         contentArea.scaleX = scale
         contentArea.scaleY = scale
@@ -457,7 +472,7 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
      */
     private fun applyDepth() {
         val window = (context as? android.app.Activity)?.window ?: return
-        val sheetDepth = allAppsDepth * ALL_APPS_SHEET_DEPTH.getInterpolation(allAppsProgress)
+        val sheetDepth = allAppsDepth * ALL_APPS_SHEET_DEPTH.getInterpolation(allAppsDepthProgress)
         val depth = maxOf(springLoadedDepth, sheetDepth)
         val blur = if (isBlurEnabled) (mapDepthToBlur(depth) * maxBlurRadius).toInt() else 0
         if (blur != appliedWindowBlur) {

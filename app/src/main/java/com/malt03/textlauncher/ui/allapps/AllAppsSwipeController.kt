@@ -46,7 +46,7 @@ class AllAppsSwipeController(
         /** A swipe down from here may close the list (the field, or the list at its top). */
         fun canCloseFrom(ev: MotionEvent): Boolean
 
-        /** The swipe went past the hold: the haptic, and the keyboard goes down when opening. */
+        /** The swipe went past the hold: the keyboard goes down when opening. */
         fun onThresholdCrossed(opening: Boolean)
 
         /**
@@ -159,6 +159,8 @@ class AllAppsSwipeController(
                 addUpdateListener { update() }
                 start()
             }
+            // AllAppsTransitionController.setStateWithAnimation: the haptic for going to all apps.
+            transition.performStateHaptic(userControlled = true)
             callbacks.onThresholdCrossed(opening)
         }
         update()

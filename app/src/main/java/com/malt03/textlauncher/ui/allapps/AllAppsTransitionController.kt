@@ -3,8 +3,12 @@ package com.malt03.textlauncher.ui.allapps
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.view.HapticFeedbackConstants
 import android.view.animation.Interpolator
 import com.android.app.animation.Interpolators
+import com.android.launcher3.Flags
+import com.android.launcher3.util.MSDLPlayerWrapper
+import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.ui.LauncherRootLayout
 
 /**
@@ -53,8 +57,9 @@ class AllAppsTransitionController(private val root: LauncherRootLayout) {
 
     /**
      * Animates to [target] (0 or 1), like the state animation AbstractStateChangeTouchController
-     * finishes a swipe with; [onEnd] runs when it gets there, and [onCancel] when [cancelAnimation]
-     * stops it before that.
+     * finishes a swipe with: the whole animation is played with [interpolator]
+     * (updateSwipeCompleteAnimation), the vertical progress being LINEAR with a gesture. [onEnd]
+     * runs when it gets there, and [onCancel] when [cancelAnimation] stops it before that.
      */
     fun animateTo(
         target: Float,
@@ -62,18 +67,41 @@ class AllAppsTransitionController(private val root: LauncherRootLayout) {
         interpolator: Interpolator,
         onCancel: (() -> Unit)? = null,
         onEnd: () -> Unit,
+    ) = animate(target, duration, interpolator, interpolator, onCancel, onEnd)
+
+    /**
+     * Plays the fraction linearly and puts each property through its interpolator
+     * (StateAnimationConfig.getInterpolator): [verticalInterpolator] for the progress
+     * (ANIM_VERTICAL_PROGRESS), [depthInterpolator] for the depth progress, which the home screen's
+     * scale and the depth follow (ANIM_WORKSPACE_SCALE, ANIM_DEPTH).
+     */
+    private fun animate(
+        target: Float,
+        duration: Long,
+        verticalInterpolator: Interpolator,
+        depthInterpolator: Interpolator,
+        onCancel: (() -> Unit)?,
+        onEnd: () -> Unit,
     ) {
         cancelAnimation()
-        if (duration <= 0 || progress == target) {
+        if (duration <= 0 || (progress == target && root.allAppsDepthProgress == target)) {
             progress = target
             onEnd()
             return
         }
         this.onCancel = onCancel
-        animator = ValueAnimator.ofFloat(progress, target).apply {
+        val startProgress = progress
+        val startDepthProgress = root.allAppsDepthProgress
+        animator = ValueAnimator.ofFloat(0f, 1f).apply {
             this.duration = duration
-            this.interpolator = interpolator
-            addUpdateListener { progress = it.animatedValue as Float }
+            this.interpolator = Interpolators.LINEAR
+            addUpdateListener {
+                val fraction = it.animatedFraction
+                root.setAllAppsProgress(
+                    startProgress + (target - startProgress) * verticalInterpolator.getInterpolation(fraction),
+                    startDepthProgress + (target - startDepthProgress) * depthInterpolator.getInterpolation(fraction),
+                )
+            }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     if (animator !== animation) return
@@ -91,13 +119,34 @@ class AllAppsTransitionController(private val root: LauncherRootLayout) {
      * The open and close without a gesture (the menu's "Apps", the back gesture): Launcher3's state
      * animation, EMPHASIZED over config_allAppsOpenDuration to open
      * (AllAppsSwipeController.applyNormalToAllAppsAnimConfig), ACCELERATE over 200ms to close
-     * (applyAllAppsToNormalConfig).
+     * (applyAllAppsToNormalConfig). Those are for the vertical progress only; the home screen's
+     * scale and the depth take ALL_APPS_SHEET_DEPTH of the fraction (LauncherRootLayout). Opening
+     * plays the haptic (setStateWithAnimation).
      */
     fun animateTo(open: Boolean, onEnd: () -> Unit) {
         if (open) {
-            animateTo(1f, OPEN_DURATION_MS, Interpolators.EMPHASIZED, onEnd = onEnd)
+            performStateHaptic(userControlled = false)
+            animate(1f, OPEN_DURATION_MS, Interpolators.EMPHASIZED, Interpolators.LINEAR, null, onEnd)
         } else {
-            animateTo(0f, CLOSE_DURATION_MS, Interpolators.ACCELERATE, onEnd = onEnd)
+            animate(0f, CLOSE_DURATION_MS, Interpolators.ACCELERATE, Interpolators.LINEAR, null, onEnd)
+        }
+    }
+
+    /**
+     * AllAppsTransitionController.setStateWithAnimation: "This controls both haptics for tapping on
+     * QSB and going to all apps", SWIPE_THRESHOLD_INDICATOR for a swipe ([userControlled]) and
+     * TAP_HIGH_EMPHASIS without one. Launcher3 plays it going from NORMAL to ALL_APPS.
+     *
+     * TextLauncher: a swipe plays it when it gets past the hold (docs/spec.md 6.2), and a swipe
+     * that closes the list plays it too.
+     */
+    fun performStateHaptic(userControlled: Boolean) {
+        if (Flags.msdlFeedback()) {
+            MSDLPlayerWrapper.INSTANCE.get(root.context).playToken(
+                if (userControlled) MSDLToken.SWIPE_THRESHOLD_INDICATOR else MSDLToken.TAP_HIGH_EMPHASIS,
+            )
+        } else {
+            root.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
         }
     }
 
