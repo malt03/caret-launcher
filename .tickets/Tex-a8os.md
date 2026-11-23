@@ -1,6 +1,6 @@
 ---
 id: Tex-a8os
-status: open
+status: closed
 deps: []
 links: [Tex-3dnt, Tex-ijxl]
 created: 2026-11-22T00:57:38Z
@@ -18,3 +18,9 @@ HomeLoader.removeItems は、matcher が何も消していなくても、中身�
 
 直し方: モデルでの畳み込みをやめ、Folder.removeFolderContent → replaceFolderWithFinalItem の1本の経路にする（Folder.mIsDragInProgress を尊重）。部分更新（別チケット）と合わせて行う
 
+
+## Notes
+
+**2026-11-23T11:44:02Z**
+
+2026-11-23: 直した。HomeLoader.removeItems は、中身を実際に外したフォルダーだけを畳む（ドラッグで1つになっているフォルダーを、関係のない削除で畳まない）。読み込み時に1つしかないフォルダーは Folder.bind の上流の後片付け（post で replaceFolderWithFinalItem）を戻して処理する。アプリの変化（onAppsChanged）と rebuild の始めにドラッグを取り消し（ModelCallbacks.startBinding と同じ。モデルを変える前に）、ショートカットの消滅（pruneMissing）でもモデルから消えるものがあれば先に取り消す。HomeController.replaceFolderWithFinalItem は、モデルにもうないフォルダーでは何もしない（二重に足さない）。エミュレータで、2つ入りのフォルダーから引き出している間に別のアプリを停止・再開して、アイテムがフォルダーに戻り何も消えないことを確かめた。モデルでの畳み込みを Folder の経路1本にまとめるのは部分バインド（Tex-3dnt）と合わせて

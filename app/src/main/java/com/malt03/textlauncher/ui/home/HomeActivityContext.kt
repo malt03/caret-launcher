@@ -103,6 +103,8 @@ internal class HomeActivityContext(private val home: HomeController) :
 
     override fun isStarted(): Boolean = home.isStarted
 
+    override fun isWorkspaceLoading(): Boolean = home.isWorkspaceLoading
+
     /** Edit mode hides the keyboard once the drag starts (docs/spec.md 5.4), not at the long press. */
     override fun hideKeyboard() = Unit
 

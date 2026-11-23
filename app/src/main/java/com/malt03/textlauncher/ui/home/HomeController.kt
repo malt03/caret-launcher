@@ -24,6 +24,7 @@ import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
+import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
@@ -142,8 +143,14 @@ class HomeController(
     internal val itemLongClickListener = ItemLongClickListener(this)
     private val loader = HomeLoader(this)
 
-    /** Whether the home screen is loaded (Launcher.isWorkspaceLoading). */
+    /** Whether the home screen was loaded and bound once. */
     internal val isLoaded: Boolean get() = loader.isLoaded
+
+    /**
+     * ModelCallbacks.getWorkspaceLoading: from the start of a load or rebind until its items are
+     * bound. No drag starts meanwhile (Launcher.isDraggingEnabled).
+     */
+    internal val isWorkspaceLoading: Boolean get() = loader.isWorkspaceLoading
 
     /** Folder's LauncherDelegate: what the folder asks of the workspace and the model. */
     internal val launcherDelegate = object : LauncherDelegate(launcher) {
@@ -173,6 +180,14 @@ class HomeController(
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
         dragController.defaultDropTarget = homeWorkspace
+        // TextLauncher: the model saves once per drag (HomeModel.deferSaves); this listener comes
+        // first, before the drag source takes the item out of the model.
+        dragController.addDragListener(object : DragController.DragListener {
+            override fun onDragStart(dragObject: DragObject, options: DragOptions) =
+                model.deferSaves(true)
+
+            override fun onDragEnd() = model.deferSaves(false)
+        })
         dragController.addDragListener(homeWorkspace)
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
@@ -338,6 +353,9 @@ class HomeController(
      * widget, Launcher.addPendingItem's widget add flow.
      */
     internal fun addToWorkspace(item: ItemInfo): Boolean {
+        // TextLauncher: nothing is added while the home screen loads (Launcher3's menu cannot be
+        // opened then, as no drag or long press starts); the search results' can (Tex-twu9).
+        if (isWorkspaceLoading) return false
         if (item is PendingAddWidgetInfo) return addPendingWidget(item)
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
         val info = (item as? WorkspaceItemInfo ?: return false).clone()
@@ -482,13 +500,15 @@ class HomeController(
 
     /** LauncherDelegate.replaceFolderWithFinalItem. Returns whether the folder was destroyed. */
     private fun replaceFolderWithFinalItem(folderView: FolderIconView): Boolean {
-        // TextLauncher: the folder may report again after it was already replaced.
-        if (folderView.parent == null) return true
+        // TextLauncher: the folder may report again after it was already replaced, or after the
+        // model dropped it (Tex-a8os).
+        if (folderView.parent == null || folderView.folderInfo !in model.items) return true
         // Add the last remaining child to the workspace in place of the folder
         val onCompleteRunnable = Runnable {
             val info = folderView.folderInfo
             val itemCount = info.contents.size
-            if (itemCount <= 1) {
+            // TextLauncher: unless the model dropped the folder during the animation (Tex-a8os).
+            if (itemCount <= 1 && info in model.items) {
                 var finalItem: ItemInfo? = null
                 if (itemCount == 1) {
                     // Move the item from the folder to the workspace, in the position of the folder

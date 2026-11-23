@@ -30,6 +30,24 @@ class HomeModel(
     private var nextId = 1
 
     /**
+     * LauncherModel.isModelLoaded: [items] hold what was read from the database. Until then
+     * nothing is saved, as Launcher3's model tasks wait for the load (Tex-twu9).
+     */
+    var isLoaded = false
+        private set
+
+    /**
+     * While a drag is in progress, saves wait for its end: the dragged item is out of the model
+     * meanwhile (a folder's contents lose it at the start), and Launcher3 writes nothing until the
+     * drop (Folder.removeFolderContent does not change the database). See [deferSaves].
+     */
+    private var savesDeferred = false
+    private var saveRequested = false
+
+    /** The shortcut keys the system was last told to keep pinned; null until the first save. */
+    private var pinnedKeys: Set<String>? = null
+
+    /**
      * TextLauncher: some app shortcuts were saved without their icons (before the icon column was
      * added); the home screen is saved again once their icons are loaded.
      */
@@ -94,6 +112,20 @@ class HomeModel(
         items.clear()
         items += loaded
         nextId = (allItems().maxOfOrNull { it.id } ?: 0) + 1
+        isLoaded = true
+    }
+
+    /**
+     * Holds [save] from a drag's start to its end (or saves at the end when one was asked for in
+     * between), so that a drag is saved once, with the item where it was dropped.
+     */
+    fun deferSaves(deferred: Boolean) {
+        if (savesDeferred == deferred) return
+        savesDeferred = deferred
+        if (!deferred && saveRequested) {
+            saveRequested = false
+            save()
+        }
     }
 
     /** ModelWriter's id for a new item. */
@@ -113,6 +145,14 @@ class HomeModel(
     }
 
     fun save() {
+        if (!isLoaded) {
+            Log.w(TAG, "Not saving the home screen before it is loaded")
+            return
+        }
+        if (savesDeferred) {
+            saveRequested = true
+            return
+        }
         val rows = mutableListOf<HomeRow>()
         // ContentWriter.putIcon: an app shortcut's icon is saved with it, by row index.
         val icons = HashMap<Int, Pair<BitmapInfo, UserHandle>>()
@@ -143,11 +183,13 @@ class HomeModel(
                 }
             }
         }
-        val shortcutKeys = shortcutKeys()
+        // BgDataModel.addItems / removeItems update the pinned state when shortcuts are added or
+        // removed; here, when the set of shortcut keys changed (Tex-536b).
+        val shortcutKeys = shortcutKeys().toSet().takeIf { it != pinnedKeys }
+        if (shortcutKeys != null) pinnedKeys = shortcutKeys
         ioExecutor.execute {
             db.replaceHomeRows(rows.mapIndexed { index, row -> icons[index]?.let { (bitmap, user) -> row.withIcon(bitmap, user) } ?: row })
-            // BgDataModel.addItems / removeItems update the pinned state after model changes.
-            shortcuts.updatePinnedStateBlocking(shortcutKeys)
+            if (shortcutKeys != null) shortcuts.updatePinnedStateBlocking(shortcutKeys)
         }
     }
 

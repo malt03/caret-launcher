@@ -109,6 +109,23 @@ public abstract class Launcher implements ActivityContext {
     /** BaseActivity.isStarted: whether the home activity is started. */
     public abstract boolean isStarted();
 
+    /** TextLauncher: no pending activity requests (mPendingRequestArgs). */
+    public boolean isWorkspaceLocked() {
+        return isWorkspaceLoading();
+    }
+
+    /**
+     * TextLauncher: the home screen says it (ModelCallbacks.getWorkspaceLoading): from the start
+     * of a load or rebind until its items are bound.
+     */
+    public abstract boolean isWorkspaceLoading();
+
+    public boolean isDraggingEnabled() {
+        // We prevent dragging when we are loading the workspace as it is possible to pick up a view
+        // that is subsequently removed from the workspace in startBinding().
+        return !isWorkspaceLoading();
+    }
+
     /** TextLauncher: no logging; see {@link StatsLogManager}. */
     public StatsLogManager getStatsLogManager() {
         return mStatsLogManager;

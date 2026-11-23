@@ -206,9 +206,14 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
     }
 
     public boolean onLongClick(View v) {
-        // TextLauncher: LauncherDelegate has no isDraggingEnabled (Launcher3 starts no drag while
-        // the workspace loads); the folder's items are there only once the home screen is bound.
+        // Return if global dragging is not enabled
+        if (!getIsLauncherDraggingEnabled()) return true;
         return startDrag(v, new DragOptions());
+    }
+
+    @VisibleForTesting
+    boolean getIsLauncherDraggingEnabled() {
+        return mLauncherDelegate.isDraggingEnabled();
     }
 
     public boolean startDrag(View v, DragOptions options) {
@@ -298,8 +303,12 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             lp.customPosition = true;
             setLayoutParams(lp);
         }
-        // TextLauncher: no clean-up after loading here; the app's loader turns a folder left with
-        // one item or none into that item (HomeLoader.removeItems).
+        // In case any children didn't come across during loading, clean up the folder accordingly
+        mFolderIcon.post(() -> {
+            if (getItemCount() <= 1) {
+                replaceFolderWithFinalItem();
+            }
+        });
     }
 
     private void addAnimationStartListeners(AnimatorSet a) {

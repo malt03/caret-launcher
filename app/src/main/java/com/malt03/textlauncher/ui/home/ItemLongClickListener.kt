@@ -42,8 +42,20 @@ internal class ItemLongClickListener(private val home: HomeController) {
     /** ActivityAllAppsContainerView as a DragSource: nothing to do when an app from search drops. */
     private val searchDragSource = DragSource { _, _, _ -> }
 
+    /** ItemLongClickListener.canStartDrag. */
+    private fun canStartDrag(): Boolean {
+        // We prevent dragging when we are loading the workspace as it is possible to pick up a view
+        // that is subsequently removed from the workspace in startBinding().
+        if (home.launcher.isWorkspaceLocked) return false
+        // Return early if an item is already being dragged (e.g. when long-pressing two shortcuts)
+        if (home.dragController.isDragging) return false
+        // TextLauncher: no split-screen selection.
+        return true
+    }
+
     /** A long press on an app in the search results: its menu, and a drag once it moves. */
     fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) {
+        if (!canStartDrag()) return
         // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
         val info = AppItemInfo(entry, (iconView.tag as? ItemInfoWithIcon)?.bitmap)
         home.homeWorkspace.beginDragShared(
@@ -59,11 +71,13 @@ internal class ItemLongClickListener(private val home: HomeController) {
     }
 
     fun onHomeItemLongPress(view: AppIconView) {
+        if (!canStartDrag()) return
         val info = view.tag as? WorkspaceItemInfo ?: return
         home.homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(view, info))
     }
 
     fun onHomeFolderLongPress(view: FolderIconView) {
+        if (!canStartDrag()) return
         home.homeWorkspace.startDrag(view, view.folderInfo, DragOptions(), null)
     }
 
@@ -77,6 +91,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
      * ported.
      */
     fun onHomeWidgetLongPress(view: LauncherAppWidgetHostView) {
+        if (!canStartDrag()) return
         val info = view.tag as? ItemInfo ?: return
         val options = DragOptions()
         options.deferDragToPreDragEnd = true
@@ -191,7 +206,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
         }
 
         override fun onLongClick(v: View): Boolean {
-            // TextLauncher: no ItemLongClickListener.canStartDrag; nothing locks the home screen.
+            if (!canStartDrag()) return false
             // Return early if not the correct view
             if (v.parent !is DeepShortcutView) return false
 

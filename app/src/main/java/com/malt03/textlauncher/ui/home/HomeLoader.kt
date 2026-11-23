@@ -34,6 +34,10 @@ internal class HomeLoader(private val home: HomeController) {
      */
     var isLoaded = false
         private set
+
+    /** ModelCallbacks.getWorkspaceLoading: from [start] or [rebuild] until the items are bound. */
+    var isWorkspaceLoading = true
+        private set
     private var rebuildGeneration = 0
     private val shortcutsListener: () -> Unit = ::onShortcutsChanged
 
@@ -61,6 +65,10 @@ internal class HomeLoader(private val home: HomeController) {
      * and its pinned shortcut lookup), the views are built once the shortcuts and icons are loaded.
      */
     fun rebuild() {
+        // ModelCallbacks.startBinding cancels the drag; here it is cancelled before the model
+        // changes below (pruneMissing, checkItemPlacement), so that a dragged item goes back first.
+        home.cancelDrag()
+        isWorkspaceLoading = true
         val generation = ++rebuildGeneration
         val shortcutKeys = model.shortcutKeys()
         app.ioExecutor.execute {
@@ -132,6 +140,7 @@ internal class HomeLoader(private val home: HomeController) {
                     if (generation != rebuildGeneration) return@loadDefault
                     for (info in unknown) if (info.bitmap.isLowRes) info.bitmap = default
                     home.bindItems(model.items)
+                    isWorkspaceLoading = false
                     if (!isLoaded) {
                         isLoaded = true
                         home.widgetAddFlow.onLoaded()
@@ -175,6 +184,8 @@ internal class HomeLoader(private val home: HomeController) {
      */
     fun onAppsChanged() {
         if (!loaded) return
+        // ModelCallbacks.startBinding: the drag is cancelled before the model changes (rebuild).
+        home.cancelDrag()
         pruneMissingApps()
         rebuild()
     }
@@ -239,20 +250,29 @@ internal class HomeLoader(private val home: HomeController) {
      * Removes the apps and shortcuts whose keys [isMissing] says are gone; a folder left with one
      * item turns into that item. Returns true when something changed.
      */
-    private fun pruneMissing(isMissing: (String) -> Boolean): Boolean =
-        removeItems { item -> model.keyOf(item)?.let(isMissing) == true }
+    private fun pruneMissing(isMissing: (String) -> Boolean): Boolean {
+        val matcher = { item: ItemInfo -> model.keyOf(item)?.let(isMissing) == true }
+        // DragController.onAppsRemoved and ModelCallbacks.startBinding: a drag is cancelled before
+        // the model loses items, so that an item dragged out of a folder goes back into it first
+        // (Tex-a8os).
+        if (home.isDragging && model.allItems().any(matcher)) home.cancelDrag()
+        return removeItems(matcher)
+    }
 
     /**
      * Workspace.persistRemoveItemsByMatcher: removes the items that [matcher] matches, also in
-     * folders; a folder left with one item turns into that item. Returns true when something
-     * changed.
+     * folders; a folder that lost items and is left with one turns into that item
+     * (Folder.removeFolderContent). Other folders are left alone: one that has a single item while
+     * an item is dragged out of it is not folded (Tex-a8os), and one loaded with a single item
+     * replaces itself once bound (Folder.bind). Returns true when something changed.
      */
     fun removeItems(matcher: (ItemInfo) -> Boolean): Boolean {
         var changed = false
         for (item in model.items.toList()) {
             when (item) {
                 is FolderInfo -> {
-                    if (item.contents.removeAll(matcher)) changed = true
+                    if (!item.contents.removeAll(matcher)) continue
+                    changed = true
                     when (item.contents.size) {
                         0 -> {
                             model.items.remove(item); changed = true

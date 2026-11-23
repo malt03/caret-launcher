@@ -40,6 +40,10 @@ public class LauncherDelegate {
         mLauncher = launcher;
     }
 
+    boolean isDraggingEnabled() {
+        return mLauncher.isDraggingEnabled();
+    }
+
     /** Workspace.beginDragShared for an item dragged out of the folder. */
     public void beginDragShared(View child, DragSource source, DragOptions options) { }
 
