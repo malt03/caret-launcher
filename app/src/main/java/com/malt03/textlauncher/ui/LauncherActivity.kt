@@ -34,6 +34,7 @@ import com.android.launcher3.states.RotationHelper.REQUEST_LOCK
 import com.android.launcher3.states.RotationHelper.REQUEST_NONE
 import com.android.launcher3.util.Themes
 import com.android.launcher3.util.WallpaperThemeManager
+import com.android.launcher3.allapps.AllAppsStore
 import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
 import com.malt03.textlauncher.ui.allapps.AllAppsView
@@ -100,11 +101,17 @@ class LauncherActivity :
         allApps.setApps(it)
     }
     private val iconsListener: () -> Unit = {
-        results.onIconsChanged()
-        allAppsResults.onIconsChanged()
         home.rebuild()
+        // The search results bind the all apps list's AppInfos, which come again with the icons.
         allApps.setApps(apps)
     }
+
+    /**
+     * The all apps list's AppInfos changed (the apps or their icons): the search results, which
+     * bind them, are made again.
+     */
+    private val appsStoreListener = AllAppsStore.OnUpdateListener { refreshResults() }
+    private val appsStore: AllAppsStore get() = home.activityContext.activityComponent.appsStore
 
     /** Launcher.mRotationHelper */
     override val rotationHelper = RotationHelper(this)
@@ -137,21 +144,19 @@ class LauncherActivity :
         depthController.addBlurStateListener(root.allAppsSheet::setBlurEnabled)
 
         val isTwoPanels = gridSpec.isTwoPanels
-        results = SearchResults(
-            this,
-            app.iconLoader,
-            app.searchStore,
-            gridSpec,
-            onClick = { entry, view -> launch(entry, view, fromSearch = true) },
-            onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
-            // docs/spec.md 5.5: with two panels, the results replace the all apps list on its panel.
-            inAllApps = isTwoPanels,
-            fromBottom = true,
-        )
         home = HomeController(app, root, this)
         // Launcher.restoreState: a widget add flow that was waiting for an activity's result.
         home.restoreState(savedInstanceState)
         root.contentArea.addView(home.workspace)
+        results = SearchResults(
+            this,
+            home.activityContext,
+            app.searchStore,
+            gridSpec,
+            // docs/spec.md 5.5: with two panels, the results replace the all apps list on its panel.
+            inAllApps = isTwoPanels,
+            fromBottom = true,
+        )
         allApps = AllAppsView(this, home.activityContext, app.iconLoader, gridSpec)
         if (isTwoPanels) {
             // docs/spec.md 5.5: the all apps list is always shown on the left panel, and there is
@@ -169,20 +174,13 @@ class LauncherActivity :
             root.contentArea.addView(results.view)
             root.allAppsView = allApps
         }
-        allAppsResults = SearchResults(
-            this,
-            app.iconLoader,
-            app.searchStore,
-            gridSpec,
-            onClick = { entry, view -> launch(entry, view, fromSearch = true) },
-            onLongClick = { entry, view -> home.onSearchResultLongPress(entry, view) },
-            inAllApps = true,
-        )
+        allAppsResults = SearchResults(this, home.activityContext, app.searchStore, gridSpec, inAllApps = true)
         // ActivityAllAppsContainerView.setupHeader: the search results' icons (AdapterHolder.SEARCH)
         // get notification dot updates too.
         home.activityContext.activityComponent.appsStore.apply {
             registerIconContainer(results.view)
             registerIconContainer(allAppsResults.view)
+            addUpdateListener(appsStoreListener)
         }
         allAppsTransition = AllAppsTransitionController(root, stateManager, depthController, home.workspace)
         // Launcher.createStateHandlers
@@ -267,6 +265,7 @@ class LauncherActivity :
         rotationHelper.destroy()
         app.appRepository.removeListener(appsListener)
         app.iconLoader.removeChangeListener(iconsListener)
+        appsStore.removeUpdateListener(appsStoreListener)
         home.destroy()
         super.onDestroy()
         Launcher.ACTIVITY_TRACKER.onContextDestroyed(home.launcher)
@@ -525,7 +524,7 @@ class LauncherActivity :
                 results.hide()
                 allApps.visibility = View.VISIBLE
             } else {
-                results.show(query, apps)
+                results.show(query, appsStore.apps)
                 allApps.visibility = View.INVISIBLE
             }
             return
@@ -538,7 +537,7 @@ class LauncherActivity :
                 allAppsResults.hide()
                 allApps.visibility = View.VISIBLE
             } else {
-                allAppsResults.show(query, apps)
+                allAppsResults.show(query, appsStore.apps)
                 allApps.visibility = View.INVISIBLE
             }
             return
@@ -549,7 +548,7 @@ class LauncherActivity :
             results.hide()
             home.scrollView.visibility = View.VISIBLE
         } else {
-            results.show(query, apps)
+            results.show(query, appsStore.apps)
             home.scrollView.visibility = View.GONE
         }
     }
@@ -567,7 +566,12 @@ class LauncherActivity :
         stateManager.goToState(if (editing) SPRING_LOADED else NORMAL, animated = false)
     }
 
-    override fun launch(entry: AppEntry, view: View) = launch(entry, view, fromSearch = false)
+    /**
+     * ItemClickHandler's launch (Launcher.startActivitySafely). TextLauncher: a launch from the
+     * search results is learned (docs/spec.md 2.3).
+     */
+    override fun launch(entry: AppEntry, view: View) =
+        launch(entry, view, fromSearch = results.isResult(view) || allAppsResults.isResult(view))
 
     /**
      * An item added from the long-press menu shows on the home screen, so the query goes, and the
