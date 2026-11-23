@@ -37,3 +37,7 @@ parent: Tex-vs8t
 **2026-11-23T12:17:52Z**
 
 2026-11-23 整理: CellLayout.setGridSize の二重の Javadoc（上流に戻した）と HomeWorkspace.onDragStart の rebuildOccupied の理由は直した（Tex-n0ut）。ほかはまだ
+
+**2026-11-23T15:47:19Z**
+
+2026-11-24 整理: HomeController の「下に伸びる」と HomeWorkspace の「行の上限がない」のコメントは Tex-8w0r で直した（findSpaceOnWorkspace と acceptDrop）

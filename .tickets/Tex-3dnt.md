@@ -34,3 +34,7 @@ Launcher3 の形:
 **2026-11-23T12:17:52Z**
 
 2026-11-23: Tex-a8os の応急の直しが入った。アプリ・ショートカットの変化と rebuild の始めにドラッグを取り消し、HomeLoader.removeItems は中身を外したフォルダーだけを畳み、読み込み時の1つだけのフォルダーは Folder.bind（上流）で置き換わる。部分バインドにするときは、モデルでの畳み込みをやめて Folder.removeFolderContent → replaceFolderWithFinalItem の1本にし、全体の取り消しも外す
+
+**2026-11-23T15:47:19Z**
+
+2026-11-24: Tex-yh7w で HomeLoader.pruneMissingApps に WorkspaceItemProcessor / PackageUpdatedTask の付け替え（AppItemInfo.retarget）と使えないアプリの扱い（markUnavailable、FLAG_DISABLED_NOT_AVAILABLE）が入った。部分バインドにするときは、これをパッケージごとの作業（PackageUpdatedTask の OP_UNAVAILABLE / OP_UPDATE）に分け、2つの LauncherApps.Callback（AppRepository、ShortcutRepository）を ModelLauncherCallbacks の形にまとめる
