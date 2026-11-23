@@ -24,6 +24,7 @@ import com.android.launcher3.LauncherSettings
 import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.widget.PendingAddWidgetInfo
+import com.android.launcher3.widget.PendingAddShortcutInfo
 import com.android.launcher3.ShortcutAndWidgetContainer
 import com.android.launcher3.Workspace
 import com.android.launcher3.celllayout.CellLayoutLayoutParams
@@ -64,9 +65,9 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
  * - [SpringLoadedListener]: the SPRING_LOADED state while dragging
  * - [HomeWorkspace], [HomeDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
- * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget adding (the
- *   widget sizes are Launcher3's WidgetSizes and WidgetSizeHandler, with the device profile's
- *   cells)
+ * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget and
+ *   shortcut adding (the widget sizes are Launcher3's WidgetSizes and WidgetSizeHandler, with the
+ *   device profile's cells)
  * - [HomeOptionsMenu]: WorkspaceTouchListener and WorkspaceLongPressOptions, the empty space's
  *   long-press menu
  */
@@ -389,13 +390,13 @@ class HomeController(
     /**
      * LauncherAccessibilityDelegate.addToWorkspace for the menu's add button and the widget
      * picker's: the first free cell, bound with Launcher.bindInflatedItems' bounce, or for a
-     * widget, Launcher.addPendingItem's widget add flow.
+     * widget or shortcut from the picker, Launcher.addPendingItem.
      */
     internal fun addToWorkspace(item: ItemInfo): Boolean {
         // TextLauncher: nothing is added while the home screen loads (Launcher3's menu cannot be
         // opened then, as no drag or long press starts); the search results' can (Tex-twu9).
         if (isWorkspaceLoading) return false
-        if (item is PendingAddWidgetInfo) return addPendingWidget(item)
+        if (item is PendingAddItemInfo) return addPendingItemToWorkspace(item)
         // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
         val info = (item as? WorkspaceItemInfo ?: return false).clone()
         // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
@@ -418,31 +419,31 @@ class HomeController(
     }
 
     /**
-     * LauncherAccessibilityDelegate.addToWorkspace for a widget (PendingAddItemInfo): with room
-     * for it, its size options and Launcher.addPendingItem (addAppWidgetFromDrop).
+     * LauncherAccessibilityDelegate.addToWorkspace for a widget or shortcut from the widget picker
+     * (PendingAddItemInfo): with room for it, its size options and Launcher.addPendingItem.
      */
-    private fun addPendingWidget(info: PendingAddWidgetInfo): Boolean {
+    private fun addPendingItemToWorkspace(info: PendingAddItemInfo): Boolean {
         // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
         // while it is showing, so findSpaceOnWorkspace may try to use those cells.
         AbstractFloatingView.closeOpenViews(activityContext, false, AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME)
         host.showHome()
         val cell = IntArray(2)
-        // TextLauncher: one page, so no room means it is not added (Launcher3 would add a page).
-        if (!grid.cellLayout.findCellForSpan(cell, info.spanX, info.spanY)) return false
-        if (info.bindOptions == null) {
+        if (!findSpaceOnWorkspace(info, cell)) {
+            // TextLauncher: one page, so no room means it is not added (Launcher3 would add a
+            // page); it says so as for the menu's items.
+            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        if (info is PendingAddWidgetInfo && info.bindOptions == null) {
             info.bindOptions = info.getDefaultSizeOptions(context)
         }
-        // Launcher.addPendingItem
-        info.container = LauncherSettings.Favorites.CONTAINER_DESKTOP
-        info.cellX = cell[0]
-        info.cellY = cell[1]
-        addAppWidgetFromDrop(info)
+        addPendingItem(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, cell, info.spanX, info.spanY)
         return true
     }
 
     /**
-     * Launcher.addPendingItem for a widget or shortcut dropped from the widget picker
-     * (Workspace.onDropExternal), at [cell] with the spans it takes there.
+     * Launcher.addPendingItem for a widget or shortcut from the widget picker, added with its add
+     * button or dropped (Workspace.onDropExternal), at [cell] with the spans it takes there.
      */
     internal fun addPendingItem(info: PendingAddItemInfo, container: Int, cell: IntArray?, spanX: Int, spanY: Int) {
         if (cell != null) {
@@ -453,29 +454,46 @@ class HomeController(
         info.spanX = spanX
         info.spanY = spanY
 
-        if (info is PendingAddWidgetInfo) {
+        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
+        // permission), so it starts no activity while the picker is still in front. TextLauncher
+        // may need the system's bind dialog or the widget's configuration activity, and a
+        // shortcut needs its app's activity, which the home intent the picker starts as it closes
+        // would clear (the launcher is singleTask), so the add waits until the home screen is
+        // resumed.
+        val add = if (info is PendingAddWidgetInfo) {
             // TextLauncher: WidgetHostViewLoader.preloadWidget's size options, as the widget is
             // not preloaded while it is dragged.
             if (info.bindOptions == null) {
                 info.bindOptions = info.getDefaultSizeOptions(context)
             }
-            addAppWidgetFromDrop(info)
+            { widgetAddFlow.addAppWidgetFromDrop(info) }
         } else { // info can only be PendingAddShortcutInfo
-            // TextLauncher: shortcuts made by an app's activity (processShortcutFromDrop) are not
-            // supported yet.
-            android.util.Log.w("Launcher", "Shortcut creation is not supported yet: $info")
+            { widgetAddFlow.processShortcutFromDrop(info as PendingAddShortcutInfo) }
         }
+        if (isResumed) add() else runOnResume = add
     }
 
-    /** Launcher.addAppWidgetFromDrop, once the home screen is resumed. */
-    private fun addAppWidgetFromDrop(info: PendingAddWidgetInfo) {
-        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
-        // permission), so it starts no activity while the picker is still in front. TextLauncher
-        // may need the system's bind dialog or the widget's configuration activity, which the home
-        // intent the picker starts as it closes would clear (the launcher is singleTask), so the
-        // add waits until the home screen is resumed.
-        if (isResumed) widgetAddFlow.addAppWidgetFromDrop(info)
-        else runOnResume = { widgetAddFlow.addAppWidgetFromDrop(info) }
+    /**
+     * Launcher.completeAddShortcut's workspace part: the shortcut an app's activity made, in the
+     * cell Launcher.addPendingItem chose ([cellX], [cellY]), bound with
+     * Launcher.bindInflatedItems' bounce. TextLauncher: when that cell is no longer free (an
+     * item is there, or the home screen changed while the activity was in front), the first free
+     * cell, as no folder is made or added to (Workspace.createUserFolderIfNecessary); and when
+     * there is no room, it says so (Workspace.onNoCellFound) and returns false.
+     */
+    internal fun completeAddShortcut(info: WorkspaceItemInfo, cellX: Int, cellY: Int): Boolean {
+        host.showHome()
+        val cellXY = intArrayOf(cellX, cellY)
+        val foundCellSpan = (cellX >= 0 && cellY >= 0 && grid.cellLayout.occupied.isRegionVacant(cellX, cellY, 1, 1)) ||
+            grid.cellLayout.findCellForSpan(cellXY, 1, 1)
+        if (!foundCellSpan) {
+            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        val view = workspaceHost.addItem(info, cellXY[0], cellXY[1])
+        model.save()
+        animateNewItem(view)
+        return true
     }
 
     /**

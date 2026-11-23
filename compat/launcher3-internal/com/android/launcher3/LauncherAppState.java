@@ -46,6 +46,15 @@ public class LauncherAppState {
         return mIconCache;
     }
 
+    /**
+     * TextLauncher: the home screen's model (the created Launcher's), as the app has no
+     * LauncherModel of its own.
+     */
+    public LauncherModel getModel() {
+        Launcher launcher = Launcher.ACTIVITY_TRACKER.getCreatedContext();
+        return launcher != null ? launcher.getModel() : (si, info) -> { };
+    }
+
     /** TextLauncher: the app makes the icon cache (Dagger in Launcher3) and sets it here. */
     public void setIconCache(IconCache iconCache) {
         mIconCache = iconCache;

@@ -15,7 +15,9 @@ import android.widget.Toast
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.R
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.pm.PinRequestHelper
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.PendingAddShortcutInfo
 import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.widget.WidgetManagerHelper
 import com.malt03.textlauncher.data.WidgetItemInfo
@@ -77,6 +79,10 @@ internal class HomeWidgetHost(context: Context) : AppWidgetHost(context.applicat
  * (completeTwoStageWidgetDrop). While an activity is in front, the flow (Launcher.mPendingRequestArgs)
  * and a result that waits for the home screen to load (mPendingActivityResult) are kept in the
  * activity's saved state, in case it is created again meanwhile.
+ *
+ * A shortcut from the widget picker is made by its app's activity (Launcher.processShortcutFromDrop,
+ * REQUEST_CREATE_SHORTCUT), whose result holds the pin request of the shortcut to add
+ * (completeAddShortcut).
  *
  * TextLauncher: a widget that is configured is added once its configuration activity comes back;
  * Launcher3 adds a pending widget view at once (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
@@ -182,6 +188,18 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     }
 
     /**
+     * Launcher.processShortcutFromDrop: the activity of the app that makes the shortcut
+     * (ACTION_CREATE_SHORTCUT), whose result [completeAddShortcut] adds.
+     */
+    fun processShortcutFromDrop(info: PendingAddShortcutInfo) {
+        val intent = Intent(Intent.ACTION_CREATE_SHORTCUT).setComponent(info.componentName)
+        setWaitingForResult(PendingRequestArgs.forIntent(REQUEST_CREATE_SHORTCUT, intent, info))
+        if (!info.getActivityInfo(activity).startConfigActivity(activity, REQUEST_CREATE_SHORTCUT)) {
+            handleActivityResult(REQUEST_CREATE_SHORTCUT, Activity.RESULT_CANCELED, null)
+        }
+    }
+
+    /**
      * The widget's long-press menu's "Settings" (AppWidgetSystemShortcuts' widget settings): the
      * widget's configuration activity, for a widget already on the home screen.
      */
@@ -204,7 +222,11 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         // restored (completeRestoreAppWidget); the widget updates itself. TextLauncher: widgets are
         // not restored, so there is nothing to do.
         if (requestCode == REQUEST_RECONFIGURE_APPWIDGET) return true
-        if (requestCode != REQUEST_BIND_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET) return false
+        if (requestCode != REQUEST_BIND_APPWIDGET && requestCode != REQUEST_CREATE_APPWIDGET &&
+            requestCode != REQUEST_CREATE_SHORTCUT
+        ) {
+            return false
+        }
         // Launcher.handleActivityResult: process the result once the workspace has loaded.
         if (home.isLoaded) {
             handleActivityResult(requestCode, resultCode, data)
@@ -232,12 +254,20 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         }
     }
 
-    /** Launcher.handleActivityResult for the widget requests. */
+    /** Launcher.handleActivityResult for the widget and shortcut requests. */
     private fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // Reset the startActivity waiting flag
         val requestArgs = pendingRequestArgs
         setWaitingForResult(null)
         if (requestArgs == null) {
+            return
+        }
+
+        if (requestCode == REQUEST_CREATE_SHORTCUT) {
+            // Handle custom shortcuts created using ACTION_CREATE_SHORTCUT.
+            if (resultCode == Activity.RESULT_OK && requestArgs.container != ItemInfo.NO_ID) {
+                completeAddShortcut(data, requestArgs)
+            }
             return
         }
 
@@ -266,6 +296,27 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
             return
         }
         completeAddAppWidget(appWidgetId, requestArgs, info)
+    }
+
+    /**
+     * Launcher.completeAddShortcut: the shortcut the app's activity made, from the pin request
+     * in its result (PinRequestHelper), in the cell of [args].
+     */
+    private fun completeAddShortcut(data: Intent?, args: PendingRequestArgs) {
+        if (args.requestCode != REQUEST_CREATE_SHORTCUT) {
+            return
+        }
+
+        // TextLauncher: a result without data has no request.
+        val info = PinRequestHelper.createWorkspaceItemFromPinItemRequest(
+            activity, data?.let(PinRequestHelper::getPinItemRequest), 0,
+        )
+        if (info == null) {
+            Log.e(TAG, "Unable to parse a valid shortcut result")
+            return
+        }
+        // TextLauncher: one page and no folder to add to (the container is the desktop's).
+        home.completeAddShortcut(info, args.cellX, args.cellY)
     }
 
     /** Launcher.completeTwoStageWidgetDrop with RESULT_CANCELED: the id is given back. */
@@ -314,6 +365,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         const val TAG = "Launcher"
 
         /** LauncherConstants.ActivityCodes */
+        const val REQUEST_CREATE_SHORTCUT = 1
         const val REQUEST_CREATE_APPWIDGET = 5
         const val REQUEST_BIND_APPWIDGET = 11
         const val REQUEST_RECONFIGURE_APPWIDGET = 13
@@ -324,16 +376,20 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     }
 
     /**
-     * PendingRequestArgs.forWidgetInfo: the widget id of an add flow, the container it came from,
-     * and the item it adds. TextLauncher: no WidgetAddFlowHandler in it (the provider is looked up
-     * by the id), and it is saved as a Bundle rather than parceled.
+     * PendingRequestArgs.forWidgetInfo and forIntent: the widget id of an add flow and the
+     * container it came from, or the request code of a shortcut's activity, and the item it adds.
+     * TextLauncher: no WidgetAddFlowHandler or intent in it (the provider is looked up by the
+     * id), and it is saved as a Bundle rather than parceled.
      */
     private class PendingRequestArgs private constructor(
         val widgetId: Int,
         val widgetSourceContainer: Int,
+        /** PendingRequestArgs.getRequestCode: 0 for a widget. */
+        val requestCode: Int = 0,
     ) : ItemInfo() {
         fun toBundle(): Bundle = Bundle().apply {
             putInt(KEY_WIDGET_ID, widgetId)
+            putInt(KEY_REQUEST_CODE, requestCode)
             putInt(KEY_SOURCE_CONTAINER, widgetSourceContainer)
             putInt(KEY_ITEM_TYPE, itemType)
             putInt(KEY_CONTAINER, container)
@@ -360,8 +416,17 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
                 return args
             }
 
+            /** PendingRequestArgs.forIntent. TextLauncher: the intent is not kept. */
+            fun forIntent(requestCode: Int, intent: Intent, info: ItemInfo): PendingRequestArgs {
+                val args = PendingRequestArgs(-1, LauncherSettings.Favorites.CONTAINER_UNKNOWN, requestCode)
+                args.copyFrom(info)
+                return args
+            }
+
             fun fromBundle(b: Bundle): PendingRequestArgs =
-                PendingRequestArgs(b.getInt(KEY_WIDGET_ID), b.getInt(KEY_SOURCE_CONTAINER)).apply {
+                PendingRequestArgs(
+                    b.getInt(KEY_WIDGET_ID), b.getInt(KEY_SOURCE_CONTAINER), b.getInt(KEY_REQUEST_CODE),
+                ).apply {
                     itemType = b.getInt(KEY_ITEM_TYPE)
                     container = b.getInt(KEY_CONTAINER)
                     cellX = b.getInt(KEY_CELL_X)
@@ -374,6 +439,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
                 }
 
             private const val KEY_WIDGET_ID = "widgetId"
+            private const val KEY_REQUEST_CODE = "requestCode"
             private const val KEY_SOURCE_CONTAINER = "sourceContainer"
             private const val KEY_ITEM_TYPE = "itemType"
             private const val KEY_CONTAINER = "container"

@@ -60,6 +60,7 @@ path=src/com/android/launcher3/dragndrop/DragController.java
 path=src/com/android/launcher3/dragndrop/DragView.java
 path=src/com/android/launcher3/dragndrop/BaseItemDragListener.java
 path=src/com/android/launcher3/widget/RoundedCornerEnforcement.java
+path=src/com/android/launcher3/pm/PinRequestHelper.java
 path=src/com/android/launcher3/dragndrop/DragDriver.java
 path=src/com/android/launcher3/dragndrop/DragOptions.java
 path=src/com/android/launcher3/dragndrop/DraggableView.java
@@ -411,7 +412,7 @@ ref=AndroidManifest-common.xml app/src/main/AndroidManifest.xml
 | `com.android.launcher3.graphics.ThemeManager` | アイコンのテーマの有無と形状（アプリのアイコン読み込みが設定する）、アイコンとフォルダの形。アイコンの形は選んだアイコン形状のパスから `ShapeDelegate.pickBestShape` で、フォルダの形は `folderRadiusRatio` から作る（`ThemeManager.parseIconState` と同じ） |
 | `com.android.launcher3.ShortcutAndWidgetContainer`（`ViewGroup`。アイコンとフォルダの分だけ、セルの寸法、`getChildAt(cellX, cellY)`、`setupLp`、`measureChild`、`layoutChild`、フォーカスした子を画面に入れる処理などを `ShortcutAndWidgetContainer.java` から移した。ホームのグリッドが継承する） | `CellLayout`、`dragndrop/DragLayer`、フォルダのアニメーション（`folder/IconAnimationData.kt`） |
 | `util.Themes`、`model.data.FolderInfo` | フォルダのアニメーションと `FolderGridOrganizer` |
-| `com.android.launcher3.icons.IconCache`（`derived=`。`BaseIconCache` を継承し、アイコンを SQLite の `app_icons.db` とメモリに持つ）、`LauncherAppState`（`setIconCache` でアプリが作ったものを渡す） | `folder/PreviewItemManager.java`、`popup/PopupPopulator.java`、アプリのアイコン読み込み（`AppIconLoader`。アプリのアイコンは `getTitleAndIcon`、ショートカットは `getShortcutIcon`、起動後の最初の表示のあとに LoaderTask と同じく `IconCacheUpdateHandler` で DB を更新、パッケージの変化で `updateIconsForPkg` / `removeIconsForPkg`、テーマの切り替えで `updateIconParams`） |
+| `com.android.launcher3.icons.IconCache`（`derived=`。`BaseIconCache` を継承し、アイコンを SQLite の `app_icons.db` とメモリに持つ）、`LauncherAppState`（`setIconCache` でアプリが作ったものを渡す。`getModel` は作られているホームの `Launcher.getModel` で、`pm/PinRequestHelper.java` が使う） | `folder/PreviewItemManager.java`、`popup/PopupPopulator.java`、アプリのアイコン読み込み（`AppIconLoader`。アプリのアイコンは `getTitleAndIcon`、ショートカットは `getShortcutIcon`、起動後の最初の表示のあとに LoaderTask と同じく `IconCacheUpdateHandler` で DB を更新、パッケージの変化で `updateIconsForPkg` / `removeIconsForPkg`、テーマの切り替えで `updateIconParams`） |
 | `com.android.launcher3.icons.LauncherIcons`（`BaseIconFactory` のプール。アイコンの密度・大きさ・テーマは InvariantDeviceProfile と ThemeManager の代わりにアプリが渡す） | `IconCache` |
 | `model.data.AppInfo`、`model.data.PackageItemInfo`（`IconCache` が引くのに使うメンバーだけ）、`Utilities`（`trim`、`postAsyncCallback`）、`util.Themes`（`getColorAccent`）、`util.ApplicationInfoWrapper`（`ApplicationInfo` から作るコンストラクタ） | `icons/CacheableShortcutInfo.kt`、`IconCache` |
 | `com.android.launcher3.allapps.AllAppsStore`（アプリの配列と更新の通知だけ。アプリが `setApps` で渡す）、`model.data.AppInfo`（`sectionName`、`LauncherActivityInfo` からのコンストラクタ（停止中の状態だけ）、`COMPONENT_KEY_COMPARATOR`）、`pm.UserCache`（`getSerialNumberForUser` を `UserManager` に聞く）、`testing.shared.TestProtocol`（`SCROLL_FINISHED_MESSAGE` だけ。`AccessibilityManagerCompat.sendTestProtocolEventToTest` は何もしない）、`DeviceProfile.AllAppsProfile`（列数とセルの高さ）、`ActivityContext`（`getAllAppsItemLongClickListener`、`startActivitySafely` の既定）、`BubbleTextView`（`DISPLAY_ALL_APPS`、`reset`、`applyFromApplicationInfo`、`verifyHighRes`、`reapplyItemInfo` を上流から移した）、`model.data.ItemInfo`（`appTitle`） | 全アプリ一覧（`allapps/`、`FastScrollRecyclerView.java`、`views/RecyclerViewFastScroller.java`） |
