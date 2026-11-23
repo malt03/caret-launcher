@@ -58,6 +58,16 @@ public class ApplicationInfoWrapper {
         return hasFlag(ApplicationInfo.FLAG_INSTALLED);
     }
 
+    /** Returns whether the target app is suspended for the user. */
+    public boolean isSuspended() {
+        return hasFlag(ApplicationInfo.FLAG_INSTALLED) && hasFlag(ApplicationInfo.FLAG_SUSPENDED);
+    }
+
+    /** Returns whether the target app is a system app */
+    public boolean isSystem() {
+        return hasFlag(ApplicationInfo.FLAG_SYSTEM);
+    }
+
     /**
      * Returns whether the app is archived (ApplicationInfo.isArchived; Flags
      * .enableSupportForArchiving is on at android-17.0.0_r1).

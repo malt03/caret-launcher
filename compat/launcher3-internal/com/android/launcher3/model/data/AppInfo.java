@@ -24,7 +24,6 @@ import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_ALL_APP
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.os.UserHandle;
 
@@ -32,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.LauncherSettings;
+import com.android.launcher3.util.ApplicationInfoWrapper;
 
 import java.util.Comparator;
 
@@ -83,8 +83,7 @@ public class AppInfo extends ItemInfoWithIcon {
 
     /**
      * TextLauncher: AppInfo(LauncherActivityInfo, CachedUserInfo, ...) with the user from the
-     * caller (no UserCache), and of the runtime flags only the suspended state (no quiet mode,
-     * archived apps, install progress, automation or App Lock).
+     * caller (no UserCache, so no quiet mode); see updateRuntimeFlagsForActivityTarget.
      */
     public AppInfo(LauncherActivityInfo info, UserHandle user) {
         this.componentName = info.getComponentName();
@@ -93,12 +92,31 @@ public class AppInfo extends ItemInfoWithIcon {
         intent = makeLaunchIntent(info);
 
         uid = info.getApplicationInfo().uid;
-        // TextLauncher: updateRuntimeFlagsForActivityTarget, for the suspended state only.
-        if ((info.getApplicationInfo().flags & ApplicationInfo.FLAG_SUSPENDED) != 0) {
-            runtimeStatusFlags |= FLAG_DISABLED_SUSPENDED;
+        updateRuntimeFlagsForActivityTarget(this, info);
+    }
+
+    /**
+     * Updates the runtime status flags for the given info based on the state of the specified
+     * activity.
+     *
+     * TextLauncher: the suspended and system states only (no archived apps, automation, private
+     * space, App Lock, install progress or activity aliases).
+     *
+     * @return true if the flags were changed
+     */
+    public static boolean updateRuntimeFlagsForActivityTarget(
+            ItemInfoWithIcon info, LauncherActivityInfo lai) {
+        final int oldRuntimeStatusFlags = info.runtimeStatusFlags;
+        ApplicationInfoWrapper appInfo = new ApplicationInfoWrapper(lai.getApplicationInfo());
+        if (appInfo.isSuspended()) {
+            info.runtimeStatusFlags |= FLAG_DISABLED_SUSPENDED;
         } else {
-            runtimeStatusFlags &= ~FLAG_DISABLED_SUSPENDED;
+            info.runtimeStatusFlags &= ~FLAG_DISABLED_SUSPENDED;
         }
+
+        info.runtimeStatusFlags |= appInfo.isSystem() ? FLAG_SYSTEM_YES : FLAG_SYSTEM_NO;
+
+        return oldRuntimeStatusFlags != info.runtimeStatusFlags;
     }
 
     public static Intent makeLaunchIntent(LauncherActivityInfo info) {

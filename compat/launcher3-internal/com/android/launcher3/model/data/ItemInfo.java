@@ -182,9 +182,7 @@ public class ItemInfo {
      */
     @Nullable
     public ComponentName getTargetComponent() {
-        // TextLauncher: mComponentName through getComponent(), which the app's item for an app
-        // overrides.
-        return Optional.ofNullable(getIntent()).map(Intent::getComponent).orElse(getComponent());
+        return Optional.ofNullable(getIntent()).map(Intent::getComponent).orElse(mComponentName);
     }
 
     /**
@@ -264,16 +262,5 @@ public class ItemInfo {
         ItemInfo itemInfo = new ItemInfo();
         itemInfo.copyFrom(this);
         return itemInfo;
-    }
-
-    // TextLauncher: members TextLauncher adds.
-
-    /**
-     * The component of an item whose intent has none: {@link #mComponentName}. The app's item for
-     * an app overrides it, as its component comes from the installed app it is bound to.
-     */
-    @Nullable
-    protected ComponentName getComponent() {
-        return mComponentName;
     }
 }

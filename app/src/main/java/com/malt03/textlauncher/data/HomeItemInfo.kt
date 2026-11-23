@@ -1,14 +1,12 @@
 package com.malt03.textlauncher.data
 
 import android.content.ComponentName
-import android.content.pm.ApplicationInfo
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE
-import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
 import com.android.launcher3.model.data.WorkspaceItemInfo
 
 /**
@@ -42,18 +40,14 @@ class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
     }
 
     /**
-     * The installed app, and whether it is suspended (AppInfo and WorkspaceItemProcessor:
-     * FLAG_DISABLED_SUSPENDED).
+     * The installed app, and its runtime flags (WorkspaceItemProcessor and PackageUpdatedTask:
+     * AppInfo.updateRuntimeFlagsForActivityTarget).
      */
     fun bind(entry: AppEntry) {
         this.entry = entry
         user = entry.user
         title = entry.label
-        runtimeStatusFlags = if (entry.info.applicationInfo.flags and ApplicationInfo.FLAG_SUSPENDED != 0) {
-            runtimeStatusFlags or FLAG_DISABLED_SUSPENDED
-        } else {
-            runtimeStatusFlags and FLAG_DISABLED_SUSPENDED.inv()
-        }
+        AppInfo.updateRuntimeFlagsForActivityTarget(this, entry.info)
         // PackageUpdatedTask (OP_ADD, OP_UPDATE): the package is available again.
         runtimeStatusFlags = runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE.inv()
     }
@@ -76,9 +70,6 @@ class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
         entry = null
         runtimeStatusFlags = runtimeStatusFlags or FLAG_DISABLED_NOT_AVAILABLE
     }
-
-    /** ItemInfo.mComponentName */
-    override fun getComponent(): ComponentName? = entry?.component ?: AppEntry.componentOf(homeKey)
 }
 
 /** Whether the item is an app shortcut (ITEM_TYPE_DEEP_SHORTCUT). */
