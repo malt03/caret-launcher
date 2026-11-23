@@ -14,7 +14,7 @@ import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DraggableView
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.data.ItemInfo
-import com.android.launcher3.model.data.ItemInfoWithIcon
+import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupCategory
 import com.android.launcher3.popup.PopupContainer
@@ -22,13 +22,12 @@ import com.android.launcher3.popup.PopupContainerWithArrow
 import com.android.launcher3.popup.PopupData
 import com.android.launcher3.popup.PopupItemDragHandler
 import com.android.launcher3.popup.SystemShortcut
+import com.android.launcher3.pm.UserCache
 import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.shortcuts.ShortcutDragPreviewProvider
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AllAppsAppInfo
-import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
 
 /**
@@ -53,21 +52,19 @@ internal class ItemLongClickListener(private val home: HomeController) {
         return true
     }
 
-    /** A long press on an app in the search results: its menu, and a drag once it moves. */
-    fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) {
+    /**
+     * ItemLongClickListener.INSTANCE_ALL_APPS: a long press on an app in the all apps list or the
+     * search results shows its menu, and a drag starts once the finger moves.
+     */
+    fun onAllAppsItemLongPress(iconView: BubbleTextView) {
+        val app = iconView.tag as? AppInfo ?: return
         if (!canStartDrag()) return
-        // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the search result's.
-        val info = AppItemInfo(entry, (iconView.tag as? ItemInfoWithIcon)?.bitmap)
+        // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the list's AppInfo.
+        val info = AppItemInfo(app, UserCache.INSTANCE.get(context).getSerialNumberForUser(app.user))
         home.homeWorkspace.beginDragShared(
             iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
             startLongPressAction(iconView, info),
         )
-    }
-
-    /** ItemLongClickListener.INSTANCE_ALL_APPS: a long press on an app in the all apps list. */
-    fun onAllAppsItemLongPress(iconView: BubbleTextView) {
-        val app = iconView.tag as? AllAppsAppInfo ?: return
-        onSearchResultLongPress(app.entry, iconView)
     }
 
     fun onHomeItemLongPress(view: AppIconView) {
@@ -178,7 +175,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
             // TextLauncher: the launcher's own options (docs/spec.md 5.3) instead of
             // ActivityContext.getSupportedShortcuts.
             val systemShortcuts = buildList<SystemShortcut<*>> {
-                if (item is AppItemInfo) item.entry?.let { add(EditSearchTerms(it, item, originalView)) }
+                if (item is AppItemInfo && item.isAvailable) add(EditSearchTerms(item, originalView))
                 add(SystemShortcut.AppInfo(activityContext, item, originalView))
             }
             val container = PopupContainerWithArrow.create<ActivityContext>(
@@ -198,15 +195,14 @@ internal class ItemLongClickListener(private val home: HomeController) {
 
     /** The long-press menu's "Edit search terms" (docs/spec.md 4), a TextLauncher option. */
     private inner class EditSearchTerms(
-        private val entry: AppEntry,
-        item: ItemInfo,
+        private val app: AppItemInfo,
         originalView: View,
     ) : SystemShortcut<ActivityContext>(
-        com.android.launcher3.R.drawable.gm_edit_24, R.string.menu_search_terms, activityContext, item, originalView,
+        com.android.launcher3.R.drawable.gm_edit_24, R.string.menu_search_terms, activityContext, app, originalView,
     ) {
         override fun onClick(view: View) {
             dismissTaskMenuView()
-            home.host.editSearchTerms(entry)
+            home.host.editSearchTerms(app)
         }
     }
 

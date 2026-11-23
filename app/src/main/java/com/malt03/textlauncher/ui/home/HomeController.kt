@@ -16,7 +16,6 @@ import androidx.core.widget.NestedScrollView
 import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AppWidgetResizeFrame
-import com.android.launcher3.BubbleTextView
 import com.android.launcher3.CellLayout
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
@@ -44,7 +43,7 @@ import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.util.WidgetSizeHandler.Companion.updateSizeRanges
 import com.malt03.textlauncher.TextLauncherApplication
-import com.malt03.textlauncher.data.AppEntry
+import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
@@ -80,11 +79,11 @@ class HomeController(
 ) {
 
     interface Host {
-        fun launch(entry: AppEntry, view: View)
+        fun launch(info: ItemInfo, view: View)
         /** An app shortcut (ItemClickHandler.onClickAppShortcut). */
         fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)
         /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
-        fun editSearchTerms(entry: AppEntry)
+        fun editSearchTerms(app: AppItemInfo)
         /** Edit mode (docs/spec.md 5.4) starts with a drag and ends after it. */
         fun onEditModeChanged(editing: Boolean)
         /**
@@ -383,10 +382,6 @@ class HomeController(
         top.close(true)
         return true
     }
-
-    /** A long press on an app in the search results: its menu, and a drag once it moves. */
-    fun onSearchResultLongPress(entry: AppEntry, iconView: BubbleTextView) =
-        itemLongClickListener.onSearchResultLongPress(entry, iconView)
 
     // ---- views ----
 

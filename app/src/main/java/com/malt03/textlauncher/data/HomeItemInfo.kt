@@ -2,7 +2,7 @@ package com.malt03.textlauncher.data
 
 import android.content.ComponentName
 import com.android.launcher3.LauncherSettings
-import com.android.launcher3.icons.BitmapInfo
+import com.android.launcher3.Utilities
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
@@ -17,49 +17,47 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
  */
 
 /**
- * An app (WorkspaceItemInfo of ITEM_TYPE_APPLICATION), saved by [homeKey] ([AppEntry.key]).
- * Loaded from its key; [entry] is set once the installed app is found (LoaderTask's lookup of the
- * activity).
+ * An app (WorkspaceItemInfo of ITEM_TYPE_APPLICATION), saved with its launch intent and kept by
+ * [homeKey] ([AppKey]). Loaded from the database; once its app is found in the app list, it gets
+ * the app's title and runtime flags ([bind]).
  */
-class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
+class AppItemInfo(component: ComponentName, private val userSerial: Long) : WorkspaceItemInfo() {
     /** Changes when the app's saved activity is gone and another of the package takes its place. */
-    var homeKey: String = homeKey
-        private set
-    var entry: AppEntry? = null
-        private set
+    val homeKey: String get() = AppKey.of(intent.component!!, userSerial)
+
+    /** Whether the app is not marked unavailable (FLAG_DISABLED_NOT_AVAILABLE, [markUnavailable]). */
+    val isAvailable: Boolean get() = runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE == 0
 
     init {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
         // AppInfo.makeLaunchIntent: the saved intent (LauncherSettings.Favorites.INTENT).
-        AppEntry.componentOf(homeKey)?.let { intent = AppInfo.makeLaunchIntent(it) }
+        intent = AppInfo.makeLaunchIntent(component)
     }
 
-    constructor(entry: AppEntry, bitmap: BitmapInfo?) : this(entry.key) {
-        bind(entry)
-        if (bitmap != null) this.bitmap = bitmap
+    /** AppInfo.makeWorkspaceItem: a new home item for the all apps list's [app]. */
+    constructor(app: AppInfo, userSerial: Long) : this(app.componentName!!, userSerial) {
+        bind(app)
+        bitmap = app.bitmap
     }
 
     /**
-     * The installed app, and its runtime flags (WorkspaceItemProcessor and PackageUpdatedTask:
-     * AppInfo.updateRuntimeFlagsForActivityTarget).
+     * The installed app, from the app list: what WorkspaceItemInfo(AppInfo) copies, its title and
+     * runtime flags (AppInfo.updateRuntimeFlagsForActivityTarget's, with the package events'). So
+     * the app is available again (PackageUpdatedTask clears FLAG_DISABLED_NOT_AVAILABLE).
      */
-    fun bind(entry: AppEntry) {
-        this.entry = entry
-        user = entry.user
-        title = entry.label
-        AppInfo.updateRuntimeFlagsForActivityTarget(this, entry.info)
-        // PackageUpdatedTask (OP_ADD, OP_UPDATE): the package is available again.
-        runtimeStatusFlags = runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE.inv()
+    fun bind(app: AppInfo) {
+        user = app.user
+        title = Utilities.trim(app.title)
+        contentDescription = app.contentDescription
+        runtimeStatusFlags = app.runtimeStatusFlags
     }
 
     /**
      * WorkspaceItemProcessor and PackageUpdatedTask: the saved activity is gone but its package has
      * another one to launch (PackageManagerHelper.getAppLaunchIntent), which the item now opens.
      */
-    fun retarget(entry: AppEntry) {
-        homeKey = entry.key
-        intent = AppInfo.makeLaunchIntent(entry.component)
-        bind(entry)
+    fun retarget(component: ComponentName) {
+        intent = AppInfo.makeLaunchIntent(component)
     }
 
     /**
@@ -67,7 +65,6 @@ class AppItemInfo(homeKey: String) : WorkspaceItemInfo() {
      * present but not available, so the item stays, disabled, with the icon it had.
      */
     fun markUnavailable() {
-        entry = null
         runtimeStatusFlags = runtimeStatusFlags or FLAG_DISABLED_NOT_AVAILABLE
     }
 }

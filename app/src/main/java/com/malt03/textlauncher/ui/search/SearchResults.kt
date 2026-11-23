@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.search
 
 import android.content.Context
+import android.os.UserHandle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +14,10 @@ import com.android.launcher3.allapps.search.DefaultSearchAdapterProvider
 import com.android.launcher3.keyboard.FocusedItemDecorator
 import com.android.launcher3.keyboard.ViewGroupFocusHelper
 import com.android.launcher3.model.data.AppInfo
+import com.android.launcher3.pm.UserCache
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AllAppsAppInfo
-import com.malt03.textlauncher.data.AppEntry
+import com.malt03.textlauncher.data.AppKey
 import com.malt03.textlauncher.data.SearchStore
 import com.malt03.textlauncher.search.Normalizer
 import com.malt03.textlauncher.search.Ranker
@@ -97,8 +98,8 @@ class SearchResults(
     val isShown: Boolean get() = view.visibility == View.VISIBLE
 
     /** The result Enter launches (AllAppsSearchBarController.onEditorAction), and its view. */
-    val topResult: AppEntry?
-        get() = (appsList.adapterItems.firstOrNull()?.itemInfo as? AllAppsAppInfo)?.entry
+    val topResult: AppInfo?
+        get() = appsList.adapterItems.firstOrNull()?.itemInfo as? AppInfo
     val topResultView: View? get() = view.findViewHolderForAdapterPosition(0)?.itemView
 
     /** TextLauncher: whether [cell] is one of these results (a launch from it is learned). */
@@ -109,13 +110,17 @@ class SearchResults(
      * them (AlphabeticalAppsList.setSearchResults).
      */
     fun show(query: String, apps: Array<AppInfo>) {
-        val candidates = apps.mapNotNull { it as? AllAppsAppInfo }.map { app ->
-            val entry = app.entry
+        val userCache = UserCache.INSTANCE.get(view.context)
+        val serials = HashMap<UserHandle, Long>()
+        val candidates = apps.mapNotNull { app ->
+            val component = app.componentName ?: return@mapNotNull null
+            val key = AppKey.of(component, serials.getOrPut(app.user) { userCache.getSerialNumberForUser(app.user) })
+            val label = app.title?.toString().orEmpty()
             SearchCandidate(
                 item = app,
-                key = entry.key,
-                label = entry.label,
-                normalizedTargets = (listOf(entry.label) + searchStore.termsOf(entry.key)).map(Normalizer::normalize),
+                key = key,
+                label = label,
+                normalizedTargets = (listOf(label) + searchStore.termsOf(key)).map(Normalizer::normalize),
             )
         }
         val ranked = Ranker.rank(query, candidates) { key -> searchStore.scoreOf(query, key) }

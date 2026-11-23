@@ -16,13 +16,12 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.android.launcher3.R as L3R
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.SearchStore
 
 /** Edits the search strings of one app (docs/spec.md 4). */
 object SearchTermsDialog {
-    fun show(context: Context, entry: AppEntry, store: SearchStore, onDismiss: () -> Unit) {
-        val terms = store.termsOf(entry.key).toMutableList()
+    fun show(context: Context, key: String, label: CharSequence?, store: SearchStore, onDismiss: () -> Unit) {
+        val terms = store.termsOf(key).toMutableList()
         val density = context.resources.displayMetrics.density
         val padding = (24 * density).toInt()
 
@@ -62,7 +61,7 @@ object SearchTermsDialog {
                     contentDescription = context.getString(R.string.search_terms_remove)
                     setOnClickListener {
                         terms.remove(term)
-                        store.setTerms(entry.key, terms)
+                        store.setTerms(key, terms)
                         render()
                     }
                 })
@@ -74,7 +73,7 @@ object SearchTermsDialog {
             val term = input.text.toString().trim()
             if (term.isNotEmpty() && term !in terms) {
                 terms += term
-                store.setTerms(entry.key, terms)
+                store.setTerms(key, terms)
                 render()
             }
             input.text.clear()
@@ -92,7 +91,7 @@ object SearchTermsDialog {
 
         // The framework's dialog, as Launcher3 has no AppCompat.
         val dialog: AlertDialog = AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.search_terms_title, entry.label))
+            .setTitle(context.getString(R.string.search_terms_title, label))
             .setView(content)
             .setPositiveButton(R.string.search_terms_add, null)
             .setNegativeButton(R.string.search_terms_close, null)

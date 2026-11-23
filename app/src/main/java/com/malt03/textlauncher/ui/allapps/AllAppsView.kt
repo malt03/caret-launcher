@@ -3,7 +3,6 @@ package com.malt03.textlauncher.ui.allapps
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Point
-import android.os.LocaleList
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -11,23 +10,17 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.android.launcher3.Utilities
 import com.android.launcher3.allapps.AllAppsGridAdapter
 import com.android.launcher3.allapps.AllAppsRecyclerView
 import com.android.launcher3.allapps.AllAppsStore
 import com.android.launcher3.allapps.AlphabeticalAppsList
 import com.android.launcher3.allapps.search.DefaultSearchAdapterProvider
-import com.android.launcher3.compat.AlphabeticIndexCompat
-import com.android.launcher3.icons.cache.CacheLookupFlag.Companion.DEFAULT_LOOKUP_FLAG
 import com.android.launcher3.keyboard.FocusedItemDecorator
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.views.RecyclerViewFastScroller
 import com.android.launcher3.views.RecyclerViewFastScroller.FastScrollerLocation.ALL_APPS_SCROLLER
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AllAppsAppInfo
-import com.malt03.textlauncher.data.AppEntry
-import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.search.ResultIconView
 
@@ -37,13 +30,12 @@ import com.malt03.textlauncher.ui.search.ResultIconView
  * an [AllAppsStore], which [AlphabeticalAppsList] sorts and splits into fast scroller sections.
  *
  * TextLauncher: the search field sits above the list (no header, tabs or floating search bar),
- * and the apps come from [setApps] (AllAppsList and AppsListRepository in Launcher3).
+ * and the apps come from [setApps] (ModelCallbacks.bindAllApplications).
  */
 @SuppressLint("ViewConstructor")
 class AllAppsView(
     context: Context,
     activityContext: ActivityContext,
-    private val iconLoader: AppIconLoader,
     grid: GridSpec,
 ) : FrameLayout(context) {
     /** The activity's AllAppsStore, which also updates the icons' notification dots. */
@@ -59,9 +51,6 @@ class AllAppsView(
     /** ActivityAllAppsContainerView.mFastScrollerOffset and mTouchHandler. */
     private val fastScrollerOffset = Point()
     private var touchHandler: RecyclerViewFastScroller? = null
-
-    /** Bumped by every [setApps]; icons loaded for an older list are dropped. */
-    private var generation = 0
 
     init {
         LayoutInflater.from(context).inflate(R.layout.all_apps_view, this, true)
@@ -107,27 +96,11 @@ class AllAppsView(
     }
 
     /**
-     * AllAppsList.add with AppsListRepository: the apps as AppInfos, with their titles, section
-     * names (AlphabeticIndexCompat) and icons (IconCache.getTitleAndIcon with DEFAULT_LOOKUP_FLAG),
-     * sorted by COMPONENT_KEY_COMPARATOR for the store. Launcher3 binds the list once the icons are
-     * looked up; so does this.
+     * ModelCallbacks.bindAllApplications: the app list's AppInfos (AllAppsList.copyData, with their
+     * titles, section names and icons, sorted by COMPONENT_KEY_COMPARATOR) go to the store.
      */
-    fun setApps(entries: List<AppEntry>) {
-        val requestedGeneration = ++generation
-        iconLoader.loadAll(entries, DEFAULT_LOOKUP_FLAG) {
-            if (requestedGeneration != generation) return@loadAll
-            val index = AlphabeticIndexCompat(LocaleList.getDefault())
-            val apps = entries.map { entry ->
-                AllAppsAppInfo(entry).apply {
-                    val label = Utilities.trim(entry.label)
-                    title = label
-                    contentDescription = label
-                    sectionName = index.computeSectionName(label)
-                    iconLoader.cached(entry)?.let { bitmap = it }
-                }
-            }.sortedWith(AppInfo.COMPONENT_KEY_COMPARATOR)
-            appsStore.setApps(apps.toTypedArray())
-        }
+    fun setApps(apps: Array<AppInfo>) {
+        appsStore.setApps(apps)
     }
 
     /**

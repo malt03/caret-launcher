@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.UserHandle
@@ -7,6 +8,7 @@ import android.util.Log
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
 import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
 import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
+import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
@@ -28,8 +30,8 @@ import java.util.function.Predicate
  * updated in the cache) and ShortcutsChangedTask, with ModelTaskController's
  * bindUpdatedWorkspaceItems and deleteAndBindComponentsRemoved.
  *
- * TextLauncher: the model is on the main thread, where these run; the app list (AllAppsList) is
- * [com.malt03.textlauncher.data.AppRepository], whose list and icon cache already reflect the
+ * TextLauncher: the model is on the main thread, where these run; the app list (AllAppsList, in
+ * [com.malt03.textlauncher.data.AppRepository] on the model thread) and the icon cache already reflect the
  * package event, and the icons are looked up with AppIconLoader (asynchronously, then written and
  * bound). Only the personal profile (docs/spec.md 2.1).
  */
@@ -39,10 +41,10 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
     private val model = home.model
 
     /** ModelLauncherCallbacks: the task for [event]. */
-    fun execute(event: PackageEvent) {
+    fun execute(event: PackageEvent, activitiesLists: Map<String, List<LauncherActivityInfo>>) {
         when (event.op) {
-            PackageEvent.OP_ADD -> packageUpdated(false, event.user, event.packages)
-            PackageEvent.OP_UPDATE -> packageUpdated(true, event.user, event.packages)
+            PackageEvent.OP_ADD -> packageUpdated(false, event.user, event.packages, activitiesLists)
+            PackageEvent.OP_UPDATE -> packageUpdated(true, event.user, event.packages, activitiesLists)
             PackageEvent.OP_REMOVE -> appsRemoved(event.user, event.packages)
             PackageEvent.OP_UNAVAILABLE -> appsUnavailable(event.user, event.packages)
             PackageEvent.OP_SUSPEND -> updateRuntimeStatus(event.user, event.packages) { it or FLAG_DISABLED_SUSPENDED }
@@ -51,7 +53,12 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
     }
 
     /** PackageUpdatedTask.execute */
-    private fun packageUpdated(isUpdate: Boolean, user: UserHandle, packageNames: Set<String>) {
+    private fun packageUpdated(
+        isUpdate: Boolean,
+        user: UserHandle,
+        packageNames: Set<String>,
+        activitiesLists: Map<String, List<LauncherActivityInfo>>,
+    ) {
         val packages = packageNames.toMutableSet()
         if (isUpdate) {
             // Mark disabled packages in the broadcast to be removed
@@ -64,8 +71,8 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
         }
 
         // TextLauncher: the icon cache (IconCache.updateIconsForPkg) and the app list
-        // (AllAppsList.updatePackage) were updated before this task.
-        val apps = app.appRepository.apps ?: return
+        // (AllAppsList.updatePackage, which gave [activitiesLists]) were updated on the model
+        // thread before this task.
 
         val removedShortcuts = HashSet<Int>()
 
@@ -89,9 +96,9 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
 
             if (itemInfo !is AppItemInfo) return@updateAndCollectWorkspaceItemInfos false
 
-            val activityList = apps.filter { it.component.packageName == packageName && it.user == user }
+            val activityList = activitiesLists[packageName].orEmpty()
 
-            var activityInfo = activityList.firstOrNull { it.component == cn }
+            var activityInfo = activityList.firstOrNull { it.componentName == cn }
 
             if (activityInfo == null) {
                 if (activityList.isNotEmpty()) {
@@ -99,7 +106,7 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
                     // similar to PackageManagerHelper.getAppLaunchInfo
                     activityInfo = activityList[0]
                     // TextLauncher: AppItemInfo.retarget sets the intent (AppInfo.makeLaunchIntent).
-                    itemInfo.retarget(activityInfo)
+                    itemInfo.retarget(activityInfo.componentName)
                 } else {
                     Log.e(TAG, "Removing shortcut with invalid target component.$itemInfo")
                     removedShortcuts.add(itemInfo.id)
@@ -107,10 +114,11 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
                 }
             }
 
-            // TextLauncher: AppItemInfo.bind clears FLAG_DISABLED_NOT_AVAILABLE and does
-            // AppInfo.updateRuntimeFlagsForActivityTarget; the icon is looked up below
-            // (IconCache.getTitleAndIcon) and the item written once it is set.
-            itemInfo.bind(activityInfo)
+            // Restore if it's a promise icon
+            itemInfo.runtimeStatusFlags = itemInfo.runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE.inv()
+            AppInfo.updateRuntimeFlagsForActivityTarget(itemInfo, activityInfo)
+            // TextLauncher: the title and icon are looked up below (IconCache.getTitleAndIcon),
+            // and the item written once they are set.
             true
         })
 
@@ -269,9 +277,8 @@ internal class HomeModelTasks(private val home: HomeController, private val isDe
      */
     private fun loadIconsWriteAndBind(items: List<ItemInfo>, write: Boolean) {
         if (items.isEmpty()) return
-        val apps = items.filterIsInstance<AppItemInfo>().filter { it.entry != null }
-        app.iconLoader.loadAll(apps.mapNotNull { it.entry }, DESKTOP_ICON_FLAG) {
-            for (info in apps) info.entry?.let(app.iconLoader::cached)?.let { info.bitmap = it }
+        val apps = items.filterIsInstance<AppItemInfo>().filter { it.isAvailable }
+        app.iconLoader.getTitlesAndIcons(apps, DESKTOP_ICON_FLAG) {
             if (write) {
                 for (item in items) if (model.contains(item)) model.writer.updateItemInDatabase(item)
             }

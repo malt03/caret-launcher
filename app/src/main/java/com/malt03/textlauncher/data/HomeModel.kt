@@ -81,7 +81,7 @@ class HomeModel(
                 val item: ItemInfo = when (itemType) {
                     Favorites.ITEM_TYPE_APPLICATION -> {
                         val component = intent?.component ?: continue
-                        AppItemInfo(AppEntry.keyOf(component, serial)).also { it.title = c.getString(cursor.title) }
+                        AppItemInfo(component, serial).also { it.title = c.getString(cursor.title) }
                     }
                     Favorites.ITEM_TYPE_DEEP_SHORTCUT -> {
                         val key = ShortcutKey.fromIntent(intent ?: continue, myUser)
@@ -200,7 +200,7 @@ class HomeModel(
     /** The keys of every app shortcut on the home screen, also in folders. */
     fun shortcutKeys(): List<String> = allItems().filter { it.isDeepShortcut }.map(shortcuts::keyOf)
 
-    /** The key an app or shortcut is saved by ([AppEntry.key] or [HomeShortcutKey.key]). */
+    /** The key an app or shortcut is saved by ([AppItemInfo.homeKey] or [HomeShortcutKey.key]). */
     fun keyOf(item: ItemInfo): String? = when {
         item is AppItemInfo -> item.homeKey
         item.isDeepShortcut -> shortcuts.keyOf(item)

@@ -25,7 +25,10 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.android.launcher3.util.LifecycleHelper
 import androidx.core.view.WindowCompat
 import com.malt03.textlauncher.TextLauncherApplication
-import com.malt03.textlauncher.data.AppEntry
+import com.android.launcher3.model.data.AppInfo
+import com.android.launcher3.model.data.ItemInfo
+import com.malt03.textlauncher.data.AppItemInfo
+import com.malt03.textlauncher.data.AppKey
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.Launcher
 import com.android.launcher3.Utilities
@@ -93,17 +96,12 @@ class LauncherActivity :
 
     private lateinit var home: HomeController
 
-    private var apps: List<AppEntry> = emptyList()
-    private val appsListener: (List<AppEntry>) -> Unit = {
-        apps = it
-        refreshResults()
-        allApps.setApps(it)
-    }
+    /** ModelCallbacks.bindAllApplications */
+    private val appsListener: (Array<AppInfo>) -> Unit = { allApps.setApps(it) }
     private val iconsListener: (Set<String>?) -> Unit = { packages ->
         // LauncherModel.onPackageIconsUpdated (CacheDataUpdatedTask), or a reload for the theme.
+        // The app list's AppInfos come again with their icons (AppRepository).
         if (packages == null) home.rebuild() else home.onPackageIconsUpdated(packages)
-        // The search results bind the all apps list's AppInfos, which come again with the icons.
-        allApps.setApps(apps)
     }
 
     /**
@@ -157,7 +155,7 @@ class LauncherActivity :
             inAllApps = isTwoPanels,
             fromBottom = true,
         )
-        allApps = AllAppsView(this, home.activityContext, app.iconLoader, gridSpec)
+        allApps = AllAppsView(this, home.activityContext, gridSpec)
         if (isTwoPanels) {
             // docs/spec.md 5.5: the all apps list is always shown on the left panel, and there is
             // no all apps sheet to open.
@@ -554,8 +552,8 @@ class LauncherActivity :
     }
 
     /** docs/spec.md 4: the long-press menu's "Edit search terms". */
-    override fun editSearchTerms(entry: AppEntry) {
-        SearchTermsDialog.show(this, entry, app.searchStore) {
+    override fun editSearchTerms(item: AppItemInfo) {
+        SearchTermsDialog.show(this, item.homeKey, item.title, app.searchStore) {
             refreshResults()
             focusSearch()
         }
@@ -570,8 +568,8 @@ class LauncherActivity :
      * ItemClickHandler's launch (Launcher.startActivitySafely). TextLauncher: a launch from the
      * search results is learned (docs/spec.md 2.3).
      */
-    override fun launch(entry: AppEntry, view: View) =
-        launch(entry, view, fromSearch = results.isResult(view) || allAppsResults.isResult(view))
+    override fun launch(info: ItemInfo, view: View) =
+        launch(info, view, fromSearch = results.isResult(view) || allAppsResults.isResult(view))
 
     /**
      * An item added from the long-press menu shows on the home screen, so the query goes, and the
@@ -603,13 +601,14 @@ class LauncherActivity :
         }
     }
 
-    private fun launch(entry: AppEntry, view: View?, fromSearch: Boolean) {
-        if (fromSearch) app.searchStore.recordLaunch(currentQuery(), entry.key)
+    private fun launch(info: ItemInfo, view: View?, fromSearch: Boolean) {
+        val component = info.targetComponent ?: return
+        if (fromSearch) app.searchStore.recordLaunch(currentQuery(), AppKey.of(this, component, info.user))
         val launcherApps = getSystemService(LauncherApps::class.java)
         isLaunching = true
         try {
             launcherApps.startMainActivity(
-                entry.component, entry.user, view?.let(Utilities::getViewBounds), view?.let(::launchOptions),
+                component, info.user, view?.let(Utilities::getViewBounds), view?.let(::launchOptions),
             )
         } catch (e: Exception) {
             isLaunching = false

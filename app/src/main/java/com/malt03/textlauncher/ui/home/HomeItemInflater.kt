@@ -3,7 +3,6 @@ package com.malt03.textlauncher.ui.home
 import android.appwidget.AppWidgetManager
 import android.view.View
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
-import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -23,11 +22,15 @@ internal class HomeItemInflater(private val home: HomeController) {
     private val grid = home.grid
 
     /**
-     * The icon of an app that was found (LoaderTask). An app shortcut's icon is loaded with the
-     * shortcut ([HomeLoader]), so its item already has it.
+     * BubbleTextView.verifyHighRes: an available app whose item has a lesser icon than the home
+     * screen's (DESKTOP_ICON_FLAG) gets it looked up (IconCache.getTitleAndIcon), then [onLoaded]
+     * is called. The loader binds the items with their icons, and an app shortcut's icon is loaded
+     * with the shortcut ([HomeLoader]), so its item already has it.
      */
-    fun loadIcon(info: WorkspaceItemInfo, onLoaded: (BitmapInfo) -> Unit) {
-        if (info is AppItemInfo) info.entry?.let { app.iconLoader.load(it, DESKTOP_ICON_FLAG, onLoaded) }
+    private fun loadIcon(info: WorkspaceItemInfo, onLoaded: () -> Unit) {
+        if (info !is AppItemInfo || !info.isAvailable) return
+        if (!info.bitmap.matchingLookupFlag.isVisuallyLessThan(DESKTOP_ICON_FLAG)) return
+        app.iconLoader.getTitleAndIcon(info, DESKTOP_ICON_FLAG, onLoaded)
     }
 
     /**
@@ -36,15 +39,12 @@ internal class HomeItemInflater(private val home: HomeController) {
      */
     fun bindIcon(info: WorkspaceItemInfo, view: AppIconView) {
         view.applyFromWorkspaceItem(info)
-        loadIcon(info) { bitmap ->
-            info.bitmap = bitmap
-            view.applyFromWorkspaceItem(info)
-        }
+        loadIcon(info) { view.applyFromWorkspaceItem(info) }
     }
 
     /** ItemInflater.inflateItem: the item's view, or null for an item that cannot be shown. */
     fun inflateItem(item: ItemInfo): View? = when {
-        item is AppItemInfo -> if (item.entry != null) createItemView(item) else null
+        item is AppItemInfo -> createItemView(item)
         item is WorkspaceItemInfo && item.isDeepShortcut -> createItemView(item)
         item is FolderInfo -> createFolderView(item)
         item is WidgetItemInfo -> createWidgetView(item)
@@ -84,11 +84,7 @@ internal class HomeItemInflater(private val home: HomeController) {
             HomeFolder(context, home.activityContext, home.launcherDelegate, home.gridSpec.iconSizePx).bindToIcon(this)
             setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
             for (item in contents) {
-                loadIcon(item) { bitmap ->
-                    if (item.bitmap === bitmap) return@loadIcon
-                    item.bitmap = bitmap
-                    updatePreviewItems { it === item }
-                }
+                loadIcon(item) { updatePreviewItems { it === item } }
             }
             setOnClickListener(ItemClickHandler.INSTANCE)
             setOnLongClickListener {

@@ -13,6 +13,7 @@ import android.os.UserHandle
 import androidx.core.graphics.PathParser
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
+import com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
 import com.android.launcher3.graphics.ThemeManager
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.CacheableShortcutCachingLogic
@@ -23,7 +24,6 @@ import com.android.launcher3.icons.IconProvider
 import com.android.launcher3.icons.IconShape
 import com.android.launcher3.icons.LauncherIcons
 import com.android.launcher3.icons.cache.CacheLookupFlag
-import com.android.launcher3.icons.cache.CacheLookupFlag.Companion.DEFAULT_LOOKUP_FLAG
 import com.android.launcher3.icons.cache.LauncherActivityCachingLogic
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.model.data.AppInfo
@@ -31,11 +31,11 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.shortcuts.ShortcutRequest
 import com.android.launcher3.util.Executors.MODEL_EXECUTOR
 import com.malt03.textlauncher.R
-import com.malt03.textlauncher.data.AppEntry
 
 /**
  * Looks up app and shortcut icons in Launcher3's [IconCache] (android-17.0.0_r1), which keeps them
- * in memory and on disk, and holds the apps' icons for the views as AllAppsList's AppInfos do.
+ * in memory and on disk. The all apps list's icons are in its AppInfos (AllAppsList, which
+ * [com.malt03.textlauncher.data.AppRepository] keeps), and the home screen's in its items.
  *
  * - The icons are made by [LauncherIcons]: drawn full bleed and clipped to the selected
  *   [IconShape] when drawn.
@@ -68,9 +68,6 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         iconPool,
     ).also { LauncherAppState.getInstance(context).setIconCache(it) }
 
-    /** The icons of the apps by [AppEntry.key] (AllAppsList's AppInfo.bitmap); main thread only. */
-    private val icons = HashMap<String, BitmapInfo>()
-    private val pending = HashMap<Pair<String, CacheLookupFlag>, MutableList<(BitmapInfo) -> Unit>>()
     private val changeListeners = mutableListOf<(Set<String>?) -> Unit>()
 
     /** Bumped when the icons are made again; results looked up for an older one are dropped. */
@@ -105,61 +102,48 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         changeListeners -= listener
     }
 
-    fun cached(entry: AppEntry): BitmapInfo? = icons[entry.key]
-
     /**
-     * AllAppsList.add, or WorkspaceItemProcessor for the home screen ([lookupFlag] DESKTOP_ICON_FLAG):
-     * the app's icon (IconCache.getTitleAndIcon). An icon held with less than [lookupFlag] asks for
-     * is looked up again (BubbleTextView.verifyHighRes). Calls [onLoaded] on the main thread,
-     * immediately when the icon is already held.
+     * IconCache.getTitleAndIcon for the home screen's apps among [items] (WorkspaceItemProcessor,
+     * PackageUpdatedTask and CacheDataUpdatedTask, with [lookupFlag] DESKTOP_ICON_FLAG): the icon
+     * and title of the item's activity from the cache, which asks for the activity when it does not
+     * have it. Calls [onLoaded] on the main thread once every item has them. Launcher3 binds the
+     * home screen with its icons already looked up; the folder preview sizes itself from them.
      */
-    fun load(entry: AppEntry, lookupFlag: CacheLookupFlag = DEFAULT_LOOKUP_FLAG, onLoaded: (BitmapInfo) -> Unit) {
-        icons[entry.key]?.takeUnless { it.matchingLookupFlag.isVisuallyLessThan(lookupFlag) }?.let {
-            onLoaded(it)
-            return
-        }
-        val requestKey = entry.key to lookupFlag
-        val waiting = pending[requestKey]
-        if (waiting != null) {
-            waiting += onLoaded
-            return
-        }
-        pending[requestKey] = mutableListOf(onLoaded)
-        val requestedGeneration = generation
-        iconCache.workerHandler.post {
-            // AppInfo(LauncherActivityInfo, UserHandle, ...)
-            val info = AppInfo().apply {
-                user = entry.user
-                componentName = entry.component
-                intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(entry.component)
-            }
-            iconCache.getTitleAndIcon(info, entry.info, lookupFlag)
-            val bitmap = info.bitmap
-            mainHandler.post {
-                if (requestedGeneration != generation) return@post
-                val held = icons[entry.key]
-                if (held == null || !bitmap.matchingLookupFlag.isVisuallyLessThan(held.matchingLookupFlag)) {
-                    icons[entry.key] = bitmap
-                }
-                pending.remove(requestKey)?.forEach { it(bitmap) }
-            }
-        }
-    }
-
-    /**
-     * Calls [onLoaded] on the main thread once every icon is held. Launcher3 binds the home screen
-     * with its icons already looked up; the folder preview sizes itself from them.
-     */
-    fun loadAll(entries: Collection<AppEntry>, lookupFlag: CacheLookupFlag, onLoaded: () -> Unit) {
-        var remaining = entries.size
+    fun getTitlesAndIcons(items: Collection<WorkspaceItemInfo>, lookupFlag: CacheLookupFlag, onLoaded: () -> Unit) {
+        var remaining = items.size
         if (remaining == 0) {
             onLoaded()
             return
         }
-        for (entry in entries) {
-            load(entry, lookupFlag) {
+        for (info in items) {
+            getTitleAndIcon(info, lookupFlag) {
                 remaining--
                 if (remaining == 0) onLoaded()
+            }
+        }
+    }
+
+    /** [getTitlesAndIcons] for one item. */
+    fun getTitleAndIcon(info: WorkspaceItemInfo, lookupFlag: CacheLookupFlag, onLoaded: () -> Unit) {
+        val user = info.user
+        val launchIntent = Intent(info.intent)
+        val requestedGeneration = generation
+        iconCache.workerHandler.post {
+            // TextLauncher: looked up into a copy, since the item belongs to the main thread.
+            val result = WorkspaceItemInfo().apply {
+                itemType = ITEM_TYPE_APPLICATION
+                this.user = user
+                intent = launchIntent
+            }
+            iconCache.getTitleAndIcon(result, lookupFlag)
+            mainHandler.post {
+                if (requestedGeneration != generation) return@post
+                info.bitmap = result.bitmap
+                if (!result.title.isNullOrEmpty()) {
+                    info.title = result.title
+                    info.contentDescription = result.contentDescription
+                }
+                onLoaded()
             }
         }
     }
@@ -220,34 +204,17 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     }
 
     /**
-     * PackageUpdatedTask: the package's icons are looked up again (OP_ADD / OP_UPDATE) or dropped
-     * ([removed], OP_REMOVE) in the cache. Calls [then] on the main thread afterwards.
-     */
-    fun updatePackage(packageName: String, user: UserHandle, removed: Boolean, then: () -> Unit) {
-        iconCache.workerHandler.post {
-            if (removed) {
-                iconCache.removeIconsForPkg(packageName, user)
-            } else {
-                iconCache.updateIconsForPkg(packageName, user)
-            }
-            mainHandler.post {
-                forgetPackages(setOf(packageName))
-                then()
-            }
-        }
-    }
-
-    /**
      * LoaderTask.loadAllSurfacesOrdered: once per process after the first binding, brings the
-     * cache up to date with the installed [apps], the [homeShortcuts] and every other shortcut,
-     * and drops the entries of what is gone. Icons that changed are rebound.
+     * cache up to date with the installed apps (LoaderTask.loadAllApps's activities), the
+     * [homeShortcuts] and every other shortcut, and drops the entries of what is gone. Icons that
+     * changed are rebound.
      */
-    fun updateIconCacheOnce(apps: List<AppEntry>, homeShortcuts: Collection<ShortcutInfo>) {
+    fun updateIconCacheOnce(homeShortcuts: Collection<ShortcutInfo>) {
         if (isCacheUpdated) return
         isCacheUpdated = true
-        val activities = apps.map { it.info }
         val user = Process.myUserHandle()
         iconCache.workerHandler.post {
+            val activities = context.getSystemService(LauncherApps::class.java).getActivityList(null, user)
             val updateHandler = iconCache.getUpdateHandler()
             updateHandler.updateIcons(activities, LauncherActivityCachingLogic, ::onPackageIconsUpdated)
             updateHandler.updateIcons(
@@ -274,13 +241,8 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     private fun onPackageIconsUpdated(packages: HashSet<String>, user: UserHandle) {
         val updated = HashSet(packages)
         mainHandler.post {
-            forgetPackages(updated)
             changeListeners.toList().forEach { it(updated) }
         }
-    }
-
-    private fun forgetPackages(packages: Set<String>) {
-        icons.keys.removeAll { AppEntry.componentOf(it)?.packageName in packages }
     }
 
     private fun onSettingsChanged() {
@@ -293,8 +255,6 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
             // ModelInitializer.refreshAndReloadLauncher for a theme change: the icons are made
             // again. A shape change only rebinds, since the shape is applied when drawn.
             generation++
-            icons.clear()
-            pending.clear()
             iconPool.clear()
             iconCache.updateIconParams(iconDpi, iconSize)
         }

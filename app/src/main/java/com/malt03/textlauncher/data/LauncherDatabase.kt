@@ -90,7 +90,7 @@ class LauncherDatabase(private val context: Context, name: String? = NAME) :
         when (type) {
             V2_TYPE_APP -> {
                 val key = appKey ?: return null
-                val component = AppEntry.componentOf(key) ?: return null
+                val component = AppKey.componentOf(key) ?: return null
                 val serial = key.substringAfterLast('#').toLongOrNull() ?: return null
                 values.put(Favorites.ITEM_TYPE, Favorites.ITEM_TYPE_APPLICATION)
                 values.put(Favorites.INTENT, AppInfo.makeLaunchIntent(component).toUri(0))

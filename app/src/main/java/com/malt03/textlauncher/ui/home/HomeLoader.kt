@@ -1,6 +1,7 @@
 package com.malt03.textlauncher.ui.home
 
 import android.appwidget.AppWidgetManager
+import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Handler
@@ -13,12 +14,11 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.util.ApplicationInfoWrapper
+import com.android.launcher3.util.ComponentKey
 import com.android.launcher3.util.Executors.MODEL_EXECUTOR
 import com.android.launcher3.util.GridOccupancy
 import com.malt03.textlauncher.data.WidgetItemInfo
-import com.malt03.textlauncher.data.AppEntry
 import com.malt03.textlauncher.data.AppItemInfo
-import com.malt03.textlauncher.data.HomeShortcutKey
 import com.malt03.textlauncher.data.PackageEvent
 import com.malt03.textlauncher.data.isDeepShortcut
 
@@ -51,8 +51,8 @@ internal class HomeLoader(private val home: HomeController) {
     }
 
     /** The package tasks (PackageUpdatedTask, PackageTaskFactory) for the home items. */
-    private val packageListener: (PackageEvent) -> Unit = { event ->
-        if (canRunTasks()) tasks.execute(event) else onAppsChanged()
+    private val packageListener: (PackageEvent, Map<String, List<LauncherActivityInfo>>) -> Unit = { event, activities ->
+        if (canRunTasks()) tasks.execute(event, activities) else onAppsChanged()
     }
 
     private val tasks = HomeModelTasks(home) { destroyed }
@@ -172,18 +172,20 @@ internal class HomeLoader(private val home: HomeController) {
         pruneMissingWidgets()
         checkItemPlacement()
         val items = model.allItems()
+        // TextLauncher: the apps are looked up in the app list (AllAppsList's AppInfos).
         for (info in items) {
-            if (info is AppItemInfo) app.appRepository.find(info.homeKey)?.let(info::bind)
+            if (info !is AppItemInfo) continue
+            val component = info.targetComponent ?: continue
+            app.appRepository.getApp(ComponentKey(component, info.user))?.let(info::bind)
         }
-        val entries = items.mapNotNull { (it as? AppItemInfo)?.entry }
+        val (apps, unavailable) = items.filterIsInstance<AppItemInfo>().partition { it.isAvailable }
         // A shortcut that was not looked up keeps the icon saved with it (IconRequestInfo
         // .loadIconFromDb), or else gets the default one.
         val unknown = items.filterIsInstance<WorkspaceItemInfo>()
             .filter { it.isDeepShortcut && it !in shortcuts && it.bitmap.isLowRes }
         // WorkspaceItemProcessor: an app that is not available keeps its cached icon.
-        val unavailable = items.filterIsInstance<AppItemInfo>().filter { it.entry == null }
-        app.iconLoader.loadAll(entries, DESKTOP_ICON_FLAG) {
-            if (generation != rebuildGeneration) return@loadAll
+        app.iconLoader.getTitlesAndIcons(apps, DESKTOP_ICON_FLAG) {
+            if (generation != rebuildGeneration) return@getTitlesAndIcons
             loadUnavailableIcons(unavailable) {
                 if (generation != rebuildGeneration) return@loadUnavailableIcons
                 loadShortcutIcons(shortcuts) {
@@ -202,7 +204,7 @@ internal class HomeLoader(private val home: HomeController) {
                             for (info in shortcuts.keys) if (model.contains(info)) model.writer.updateItemInDatabase(info)
                         }
                         // LoaderTask: the icon cache is brought up to date after the first binding.
-                        app.appRepository.apps?.let { app.iconLoader.updateIconCacheOnce(it, shortcuts.values) }
+                        app.iconLoader.updateIconCacheOnce(shortcuts.values)
                     }
                 }
             }
@@ -217,7 +219,7 @@ internal class HomeLoader(private val home: HomeController) {
             return
         }
         for (info in items) {
-            val component = AppEntry.componentOf(info.homeKey)
+            val component = info.targetComponent
             if (component == null) {
                 if (--remaining == 0) onLoaded()
                 continue
@@ -345,30 +347,38 @@ internal class HomeLoader(private val home: HomeController) {
      * Returns true when something changed.
      */
     private fun pruneMissingApps(): Boolean {
-        val apps = app.appRepository.apps ?: return false
-        val installed = apps.associateBy { it.key }
+        val repository = app.appRepository
+        if (repository.apps == null) return false
+        val isInstalled = { info: AppItemInfo ->
+            info.targetComponent?.let { repository.getApp(ComponentKey(it, info.user)) } != null
+        }
         val launcherApps = context.getSystemService(LauncherApps::class.java)
         var retargeted = false
-        val unavailable = HashSet<String>()
+        val missing = HashSet<String>()
         for (info in model.allItems()) {
-            if (info !is AppItemInfo || info.homeKey in installed) continue
-            val pkg = AppEntry.componentOf(info.homeKey)?.packageName ?: continue
+            if (info !is AppItemInfo || isInstalled(info)) continue
+            val pkg = info.targetPackage ?: continue
             if (launcherApps.isPackageEnabled(pkg, info.user)) {
                 // Gracefully try to find a fallback activity.
                 val fallback = launcherApps.getActivityList(pkg, info.user).firstNotNullOfOrNull { activity ->
-                    apps.firstOrNull { it.component == activity.componentName && it.user == info.user }
-                } ?: continue
-                Log.d(TAG, "Activity not enabled for ${info.homeKey}, using ${fallback.key}")
-                info.retarget(fallback)
+                    repository.getApp(ComponentKey(activity.componentName, info.user))
+                }
+                if (fallback == null) {
+                    missing += info.homeKey
+                    continue
+                }
+                Log.d(TAG, "Activity not enabled for ${info.homeKey}, using ${fallback.componentName}")
+                info.retarget(fallback.componentName!!)
                 model.writer.updateItemInDatabase(info)
                 retargeted = true
             } else if (ApplicationInfoWrapper(context, pkg, info.user).isOnSdCard()) {
                 // Package is present but not available.
                 info.markUnavailable()
-                unavailable += info.homeKey
+            } else {
+                missing += info.homeKey
             }
         }
-        val removed = pruneMissing { !HomeShortcutKey.isShortcutKey(it) && it !in installed && it !in unavailable }
+        val removed = pruneMissing { it in missing }
         return removed || retargeted
     }
 

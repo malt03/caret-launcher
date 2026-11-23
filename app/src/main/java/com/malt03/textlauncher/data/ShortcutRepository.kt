@@ -13,7 +13,7 @@ import com.android.launcher3.shortcuts.ShortcutRequest
 
 /**
  * An app shortcut placed on the home screen (docs/spec.md 5.3). Identified like Launcher3's
- * ShortcutKey (package and shortcut id) plus the user, as [AppEntry] keys are.
+ * ShortcutKey (package and shortcut id) plus the user, as [AppKey]s are.
  */
 data class HomeShortcutKey(val packageName: String, val id: String, val userSerial: Long) {
     val key: String get() = "$PREFIX$packageName/$id#$userSerial"

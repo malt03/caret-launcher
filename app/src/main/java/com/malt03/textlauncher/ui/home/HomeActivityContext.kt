@@ -21,6 +21,7 @@ import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.IModelWriter
+import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupDataProvider
@@ -30,7 +31,6 @@ import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
-import com.malt03.textlauncher.data.AllAppsAppInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
 import com.malt03.textlauncher.ui.GridSpec
@@ -85,8 +85,8 @@ internal class HomeActivityContext(private val home: HomeController) :
      */
     override fun startActivitySafely(v: View, intent: Intent, item: ItemInfo?): RunnableList? {
         when {
-            item is AppItemInfo -> item.entry?.let { home.host.launch(it, v) }
-            item is AllAppsAppInfo -> home.host.launch(item.entry, v)
+            item is AppItemInfo -> if (item.isAvailable) home.host.launch(item, v)
+            item is AppInfo -> home.host.launch(item, v)
             item != null && item.isDeepShortcut -> {
                 val key = ShortcutKey.fromItemInfo(item)
                 home.host.startShortcut(key.packageName, key.id, v, item.user)
