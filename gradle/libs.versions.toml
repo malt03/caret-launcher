@@ -13,9 +13,14 @@ annotation = "1.7.1"
 constraintlayout = "2.2.1"
 # The Kotlin that AGP builds with (its built-in Kotlin support), for the Compose compiler plugin.
 kotlin = "2.2.10"
-compose = "1.10.4"
-composeMaterial3 = "1.4.0"
+compose = "1.11.4"
+composeMaterial3 = "1.5.0"
 composeMaterialIcons = "1.7.8"
+# KSP for the Kotlin that AGP builds with, and Dagger with KSP support, for the widget picker.
+ksp = "2.3.4"
+dagger = "2.57.2"
+activityCompose = "1.10.1"
+window = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,8 +40,15 @@ androidx-compose-foundation = { group = "androidx.compose.foundation", name = "f
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "composeMaterialIcons" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+androidx-compose-material3-window-size-cls = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "composeMaterial3" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
