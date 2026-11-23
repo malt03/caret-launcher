@@ -426,12 +426,6 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     /** The top of the open sheet: right under the field at the top of the screen. */
     private fun sheetOpenTop(): Int = statusBarTop + barContainer.measuredHeight
 
-    /** The top of the sheet's handle area on the screen, while it is shown. */
-    val sheetTop: Float get() = allAppsSheet.top + allAppsSheet.translationY
-
-    /** bottom_sheet_handle_area_height */
-    val sheetHandleAreaHeight: Int get() = allAppsSheet.handleAreaHeight
-
     /**
      * AllAppsTransitionController.setProgress: the field goes from [closedBarTop] to [openBarTop]
      * (the keyboard goes down), and the sheet follows right under it, coming out from behind the

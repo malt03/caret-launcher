@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.graphics.ColorUtils
+import androidx.recyclerview.widget.RecyclerView
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.android.launcher3.util.Themes
@@ -39,6 +41,10 @@ class AllAppsSheet(context: Context, private val isPanel: Boolean = false) : Fra
      */
     val handleAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_handle_area_height)
 
+    /** The main page's list (mAH's MAIN) and the search results (SEARCH). */
+    private var list: AllAppsView? = null
+    private var searchResults: RecyclerView? = null
+
     init {
         background = sheetBackground
         // bottom_sheet_handle with bg_rounded_corner_bottom_sheet_handle.
@@ -59,14 +65,45 @@ class AllAppsSheet(context: Context, private val isPanel: Boolean = false) : Fra
     }
 
     /** The list, under the handle area. */
-    fun setList(list: View) {
-        addView(list, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
+    fun setList(list: AllAppsView) {
+        this.list = list
+        addUnderHandleArea(list)
+    }
+
+    /** The results of the search in the list (the container's search RecyclerView), under the handle area. */
+    fun setSearchResults(results: RecyclerView) {
+        searchResults = results
+        addUnderHandleArea(results)
+    }
+
+    private fun addUnderHandleArea(view: View) {
+        addView(view, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             topMargin = handleAreaHeight
         })
     }
 
-    /** The results of the search in the list (the container's search RecyclerView), under the handle area. */
-    fun setSearchResults(results: View) = setList(results)
+    /**
+     * ActivityAllAppsContainerView.shouldContainerScroll: a swipe down from [ev] (in [eventSource]'s
+     * coordinates) may close the list: on the handle area, or on the active list
+     * (getActiveRecyclerView: the search results while searching) at its top and not on the
+     * scrollbar's thumb.
+     *
+     * TextLauncher: the search field is not on the sheet (the caller checks it), and a touch above
+     * the sheet is not on the container's scrim but on the field or the status bar, so it does not
+     * close the list.
+     */
+    fun shouldContainerScroll(ev: MotionEvent, eventSource: View): Boolean {
+        val point = floatArrayOf(ev.x, ev.y)
+        Utilities.mapCoordInSelfToDescendant(this, eventSource, point)
+        if (point[1] < 0f) return false
+        if (point[1] < handleAreaHeight) return true
+        val results = searchResults
+        if (results != null && results.visibility == VISIBLE) {
+            // FastScrollRecyclerView.shouldContainerScroll: the search results have no scrollbar.
+            return results.computeVerticalScrollOffset() == 0
+        }
+        return list?.shouldContainerScroll(ev, eventSource) ?: true
+    }
 
     /** ActivityAllAppsContainerView.getBackgroundColor for whether the blur is on. */
     fun setBlurEnabled(enabled: Boolean) {

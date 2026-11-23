@@ -15,7 +15,9 @@ import kotlin.math.abs
  * swipe opens the all apps list or closes it (docs/spec.md 6.1, 6.2, 6.6). SingleAxisSwipeDetector
  * finds the swipe; when the finger lifts, the velocity and progress decide the state as in
  * Launcher3 (a fling goes its way, otherwise past half opens), and the rest is animated over
- * BaseSwipeDetector.calculateDuration with scrollInterpolatorForVelocity.
+ * BaseSwipeDetector.calculateDuration with scrollInterpolatorForVelocity. From the drag until that
+ * animation ends (mCurrentAnimation), a touch catches it: the detector stays settling, so the touch
+ * starts a drag right away (onDragStart) and the sheet follows the finger from where it was.
  *
  * TextLauncher: the swipe first holds back until [THRESHOLD_DP] (OverScroll.dampedScroll), then
  * with the haptic the field catches up with the finger and follows it (docs/spec.md 6.2). Let go
@@ -32,6 +34,12 @@ class AllAppsSwipeController(
         /** AllAppsSwipeController.canInterceptTouch: no drag, open menu or folder, edit mode. */
         fun canSwipe(): Boolean
 
+        /**
+         * LauncherStateManager.getState: whether the list is open, or going to be (ALL_APPS), or
+         * closed or going to be (NORMAL).
+         */
+        fun isAllAppsOpen(): Boolean
+
         /** A swipe up from here may open the list (the field, or the home screen at its bottom). */
         fun canOpenFrom(ev: MotionEvent): Boolean
 
@@ -41,19 +49,36 @@ class AllAppsSwipeController(
         /** The swipe went past the hold: the haptic, and the keyboard goes down when opening. */
         fun onThresholdCrossed(opening: Boolean)
 
-        /** The list is going to [open] after the finger lifted (the keyboard comes back to close). */
+        /**
+         * The list is going to [open] after the finger lifted (the keyboard comes back to close);
+         * only when that is not the state it is in ([isAllAppsOpen]).
+         */
         fun onSettling(open: Boolean)
 
-        /** The list got to [open] (AbstractStateChangeTouchController.onSwipeInteractionCompleted). */
+        /**
+         * The list got to [open] (AbstractStateChangeTouchController.onSwipeInteractionCompleted);
+         * not when the swipe went back to the state it started from.
+         */
         fun onSettled(open: Boolean)
     }
 
     private val detector = SingleAxisSwipeDetector(context, this, SingleAxisSwipeDetector.VERTICAL)
     private val threshold = THRESHOLD_DP * context.resources.displayMetrics.density
 
-    /** Whether this gesture is watched; decided at ACTION_DOWN. */
-    private var watching = false
-    private var dragging = false
+    /** AbstractStateChangeTouchController.mNoIntercept: this gesture is not watched. */
+    private var noIntercept = true
+
+    /**
+     * AbstractStateChangeTouchController.mCurrentAnimation: from the drag until the animation that
+     * finishes it ends (clearState).
+     */
+    private var hasCurrentAnimation = false
+
+    /**
+     * [Callbacks.onSettled] runs at the end even in the state the swipe started from: the drag
+     * caught an animation whose end action it dropped.
+     */
+    private var mustSettle = false
 
     private var opening = false
     private var startBarTop = 0f
@@ -64,45 +89,55 @@ class AllAppsSwipeController(
     private var lagAtCross = 0f
     private var catchUp: ValueAnimator? = null
 
-    /** LauncherRootLayout's touch interceptor: true while this gesture has the touches. */
+    /**
+     * LauncherRootLayout's touch interceptor (AbstractStateChangeTouchController
+     * .onControllerInterceptTouchEvent): true while this gesture has the touches.
+     */
     fun onTouch(ev: MotionEvent): Boolean {
         if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            watching = false
-            dragging = false
-            if (!callbacks.canSwipe()) return false
-            val isOpen = transition.progress >= 0.5f
-            if (transition.isAnimating) {
-                // AllAppsSwipeController.canInterceptTouch: an animation in progress is caught.
-                transition.cancelAnimation()
+            noIntercept = !canInterceptTouch(ev)
+            if (noIntercept) return false
+            if (hasCurrentAnimation) {
                 detector.setDetectableScrollConditions(SingleAxisSwipeDetector.DIRECTION_BOTH, true)
-            } else if (!isOpen && callbacks.canOpenFrom(ev)) {
-                detector.setDetectableScrollConditions(SingleAxisSwipeDetector.DIRECTION_POSITIVE, false)
-            } else if (isOpen && callbacks.canCloseFrom(ev)) {
+            } else if (callbacks.isAllAppsOpen()) {
                 detector.setDetectableScrollConditions(SingleAxisSwipeDetector.DIRECTION_NEGATIVE, false)
             } else {
-                return false
+                detector.setDetectableScrollConditions(SingleAxisSwipeDetector.DIRECTION_POSITIVE, false)
             }
-            watching = true
         }
-        if (!watching) return false
-        // BaseDragLayer: a menu or folder opened since (a long press) gets the touches first.
-        if (!dragging && !callbacks.canSwipe()) {
-            watching = false
+        if (noIntercept) return false
+        // TextLauncher: a menu or folder opened since (a long press) gets the touches first, as
+        // BaseDragLayer gives them to the floating view's controller.
+        if (!detector.isDraggingOrSettling && !callbacks.canSwipe()) {
+            noIntercept = true
             return false
         }
         detector.onTouchEvent(ev)
-        val consumed = dragging
-        if (ev.actionMasked == MotionEvent.ACTION_UP || ev.actionMasked == MotionEvent.ACTION_CANCEL) {
-            watching = false
-            dragging = false
-        }
-        return consumed
+        return detector.isDraggingOrSettling
+    }
+
+    /** AllAppsSwipeController.canInterceptTouch */
+    private fun canInterceptTouch(ev: MotionEvent): Boolean {
+        // If we are already animating from a previous state, we can intercept.
+        if (hasCurrentAnimation) return true
+        if (!callbacks.canSwipe()) return false
+        return if (callbacks.isAllAppsOpen()) callbacks.canCloseFrom(ev) else callbacks.canOpenFrom(ev)
     }
 
     override fun onDragStart(start: Boolean, startDisplacement: Float) {
-        dragging = true
+        if (!hasCurrentAnimation) {
+            hasCurrentAnimation = true
+            opening = !callbacks.isAllAppsOpen()
+            // An animation without a gesture (back, the menu's "Apps") gives way to the swipe, as
+            // createAnimationToNewWorkspace cancels the state animation.
+            mustSettle = transition.isAnimating
+            transition.cancelAnimation()
+        } else {
+            // AbstractStateChangeTouchController.onDragStart: mCurrentAnimation.pause(). Its end
+            // action is taken over by the one this drag ends with.
+            transition.pauseAnimation()
+        }
         val progress = transition.progress
-        opening = progress < 0.5f
         startBarTop = root.closedBarTop + (root.openBarTop - root.closedBarTop) * progress
         // Caught in the middle of an animation, the field already follows the finger.
         crossed = progress > 0f && progress < 1f
@@ -163,11 +198,33 @@ class AllAppsSwipeController(
         }
         val target = if (toOpen) 1f else 0f
         val duration = BaseSwipeDetector.calculateDuration(velocity, abs(target - progress))
-        callbacks.onSettling(toOpen)
-        transition.animateTo(target, duration, Interpolators.scrollInterpolatorForVelocity(velocity)) {
-            callbacks.onSettled(toOpen)
-        }
+        // AbstractStateChangeTouchController.goToTargetState: only when the list is not in the
+        // target state already. TextLauncher: its state changes when the field comes up past the
+        // hold (onThresholdCrossed) or here.
+        val changesState = toOpen != callbacks.isAllAppsOpen()
+        val settles = changesState || mustSettle
+        mustSettle = settles
+        if (changesState) callbacks.onSettling(toOpen)
+        transition.animateTo(
+            target,
+            duration,
+            Interpolators.scrollInterpolatorForVelocity(velocity),
+            onCancel = ::clearState,
+        ) { onSwipeInteractionCompleted(toOpen, settles) }
+    }
+
+    /** AbstractStateChangeTouchController.onSwipeInteractionCompleted */
+    private fun onSwipeInteractionCompleted(open: Boolean, settles: Boolean) {
+        clearState()
+        if (settles) callbacks.onSettled(open)
+    }
+
+    /** AbstractStateChangeTouchController.clearState */
+    private fun clearState() {
+        hasCurrentAnimation = false
+        mustSettle = false
         detector.finishedScrolling()
+        detector.setDetectableScrollConditions(0, false)
     }
 
     private companion object {

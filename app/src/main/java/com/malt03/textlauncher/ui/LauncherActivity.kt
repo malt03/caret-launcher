@@ -387,22 +387,17 @@ class LauncherActivity :
         override fun canSwipe(): Boolean =
             !isEditMode && !home.isDragging && AbstractFloatingView.getTopOpenView(home.activityContext) == null
 
+        override fun isAllAppsOpen(): Boolean = isAllAppsOpen
+
         override fun canOpenFrom(ev: MotionEvent): Boolean {
             if (isInSearchBar(ev)) return true
             // docs/spec.md 6.1: the home screen scrolled to its bottom, or not scrolling at all.
             return currentQuery().isEmpty() && ev.y < root.closedBarTop && !home.scrollView.canScrollVertically(1)
         }
 
-        /**
-         * ActivityAllAppsContainerView.shouldContainerScroll: the search field, the sheet's handle
-         * area, or the list at its top.
-         */
-        override fun canCloseFrom(ev: MotionEvent): Boolean {
-            if (isInSearchBar(ev)) return true
-            val handleTop = root.sheetTop
-            val handleBottom = handleTop + root.sheetHandleAreaHeight
-            return ev.y >= handleTop && (ev.y < handleBottom || allApps.shouldContainerScroll(ev, root))
-        }
+        /** ActivityAllAppsContainerView.shouldContainerScroll: the search field, or the sheet's check. */
+        override fun canCloseFrom(ev: MotionEvent): Boolean =
+            isInSearchBar(ev) || root.allAppsSheet.shouldContainerScroll(ev, root)
 
         override fun onThresholdCrossed(opening: Boolean) {
             // AllAppsTransitionController.setStateWithAnimation: the haptic for going to all apps.
