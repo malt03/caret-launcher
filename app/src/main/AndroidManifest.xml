@@ -10,6 +10,15 @@
     <permission android:name="${applicationId}.permission.START_WIDGET_PICKER_ACTIVITY"
         android:protectionLevel="signature|privileged" />
 
+    <!-- Launcher3's AndroidManifest-common.xml: a permission CustomizationProvider accepts
+         besides BIND_WALLPAPER. -->
+    <permission
+        android:name="${applicationId}.permission.GRID_CONTROL"
+        android:knownCerts="@array/grid_control_known_signers"
+        android:protectionLevel="signature|knownSigner"/>
+
+    <uses-permission android:name="${applicationId}.permission.GRID_CONTROL" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -83,7 +92,12 @@
             </intent-filter>
         </service>
 
-        <!-- Callers must hold BIND_WALLPAPER; checked in code like Launcher3. -->
+        <!--
+          Like Launcher3, the caller should hold one of the following permissions (checked in
+          code):
+             - android.permission.BIND_WALLPAPER
+             - ${applicationId}.permission.GRID_CONTROL
+         -->
         <provider
             android:name=".provider.CustomizationProvider"
             android:authorities="${applicationId}.grid_control"

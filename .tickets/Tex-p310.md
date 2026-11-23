@@ -1,6 +1,6 @@
 ---
 id: Tex-p310
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:59:03Z
@@ -30,3 +30,7 @@ parent: Tex-vs8t
 **2026-11-23T12:17:52Z**
 
 2026-11-23 整理: 済んだもの — values の色と AppTheme*、popup_container の id、shade_panel_* の色は TextLauncher: の印を付け、check-upstream.py が values_root= で突き合わせる（Tex-hpdq）。Interpolators は systemui の ref=、名前のなかった互換クラス（AppPairIcon*、FolderAdaptiveIcon、FolderNameSuggestionLoader、InstanceId*、LauncherComponentProvider）は UPSTREAM.md の ref=/derived= に載った。PopupData・PopupCategory は PopupContainer.kt の最後に出どころの印付きでまとめた（Tex-n0ut）。残り: UserType.kt のヘッダー、TestProtocol.java の年、docs の「上流にヘッダーがないもの」の例（ShortcutKey.java は逐語コピー、LauncherAccessibilityDelegate.java が漏れている）、UPSTREAM.md の AllAppsRecyclerView の説明、CustomizationProvider の許可
+
+**2026-11-23T16:45:41Z**
+
+2026-11-24: 残りを片付けた。UserType.kt に上流のヘッダー（2026）と変更の旨を付け、取り込み方針のヘッダーの節を直した（ヘッダーのない上流ファイルの例は SystemShortcut.java と LauncherAccessibilityDelegate.java。ShortcutKey.java・PackageUserKey.java は third_party の逐語コピー）。TestProtocol.java の年を 2018 に。UPSTREAM.md と取り込み方針の AllAppsRecyclerView の説明を実際（記録・マウス操作・文字の一覧を削り、列の数とスクロールバーの上端を変えた）に合わせた。CustomizationProvider の呼び出し元の確認は上流の enforceCallerPermission をそのまま移し、GRID_CONTROL の権限（signature|knownSigner）と空の grid_control_known_signers も上流のまま置いた（どれも公開 API でできる）

@@ -1,22 +1,25 @@
 package com.malt03.textlauncher.provider
 
-import android.Manifest
+import android.Manifest.permission.BIND_WALLPAPER
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import android.os.Binder
 import android.os.Bundle
+import com.android.launcher3.R
 import com.android.launcher3.shapes.ShapesProvider
 import com.malt03.textlauncher.TextLauncherApplication
+import java.security.MessageDigest
 
 /**
  * Lets the system "Wallpaper & style" app switch themed icons and the icon shape
  * (docs/spec.md 7.3 and the appendix).
  *
  * The contract follows Launcher3 at android-17.0.0_r1: graphics/LauncherCustomizationProvider.kt
- * (caller must hold BIND_WALLPAPER) and graphics/GridCustomizationsProxy.java (paths and columns).
+ * (the caller check) and graphics/GridCustomizationsProxy.java (paths and columns).
  * Grid options and the "hide labels" option are not offered.
  */
 class CustomizationProvider : ContentProvider() {
@@ -87,11 +90,36 @@ class CustomizationProvider : ContentProvider() {
     override fun insert(uri: Uri, values: ContentValues?): Uri? = null
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0
 
+    // Launcher3 LauncherCustomizationProvider.enforceCallerPermission.
     private fun enforceCallerPermission() {
-        if (context!!.checkCallingPermission(Manifest.permission.BIND_WALLPAPER) != PackageManager.PERMISSION_GRANTED) {
-            throw SecurityException("requires ${Manifest.permission.BIND_WALLPAPER}")
-        }
+        val ctx = context!!
+        if (ctx.checkCallingPermission(BIND_WALLPAPER) == PackageManager.PERMISSION_GRANTED) return
+        if (ctx.checkCallingPermission(permGridControl) == PackageManager.PERMISSION_GRANTED)
+            return
+
+        // Temporary change until the clients migrate to the new permission
+        val source = callingAttributionSource?.packageName ?: throw genericAccessException()
+        @Suppress("DEPRECATION")
+        val signatures =
+            ctx.packageManager.getPackageInfo(source, PackageManager.GET_SIGNATURES)?.signatures
+                ?: throw genericAccessException()
+        val signature =
+            MessageDigest.getInstance("SHA-256")
+                .apply { signatures.forEach { update(it.toByteArray()) } }
+                .digest()
+                .joinToString("") { String.format("%02x", it) }
+        if (ctx.resources.getStringArray(R.array.grid_control_known_signers).contains(signature))
+            return
+        throw genericAccessException()
     }
+
+    private fun genericAccessException() =
+        SecurityException(
+            "Permission Denial: opening provider ${javaClass.name} (pid=${Binder.getCallingPid()}, uid=${Binder.getCallingUid()}) requires $BIND_WALLPAPER or $permGridControl"
+        )
+
+    // Launcher3's PERM_GRID_CONTROL ("$APPLICATION_ID.permission.GRID_CONTROL").
+    private val permGridControl get() = "${context!!.packageName}.permission.GRID_CONTROL"
 
     private companion object {
         const val KEY_SHAPE_KEY = "shape_key"

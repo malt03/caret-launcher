@@ -461,7 +461,7 @@ Launcher3 と同じく、通知があるアプリのアイコンの右上にド�
   - **見つけてもらう仕組み**：ホームの Activity に meta-data を付け、値に Provider の authority（Launcher3 では `<applicationId>.grid_control`）を入れる
     - `com.android.launcher3.grid.control`：Launcher3 の manifest にあるもの
     - `com.android.launcher3.themedicon.option`：ThemePicker がテーマアイコンの問い合わせ先を探すのに使うもの
-  - **権限**：Provider は exported にし、呼び出し元が `android.permission.BIND_WALLPAPER` を持っているかをコード側で確かめる（Launcher3 と同じ）
+  - **権限**：Provider は exported にし、呼び出し元をコード側で確かめる（Launcher3 の `enforceCallerPermission` と同じ）。`android.permission.BIND_WALLPAPER` か `<applicationId>.permission.GRID_CONTROL`（manifest で `signature|knownSigner` として宣言し、許可する署名は `grid_control_known_signers`）を持っているか、移行までの暫定として、呼び出し元の署名の SHA-256 が `grid_control_known_signers` にあれば受け付ける。`grid_control_known_signers` は上流と同じく空なので、今は `BIND_WALLPAPER` を持つものと、このランチャーと同じ署名のものだけが通る
   - **読み出し（query）**：
     - `/icon_themed`、`/get_icon_themed`：`boolean_value` 列（1/0）を持つ1行を返す
     - `/shape_options`：列 `shape_key`、`shape_title`、`path`（100×100 の SVG パス）、`is_default`。選んでいる形状が `is_default` になる

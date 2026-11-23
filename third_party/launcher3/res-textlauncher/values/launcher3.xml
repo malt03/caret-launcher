@@ -653,4 +653,7 @@
     <dimen name="folder_footer_horiz_padding_minus_arrow_overlap">12dp</dimen> <!-- 20 - 8 -->
     <dimen name="folder_arrow_touchbox_length">48dp</dimen>
     <dimen name="folder_arrow_margin_compensation">-8dp</dimen>
+    <!-- values/config.xml: the signers LauncherCustomizationProvider accepts (the app's
+         provider/CustomizationProvider.kt and the GRID_CONTROL permission in its manifest) -->
+    <string-array name="grid_control_known_signers" translatable="false" />
 </resources>
