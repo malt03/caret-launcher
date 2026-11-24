@@ -1,16 +1,16 @@
 ---
 id: Tex-ydua
 status: open
-deps: []
+deps: [Tex-mibn]
 links: []
 created: 2026-11-23T09:06:34Z
 type: task
 priority: 2
 assignee: Koji Murata
-parent: Tex-vs8t
+parent: Tex-op7u
 tags: [launcher3, upstream, home]
 ---
-# アプリ側の大きい書き写しを derived= の互換クラスにする（Workspace、DropTargetBar、WorkspaceTouchListener）
+# ② Workspace と LauncherDragController を上流のコピーにする（ドロップ先と WorkspaceTouchListener は済み）
 
 2026-11-23 のレビューの結果。アプリに上流の書き写しが約 2,500 行あり、derived= ではないので更新が追えない。すでにずれが出ている。
 
@@ -44,3 +44,7 @@ tags: [launcher3, upstream, home]
 **2026-11-23T18:05:32Z**
 
 2026-11-24: 残りは Workspace（HomeWorkspace を互換の Workspace の derived= に）と LauncherDragController。次の人への手がかり: (1) 上流の Workspace のコンストラクターは Launcher.getLauncher(context) で Launcher を引くが、こちらは Launcher の互換クラスが Workspace をコンストラクターで受けるので循環する。互換の Launcher.getWorkspace を abstract にして HomeActivityContext を先に作り、Workspace は HomeActivityContext.kt に足した LauncherContextWrapper（ActivityContext.Provider）の Context で作る（ドロップ先のバーはこれで drop_target_bar.xml から作っている）。(2) 互換の Workspace は FrameLayout を継承したまま（スクロールビューを抱える）にして TextLauncher: で印し、DropTarget・DragSource・DragListener を上流のメンバーの順で持たせる。ドラッグの座標はグリッドの座標（getDropView がグリッド）なので mapPointFromSelfToChild・mapPointFromDropLayout は印を付けて素通しにする。setDropLayoutForDragObject（見えている範囲）と自動スクロール（onDragOver・onDragExit・onDragEnd）をアプリが上書きするフックにする。(3) beginDragShared の長押しメニューは、上流が btv.startLongPressAction(mLauncher.getPopupControllerForAppIcons()) と getPopupControllerForHomeScreenItems().show(child)（Tex-ukrg の Poppable）だが、アプリは ItemLongClickListener.startLongPressAction のラムダを渡している。PopupController の形を Launcher の互換クラスに足すか、ラムダの引数を印付きで残すかを決める。ウィジェットの preDragEndScale・deferDragToPreDragEnd（Tex-44r9）は上流の形のまま残る。(4) HomeWorkspace.Host は、addFolder を互換の Launcher.addFolder、addItem を上流 onDropExternal の addOrMoveItemInDatabase と addInScreen、updateWidgetSize を WidgetSizeHandler.updateSizeRanges、runWhenNormal を互換の Launcher に足す goToState(NORMAL, delay, callback) 相当（SpringLoadedListener.runWhenNormal）に置き換えて消す。HomeController.replaceFolderWithFinalItem（Tex-a8os の確認付き）は互換の LauncherDelegate に LauncherDelegateImpl として移す。(5) 残す挙動: onNoCellFound のトースト（Tex-8w0r）、onDropExternal の PendingAddItemInfo（Tex-4cve。ドラッグ中にウィジェットを作らない）、onDragStart の rebuildOccupied、onDropCompleted の遅れた結果での markCellsAsOccupiedForView（アンインストールの結果）、ドロップ後のリサイズ枠（getWidgetResizeFrameRunnable）。(6) DropTargetHandler.getViewUnderDrag は今 null を返す（RECONFIGURE がないので使わない）。Workspace.getDragInfo ができたら上流の本体に戻せる
+
+**2026-11-24T13:36:17Z**
+
+2026-11-24: 設計の見直し（Tex-op7u）で、この残り（Workspace と LauncherDragController）を ② にした。先に ①（Tex-mibn、ホームの CellLayout を画面につなぐ）をやる。形: Workspace は PagedView にせず FrameLayout（編集中に縮める）> NestedScrollView > CellLayout。上流のメソッドの本体をそのまま残すため、クラスの最後に1ページ用のメンバー（getPageCount()=1、getPageAt(0)、getCurrentPage()/getNextPage()=0、getVisiblePageIndices()={0}、isPageInTransition()=false）を足し、mWorkspaceScreens は1つだけ持つ。座標: getDropView は上流と同じく Workspace、mapPointFromDropLayout は常にホットシートの分岐（Workspace.java:2750-2757。Utilities.mapCoordInSelfToDescendant が scrollY を見る）を通す印1つ。AccessibleDragListenerAdapter はスクロールの View で作る（子は CellLayout だけ）。自動スクロールは onDragOver・onDragExit・onDragEnd のフック。HomeWorkspace.kt は 150 行ほどのフックに、HomeController の匿名の Workspace（133-176）と WorkspaceHost と HomeDragController はなくなる。印: PagedView でない、1ページのメンバー、スクロールを見る座標変換、自動スクロール、onNoCellFound のトースト、事前に bind しない PendingAddItemInfo、rebuildOccupied、遅れて来る占有の結果。⑤ の ItemLongClickListener（beginDragShared が PopupController を呼ぶ）は一緒に進めてよい

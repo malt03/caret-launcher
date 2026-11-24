@@ -1,8 +1,8 @@
 ---
 id: Tex-iuyb
 status: open
-deps: []
-links: [Tex-4cve]
+deps: [Tex-q3gh]
+links: [Tex-4cve, Tex-op7u]
 created: 2026-11-23T06:16:03Z
 type: feature
 priority: 3

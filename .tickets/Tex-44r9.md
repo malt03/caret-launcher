@@ -1,8 +1,8 @@
 ---
 id: Tex-44r9
 status: open
-deps: []
-links: [Tex-4cve]
+deps: [Tex-ydua]
+links: [Tex-4cve, Tex-op7u]
 created: 2026-11-23T04:37:46Z
 type: feature
 priority: 3
@@ -22,3 +22,7 @@ tags: [home, launcher3]
 **2026-11-23T16:34:07Z**
 
 ドラッグ中の縮小を移した：HomeDragController に LauncherDragController.createDragView（DRAGGABLE_WIDGET の scalePx）と getWidgetDragScalePx、WidgetDragScaleUtils をコピー（path=）、HomeWorkspace.beginDragShared に preDragEndScale と deferDragToPreDragEnd（上流と同じ場所に移した）。DeviceProfile.getWorkspaceSpringLoadScale は SpringLoadedListener と同じ計算で、キーボードを下ろしたホームの高さから渡す。アクセシビリティは残した：上流の LauncherAccessibilityDelegate はリサイズ枠だけでなくホームのすべてのアイテム（ItemInflater）に付く同じ delegate を枠が借りているもので、枠の操作（リサイズ・移動・削除・閉じる）だけを出すにも BaseAccessibilityDelegate、ButtonDropTarget の getSupportedAccessibilityAction／onAccessibilityDrop、WidgetResizePopupDataSource、移動のための accessible drag（DragAndDropAccessibilityDelegate／WorkspaceAccessibilityHelper を画面にない CellLayout の代わりにホームのグリッドへ付ける、Workspace の enableAccessibleDrag と accessible drop）が要る。今の LauncherAccessibilityDelegate は addToWorkspace だけのインターフェースで、ホームのアイテムにも TalkBack の操作は付いていない。ホーム全体の TalkBack 操作として別にまとめて移すのがよい（範囲の判断待ち）
+
+**2026-11-24T13:36:17Z**
+
+2026-11-24: 設計の見直し（Tex-op7u）で ③ にした。② の後なら大部分が上流のコードになる: LauncherAccessibilityDelegate・BaseAccessibilityDelegate を derived、WorkspaceAccessibilityHelper・DragAndDropAccessibilityDelegate・AccessibleDragListenerAdapter を path=。TalkBack での移動は CellLayout が画面にある状態での Workspace.startDrag（isAccessibleDrag、上流 1777-1801）。HomeController の addToWorkspace・addPendingItemToWorkspace・findSpaceOnWorkspace（405-456、625）は上流の LauncherAccessibilityDelegate.addToWorkspace（408）・findSpaceOnWorkspace（358）に戻る。削っていた setAccessibilityDelegate(getAccessibilityDelegate())（上流 BubbleTextView:423、FolderIcon:247、LauncherAppWidgetHostView:109）と ButtonDropTarget の操作を戻す。印: 追加の画面はない（findSpaceOnWorkspace は空きがなければトースト）。操作のメニューは ⑤ の PopupController の形を使う。範囲はホーム全体に決めた

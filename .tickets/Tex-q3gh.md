@@ -1,0 +1,21 @@
+---
+id: Tex-q3gh
+status: open
+deps: [Tex-ydua]
+links: []
+created: 2026-11-24T13:35:59Z
+type: task
+priority: 2
+assignee: Koji Murata
+parent: Tex-op7u
+tags: [launcher3, upstream, home]
+---
+# ⑤ 長押し（ItemLongClickListener・PopupController）とウィジェット追加の流れを上流のコピーにする
+
+- ui/home/ItemLongClickListener.kt（261 行）を touch/ItemLongClickListener.java と popup/PopupControllerAppIcons.kt・PopupControllerForExtraHomeScreenItems.kt・LauncherDeepShortcutDragHandler.kt の derived にする。beginDragShared がラムダでなく PopupController を呼ぶ形に戻る（Tex-ydua のノートの (3)）。② の beginDragShared が必要とするので、この部分は ② と一緒に先に進めてもよい
+- ウィジェットの追加: PendingRequestArgs.java・WidgetAddFlowHandler.java・ActivityResultInfo.java は path= にできる（要るのは Launcher.setWaitingForResult と getAppWidgetHolder だけ）。Launcher.java の addPendingItem・processShortcutFromDrop・addAppWidgetFromDrop・handleActivityResult・completeAdd・completeAddShortcut（上流 746-884、1689-1766）を、互換の Launcher に上流の順で derived の区画として移す。ui/home/HomeWidgets.kt（476 行）は HomeWidgetHost（70 行ほど）まで縮む
+- 印: BIND_APPWIDGET を持たない（OS の確認画面）、ホームが前面に出るまで待つ、設定画面から戻ってから置く
+- その上に Tex-iuyb（ピン留めの要求、AddItemActivity）を移す
+
+リスク: 互換の Launcher は Activity でないので、2,903 行の Launcher.java の一部を derived にすると更新時の食い違いが多い。規模: 中。
+

@@ -7,13 +7,12 @@
 ### 判断が要るもの
 
 - Tex-2t22 検索の並び順：Launcher3 の LabelComparator にそろえた（端末の言語の照合順）。日本語の照合順に固定したいなら 183119e を戻す
-- Tex-44r9 TalkBack の操作：リサイズ枠だけでなく、ホーム全体の TalkBack 対応（LauncherAccessibilityDelegate、アクセシブルなドラッグ）として1つのチケットにするか
 - Tex-ymk9 フォルダのページ送り：1ページのフォルダでは下の段（名前の欄の代わり）を出さないことにした
 
 ### まだ残っているもの
 
 - Tex-iuyb ほかのアプリからのピン留めの要求（AddItemActivity）：android-17.0.0_r1 の AddItemActivity は、移植済みの Compose 版ピッカーの PinAppWidgetCatalog でシートを出すので、判断は要らない（View 版の WidgetCell のシートは android-16 まで）
-- Tex-ydua ホームのドラッグ処理（Workspace）と LauncherDragController を derived コピーにする（手順はチケットのノート）
+- Tex-op7u 上流のコピーへの大きい置き換え（2026-11-24 の設計見直し）。① ホームの CellLayout を画面につなぐ（Tex-mibn）→ ② Workspace と LauncherDragController（Tex-ydua）→ ③ ホーム全体の TalkBack 対応（Tex-44r9）→ ④ 状態の管理（Tex-00l4）→ ⑤ 長押しとウィジェット追加の流れ（Tex-q3gh。その上にピン留めの要求 Tex-iuyb）→ ⑥ InvariantDeviceProfile（Tex-heiy）→ ⑦ モデル（Tex-mci4 → Tex-ttho → Tex-eg3z）→ ⑧ 全アプリ一覧のスワイプ（Tex-ojza）、Activity（Tex-zwo5、任意）
 - 実機での確認のチケット：Tex-w8ui（壁紙とスタイル）、Tex-s1vy（Pixel 6a）、Tex-wuyv（未確認の画面）
 
 ## ホームのドラッグと読み込み
