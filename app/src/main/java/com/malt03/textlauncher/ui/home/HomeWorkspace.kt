@@ -51,13 +51,13 @@ import com.malt03.textlauncher.ui.drag.HomeDragController
  * taken as in Workspace.onDropExternal); the grid scrolls vertically
  * instead, so dragging near its top or bottom edge scrolls it.
  *
- * Drag coordinates (DragObject.x / y) are in the grid's coordinates: [getDropView] is the grid,
- * and the drag controller maps into it.
+ * Drag coordinates (DragObject.x / y) are in the page's coordinates: [getDropView] is the page
+ * (the CellLayout), and the drag controller maps into it.
  */
 class HomeWorkspace(
     private val activity: ActivityContext,
     private val mLauncher: Launcher,
-    private val grid: HomeGridView,
+    private val layout: CellLayout,
     private val scrollView: NestedScrollView,
     private val dragController: DragController,
     private val host: Host,
@@ -89,8 +89,7 @@ class HomeWorkspace(
     /** CellLayout.CellInfo */
     private class CellInfo(val cell: View, val cellX: Int, val cellY: Int, val spanX: Int, val spanY: Int)
 
-    private val context = grid.context
-    private val layout: CellLayout get() = grid.cellLayout
+    private val context = layout.context
 
     /** The CellInfo of the item being dragged from the grid. */
     private var mDragInfo: CellInfo? = null
@@ -135,7 +134,7 @@ class HomeWorkspace(
         }
     }
 
-    override fun getDropView(): View = grid
+    override fun getDropView(): View = layout
 
     /** Workspace.startDrag */
     fun startDrag(child: View, dragInfo: ItemInfo, options: DragOptions, startLongPressAction: (() -> DragOptions.PreDragCondition?)?) {
@@ -292,7 +291,7 @@ class HomeWorkspace(
     override fun getHitRectRelativeToDragLayer(outRect: Rect) {
         // We want the workspace to have the whole area of the display (it will find the correct
         // cell layout to drop to in the existing drag/drop logic.
-        activity.dragLayer.getDescendantRectRelativeToSelf(grid, outRect)
+        activity.dragLayer.getDescendantRectRelativeToSelf(layout, outRect)
     }
 
     override fun acceptDrop(d: DragObject): Boolean {
@@ -544,9 +543,9 @@ class HomeWorkspace(
                 if (foundCell) {
                     // Workspace.onDrop (hasMovedLayouts): a widget is in the DragView while it is
                     // dragged, and goes back on the grid at its new cell (addInScreen).
-                    if (cell is LauncherAppWidgetHostView && cell.parent !== grid) {
+                    if (cell is LauncherAppWidgetHostView && cell.parent !== layout.shortcutsAndWidgets) {
                         d.dragView.detachContentView(/* reattachToPreviousParent= */ false)
-                        grid.addView(cell, cell.layoutParams)
+                        layout.shortcutsAndWidgets.addView(cell, cell.layoutParams)
                     }
                     // update the item's position after drop
                     val lp = cell.layoutParams as CellLayoutLayoutParams
@@ -585,7 +584,7 @@ class HomeWorkspace(
 
             val parent = layout
             if (d.dragView.hasDrawn()) {
-                mLauncher.dragLayer.animateViewIntoPosition(d.dragView, cell, -1, grid)
+                mLauncher.dragLayer.animateViewIntoPosition(d.dragView, cell, -1, layout)
             } else {
                 d.deferDragViewCleanupPostAnimation = false
                 cell.visibility = View.VISIBLE
@@ -667,10 +666,10 @@ class HomeWorkspace(
         // values of the info is properly updated.
         val view = host.addItem(info, mTargetCell[0], mTargetCell[1])
         cellLayout.onDropChild(view)
-        grid.measureChild(view)
+        layout.shortcutsAndWidgets.measureChild(view)
 
         if (d.dragView != null) {
-            mLauncher.dragLayer.animateViewIntoPosition(d.dragView, view, -1, grid)
+            mLauncher.dragLayer.animateViewIntoPosition(d.dragView, view, -1, layout)
         }
     }
 
@@ -743,8 +742,7 @@ class HomeWorkspace(
         val r = mLauncher.workspace.estimateItemPosition(layout, targetCell[0], targetCell[1], spanX, spanY)
 
         val tempFXY = floatArrayOf(r.left.toFloat(), r.top.toFloat())
-        // TextLauncher: the CellLayout's coordinates are the grid's.
-        val cellLayoutScale = mLauncher.dragLayer.getDescendantCoordRelativeToSelf(grid, tempFXY)
+        val cellLayoutScale = mLauncher.dragLayer.getDescendantCoordRelativeToSelf(layout, tempFXY)
         loc[0] = Math.round(tempFXY[0])
         loc[1] = Math.round(tempFXY[1])
 
@@ -798,7 +796,7 @@ class HomeWorkspace(
 
         mLauncher.dragLayer.animateViewIntoPosition(
             dragView, finalPos[0], finalPos[1], 1f, scaleXY[0], scaleXY[1], onCompleteRunnable,
-            DragLayer.ANIMATION_END_DISAPPEAR, duration, grid,
+            DragLayer.ANIMATION_END_DISAPPEAR, duration, layout,
         )
     }
 
@@ -903,7 +901,7 @@ class HomeWorkspace(
         // Handle the drag over
         val target = mDragTargetLayout
         if (target != null) {
-            // TextLauncher: the point is already in the grid's coordinates.
+            // TextLauncher: the point is already in the page's coordinates.
             val minSpanX = item.spanX
             val minSpanY = item.spanY
 
@@ -976,7 +974,7 @@ class HomeWorkspace(
     private fun setDropLayoutForDragObject(d: DragObject): Boolean {
         val visibleTop = scrollView.scrollY
         val visibleBottom = visibleTop + scrollView.height
-        val inside = d.x >= 0 && d.x <= grid.width && d.y >= visibleTop && d.y <= visibleBottom
+        val inside = d.x >= 0 && d.x <= layout.width && d.y >= visibleTop && d.y <= visibleBottom
         val layout = if (inside) this.layout else null
 
         // Update the current drop layout if the target changed
@@ -1106,15 +1104,15 @@ class HomeWorkspace(
     override fun onDropCompleted(target: View?, d: DragObject, success: Boolean) {
         val dragInfo = mDragInfo
         if (success) {
-            if (target !== grid && dragInfo != null) {
+            if (target !== layout && dragInfo != null) {
                 host.removeWorkspaceItem(dragInfo.cell)
             }
         } else if (dragInfo != null) {
             // When drag is cancelled, reattach content view back to its original parent.
-            if (dragInfo.cell is LauncherAppWidgetHostView && dragInfo.cell.parent !== grid) {
+            if (dragInfo.cell is LauncherAppWidgetHostView && dragInfo.cell.parent !== layout.shortcutsAndWidgets) {
                 d.dragView?.detachContentView(/* reattachToPreviousParent= */ true)
             }
-            if (dragInfo.cell.parent === grid) {
+            if (dragInfo.cell.parent === layout.shortcutsAndWidgets) {
                 layout.onDropChild(dragInfo.cell)
             }
         }
@@ -1129,9 +1127,8 @@ class HomeWorkspace(
         mDragInfo = null
     }
 
-    /** LauncherBindableItemsContainer.getViewByItemId: the grid's view of the item. */
-    private fun getViewByItemId(id: Int): View? =
-        grid.itemViews().firstOrNull { (it.tag as? ItemInfo)?.id == id }
+    /** LauncherBindableItemsContainer.getViewByItemId: the page's view of the item. */
+    private fun getViewByItemId(id: Int): View? = layout.mapOverItems { info, _ -> info?.id == id }
 
     private companion object {
         const val DRAG_MODE_NONE = 0

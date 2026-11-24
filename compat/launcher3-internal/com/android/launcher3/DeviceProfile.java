@@ -138,9 +138,28 @@ public class DeviceProfile {
         private final int mIconSizePx;
         private final boolean mIconCenterVertically;
 
-        public WorkspaceProfile(int iconSizePx, boolean iconCenterVertically) {
+        private final int mGridVisualizationPaddingX;
+        private final int mGridVisualizationPaddingY;
+
+        public WorkspaceProfile(int iconSizePx, boolean iconCenterVertically,
+                int gridVisualizationPaddingX, int gridVisualizationPaddingY) {
             mIconSizePx = iconSizePx;
             mIconCenterVertically = iconCenterVertically;
+            mGridVisualizationPaddingX = gridVisualizationPaddingX;
+            mGridVisualizationPaddingY = gridVisualizationPaddingY;
+        }
+
+        /**
+         * WorkspaceProfileNonResponsiveFactory: grid_visualization_horizontal_cell_spacing, for
+         * CellLayout's drop location outline.
+         */
+        public int getGridVisualizationPaddingX() {
+            return mGridVisualizationPaddingX;
+        }
+
+        /** WorkspaceProfileNonResponsiveFactory: grid_visualization_vertical_cell_spacing. */
+        public int getGridVisualizationPaddingY() {
+            return mGridVisualizationPaddingY;
         }
 
         public int getIconSizePx() {
@@ -246,5 +265,20 @@ public class DeviceProfile {
         public int getCellHeightPx() {
             return mCellHeightPx;
         }
+
+        /** TextLauncher: an open folder's cells have no space between them. */
+        public Point getCellLayoutBorderSpacePx() {
+            return new Point(0, 0);
+        }
+    }
+
+    /** DeviceProfile.calculateCellWidth */
+    public static int calculateCellWidth(int width, int borderSpacing, int countX) {
+        return (width - ((countX - 1) * borderSpacing)) / countX;
+    }
+
+    /** DeviceProfile.calculateCellHeight */
+    public static int calculateCellHeight(int height, int borderSpacing, int countY) {
+        return (height - ((countY - 1) * borderSpacing)) / countY;
     }
 }

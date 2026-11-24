@@ -33,7 +33,6 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
     private val normalCallbacks = mutableListOf<Runnable>()
 
     init {
-        workspace.background = home.grid.cellLayout.pageBackground
         // The layout changes while the keyboard moves; the scale follows it.
         workspace.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> if (progress > 0f) apply() }
     }
@@ -114,7 +113,7 @@ internal class SpringLoadedListener(private val home: HomeController) : DragCont
         val (scale, translationY) = springLoadedScaleAndTranslation()
         WORKSPACE_SCALE_PROPERTY.set(workspace, 1f + (scale - 1f) * zoom)
         workspace.translationY = translationY * zoom
-        home.grid.cellLayout.setSpringLoadedProgress(zoom)
+        home.cellLayout.setSpringLoadedProgress(zoom)
         // SpringLoadedState.getDepth: the wallpaper's depth (blur), LINEAR.
         home.host.depthController.springLoadedDepth.setValue(DEPTH_15_PERCENT * progress)
     }

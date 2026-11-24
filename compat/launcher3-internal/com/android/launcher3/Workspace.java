@@ -37,7 +37,7 @@ import java.util.function.Predicate;
  * Stand-in for Launcher3's Workspace (android-17.0.0_r1). In TextLauncher it holds the home grid.
  * Members are copied from Workspace.java as copied code needs them.
  */
-public abstract class Workspace<T> extends FrameLayout {
+public abstract class Workspace<T> extends FrameLayout implements CellLayoutContainer {
     public static final int REORDER_TIMEOUT = 650;
 
     private final int[] mTempXY = new int[2];
@@ -65,7 +65,7 @@ public abstract class Workspace<T> extends FrameLayout {
      */
     public int[] estimateItemSize(ItemInfo itemInfo) {
         int[] size = new int[2];
-        // TextLauncher: the home grid's CellLayout, which is not a child of the workspace.
+        // TextLauncher: the home screen's one page.
         CellLayout cl = getFirstCellLayout();
         if (cl != null) {
             // Use the first page to estimate the child position
@@ -142,7 +142,31 @@ public abstract class Workspace<T> extends FrameLayout {
                 - sibling.getLeft() - sibling.getTranslationX());
     }
 
-    /** TextLauncher: the home grid's one CellLayout (Launcher3's first page), or null. */
+    /** TextLauncher: the home screen's one page (Launcher3's first page), or null. */
     @Nullable
     protected abstract CellLayout getFirstCellLayout();
+
+    /** TextLauncher: one page, whose screen id is 0 (Workspace.getIdForScreen). */
+    @Override
+    public int getCellLayoutId(CellLayout cellLayout) {
+        return 0;
+    }
+
+    /** TextLauncher: one page. */
+    @Override
+    public int getCellLayoutIndex(CellLayout cellLayout) {
+        return 0;
+    }
+
+    /** TextLauncher: one page, also with two panels (the second shows the all apps list). */
+    @Override
+    public int getPanelCount() {
+        return 1;
+    }
+
+    /** TextLauncher: no accessible drag and drop, which says it (Tex-44r9). */
+    @Override
+    public String getPageDescription(int pageIndex) {
+        return "";
+    }
 }

@@ -112,7 +112,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
             container.showForSystemShortcuts(it, activityContext, view)
         }
         // showResizeFrameIfNeeded with DefaultPopupResizeStrategy: a widget on the home screen.
-        if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, home.grid.cellLayout)
+        if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, home.cellLayout)
         return container.createPreDragCondition()
     }
 

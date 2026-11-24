@@ -27,17 +27,18 @@ import android.os.Trace;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.launcher3.CellLayout.ContainerType;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.testing.shared.ResourceUtils;
 import com.android.launcher3.widget.LauncherAppWidgetHostView;
 
 /**
  * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
- * and lays out the items of a {@link CellLayout}. TextLauncher's home grid extends it and measures
- * its children itself; an open folder's page holds one, as in Launcher3. Made from
- * ShortcutAndWidgetContainer.java by deleting what TextLauncher does not have (container types,
- * the QSB, widget scaling and centering, the translation provider, the wallpaper drop command,
- * folder leave-behinds); changes are marked with "TextLauncher:".
+ * and lays out the items of a {@link CellLayout}, which holds one as in Launcher3 (the home
+ * screen's page and an open folder's pages). Made from ShortcutAndWidgetContainer.java by deleting
+ * what TextLauncher does not have (the cell padding from the device profile, the QSB, widget
+ * scaling and centering, the translation provider, the wallpaper drop command, folder
+ * leave-behinds); changes are marked with "TextLauncher:".
  */
 // TextLauncher: not a FolderIconParent (no folder leave-behind).
 public class ShortcutAndWidgetContainer extends ViewGroup {
@@ -51,9 +52,14 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
 
     private boolean mInvertIfRtl = false;
 
-    // TextLauncher: no container type (the only container is the home grid).
-    public ShortcutAndWidgetContainer(Context context) {
+    @ContainerType
+    private final int mContainerType;
+
+    public ShortcutAndWidgetContainer(Context context, @ContainerType int containerType) {
         super(context);
+        // TextLauncher: no activity or wallpaper manager (the device profile's cell padding and
+        // the wallpaper drop command are not used).
+        mContainerType = containerType;
         setClipChildren(false);
     }
 

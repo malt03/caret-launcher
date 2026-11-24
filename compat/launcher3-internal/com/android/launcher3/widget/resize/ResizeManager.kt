@@ -264,8 +264,9 @@ class ResizeManager(
 
     /** To be called before destroying the resize manager. */
     fun finish() {
-        // TextLauncher: the CellLayout is never attached; the widget is on its grid, unless it is
-        // being dragged (in the DragView) or was removed.
+        if (!cellLayout.isAttachedToWindow) return
+        // TextLauncher: no PendingAppWidgetHostView. The widget is on the page unless it is being
+        // dragged (in the DragView) or was removed.
         if (widgetView.parent !is ShortcutAndWidgetContainer) return
         if (widgetView.layoutParams !is CellLayoutLayoutParams) return
 

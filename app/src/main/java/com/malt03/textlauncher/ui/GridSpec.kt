@@ -57,7 +57,7 @@ data class GridSpec(
     val homeMinCellHeightPx: Int,
     /**
      * The home cells in the smallest window the displays have (the size the grid is chosen for),
-     * as HomeGridView measures them there: the cell size of DeviceProfile before the grid is
+     * as HomeScrollView measures them there: the cell size of DeviceProfile before the grid is
      * measured.
      */
     val homeCellWidthPx: Int,

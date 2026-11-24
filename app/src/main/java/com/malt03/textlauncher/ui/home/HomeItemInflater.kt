@@ -19,7 +19,7 @@ import com.malt03.textlauncher.data.isDeepShortcut
 internal class HomeItemInflater(private val home: HomeController) {
     private val context = home.context
     private val app = home.app
-    private val grid = home.grid
+    private val scrollView = home.scrollView
 
     /**
      * BubbleTextView.verifyHighRes: an available app whose item has a lesser icon than the home
@@ -70,7 +70,7 @@ internal class HomeItemInflater(private val home: HomeController) {
         AppIconView(context, home.gridSpec.iconSizePx).apply {
             bindIcon(info, this)
             // ItemInflater: the item's focus listener is Launcher.getFocusHandler.
-            setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
+            setFocusableAsLauncher3Icon(scrollView.focusIndicatorHelper)
             setOnClickListener(ItemClickHandler.INSTANCE)
             setOnLongClickListener {
                 home.itemLongClickListener.onHomeItemLongPress(this)
@@ -82,7 +82,7 @@ internal class HomeItemInflater(private val home: HomeController) {
     private fun createFolderView(folderInfo: FolderInfo): FolderIconView =
         FolderIconView(context, home.activityContext, folderInfo).apply {
             HomeFolder(context, home.activityContext, home.launcherDelegate, home.gridSpec.iconSizePx).bindToIcon(this)
-            setFocusableAsLauncher3Icon(grid.focusIndicatorHelper)
+            setFocusableAsLauncher3Icon(scrollView.focusIndicatorHelper)
             for (item in contents) {
                 loadIcon(item) { updatePreviewItems { it === item } }
             }

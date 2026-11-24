@@ -31,6 +31,7 @@ import android.graphics.Point;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
@@ -291,12 +292,9 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
 
     private CellLayout createAndAddNewPage() {
         DeviceProfile grid = mFolder.mActivityContext.getDeviceProfile();
-        // TextLauncher: made in code (R.layout.folder_page, from the view cache, in Launcher3);
-        // the page holds its container as a child, as CellLayout's constructor does there.
-        ShortcutAndWidgetContainer container = new ShortcutAndWidgetContainer(getContext());
-        CellLayout page = new CellLayout(getContext(), container,
-                grid.getFolderProfile().getChildIconSizePx());
-        page.addView(container);
+        // TextLauncher: no view cache; the page is inflated each time.
+        CellLayout page = (CellLayout) LayoutInflater.from(getContext())
+                .inflate(R.layout.folder_page, this, false);
         page.setCellDimensions(grid.getFolderProfile().getCellWidthPx(),
                 grid.getFolderProfile().getCellHeightPx());
         page.getShortcutsAndWidgets().setMotionEventSplittingEnabled(false);
@@ -315,9 +313,9 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
     public void setFixedSize(int width, int height) {
         width -= (getPaddingLeft() + getPaddingRight());
         height -= (getPaddingTop() + getPaddingBottom());
-        // TextLauncher: the pages fill this view inside its padding (generateDefaultLayoutParams
-        // below), which is the size Launcher3 fixes here; the CellLayout stand-in does not
-        // measure itself (no CellLayout.setFixedSize).
+        for (int i = getChildCount() - 1; i >= 0; i --) {
+            ((CellLayout) getChildAt(i)).setFixedSize(width, height);
+        }
     }
 
     public void removeItem(View v) {
@@ -730,16 +728,6 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
     }
 
     // TextLauncher: members TextLauncher adds.
-
-    /**
-     * The pages fill this view inside its padding: Launcher3's pages are WRAP_CONTENT (the
-     * PagedView default) and take the size setFixedSize gives them.
-     */
-    @Override
-    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
-        return new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    }
 
     /**
      * The icons show their pressed state at once, as every ancestor of TextLauncher's icons says

@@ -189,7 +189,11 @@ internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfi
             folderCellSizePx, folderCellSizePx,
         ),
         // No labels (docs/spec.md 5.2): the icons are centered in their cells.
-        DeviceProfile.WorkspaceProfile(gridSpec.iconSizePx, /* iconCenterVertically= */ true),
+        DeviceProfile.WorkspaceProfile(
+            gridSpec.iconSizePx, /* iconCenterVertically= */ true,
+            context.resources.getDimensionPixelSize(com.android.launcher3.R.dimen.grid_visualization_horizontal_cell_spacing),
+            context.resources.getDimensionPixelSize(com.android.launcher3.R.dimen.grid_visualization_vertical_cell_spacing),
+        ),
         DeviceProfile.DeviceProperties(
             context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
         ),

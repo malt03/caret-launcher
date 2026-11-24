@@ -1,6 +1,6 @@
 ---
 id: Tex-mibn
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-24T13:35:59Z
@@ -22,3 +22,9 @@ tags: [launcher3, upstream, home]
 
 リスク: 縦スクロールの中での大きさの計算、キーボードの上下に合わせた測り直し、編集中の縮小の中心と背景がスクロールに付いてくること、ウィジェットのリサイズ枠がウィジェットに付いていくこと、折りたたみの2パネル。規模: 中。
 
+
+## Notes
+
+**2026-11-24T14:11:42Z**
+
+2026-11-24: 済み。互換の CellLayout を上流から作り直した（ViewGroup、上流のコンストラクター・onMeasure・onLayout・onDraw・dispatchDraw・removeView 系・状態の保存など。削ったのはホットシートの寸法、セルの位置の変換、アクセシブルなドラッグ、ホットシートへの移し替え）。ShortcutAndWidgetContainer はコンテナの種類を戻し、CellLayout が作る。CellLayoutContainer・ParcelableSparseArray・folder_page.xml は path=。互換の Workspace が CellLayoutContainer（1ページ）。HomeGridView をなくし、アプリの HomeScrollView（NestedScrollView）がセルの大きさ（setCellDimensions）と高さ（measureChildWithMargins で EXACTLY）を渡す。フォーカス枠は HomeScrollView が描く。ResizeManager.finish は上流の isAttachedToWindow に戻した。エミュレータで表示・ドラッグ・編集中の縮小（前の版と同じ）・フォルダを確認

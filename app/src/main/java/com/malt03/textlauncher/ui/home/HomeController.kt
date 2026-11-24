@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetHostView
 import android.content.Intent
 import android.graphics.Rect
 import android.os.UserHandle
+import android.util.Log
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -13,7 +14,6 @@ import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.graphics.ColorUtils
-import androidx.core.widget.NestedScrollView
 import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AppWidgetResizeFrame
@@ -50,7 +50,6 @@ import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
-import com.malt03.textlauncher.ui.NoPressDelayScrollView
 import com.malt03.textlauncher.ui.drag.HomeDragController
 import com.malt03.textlauncher.ui.statehandlers.DepthController
 
@@ -105,10 +104,10 @@ class HomeController(
 
     internal val context = root.context
     internal val model = app.homeModel
-    val grid = HomeGridView(context, GridSpec.from(context))
-    internal val gridSpec = grid.grid
+    internal val gridSpec = GridSpec.from(context)
 
-    val scrollView: NestedScrollView = NoPressDelayScrollView(context).apply {
+    /** The home screen's page in its vertical scroll container (docs/spec.md 5.1). */
+    val scrollView = HomeScrollView(context, gridSpec).apply {
         isFillViewport = true
         overScrollMode = View.OVER_SCROLL_NEVER
         // TextLauncher: Launcher3's home pages have a page indicator instead. The vertical home
@@ -128,34 +127,33 @@ class HomeController(
             cornerRadius = trackWidth / 2f
             setColor(ColorUtils.setAlphaComponent(Themes.getAttrColor(context, android.R.attr.textColorPrimary), SCROLLBAR_TRACK_ALPHA))
         }
-        addView(grid, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
     }
 
-    /** Launcher3's Workspace stand-in: holds the home grid and shrinks while a folder is open. */
+    /** Launcher3's Workspace stand-in: holds the home screen's page and shrinks while editing. */
     val workspace = object : Workspace<Any>(context) {
         override fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>, reason: String?) {
             if (loader.removeItems(matcher::test)) loader.rebuild()
         }
 
-        /** Workspace.removeWorkspaceItem: the view leaves the grid; the model is not changed. */
+        /** Workspace.removeWorkspaceItem: the view leaves the page; the model is not changed. */
         override fun removeWorkspaceItem(v: View?) {
-            if (v != null && v.parent === grid) grid.removeView(v)
+            if (v != null && v.parent === cellLayout.shortcutsAndWidgets) cellLayout.removeView(v)
             if (v is DropTarget) dragController.removeDropTarget(v)
         }
 
         override fun getViewByItemId(id: Int): View? =
-            grid.itemViews().firstOrNull { (it.tag as? ItemInfo)?.id == id }
+            cellLayout.mapOverItems { info, _ -> info?.id == id }
 
         override fun removeItemsByMatcher(matcher: Predicate<ItemInfo>, persistChanges: Boolean) {
-            // TextLauncher: one CellLayout, whose views are the grid's children.
+            // TextLauncher: one CellLayout.
+            val container = cellLayout.shortcutsAndWidgets
             // Iterate in reverse order as we are removing items
-            for (i in grid.childCount - 1 downTo 0) {
-                val child = grid.getChildAt(i)
+            for (i in container.childCount - 1 downTo 0) {
+                val child = container.getChildAt(i)
                 val info = child.tag as? ItemInfo ?: continue
 
                 if (matcher.test(info)) {
-                    // TextLauncher: removeView, which frees the cells (CellLayout.removeViewInLayout).
-                    grid.removeView(child)
+                    cellLayout.removeViewInLayout(child)
                     if (child is DropTarget) dragController.removeDropTarget(child)
                 } else if (child is FolderIconView) {
                     val folderInfo = info as FolderInfo
@@ -168,10 +166,10 @@ class HomeController(
                 // TextLauncher: no app pairs.
             }
             // TextLauncher: one page, so no empty screens to strip.
-            grid.requestLayout()
+            cellLayout.requestLayout()
         }
 
-        override fun getFirstCellLayout(): CellLayout = grid.cellLayout
+        override fun getFirstCellLayout(): CellLayout = cellLayout
     }.apply {
         addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
@@ -183,9 +181,17 @@ class HomeController(
     internal val launcher = HomeActivityContext(this)
     val activityContext: ActivityContext get() = launcher
 
+    /**
+     * The home screen's page (Workspace's CellLayout), in a context that gives the launcher, as the
+     * activity holds the home screen only once it is made.
+     */
+    val cellLayout: CellLayout = CellLayout(LauncherContextWrapper(context, launcher), workspace).also {
+        scrollView.cellLayout = it
+    }
+
     internal val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
     private val workspaceHost = WorkspaceHost()
-    internal val homeWorkspace = HomeWorkspace(activityContext, launcher, grid, scrollView, dragController, workspaceHost)
+    internal val homeWorkspace = HomeWorkspace(activityContext, launcher, cellLayout, scrollView, dragController, workspaceHost)
     private val springLoadedListener = SpringLoadedListener(this)
     /**
      * Launcher3's DropTargetBar (drop_target_bar.xml), inflated in a context that gives the
@@ -227,15 +233,15 @@ class HomeController(
 
     init {
         val padding = gridSpec.homePaddingPx
-        grid.setPadding(padding, padding, padding, padding)
-        root.onPageHeightChanged = { grid.pageHeight = it }
+        cellLayout.setPadding(padding, padding, padding, padding)
+        root.onPageHeightChanged = { scrollView.pageHeight = it }
         // DeviceProfile's cell size and widget padding (WorkspaceProfile), which the widget sizes
         // and the widget picker read.
         val widgetPadding = ShortcutAndWidgetContainer.getWidgetPadding(context, android.graphics.Point(0, 0))
         // TextLauncher: until the grid is measured (loading and the grid migration may come
         // first), the cells it has in the smallest window of the displays.
         launcher.deviceProfile.workspaceProfile.setCellSize(gridSpec.homeCellWidthPx, gridSpec.homeCellHeightPx, widgetPadding)
-        grid.onCellSizeChanged = { width, height ->
+        scrollView.onCellSizeChanged = { width, height ->
             launcher.deviceProfile.workspaceProfile.setCellSize(width, height, widgetPadding)
         }
         // DeviceProfile.getWorkspaceSpringLoadScale, from the home screen's layout.
@@ -277,13 +283,7 @@ class HomeController(
      * Workspace.mapOverItems: the home screen's item views (icons, folders and widgets), until [op]
      * returns true. Returns that view.
      */
-    internal fun mapOverItems(op: LauncherBindableItemsContainer.ItemOperator): View? {
-        for (i in 0 until grid.childCount) {
-            val view = grid.getChildAt(i)
-            if (op.evaluate(view.tag as? ItemInfo, view)) return view
-        }
-        return null
-    }
+    internal fun mapOverItems(op: LauncherBindableItemsContainer.ItemOperator): View? = cellLayout.mapOverItems(op)
 
     /** Re-creates every view, e.g. after the icon theme changed. */
     fun rebuild() = loader.rebuild()
@@ -386,15 +386,31 @@ class HomeController(
             AbstractFloatingView.TYPE_ALL and AbstractFloatingView.TYPE_REBIND_SAFE.inv(),
         )
         dragController.cancelDrag()
-        grid.removeAllViews()
+        cellLayout.removeAllViews()
         for (item in items) addInScreen(item)
     }
 
     /** ItemInflater.inflateItem and Workspace.addInScreen: the item's view on the grid. */
     private fun addInScreen(item: ItemInfo): View? {
         val view = itemInflater.inflateItem(item) ?: return null
-        grid.addItemView(view, item)
+        addViewToCellLayout(view, item)
         return view
+    }
+
+    /**
+     * Workspace.addInScreen's CellLayout part: the view in the item's cells, which are marked as
+     * occupied (CellLayout.addViewToCellLayout, with the item's id as the view id as
+     * Launcher.getViewIdForItem gives it).
+     */
+    internal fun addViewToCellLayout(view: View, item: ItemInfo) {
+        view.tag = item
+        val lp = CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY)
+        if (!cellLayout.addViewToCellLayout(view, -1, item.id, lp, true)) {
+            // TODO: This branch occurs when the workspace is adding views
+            // outside of the defined grid
+            // maybe we should be deleting these items from the LauncherModel?
+            Log.e(TAG, "Failed to add to item at (${lp.cellX},${lp.cellY}) to CellLayout")
+        }
     }
 
     /**
@@ -493,8 +509,8 @@ class HomeController(
     internal fun completeAddShortcut(info: WorkspaceItemInfo, cellX: Int, cellY: Int): Boolean {
         host.showHome()
         val cellXY = intArrayOf(cellX, cellY)
-        val foundCellSpan = (cellX >= 0 && cellY >= 0 && grid.cellLayout.occupied.isRegionVacant(cellX, cellY, 1, 1)) ||
-            grid.cellLayout.findCellForSpan(cellXY, 1, 1)
+        val foundCellSpan = (cellX >= 0 && cellY >= 0 && cellLayout.occupied.isRegionVacant(cellX, cellY, 1, 1)) ||
+            cellLayout.findCellForSpan(cellXY, 1, 1)
         if (!foundCellSpan) {
             Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
             return false
@@ -515,8 +531,8 @@ class HomeController(
     internal fun addWidget(item: WidgetItemInfo, cellX: Int, cellY: Int): Boolean {
         host.showHome()
         val cell = intArrayOf(cellX, cellY)
-        if (!grid.cellLayout.occupied.isRegionVacant(cellX, cellY, item.spanX, item.spanY) &&
-            !grid.cellLayout.findCellForSpan(cell, item.spanX, item.spanY)
+        if (!cellLayout.occupied.isRegionVacant(cellX, cellY, item.spanX, item.spanY) &&
+            !cellLayout.findCellForSpan(cell, item.spanX, item.spanY)
         ) {
             return false
         }
@@ -527,7 +543,7 @@ class HomeController(
             view.post {
                 view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), true)
                 // Launcher.showWidgetResizeFrame
-                if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, grid.cellLayout)
+                if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, cellLayout)
             }
         }
         return true
@@ -623,7 +639,7 @@ class HomeController(
      * the grid is full.
      */
     private fun findSpaceOnWorkspace(info: ItemInfo, outCoordinates: IntArray): Boolean =
-        grid.cellLayout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
+        cellLayout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
 
     // ---- model changes ----
 
@@ -658,7 +674,7 @@ class HomeController(
                 if (newIcon != null && finalItem != null) {
                     // We add the child after removing the folder to prevent both from existing
                     // at the same time in the CellLayout.
-                    grid.addItemView(newIcon, finalItem)
+                    addViewToCellLayout(newIcon, finalItem)
                 }
             }
         }
@@ -702,6 +718,7 @@ class HomeController(
     private companion object {
         /** RecyclerViewFastScroller.MAX_TRACK_ALPHA */
         const val SCROLLBAR_TRACK_ALPHA = 30
+        const val TAG = "HomeController"
 
         /** ItemInstallQueue.NEW_SHORTCUT_BOUNCE_DURATION */
         const val NEW_SHORTCUT_BOUNCE_DURATION = 450L
