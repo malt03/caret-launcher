@@ -37,7 +37,7 @@ class HomeModel(
     private val iconCache: IconCache,
 ) {
     /** LauncherModel.getModelDbController */
-    val modelDbController = ModelDbController(db)
+    val modelDbController = ModelDbController(context, db)
 
     val bgDataModel = BgDataModel()
 

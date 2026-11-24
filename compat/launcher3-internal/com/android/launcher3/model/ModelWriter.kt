@@ -30,6 +30,7 @@ import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.provider.LauncherDbUtils.itemIdMatch
 import com.android.launcher3.util.ContentWriter
 import com.android.launcher3.util.Executors
 import java.util.concurrent.Executor
@@ -449,8 +450,5 @@ open class ModelWriter(
 
     companion object {
         private const val TAG = "ModelWriter"
-
-        /** LauncherDbUtils.itemIdMatch */
-        @JvmStatic fun itemIdMatch(itemId: Int): String = "_id=$itemId"
     }
 }

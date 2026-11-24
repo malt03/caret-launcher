@@ -71,8 +71,15 @@ data class GridSpec(
     companion object {
         fun from(context: Context): GridSpec {
             val metrics = context.resources.displayMetrics
-            // DisplayController: the display info of a window context.
-            val displayInfo = LauncherDisplayInfo(windowContext(context), WindowManagerProxy.INSTANCE)
+            // DisplayInfoContainer.getNewInfo: the display info of a window context, with the
+            // estimated bounds of the internal displays.
+            val windowContext = windowContext(context)
+            val wmProxy = WindowManagerProxy.INSTANCE
+            val displayInfo = LauncherDisplayInfo(
+                windowContext,
+                wmProxy,
+                perDisplayBoundsCache = wmProxy.estimateInternalDisplayBounds(windowContext),
+            )
             val idp = InvariantDeviceProfile()
             idp.initGrid(displayInfo, GridSizeMigration.getColumns(context))
             // DeviceProfile: isTwoPanels = info.isLargeScreen(windowBounds) && isMultiDisplay
