@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
+ */
 package com.android.launcher3.util.window;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import static com.android.launcher3.Utilities.dpToPx;
 import static com.android.launcher3.Utilities.dpiFromPx;
 import static com.android.launcher3.testing.shared.ResourceUtils.INVALID_RESOURCE_HANDLE;
 import static com.android.launcher3.testing.shared.ResourceUtils.NAVBAR_HEIGHT;
 import static com.android.launcher3.testing.shared.ResourceUtils.NAVBAR_HEIGHT_LANDSCAPE;
 import static com.android.launcher3.testing.shared.ResourceUtils.NAVBAR_LANDSCAPE_LEFT_RIGHT_SIZE;
+import static com.android.launcher3.testing.shared.ResourceUtils.NAV_BAR_INTERACTION_MODE_RES_NAME;
 import static com.android.launcher3.testing.shared.ResourceUtils.STATUS_BAR_HEIGHT;
 import static com.android.launcher3.testing.shared.ResourceUtils.STATUS_BAR_HEIGHT_LANDSCAPE;
 import static com.android.launcher3.testing.shared.ResourceUtils.STATUS_BAR_HEIGHT_PORTRAIT;
@@ -37,9 +43,11 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.Surface;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 
@@ -48,6 +56,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.launcher3.R;
 import com.android.launcher3.testing.shared.ResourceUtils;
+import com.android.launcher3.util.NavigationMode;
 import com.android.launcher3.util.WindowBounds;
 
 import java.util.ArrayList;
@@ -56,13 +65,13 @@ import java.util.List;
 /**
  * Utility class for mocking some window manager behaviours
  *
- * TextLauncher: cut down to the estimate of the displays' window bounds in each rotation
- * (InvariantDeviceProfile's supportedBounds), without Dagger, the taskbar and the window insets
- * normalization. The built-in displays come from DisplayManager, and a large screen's cutout is
- * taken at the top in every rotation (see estimateWindowBounds).
+ * TextLauncher: without Dagger and the insets normalization that needs DisplayController. The
+ * built-in displays come from DisplayManager, and a large screen's cutout is taken at the top in
+ * every rotation (see estimateWindowBounds).
  */
 public class WindowManagerProxy {
 
+    private static final String TAG = "WindowManagerProxy";
     public static final int MIN_TABLET_WIDTH = 600;
 
     // TextLauncher: one instance instead of the Dagger singleton.
@@ -76,6 +85,13 @@ public class WindowManagerProxy {
 
     protected WindowManagerProxy(boolean taskbarDrawnInProcess) {
         mTaskbarDrawnInProcess = taskbarDrawnInProcess;
+    }
+
+    /**
+     * Returns true if taskbar is drawn in process
+     */
+    public boolean isTaskbarDrawnInProcess() {
+        return mTaskbarDrawnInProcess;
     }
 
     /**
@@ -109,25 +125,151 @@ public class WindowManagerProxy {
     }
 
     /**
-     * TextLauncher: a built-in display too small for the smallest of Launcher3's display options
-     * (device_profiles.xml, "Shorter Stubby": 255dp by 400dp), such as the cover screen of a
-     * flip phone, is not a display the home screen is shown on, so it does not shrink the grid.
+     * Returns if the display is in desktop-first mode.
      */
-    private static boolean canShowHome(CachedDisplayInfo info, int densityDpi) {
-        float smallest = dpiFromPx(Math.min(info.size.x, info.size.y), densityDpi);
-        float largest = dpiFromPx(Math.max(info.size.x, info.size.y), densityDpi);
-        return smallest >= 255 && largest >= 400;
+    public boolean isDisplayDesktopFirst(Context displayInfoContext) {
+        return false;
     }
 
     /**
-     * TextLauncher: a CachedDisplayInfo for a display that may not be in use (its window metrics
-     * are the ones of the display in use), from the display itself.
+     * Returns whether the display is a freeform display for which taskbar should be pinned
+     * and showing desktop tasks.
      */
-    @SuppressWarnings("deprecation")
-    private static CachedDisplayInfo getDisplayInfo(Display display) {
-        Point size = new Point();
-        display.getRealSize(size);
-        return new CachedDisplayInfo(size, display.getRotation(), display.getCutout());
+    public boolean showDesktopTaskbarForFreeformDisplay(Context displayInfoContext) {
+        return false;
+    }
+
+    /**
+     * Returns the real bounds for the provided display after applying any insets normalization
+     */
+    public WindowBounds getRealBounds(Context displayInfoContext, CachedDisplayInfo info) {
+        // TextLauncher: a large screen's estimate takes the cutout at the top in every rotation
+        // (estimateWindowBounds), so the real bounds, with the cutout where the system puts it in
+        // this rotation, would replace the estimate of this rotation (LauncherDisplayInfo) and
+        // the grid would depend on the rotation the launcher started in. The estimate of this
+        // rotation is the real bounds instead.
+        int densityDpi = displayInfoContext.getResources().getConfiguration().densityDpi;
+        if (dpiFromPx(Math.min(info.size.x, info.size.y), densityDpi) >= MIN_TABLET_WIDTH) {
+            return estimateWindowBounds(displayInfoContext, info.normalize(this))
+                    .get(info.rotation);
+        }
+        WindowMetrics windowMetrics = displayInfoContext.getSystemService(WindowManager.class)
+                .getMaximumWindowMetrics();
+        Rect insets = new Rect();
+        // NOTE: Unable to use `normalizeWindowInsets(Context, WidnowInsets, Rect)` because
+        // uses DisplayController instance to determine whether taskbar is shown on home, and this
+        // method gets called while initializing DisaplayController.
+        normalizeWindowInsets(displayInfoContext,
+                showDesktopTaskbarForFreeformDisplay(displayInfoContext),
+                windowMetrics.getWindowInsets(), insets);
+        return new WindowBounds(windowMetrics.getBounds(), insets, info.rotation);
+    }
+
+    // TextLauncher: no DisplayController (normalizeWindowInsets(Context, WindowInsets, Rect)).
+
+    WindowInsets normalizeWindowInsets(Context context, boolean taskbarShownOnHome,
+            WindowInsets oldInsets, Rect outInsets) {
+        if (!mTaskbarDrawnInProcess) {
+            outInsets.set(oldInsets.getSystemWindowInsetLeft(), oldInsets.getSystemWindowInsetTop(),
+                    oldInsets.getSystemWindowInsetRight(), oldInsets.getSystemWindowInsetBottom());
+            return oldInsets;
+        }
+
+        WindowInsets.Builder insetsBuilder = new WindowInsets.Builder(oldInsets);
+        Insets navInsets = oldInsets.getInsets(WindowInsets.Type.navigationBars());
+
+        Resources systemRes = context.getResources();
+        Configuration config = systemRes.getConfiguration();
+
+        boolean isLargeScreen = config.smallestScreenWidthDp > MIN_TABLET_WIDTH;
+        boolean isGesture = isGestureNav(context);
+        boolean isPortrait = config.screenHeightDp > config.screenWidthDp;
+
+        int bottomNav = isLargeScreen
+                ? 0
+                : (isPortrait
+                        ? getDimenByName(systemRes, NAVBAR_HEIGHT)
+                        : (isGesture
+                                ? getDimenByName(systemRes, NAVBAR_HEIGHT_LANDSCAPE)
+                                : 0));
+        int leftNav = navInsets.left;
+        int rightNav = navInsets.right;
+        if (!isLargeScreen && !isGesture && !isPortrait) {
+            // In 3-button landscape/seascape, Launcher should always have nav insets regardless if
+            // it's initiated from fullscreen apps.
+            int navBarWidth = getDimenByName(systemRes, NAVBAR_LANDSCAPE_LEFT_RIGHT_SIZE);
+            switch (getRotation(context)) {
+                case Surface.ROTATION_90 -> rightNav = navBarWidth;
+                case Surface.ROTATION_270 -> leftNav = navBarWidth;
+            }
+        }
+        Insets newNavInsets = Insets.of(leftNav, navInsets.top, rightNav, bottomNav);
+        insetsBuilder.setInsets(WindowInsets.Type.navigationBars(), newNavInsets);
+        insetsBuilder.setInsetsIgnoringVisibility(WindowInsets.Type.navigationBars(), newNavInsets);
+
+        Insets statusBarInsets = oldInsets.getInsets(WindowInsets.Type.statusBars());
+
+        Insets newStatusBarInsets = Insets.of(
+                statusBarInsets.left,
+                getStatusBarHeight(context, isPortrait, statusBarInsets.top),
+                statusBarInsets.right,
+                statusBarInsets.bottom);
+        insetsBuilder.setInsets(WindowInsets.Type.statusBars(), newStatusBarInsets);
+        insetsBuilder.setInsetsIgnoringVisibility(
+                WindowInsets.Type.statusBars(), newStatusBarInsets);
+
+        // Override the tappable insets to be 0 on the bottom for gesture nav (otherwise taskbar
+        // would count towards it). This is used for the bottom protection in All Apps for example.
+        if (isGesture && !taskbarShownOnHome) {
+            Insets oldTappableInsets = oldInsets.getInsets(WindowInsets.Type.tappableElement());
+            Insets newTappableInsets = Insets.of(oldTappableInsets.left, oldTappableInsets.top,
+                    oldTappableInsets.right, 0);
+            insetsBuilder.setInsets(WindowInsets.Type.tappableElement(), newTappableInsets);
+        }
+
+        applyDisplayCutoutBottomInsetOverrideOnLargeScreen(
+                context, isLargeScreen, dpToPx(config.screenWidthDp), oldInsets, insetsBuilder);
+
+        WindowInsets result = insetsBuilder.build();
+        Insets systemWindowInsets = result.getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+        outInsets.set(systemWindowInsets.left, systemWindowInsets.top, systemWindowInsets.right,
+                systemWindowInsets.bottom);
+        return result;
+    }
+
+    /**
+     * For large screen, when display cutout is at bottom left/right corner of screen, override
+     * display cutout's bottom inset to 0, because launcher allows drawing content over that area.
+     */
+    private static void applyDisplayCutoutBottomInsetOverrideOnLargeScreen(
+            @NonNull Context context,
+            boolean isLargeScreen,
+            int screenWidthPx,
+            @NonNull WindowInsets windowInsets,
+            @NonNull WindowInsets.Builder insetsBuilder) {
+        if (!isLargeScreen) {
+            return;
+        }
+
+        final DisplayCutout displayCutout = windowInsets.getDisplayCutout();
+        if (displayCutout == null) {
+            return;
+        }
+
+        if (!areBottomDisplayCutoutsSmallAndAtCorners(
+                displayCutout.getBoundingRectBottom(), screenWidthPx, context.getResources())) {
+            return;
+        }
+
+        Insets oldDisplayCutoutInset = windowInsets.getInsets(WindowInsets.Type.displayCutout());
+        Insets newDisplayCutoutInset = Insets.of(
+                oldDisplayCutoutInset.left,
+                oldDisplayCutoutInset.top,
+                oldDisplayCutoutInset.right,
+                0);
+        insetsBuilder.setInsetsIgnoringVisibility(
+                WindowInsets.Type.displayCutout(), newDisplayCutoutInset);
     }
 
     /**
@@ -312,6 +454,20 @@ public class WindowManagerProxy {
     }
 
     /**
+     * Returns bounds of the display associated with the context, or bounds of DEFAULT_DISPLAY
+     * if the context isn't associated with a display.
+     */
+    public Rect getCurrentBounds(Context displayInfoContext) {
+        Resources res = displayInfoContext.getResources();
+        Configuration config = res.getConfiguration();
+
+        float screenWidth = config.screenWidthDp * res.getDisplayMetrics().density;
+        float screenHeight = config.screenHeightDp * res.getDisplayMetrics().density;
+
+        return new Rect(0, 0, (int) screenWidth, (int) screenHeight);
+    }
+
+    /**
      * Returns rotation of the display associated with the context, or rotation of DEFAULT_DISPLAY
      * if the context isn't associated with a display.
      */
@@ -333,6 +489,14 @@ public class WindowManagerProxy {
                 DEFAULT_DISPLAY);
     }
 
+    private int getDisplayId(Context displayInfoContext) {
+        try {
+            return displayInfoContext.getDisplay().getDisplayId();
+        } catch (UnsupportedOperationException e) {
+            return DEFAULT_DISPLAY;
+        }
+    }
+
     /**
      * Returns a DisplayCutout which represents a rotated version of the original
      */
@@ -344,10 +508,60 @@ public class WindowManagerProxy {
     }
 
     /**
+     * Returns the current navigation mode from resource if the context is for the default or a non-
+     * display context. Otherwise, return NavigationMode.THREE_BUTTONS.
+     */
+    public NavigationMode getNavigationMode(Context displayInfoContext) {
+        // Always assume 3-button nav for external displays
+        int displayId = getDisplayId(displayInfoContext);
+        if (displayId != DEFAULT_DISPLAY) {
+            return NavigationMode.THREE_BUTTONS;
+        }
+        // Otherwise get from Resource
+        int modeInt = ResourceUtils.getIntegerByName(NAV_BAR_INTERACTION_MODE_RES_NAME,
+                displayInfoContext.getResources(), INVALID_RESOURCE_HANDLE);
+
+        if (modeInt == INVALID_RESOURCE_HANDLE) {
+            Log.e(TAG, "Failed to get system resource ID. Incompatible framework version?");
+        } else {
+            for (NavigationMode m : NavigationMode.values()) {
+                if (m.resValue == modeInt) {
+                    return m;
+                }
+            }
+        }
+        return NavigationMode.NO_BUTTON;
+    }
+
+    /**
      * @see DisplayCutout#getSafeInsets
      */
     public static Rect getSafeInsets(DisplayCutout cutout) {
         return new Rect(cutout.getSafeInsetLeft(), cutout.getSafeInsetTop(),
                 cutout.getSafeInsetRight(), cutout.getSafeInsetBottom());
+    }
+
+    // ---- TextLauncher ----
+
+    /**
+     * TextLauncher: a built-in display too small for the smallest of Launcher3's display options
+     * (device_profiles.xml, "Shorter Stubby": 255dp by 400dp), such as the cover screen of a
+     * flip phone, is not a display the home screen is shown on, so it does not shrink the grid.
+     */
+    private static boolean canShowHome(CachedDisplayInfo info, int densityDpi) {
+        float smallest = dpiFromPx(Math.min(info.size.x, info.size.y), densityDpi);
+        float largest = dpiFromPx(Math.max(info.size.x, info.size.y), densityDpi);
+        return smallest >= 255 && largest >= 400;
+    }
+
+    /**
+     * TextLauncher: a CachedDisplayInfo for a display that may not be in use (its window metrics
+     * are the ones of the display in use), from the display itself.
+     */
+    @SuppressWarnings("deprecation")
+    private static CachedDisplayInfo getDisplayInfo(Display display) {
+        Point size = new Point();
+        display.getRealSize(size);
+        return new CachedDisplayInfo(size, display.getRotation(), display.getCutout());
     }
 }

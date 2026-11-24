@@ -334,8 +334,8 @@
     <color name="materialColorPrimary">@android:color/system_primary_light</color>
     <color name="materialColorTertiaryContainer">@android:color/system_tertiary_container_light</color>
     <color name="materialColorOnTertiaryContainer">@android:color/system_on_tertiary_container_light</color>
-    <!-- The grid options of xml/device_profiles.xml, which the app's GridSpec reads
-         (InvariantDeviceProfile): attrs.xml -->
+    <!-- The grid options of xml/device_profiles.xml, which deviceprofile/parser/GridOption.kt
+         and DisplayOption.kt read for InvariantDeviceProfile: attrs.xml -->
     <declare-styleable name="GridDisplayOption">
         <attr name="name" format="string" />
         <attr name="gridTitle" format="string" />
@@ -674,6 +674,37 @@
     <dimen name="taskbar_button_margin_split">0dp</dimen>
     <dimen name="taskbar_button_margin_6_5">0dp</dimen>
     <style name="FolderStyleDefault" />
+    <!-- deviceprofile/parser/GridOption.kt and DisplayOption.kt: attrs.xml, styles.xml,
+         dimens.xml and config.xml (quickstep/res overrides the taskbar values) -->
+    <declare-styleable name="AllAppsSize">
+        <attr name="minDeviceWidthDp" format="float" />
+        <attr name="alignWithWorkspaceRow" format="integer" />
+        <attr name="allAppsColumns" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="GridSize">
+        <attr name="minDeviceWidthPx" format="integer"/>
+        <attr name="minDeviceHeightPx" format="integer"/>
+        <attr name="numGridRows" format="integer"/>
+        <attr name="numGridColumns" format="integer"/>
+        <attr name="dbFile" />
+        <attr name="defaultLayoutId"/>
+    </declare-styleable>
+    <declare-styleable name="CellStyle">
+        <attr name="iconDrawablePadding" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="AllAppsStyle">
+        <attr name="horizontalPadding" format="dimension" />
+    </declare-styleable>
+    <style name="CellStyleDefault">
+        <item name="iconDrawablePadding">7dp</item>
+    </style>
+    <style name="AllAppsStyleDefault">
+        <item name="horizontalPadding">16dp</item>
+    </style>
+    <dimen name="hotseat_bar_bottom_space_default">48</dimen>
+    <dimen name="hotseat_qsb_space_default">0</dimen>
+    <item name="taskbar_icon_size" type="dimen" format="float">44</item>
+    <dimen name="taskbar_button_margin_default">48dp</dimen>
     <!-- Folder pages: PagedView, pageindicators/PageIndicatorDots.java and PaginationArrow.kt, and
          the folder footer (drawable/ic_circle.xml and drawable/ic_chevron_left_rounded_700.xml are
          copied as is) -->
