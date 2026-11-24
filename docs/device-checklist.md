@@ -4,9 +4,6 @@
 
 エミュレータ（Pixel 9 Pro Fold）では、ビルド、ユニットテスト、DB の移行テスト（androidTest）、上流との突き合わせ（check-upstream）が通り、古い DB からの移行（17 件が同じ位置に残る）、移動の保存、フォルダの長押しメニューと開閉、検索、削除のボタン、空き領域の長押しメニューを軽く確かめた。以下は実機での確認が要るもの。
 
-### 判断が要るもの
-
-
 ### まだ残っているもの
 
 - Tex-iuyb ほかのアプリからのピン留めの要求（AddItemActivity）：android-17.0.0_r1 の AddItemActivity は、移植済みの Compose 版ピッカーの PinAppWidgetCatalog でシートを出すので、判断は要らない（View 版の WidgetCell のシートは android-16 まで）
