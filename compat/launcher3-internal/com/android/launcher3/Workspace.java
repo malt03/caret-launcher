@@ -84,6 +84,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.accessibility.AccessibleDragListenerAdapter;
+import com.android.launcher3.accessibility.WorkspaceAccessibilityHelper;
 import com.android.launcher3.anim.PendingAnimation;
 import com.android.launcher3.apppairs.AppPairIcon;
 import com.android.launcher3.celllayout.CellInfo;
@@ -559,13 +561,62 @@ public abstract class Workspace<T> extends FrameLayout
                 position[0], position[1], 0, null);
     }
 
+    @Override
+    public void announceForAccessibility(CharSequence text) {
+        // Don't announce if apps is on top of us.
+        if (!mLauncher.isInState(ALL_APPS)) {
+            super.announceForAccessibility(text);
+        }
+    }
+
+    // TextLauncher: called as the launcher's state is set (Launcher.onStateSetEnd), as this
+    // workspace is not a state handler yet (onEndStateTransition).
+    public void updateAccessibilityFlags() {
+        // TODO: Update the accessibility flags appropriately when dragging.
+        int accessibilityFlag =
+                mLauncher.getStateManager().getState().hasFlag(FLAG_WORKSPACE_INACCESSIBLE)
+                        ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                        : IMPORTANT_FOR_ACCESSIBILITY_AUTO;
+        if (!mLauncher.getAccessibilityDelegate().isInAccessibleDrag()) {
+            int total = getPageCount();
+            for (int i = 0; i < total; i++) {
+                updateAccessibilityFlags(accessibilityFlag, (CellLayout) getPageAt(i));
+            }
+            setImportantForAccessibility(accessibilityFlag);
+        }
+    }
+
+    @Override
+    public AccessibilityNodeInfo createAccessibilityNodeInfo() {
+        if (getImportantForAccessibility() == IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS) {
+            // TAPL tests verify that workspace is not present in Overview and AllApps states.
+            // TAPL can work only if UIDevice is set up as setCompressedLayoutHeirarchy(false).
+            // Hiding workspace from the tests when it's
+            // IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS.
+            return AccessibilityNodeInfo.obtain();
+        }
+        return super.createAccessibilityNodeInfo();
+    }
+
+    private void updateAccessibilityFlags(int accessibilityFlag, CellLayout page) {
+        page.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        page.getShortcutsAndWidgets().setImportantForAccessibility(accessibilityFlag);
+        page.setContentDescription(null);
+        page.setAccessibilityDelegate(null);
+    }
+
     public void startDrag(CellInfo cellInfo, DragOptions options) {
         View child = cellInfo.cell;
 
         mDragInfo = cellInfo;
         child.setVisibility(INVISIBLE);
 
-        // TextLauncher: no accessible drag (AccessibleDragListenerAdapter), Tex-44r9.
+        if (options.isAccessibleDrag) {
+            // TextLauncher: the page is the child of its scroll container, not of this workspace,
+            // and there is no hotseat.
+            mAccessibilityDragListener = new AccessibleDragListenerAdapter(
+                    (ViewGroup) getPageScrollContainer(), WorkspaceAccessibilityHelper::new);
+        }
 
         beginDragShared(child, this, options);
     }
@@ -1167,7 +1218,9 @@ public abstract class Workspace<T> extends FrameLayout
                     .log(LauncherEvent.LAUNCHER_ITEM_DROP_COMPLETED);
         }
 
-        // TextLauncher: no accessible drag, so nothing to announce (Tex-44r9).
+        if (d.stateAnnouncer != null && !droppedOnOriginalCell) {
+            d.stateAnnouncer.completeAction(R.string.item_moved);
+        }
     }
 
     @Nullable
@@ -1514,7 +1567,12 @@ public abstract class Workspace<T> extends FrameLayout
             mDragTargetLayout.clearDragOutlines();
             setDragMode(DRAG_MODE_CREATE_FOLDER);
 
-            // TextLauncher: no accessible drag, so nothing to announce (Tex-44r9).
+            if (dragObject.stateAnnouncer != null) {
+                ItemInfo dropOverInfo = (ItemInfo) mDragOverView.getTag();
+                String pageDescription = getPageDescription(dropOverInfo.screenId);
+                dragObject.stateAnnouncer.announce(WorkspaceAccessibilityHelper
+                        .getDescriptionForDropOver(mDragOverView, getContext(), pageDescription));
+            }
             return;
         }
 
@@ -1533,7 +1591,12 @@ public abstract class Workspace<T> extends FrameLayout
             }
             setDragMode(DRAG_MODE_ADD_TO_FOLDER);
 
-            // TextLauncher: no accessible drag, so nothing to announce (Tex-44r9).
+            if (dragObject.stateAnnouncer != null) {
+                ItemInfo dropOverInfo = (ItemInfo) mDragOverView.getTag();
+                String pageDescription = getPageDescription(dropOverInfo.screenId);
+                dragObject.stateAnnouncer.announce(WorkspaceAccessibilityHelper
+                        .getDescriptionForDropOver(mDragOverView, getContext(), pageDescription));
+            }
             return;
         }
 
@@ -2088,14 +2151,29 @@ public abstract class Workspace<T> extends FrameLayout
                 - sibling.getLeft() - sibling.getTranslationX());
     }
 
+    // TextLauncher: not a PagedView, and one page (mNextPage).
+    protected String getCurrentPageDescription() {
+        return getPageDescription(mCurrentPage);
+    }
+
     /**
      * @param page page index.
      * @return Description of the page at the given page index.
      */
     @Override
     public String getPageDescription(int page) {
-        // TextLauncher: no accessible page descriptions (Tex-44r9).
-        return "";
+        // TextLauncher: the pages are not children of this workspace (getPageCount), and there is
+        // no extra empty screen (one page).
+        int nScreens = getPageCount();
+        if (nScreens == 0) {
+            // When the workspace is not loaded, we do not know how many screen will be bound.
+            return getContext().getString(R.string.home_screen);
+        }
+        int panelCount = getPanelCount();
+        int currentPage = (page / panelCount) + 1;
+        int totalPages = nScreens / panelCount + nScreens % panelCount;
+
+        return getContext().getString(R.string.workspace_scroll_format, currentPage, totalPages);
     }
 
     @Override
@@ -2136,6 +2214,11 @@ public abstract class Workspace<T> extends FrameLayout
     /** PagedView.getPageAt */
     public CellLayout getPageAt(int index) {
         return index == 0 ? mWorkspaceScreens.get(FIRST_SCREEN_ID) : null;
+    }
+
+    /** PagedView.getCurrentPage */
+    public int getCurrentPage() {
+        return mCurrentPage;
     }
 
     /** PagedView.getDestinationPage */

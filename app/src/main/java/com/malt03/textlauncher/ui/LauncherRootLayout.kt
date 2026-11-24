@@ -7,13 +7,16 @@ import com.android.app.animation.Interpolators
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
 import com.android.launcher3.anim.KeyboardInsetAnimationCallback
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.ui.allapps.AllAppsSheet
 import com.malt03.textlauncher.ui.allapps.AllAppsView
+import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.Hotseat
 import com.android.launcher3.dragndrop.DragLayer
+import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.views.BaseDragLayer
 import com.android.launcher3.views.ScrimView
 
@@ -245,6 +248,40 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
             return true
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    // ---- accessibility (BaseDragLayer) ----
+    //
+    // Launcher3's drag layer holds the whole launcher, so while a folder or menu is open
+    // (AbstractFloatingView.TYPE_ACCESSIBLE) only it is accessible and gets the hover events.
+    // Here the drag layer ([overlay]) is over the home screen instead, so the rest is left out
+    // here, and the overlay keeps only the open view (BaseDragLayer.addChildrenForAccessibility).
+
+    private val isAccessibleFloatingViewOpen: Boolean
+        get() = ActivityContext.lookupContextNoThrow(context)?.let {
+            AbstractFloatingView.getTopOpenViewWithType(it, AbstractFloatingView.TYPE_ACCESSIBLE) != null
+        } == true
+
+    override fun addChildrenForAccessibility(outChildren: ArrayList<View>) {
+        if (!isAccessibleFloatingViewOpen) {
+            super.addChildrenForAccessibility(outChildren)
+        } else if (overlay.isImportantForAccessibility) {
+            outChildren.add(overlay)
+        } else {
+            overlay.addChildrenForAccessibility(outChildren)
+        }
+    }
+
+    override fun onRequestSendAccessibilityEvent(child: View, event: AccessibilityEvent): Boolean {
+        if (child !== overlay && isAccessibleFloatingViewOpen) return false
+        return super.onRequestSendAccessibilityEvent(child, event)
+    }
+
+    override fun dispatchHoverEvent(event: MotionEvent): Boolean {
+        // The overlay covers this view from its top left, so the event is in its coordinates
+        // (dispatchGenericMotionEvent passes a hover event to its dispatchHoverEvent).
+        if (isAccessibleFloatingViewOpen) return overlay.dispatchGenericMotionEvent(event)
+        return super.dispatchHoverEvent(event)
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {

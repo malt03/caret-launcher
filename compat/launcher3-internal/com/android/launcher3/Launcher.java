@@ -20,23 +20,34 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_DESKTOP;
 import static com.android.launcher3.LauncherState.NORMAL;
+import static com.android.launcher3.anim.AnimatorListeners.forEndCallback;
 
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.util.Log;
+import android.util.Pair;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
+import com.android.launcher3.anim.PropertyListBuilder;
+import com.android.launcher3.celllayout.CellPosMapper.CellPos;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.IModelWriter;
+import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
@@ -51,10 +62,12 @@ import com.android.launcher3.states.RotationHelper;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
 import com.android.launcher3.util.RunnableList;
+import com.android.launcher3.util.ViewEx;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,6 +77,12 @@ import java.util.List;
  * Activity here, and only the members copied code uses are declared.
  */
 public abstract class Launcher implements StatefulContainer<LauncherState> {
+    private static final String TAG = "Launcher";
+
+    @VisibleForTesting public static final int NEW_APPS_ANIMATION_DELAY = 500;
+
+    private static final float BOUNCE_ANIMATION_TENSION = 1.3f;
+
     /**
      * TextLauncher: a ContextTracker rather than ContextTracker.ActivityTracker, since the launcher
      * is not a BaseActivity; the home is started as {@link #isStarted()} says. The home screen
@@ -191,8 +210,17 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
      */
     public abstract RunnableList startActivitySafely(View v, Intent intent, ItemInfo item);
 
-    /** TextLauncher: the app adds items to its home screen (LauncherAccessibilityDelegate). */
-    public abstract LauncherAccessibilityDelegate getAccessibilityDelegate();
+    // TextLauncher: made on first use (Launcher.onCreate makes it), as the home screen that
+    // extends this gives the context its actions' labels need.
+    private LauncherAccessibilityDelegate mAccessibilityDelegate;
+
+    @Override
+    public LauncherAccessibilityDelegate getAccessibilityDelegate() {
+        if (mAccessibilityDelegate == null) {
+            mAccessibilityDelegate = createAccessibilityDelegate();
+        }
+        return mAccessibilityDelegate;
+    }
 
     /** BaseActivity.isStarted: whether the home activity is started. */
     public abstract boolean isStarted();
@@ -351,6 +379,110 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                 pos
         );
     }
+
+    /** Inflates the binds the provided item using animation */
+    public void inflateAndBindItemWithAnimation(ItemInfo info) {
+        // TextLauncher: the home screen inflates it (inflateItem).
+        bindInflatedItems(
+                Collections.singletonList(Pair.create(info, inflateItem(info,
+                        getWorkspace().getScreenWithId(info.screenId), info.container))),
+                new AnimatorSet());
+    }
+
+    /**
+     * Bind all the items in the map, ignoring any null views
+     *
+     * @param boundAnim if non-null, uses it to create and play the bounce animation for added views
+     */
+    public void bindInflatedItems(
+            List<Pair<ItemInfo, View>> shortcuts, @Nullable AnimatorSet boundAnim) {
+        // Get the list of added items and intersect them with the set of items here
+        Workspace<?> workspace = getWorkspace();
+        int newItemsScreenId = -1;
+        int index = 0;
+        View lastAddedView = null;
+        for (Pair<ItemInfo, View> e : shortcuts) {
+            final ItemInfo item = e.first;
+
+            // Remove colliding items.
+            CellPos presenterPos = getCellPosMapper().mapModelToPresenter(item);
+            if (item.container == CONTAINER_DESKTOP) {
+                CellLayout cl = workspace.getScreenWithId(presenterPos.screenId);
+                if (cl != null && cl.isOccupied(presenterPos.cellX, presenterPos.cellY)) {
+                    View occupiedView = cl.getChildAt(presenterPos.cellX, presenterPos.cellY);
+                    Object tag = occupiedView == null ? null : occupiedView.getTag();
+                    String desc = "Collision while binding workspace item: " + item
+                            + ". Collides with " + tag;
+                    // TextLauncher: not a studio build (FeatureFlags.IS_STUDIO_BUILD).
+                    // b/417021465 - Avoid mutating the model in the UI layer.
+                    Log.e(TAG, desc, new Exception());
+                    continue;
+                }
+            }
+
+            View view = e.second;
+            if (view == null) {
+                continue;
+            }
+            // TextLauncher: the home screen's widget views are attached to its host as they are
+            // made (LauncherWidgetHolder.attachViewToHostAndGetAttachedView).
+            workspace.addInScreenFromBind(view, item);
+            lastAddedView = view;
+            if (boundAnim != null) {
+                // Animate all the applications up now
+                view.setAlpha(0f);
+                view.setScaleX(0f);
+                view.setScaleY(0f);
+                boundAnim.play(createNewAppBounceAnimation(view, index++));
+                newItemsScreenId = presenterPos.screenId;
+            }
+        }
+
+        // Animate to the correct page.
+        if (boundAnim != null && newItemsScreenId > -1) {
+            final Runnable startBounceAnimRunnable = boundAnim::start;
+
+            // Schedule accessibility action.
+            final View a11yTarget = lastAddedView;
+            boundAnim.addListener(forEndCallback((success) -> {
+                // TextLauncher: isStarted for the top resumed activity (LauncherUiState).
+                if (success
+                        && isInState(NORMAL)
+                        && isStarted()
+                        && a11yTarget.isAttachedToWindow()
+                        && a11yTarget.getVisibility() == View.VISIBLE) {
+                    ViewEx.performAccessibilityActionOnViewTree(a11yTarget);
+                }
+            }));
+
+            // TextLauncher: one page, which scrolls to show the new item instead of snapping to
+            // its page.
+            workspace.post(() -> a11yTarget.requestRectangleOnScreen(
+                    new Rect(0, 0, a11yTarget.getWidth(), a11yTarget.getHeight()), false));
+            workspace.postDelayed(startBounceAnimRunnable, NEW_APPS_ANIMATION_DELAY);
+        }
+        workspace.requestLayout();
+    }
+
+    private ValueAnimator createNewAppBounceAnimation(View v, int i) {
+        // TextLauncher: ItemInstallQueue's NEW_SHORTCUT_BOUNCE_DURATION and
+        // NEW_SHORTCUT_STAGGER_DELAY (no ItemInstallQueue).
+        ValueAnimator bounceAnim = new PropertyListBuilder().alpha(1).scale(1).build(v)
+                .setDuration(450);
+        bounceAnim.setStartDelay(i * 85);
+        bounceAnim.setInterpolator(new OvershootInterpolator(BOUNCE_ANIMATION_TENSION));
+        return bounceAnim;
+    }
+
+    protected LauncherAccessibilityDelegate createAccessibilityDelegate() {
+        return new LauncherAccessibilityDelegate(this);
+    }
+
+    /**
+     * TextLauncher: AppInfo.makeWorkspaceItem, for an app of the all apps list added to the home
+     * screen: the home screen's own item for the app (AppInfo is not a WorkspaceItemFactory here).
+     */
+    public abstract WorkspaceItemInfo makeWorkspaceItem(AppInfo appInfo);
 
     /** Activity.getRootView: the home activity's root view, which holds the popups. */
     public abstract View getRootView();

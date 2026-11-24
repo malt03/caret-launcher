@@ -60,9 +60,16 @@ public class LauncherDelegate {
     }
 
     boolean interceptOutsideTouch(MotionEvent ev, BaseDragLayer dl, Folder folder) {
-        // TextLauncher: no accessible drags.
-        // TODO: add ww log if need to gather tap outside to close folder
-        folder.close(true);
-        return true;
+        if (mLauncher.getAccessibilityDelegate().isInAccessibleDrag()) {
+            // Do not close the container if in drag and drop.
+            if (!dl.isEventOverView(mLauncher.getDropTargetBar(), ev)) {
+                return true;
+            }
+        } else {
+            // TODO: add ww log if need to gather tap outside to close folder
+            folder.close(true);
+            return true;
+        }
+        return false;
     }
 }

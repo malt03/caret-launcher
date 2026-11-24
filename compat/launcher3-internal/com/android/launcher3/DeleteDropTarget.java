@@ -24,13 +24,16 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 
+import com.android.launcher3.accessibility.LauncherAccessibilityDelegate;
 import com.android.launcher3.dragndrop.DragOptions;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.util.Preconditions;
 
 /**
  * Stand-in for Launcher3's DeleteDropTarget (android-17.0.0_r1), made from DeleteDropTarget.java
- * by deleting what TextLauncher does not use (home screen files, undo, accessible drops, logging);
+ * by deleting what TextLauncher does not use (home screen files, undo, logging);
  * changes are marked with "TextLauncher:".
  */
 public class DeleteDropTarget extends ButtonDropTarget {
@@ -57,6 +60,26 @@ public class DeleteDropTarget extends ButtonDropTarget {
     public void onDragStart(DropTarget.DragObject dragObject, DragOptions options) {
         super.onDragStart(dragObject, options);
         setTextBasedOnDragSource(dragObject.dragInfo);
+    }
+
+    /**
+     * @return true for items that should have a "Remove" action in accessibility.
+     */
+    private boolean supportsAccessibilityDrop(ItemInfo info, View view) {
+        return UtilitiesKt.isPersistedModelItem(info);
+    }
+
+    @Override
+    public int getSupportedAccessibilityAction(ItemInfo info, View view) {
+        if (supportsAccessibilityDrop(info, view)) {
+            return getAccessibilityAction();
+        }
+        return LauncherAccessibilityDelegate.INVALID;
+    }
+
+    @Override
+    public int getAccessibilityAction() {
+        return LauncherAccessibilityDelegate.REMOVE;
     }
 
     @Override
@@ -105,6 +128,21 @@ public class DeleteDropTarget extends ButtonDropTarget {
             Log.wtf("b/379606516", "If the drop target text is 'remove', then"
                     + " users should always be able to delete the item from launcher's db."
                     + " Invalid drag ItemInfo: " + item);
+        }
+    }
+
+    /**
+     * Removes the item from the workspace. If the view is not null, it also removes the view.
+     */
+    @Override
+    public void onAccessibilityDrop(View view, ItemInfo item, int action) {
+        Preconditions.assertTrue(action == getAccessibilityAction());
+        // Remove the item from launcher and the db, we can ignore the containerInfo in this call
+        // because we already remove the drag view from the folder (if the drag originated from
+        // a folder) in Folder.beginDrag()
+        if (canRemove(item)) {
+            // TextLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
+            mDropTargetHandler.onDeleteComplete(item, view);
         }
     }
 }

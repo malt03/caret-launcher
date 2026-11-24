@@ -21,14 +21,17 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
  * [homeKey] ([AppKey]). Loaded from the database; once its app is found in the app list, it gets
  * the app's title and runtime flags ([bind]).
  */
-class AppItemInfo(component: ComponentName, private val userSerial: Long) : WorkspaceItemInfo() {
+class AppItemInfo : WorkspaceItemInfo {
+    private val userSerial: Long
+
     /** Changes when the app's saved activity is gone and another of the package takes its place. */
     val homeKey: String get() = AppKey.of(intent.component!!, userSerial)
 
     /** Whether the app is not marked unavailable (FLAG_DISABLED_NOT_AVAILABLE, [markUnavailable]). */
     val isAvailable: Boolean get() = runtimeStatusFlags and FLAG_DISABLED_NOT_AVAILABLE == 0
 
-    init {
+    constructor(component: ComponentName, userSerial: Long) : super() {
+        this.userSerial = userSerial
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPLICATION
         // AppInfo.makeLaunchIntent: the saved intent (LauncherSettings.Favorites.INTENT).
         intent = AppInfo.makeLaunchIntent(component)
@@ -39,6 +42,17 @@ class AppItemInfo(component: ComponentName, private val userSerial: Long) : Work
         bind(app)
         bitmap = app.bitmap
     }
+
+    /** WorkspaceItemInfo(WorkspaceItemInfo), for [clone]. */
+    private constructor(info: AppItemInfo) : super(info) {
+        userSerial = info.userSerial
+    }
+
+    /**
+     * WorkspaceItemInfo.clone, which LauncherAccessibilityDelegate.addToWorkspace adds to the home
+     * screen (an app in a folder added again): still an app of the home model.
+     */
+    override fun clone(): WorkspaceItemInfo = AppItemInfo(this)
 
     /**
      * The installed app, from the app list: what WorkspaceItemInfo(AppInfo) copies, its title and

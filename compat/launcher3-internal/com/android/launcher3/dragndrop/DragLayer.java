@@ -27,6 +27,7 @@ import static com.android.app.animation.Interpolators.DECELERATE_1_5;
 import static com.android.launcher3.LauncherAnimUtils.VIEW_TRANSLATE_X;
 import static com.android.launcher3.LauncherAnimUtils.VIEW_TRANSLATE_Y;
 import static com.android.launcher3.Utilities.mapRange;
+import static com.android.launcher3.compat.AccessibilityManagerCompat.sendCustomAccessibilityEvent;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -37,24 +38,32 @@ import android.animation.TypeEvaluator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.view.animation.Interpolator;
 
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.DropTargetBar;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.R;
 import com.android.launcher3.ShortcutAndWidgetContainer;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
+import com.android.launcher3.folder.Folder;
+import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.BaseDragLayer;
+
+import java.util.ArrayList;
 
 /**
  * A ViewGroup that coordinates dragging across its descendants
  *
  * <p>Stand-in for Launcher3's DragLayer (android-17.0.0_r1), made from DragLayer.java by deleting
- * what TextLauncher does not use (everything but the drop animations: setup, touch and hover
- * handling, accessibility, child drawing order, the focus outline, the scrim and the overlay
- * callbacks); changes are marked with "TextLauncher:". TextLauncher's drag layer sits over the
+ * what TextLauncher does not use (everything but the drop animations and accessibility: setup,
+ * touch handling, child drawing order, the focus outline, the scrim and the overlay callbacks); changes are marked with "TextLauncher:". TextLauncher's drag layer sits over the
  * home screen instead of holding it; see {@link BaseDragLayer}.
  */
 // TextLauncher: not a LauncherOverlayCallbacks (no -1 screen overlay).
@@ -73,6 +82,8 @@ public class DragLayer extends BaseDragLayer<Launcher> {
     private int mTopViewIndex;
     private int mChildCountOnLastUpdate = -1;
 
+    private boolean mHoverPointClosesFolder = false;
+
     /**
      * TextLauncher: created in code, over the home screen. No alpha channels, multitouch is not
      * kept from splitting, and the home grid draws the focus outline.
@@ -83,6 +94,103 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         super(context);
 
         setChildrenDrawingOrderEnabled(true);
+    }
+
+    private boolean isEventOverAccessibleDropTargetBar(MotionEvent ev) {
+        return isInAccessibleDrag() && isEventOverView(getLauncher().getDropTargetBar(), ev);
+    }
+
+    @Override
+    public boolean onInterceptHoverEvent(MotionEvent ev) {
+        // TextLauncher: no mContainer field (getLauncher).
+        Launcher container = getLauncher();
+        if (container == null || container.getWorkspace() == null) {
+            return false;
+        }
+        AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(container);
+        if (!(topView instanceof Folder)) {
+            return false;
+        } else {
+            AccessibilityManager accessibilityManager = (AccessibilityManager)
+                    getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
+            if (accessibilityManager.isTouchExplorationEnabled()) {
+                final int action = ev.getAction();
+                boolean isOverFolderOrSearchBar;
+                switch (action) {
+                    case MotionEvent.ACTION_HOVER_ENTER:
+                        isOverFolderOrSearchBar = isEventOverView(topView, ev) ||
+                                isEventOverAccessibleDropTargetBar(ev);
+                        if (!isOverFolderOrSearchBar) {
+                            sendTapOutsideFolderAccessibilityEvent();
+                            mHoverPointClosesFolder = true;
+                            return true;
+                        }
+                        mHoverPointClosesFolder = false;
+                        break;
+                    case MotionEvent.ACTION_HOVER_MOVE:
+                        isOverFolderOrSearchBar = isEventOverView(topView, ev) ||
+                                isEventOverAccessibleDropTargetBar(ev);
+                        if (!isOverFolderOrSearchBar && !mHoverPointClosesFolder) {
+                            sendTapOutsideFolderAccessibilityEvent();
+                            mHoverPointClosesFolder = true;
+                            return true;
+                        } else if (!isOverFolderOrSearchBar) {
+                            return true;
+                        }
+                        mHoverPointClosesFolder = false;
+                }
+            }
+        }
+        return false;
+    }
+
+    // TextLauncher: folders have no name to edit (folder_tap_to_rename).
+    private void sendTapOutsideFolderAccessibilityEvent() {
+        int stringId = R.string.folder_tap_to_close;
+        sendCustomAccessibilityEvent(
+                this, AccessibilityEvent.TYPE_VIEW_FOCUSED, getContext().getString(stringId));
+    }
+
+    @Override
+    public boolean onHoverEvent(MotionEvent ev) {
+        // If we've received this, we've already done the necessary handling
+        // in onInterceptHoverEvent. Return true to consume the event.
+        return false;
+    }
+
+
+    private boolean isInAccessibleDrag() {
+        // TextLauncher: the launcher may not be made yet (getLauncher).
+        Launcher launcher = getLauncher();
+        return launcher != null && launcher.getAccessibilityDelegate().isInAccessibleDrag();
+    }
+
+    @Override
+    public boolean onRequestSendAccessibilityEvent(View child, AccessibilityEvent event) {
+        if (isInAccessibleDrag() && child instanceof DropTargetBar) {
+            return true;
+        }
+        return super.onRequestSendAccessibilityEvent(child, event);
+    }
+
+    @Override
+    public void addChildrenForAccessibility(ArrayList<View> childrenForAccessibility) {
+        // TextLauncher: the launcher may not be made yet (getLauncher).
+        if (getLauncher() == null) {
+            super.addChildrenForAccessibility(childrenForAccessibility);
+            return;
+        }
+        View topView = AbstractFloatingView.getTopOpenViewWithType(getLauncher(),
+                AbstractFloatingView.TYPE_ACCESSIBLE);
+        if (topView != null) {
+            addAccessibleChildToList(topView, childrenForAccessibility);
+            if (isInAccessibleDrag()) {
+                addAccessibleChildToList(getLauncher().getDropTargetBar(),
+                        childrenForAccessibility);
+            }
+        } else {
+            super.addChildrenForAccessibility(childrenForAccessibility);
+        }
     }
 
     public void animateViewIntoPosition(DragView dragView, final int[] pos, float alpha,
@@ -353,5 +461,16 @@ public class DragLayer extends BaseDragLayer<Launcher> {
                 callback.run();
             }
         };
+    }
+
+    // TextLauncher: members TextLauncher adds.
+
+    /**
+     * mContainer: the home screen's Launcher, looked up when needed, as this layer is made before
+     * it; null until then.
+     */
+    @Nullable
+    private Launcher getLauncher() {
+        return (Launcher) ActivityContext.lookupContextNoThrow(getContext());
     }
 }

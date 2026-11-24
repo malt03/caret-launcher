@@ -55,4 +55,32 @@
     <string name="default_scroll_format" msgid="7475544710230993317">"%2$dটির মধ্যে %1$dটি পৃষ্ঠা"</string>
     <string name="remove_drop_target_label" msgid="7812859488053230776">"সরান"</string>
     <string name="uninstall_drop_target_label" msgid="4722034217958379417">"আনইনস্টল করুন"</string>
+    <string name="action_close" msgid="1077760267194136901">"বন্ধ করুন"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"উচ্চতা কমান"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"উচ্চতা বাড়ান"</string>
+    <string name="action_move" msgid="4339390619886385032">"আইটেম সরান"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"এখানে আইটেম সরান"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"হোম স্ক্রিনে সরান"</string>
+    <string name="action_resize" msgid="1802976324781771067">"আবার আকার দিন"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"<xliff:g id="NAME">%1$s</xliff:g> নামের ফোল্ডার বানিয়ে তাতে যোগ করুন। <xliff:g id="STRING">%4$s</xliff:g>-এ <xliff:g id="NUMBER_0">%2$s</xliff:g> নম্বর সারি, <xliff:g id="NUMBER_1">%3$s</xliff:g> নম্বর কলাম"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"<xliff:g id="NAME">%1$s</xliff:g> নামের ফোল্ডারে যোগ করুন। <xliff:g id="STRING">%4$s</xliff:g>-এ <xliff:g id="NUMBER_0">%2$s</xliff:g> নম্বর সারি, <xliff:g id="NUMBER_1">%3$s</xliff:g> নম্বর কলাম"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"অ্যাপ তালিকা"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g>টি আইটেম"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g>টি আইটেম, বিজ্ঞপ্তি আছে"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g>:<xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g>টি বা তার বেশি আইটেম"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g>টি বা তার বেশি আইটেম, বিজ্ঞপ্তি আছে"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"<xliff:g id="NAME">%1$s</xliff:g> নামের ফোল্ডার তৈরি করুন। <xliff:g id="STRING">%4$s</xliff:g>-এ <xliff:g id="NUMBER_0">%2$s</xliff:g> নম্বর সারি, <xliff:g id="NUMBER_1">%3$s</xliff:g> নম্বর কলাম"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"অ্যাপ সাজেস্ট করবেন না"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"ফোল্ডার বন্ধ করা হয়েছে"</string>
+    <string name="folder_opened" msgid="94695026776264709">"ফোল্ডার খোলা হয়েছে, <xliff:g id="WIDTH">%1$d</xliff:g> বাই <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"ফোল্ডার বন্ধ করতে আলতো চাপ দিন"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"ফোল্ডার"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"উইজেট সেটিংস"</string>
+    <string name="home_screen" msgid="5629429142036709174">"হোম"</string>
+    <string name="item_moved" msgid="4606538322571412879">"আইটেম সরানো হয়েছে"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"<xliff:g id="STRING">%3$s</xliff:g>-এ সারি <xliff:g id="NUMBER_0">%1$s</xliff:g> কলাম <xliff:g id="NUMBER_1">%2$s</xliff:g> সরান"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"পছন্দসই অবস্থানে সরান <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"অবস্থানে সরান <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"নামবিহীন ফোল্ডার"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"%2$dটির %1$d নম্বর হোম স্ক্রিন"</string>
 </resources>

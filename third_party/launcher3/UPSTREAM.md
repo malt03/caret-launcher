@@ -207,6 +207,17 @@ derived=src/com/android/launcher3/SecondaryDropTarget.java compat/launcher3-inte
 derived=src/com/android/launcher3/DropTargetHandler.kt compat/launcher3-internal/com/android/launcher3/DropTargetHandler.kt
 derived=src/com/android/launcher3/touch/WorkspaceTouchListener.java compat/launcher3-internal/com/android/launcher3/touch/WorkspaceTouchListener.java
 derived=src/com/android/launcher3/popup/WorkspaceLongPressOptions.kt compat/launcher3-internal/com/android/launcher3/popup/WorkspaceLongPressOptions.kt
+derived=src/com/android/launcher3/accessibility/BaseAccessibilityDelegate.java compat/launcher3-internal/com/android/launcher3/accessibility/BaseAccessibilityDelegate.java
+derived=src/com/android/launcher3/accessibility/LauncherAccessibilityDelegate.java compat/launcher3-internal/com/android/launcher3/accessibility/LauncherAccessibilityDelegate.java
+derived=src/com/android/launcher3/accessibility/WorkspaceAccessibilityHelper.java compat/launcher3-internal/com/android/launcher3/accessibility/WorkspaceAccessibilityHelper.java
+derived=src/com/android/launcher3/accessibility/DragViewStateAnnouncer.java compat/launcher3-internal/com/android/launcher3/accessibility/DragViewStateAnnouncer.java
+derived=src/com/android/launcher3/UtilitiesKt.kt compat/launcher3-internal/com/android/launcher3/UtilitiesKt.kt
+derived=src/com/android/launcher3/touch/ItemLongClickListener.java compat/launcher3-internal/com/android/launcher3/touch/ItemLongClickListener.java
+path=src/com/android/launcher3/accessibility/DragAndDropAccessibilityDelegate.java
+path=src/com/android/launcher3/accessibility/AccessibleDragListenerAdapter.kt
+path=src/com/android/launcher3/accessibility/FolderAccessibilityHelper.java
+path=src/com/android/launcher3/accessibility/WidgetResizePopupDataSource.kt
+path=src/com/android/launcher3/anim/PropertyListBuilder.java
 path=src/com/android/launcher3/touch/PagedOrientationHandler.java
 path=src/com/android/launcher3/touch/DefaultPagedViewHandler.java
 path=src/com/android/launcher3/util/EdgeEffectCompat.java
@@ -245,6 +256,10 @@ path=res/drawable/ic_deepshortcut_placeholder.xml
 path=res/drawable/ic_remove_no_shadow.xml
 path=res/drawable/ic_uninstall_no_shadow.xml
 path=res/drawable/info_24px.xml
+path=res/drawable/ic_widget_height_decrease.xml
+path=res/drawable/ic_widget_height_increase.xml
+path=res/drawable/ic_widget_width_decrease.xml
+path=res/drawable/ic_widget_width_increase.xml
 path=res/drawable/middle_item_primary.xml
 path=res/drawable/popup_background.xml
 path=res/drawable/round_rect_folder.xml
@@ -380,8 +395,6 @@ ref=src/com/android/launcher3/model/data/PackageItemInfo.java compat/launcher3-i
 ref=src/com/android/launcher3/graphics/AutomatedIconDelegate.kt compat/launcher3-internal/com/android/launcher3/graphics/AutomatedIconDelegate.java
 ref=src/com/android/launcher3/graphics/PreloadIconDelegate.kt compat/launcher3-internal/com/android/launcher3/graphics/PreloadIconDelegate.java
 ref=src/com/android/launcher3/graphics/ThemeManager.kt compat/launcher3-internal/com/android/launcher3/graphics/ThemeManager.java
-ref=src/com/android/launcher3/accessibility/DragViewStateAnnouncer.java compat/launcher3-internal/com/android/launcher3/accessibility/DragViewStateAnnouncer.java
-ref=src/com/android/launcher3/accessibility/LauncherAccessibilityDelegate.java compat/launcher3-internal/com/android/launcher3/accessibility/LauncherAccessibilityDelegate.java
 ref=src/com/android/launcher3/views/BaseDragLayer.java compat/launcher3-internal/com/android/launcher3/views/BaseDragLayer.java
 ref=src/com/android/launcher3/views/ScrimView.java compat/launcher3-internal/com/android/launcher3/views/ScrimView.java
 ref=src/com/android/launcher3/logging/FileLog.kt compat/launcher3-internal/com/android/launcher3/logging/FileLog.java
@@ -455,7 +468,7 @@ ref=AndroidManifest-common.xml app/src/main/AndroidManifest.xml
 | `com.android.launcher3.folder.Folder`、`FolderIcon`、`FolderPagedView`、`PagedView`、`LauncherDelegate` | フォルダのアニメーション、プレビュー、ドロップ（`folder/` 以下）、キーボードのフォーカス枠（`keyboard/`）。`Folder` は上流と同じく `AbstractFloatingView`（`TYPE_FOLDER`）で、フォルダのアイコンごとに1つ持ち、開いている間だけドラッグレイヤーに置く。開閉（`animateOpen`、`handleClose`、`animateClosed`、`closeComplete`）、外側のタッチで閉じる処理、ドラッグ元（`startDrag`、`onDragStart`、`onDropCompleted`、`notifyDrop`）、中身の出し入れ（`addFolderContent`、`removeFolderContent`）を `Folder.java` から、アイテムの View の作成と並べ方（`bindItems`、`createNewView`、`arrangeChildren`）とフォーカス枠、ページ送りとページのインジケーターを `FolderPagedView.java` から移した。フッターは `res-textlauncher/layout/folder_footer.xml`（上流の `user_folder_icon_normalized.xml` のフッターから名前の欄を除いたもの）を `Folder` が読み込む。名前とデータベースへの書き込みは持たない（`FolderInfo` の `FLAG_MULTI_PAGE_ANIMATION` は保存しない）。アイテムの View は `Folder.inflateIcon` でアプリが作る。`LauncherDelegate` の `beginDragShared` と `replaceFolderWithFinalItem` はアプリが上書きする。アプリ側の `HomeFolder` と `FolderIconView` がこれらを継承し、フォーカスをタッチでは取らないことは `HomeFolder` が決める。`FolderIcon` のプレビュー描画、`onDrop`、`performCreateAnimation` などは `FolderIcon.java` から移した |
 | `com.android.launcher3.BubbleTextView`、`apppairs.AppPairIcon` | フォルダのアニメーション。アプリ側の `AppIconView` が `BubbleTextView` を継承する。アイコンの描画（`setIcon`、`setIconVisible`）、縦の中央寄せ（`onMeasure`、`setCenterVertically`）、並び替えの揺れ（`Reorderable`）は `BubbleTextView.java` から、`FolderIcon` の中央寄せと `Reorderable` は `FolderIcon.java` から移した。ラベルを出さないことはアプリ側で決める（`getCellSpecMaxTextLineCount` を 0 に、`WorkspaceProfile.getIconCenterVertically` を true に）。ラベルがないので文字の透明度は何もしない |
 | `com.android.launcher3.Launcher`、`Workspace`、`Hotseat`、`views.ScrimView` | フォルダの背景の暗転と縮小、`Launcher.getLauncher` と `instanceof Launcher`（`folder/`、`shortcuts/DeepShortcutView.java`）。上流と同じく `Launcher` が `ActivityContext` で、アプリ側の `HomeActivityContext` が継承する。`Activity` ではなく、`startActivitySafely`（アプリまたはアプリのショートカットを起動する）、`getDragLayer`、`getWorkspace`、`getHotseat`、`getScrimView`、`getAccessibilityDelegate`、`getStatsLogManager`、`getModel` だけを持つ。`Workspace` はホームのグリッドを、`Hotseat` は検索フィールドを包み、`isFinishedSwitchingState` と `persistRemoveItemsByMatcher`（更新が必要なショートカットのダイアログの「削除」）を持つ |
-| `com.android.launcher3.LauncherModel`、`accessibility.LauncherAccessibilityDelegate`、`logging.StatsLogManager` | `shortcuts/DeepShortcutView.java`、`touch/ItemClickHandler.java`。`LauncherModel` は `updateAndBindWorkspaceItem` だけ、`LauncherAccessibilityDelegate` は `addToWorkspace` だけのインターフェースで、アプリ側が実装する。`StatsLogManager` は何も記録しない（上流もクイックステップのない構成では `NoOpLoggerModule` で何も記録せず、記録先の statsd と `InteractionJankMonitor` はシステムのアプリにしか使えない） |
+| `com.android.launcher3.LauncherModel`、`logging.StatsLogManager` | `shortcuts/DeepShortcutView.java`、`touch/ItemClickHandler.java`。`LauncherModel` は `updateAndBindWorkspaceItem` だけのインターフェースで、アプリ側が実装する。`LauncherAccessibilityDelegate` は上流から削った互換クラス（`derived=`）で、`Launcher` が作る。`StatsLogManager` は何も記録しない（上流もクイックステップのない構成では `NoOpLoggerModule` で何も記録せず、記録先の statsd と `InteractionJankMonitor` はシステムのアプリにしか使えない） |
 | `com.android.launcher3.views.BaseDragLayer`、`views.ActivityContext`、`DeviceProfile` | フォルダの配置と寸法、ドラッグ、長押しメニュー。`BaseDragLayer` は元と同じく `InsettableFrameLayout` を継承し、タッチコントローラーの振り分け（開いている `AbstractFloatingView` を先に、次にドラッグ）を `BaseDragLayer.java` から移した。ホームの上に重ねた層なので、タッチは親から渡してもらう。ホームの上に重ねた層なので、層の外の View は親を通して座標を変換する。アプリは `BaseDragLayer` を継承した `dragndrop.DragLayer` の互換クラスを置き、こちらに `DragLayer.java` のドロップアニメーション（`animateViewIntoPosition`、`animateView`、`playDropAnimation`、`clearAnimatedView`）を移した。`Launcher` の互換クラスは上流と同じく `getDragLayer()` で `DragLayer` を返す。`DeviceProfile` は、フォルダの寸法（`FolderProfile`）、ホームのアイコンサイズ（`WorkspaceProfile`）、使える高さ（`DeviceProperties`）だけ |
 | `com.android.launcher3.graphics.ThemeManager` | アイコンのテーマの有無と形状（アプリのアイコン読み込みが設定する）、アイコンとフォルダの形。アイコンの形は選んだアイコン形状のパスから `ShapeDelegate.pickBestShape` で、フォルダの形は `folderRadiusRatio` から作る（`ThemeManager.parseIconState` と同じ） |
 | `com.android.launcher3.ShortcutAndWidgetContainer`（`ViewGroup`。アイコンとフォルダの分だけ、セルの寸法、`getChildAt(cellX, cellY)`、`setupLp`、`measureChild`、`layoutChild`、フォーカスした子を画面に入れる処理などを `ShortcutAndWidgetContainer.java` から移した。上流と同じく `CellLayout` が作って子に持つ） | `CellLayout`、`dragndrop/DragLayer`、フォルダのアニメーション（`folder/IconAnimationData.kt`） |
@@ -468,7 +481,7 @@ ref=AndroidManifest-common.xml app/src/main/AndroidManifest.xml
 | `com.android.launcher3.Utilities`（`dpiFromPx`）、`R.dimen.taskbar_size`（上流の既定の 0dp）、`max_width_and_height_of_small_display_cutout` | `util/window/WindowManagerProxy.java`（`derived=`。アプリのグリッドの大きさ `GridSpec` が、`InvariantDeviceProfile` と同じく各向きの見積もりの一番小さい大きさを使う） |
 | `com.android.launcher3.util.Executors`（`MODEL_EXECUTOR`・`UI_HELPER_EXECUTOR`・`MAIN_EXECUTOR`・`ORDERED_BG_EXECUTOR`） | `IconCache` のスレッド、長押しメニューのショートカットの問い合わせ（`PopupContainerWithArrow`）、`dragndrop/DragView.java`、ウィジェットピッカー |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ、`keyboard/`（`enableFocusOutline` は bp1a で有効）、全アプリ一覧（`letterFastScroller` はどのリリース設定にもなく、既定の無効） |
-| `com.android.launcher3.LauncherSettings`、`BuildConfig`、`dagger/`、`logging/`、`accessibility.DragViewStateAnnouncer`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（App Pair、インストール中のアプリなど）は何もしないか、通らない |
+| `com.android.launcher3.LauncherSettings`、`BuildConfig`、`dagger/`、`logging/`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（App Pair、インストール中のアプリなど）は何もしないか、通らない |
 | `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`popup.PopupItemDragHandler`、`SystemShortcut`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）は持たない。`PopupItemDragHandler` はインターフェースだけを置き、`LauncherPopupItemDragHandler` はアプリ側（`ItemLongClickListener`）に移した。`shortcuts/DeepShortcutView.java` はそのままコピーし、追加ボタンとバッジ付きのコピーは `Launcher` の互換クラス（`getAccessibilityDelegate().addToWorkspace`、`getModel().updateAndBindWorkspaceItem`）を通してアプリが受ける。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
 | `com.android.launcher3.util.MSDLPlayerWrapper`（Dagger の代わりに `INSTANCE.get(context)` でアプリに1つのプレイヤーを返す。履歴の dump は持たない） | ドラッグのハプティック（`CellLayout`、`HomeWorkspace`、`ButtonDropTarget`。`msdllib` は `third_party/systemui/msdllib/`） |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |

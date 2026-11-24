@@ -35,6 +35,7 @@ import com.android.launcher3.dragndrop.DraggableView;
 import com.android.launcher3.popup.Poppable;
 import com.android.launcher3.popup.PoppableType;
 import com.android.launcher3.util.Themes;
+import com.android.launcher3.views.ActivityContext;
 
 /**
  * {@inheritDoc}
@@ -60,7 +61,12 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
         super(context);
         mLongPressHelper = new CheckLongPressHelper(this, this);
         // TextLauncher: no custom events (Flags.enableCursorDrivenWorkflows is disabled in the
-        // release), accessibility actions or focus outline.
+        // release) or focus outline. No mActivityContext field; a view made outside a launcher
+        // context (the widget picker's preview) has no accessibility delegate.
+        ActivityContext activityContext = ActivityContext.lookupContextNoThrow(context);
+        if (activityContext != null) {
+            setAccessibilityDelegate(activityContext.getAccessibilityDelegate());
+        }
 
         if (Themes.getAttrBoolean(context, R.attr.isWorkspaceDarkText)) {
             setOnLightBackground(true);

@@ -32,7 +32,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
+
+import java.util.ArrayList;
 
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.InsettableFrameLayout;
@@ -190,6 +193,42 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     }
 
     @Override
+    public boolean onRequestSendAccessibilityEvent(View child, AccessibilityEvent event) {
+        // Shortcuts can appear above folder
+        View topView = AbstractFloatingView.getTopOpenViewWithType(getContainer(),
+                AbstractFloatingView.TYPE_ACCESSIBLE);
+        if (topView != null) {
+            if (child == topView) {
+                return super.onRequestSendAccessibilityEvent(child, event);
+            }
+            // Skip propagating onRequestSendAccessibilityEvent for all other children
+            // which are not topView
+            return false;
+        }
+        return super.onRequestSendAccessibilityEvent(child, event);
+    }
+
+    @Override
+    public void addChildrenForAccessibility(ArrayList<View> childrenForAccessibility) {
+        View topView = AbstractFloatingView.getTopOpenViewWithType(getContainer(),
+                AbstractFloatingView.TYPE_ACCESSIBLE);
+        if (topView != null) {
+            // Only add the top view as a child for accessibility when it is open
+            addAccessibleChildToList(topView, childrenForAccessibility);
+        } else {
+            super.addChildrenForAccessibility(childrenForAccessibility);
+        }
+    }
+
+    protected void addAccessibleChildToList(View child, ArrayList<View> outList) {
+        if (child.isImportantForAccessibility()) {
+            outList.add(child);
+        } else {
+            child.addChildrenForAccessibility(outList);
+        }
+    }
+
+    @Override
     public void onViewRemoved(View child) {
         super.onViewRemoved(child);
         if (child instanceof AbstractFloatingView) {
@@ -296,6 +335,14 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     @Override
     protected LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
         return new LayoutParams(p);
+    }
+
+    /**
+     * TextLauncher: mContainer, looked up when needed, as this layer is made before the home
+     * screen's Launcher it belongs to.
+     */
+    protected ActivityContext getContainer() {
+        return ActivityContext.lookupContext(getContext());
     }
 
     public static class LayoutParams extends InsettableFrameLayout.LayoutParams {

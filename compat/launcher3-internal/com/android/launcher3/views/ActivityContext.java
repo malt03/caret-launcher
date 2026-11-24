@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.view.View;
+import android.view.View.AccessibilityDelegate;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +57,10 @@ public interface ActivityContext {
 
     default boolean finishAutoCancelActionMode() {
         return false;
+    }
+
+    default AccessibilityDelegate getAccessibilityDelegate() {
+        return null;
     }
 
     /**
@@ -155,12 +160,26 @@ public interface ActivityContext {
     // TextLauncher: the home screen's ActivityContext is not a Context; the activity holding it
     // gives it (Provider).
     static ActivityContext lookupContext(Context context) {
-        Context c = context;
-        while (c instanceof ContextWrapper) {
-            if (c instanceof Provider) return ((Provider) c).getActivityContext();
-            c = ((ContextWrapper) c).getBaseContext();
+        ActivityContext activityContext = lookupContextNoThrow(context);
+        if (activityContext == null) {
+            throw new IllegalArgumentException("Cannot find ActivityContext in parent tree");
         }
-        throw new IllegalArgumentException("Cannot find ActivityContext in parent tree");
+        return activityContext;
+    }
+
+    /**
+     * Returns the ActivityContext associated with the given Context, or null if
+     * the Context is not associated with any ActivityContext.
+     */
+    // TextLauncher: as lookupContext.
+    static ActivityContext lookupContextNoThrow(Context context) {
+        if (context instanceof Provider p) {
+            return p.getActivityContext();
+        } else if (context instanceof ContextWrapper cw) {
+            return lookupContextNoThrow(cw.getBaseContext());
+        } else {
+            return null;
+        }
     }
 
     // TextLauncher: members TextLauncher adds.

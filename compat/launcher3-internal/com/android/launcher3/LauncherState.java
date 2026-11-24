@@ -41,6 +41,7 @@ import android.graphics.Color;
 import android.view.animation.Interpolator;
 
 import androidx.annotation.FloatRange;
+import androidx.annotation.StringRes;
 
 import com.android.launcher3.statemanager.BaseState;
 import com.android.launcher3.statemanager.StateManager;
@@ -240,7 +241,13 @@ public abstract class LauncherState implements BaseState<LauncherState> {
 
     // TextLauncher: the depth controller blurs the wallpaper only (shouldBlurWorkspace).
 
-    // TextLauncher: no accessible page descriptions (getDescription, getTitle), Tex-44r9.
+    public String getDescription(Launcher launcher) {
+        return launcher.getWorkspace().getCurrentPageDescription();
+    }
+
+    public @StringRes int getTitle() {
+        return R.string.home_screen;
+    }
 
     // TextLauncher: one page (getWorkspacePageAlphaProvider, getWorkspacePageTranslationProvider).
 

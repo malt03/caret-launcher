@@ -54,6 +54,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.launcher3.accessibility.BaseAccessibilityDelegate;
 import com.android.launcher3.anim.AnimatedFloat;
 import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DraggableView;
@@ -77,6 +78,7 @@ import com.android.launcher3.util.CancellableTask;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.util.SafeCloseable;
+import com.android.launcher3.util.ShortcutUtil;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 
@@ -243,6 +245,8 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         }
 
         setEllipsize(TruncateAt.END);
+        // TextLauncher: no mActivity field (getActivityAccessibilityDelegate).
+        setAccessibilityDelegate(getActivityAccessibilityDelegate(context));
 
         setContainerTextVisibility(mDisplay != DISPLAY_TASKBAR);
     }
@@ -296,6 +300,18 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
             }
         });
         mDotScaleAnim.start();
+    }
+
+    @Override
+    public void setAccessibilityDelegate(AccessibilityDelegate delegate) {
+        if (delegate instanceof BaseAccessibilityDelegate) {
+            super.setAccessibilityDelegate(delegate);
+        } else {
+            // NO-OP
+            // Workaround for b/129745295 where RecyclerView is setting our Accessibility
+            // delegate incorrectly. There are no cases when we shouldn't be using the
+            // LauncherAccessibilityDelegate for BubbleTextView.
+        }
     }
 
     @UiThread
@@ -767,7 +783,20 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         return icuCountFormat.format(args);
     }
 
+    public boolean canShowLongPressPopup() {
+        return getTag() instanceof ItemInfo && ShortcutUtil.supportsShortcuts((ItemInfo) getTag());
+    }
+
     // TextLauncher: members TextLauncher adds.
+
+    /**
+     * The accessibility delegate of the view's ActivityContext (mActivity in Launcher3), or none
+     * for a view made outside a launcher context.
+     */
+    private static AccessibilityDelegate getActivityAccessibilityDelegate(Context context) {
+        ActivityContext activity = ActivityContext.lookupContextNoThrow(context);
+        return activity != null ? activity.getAccessibilityDelegate() : null;
+    }
 
     /**
      * The iconDisplay of the long-press menu's rows (shortcut_popup in the BubbleTextView
@@ -803,5 +832,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         } else {
             mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
         }
+        setAccessibilityDelegate(getActivityAccessibilityDelegate(context));
     }
 }

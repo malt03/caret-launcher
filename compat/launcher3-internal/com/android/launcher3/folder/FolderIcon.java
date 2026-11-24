@@ -143,7 +143,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     // TextLauncher: FolderIcon(Context, AttributeSet) and inflateIcon in one, since the app's view
     // extends this instead of being inflated. The app sets the click listener; there is no
-    // content description, accessibility delegate or custom actions listener.
+    // custom actions listener.
     public FolderIcon(Context context, ActivityContext activity, FolderInfo folderInfo) {
         super(context);
 
@@ -164,6 +164,9 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         );
 
         updateDotInfo();
+        setContentDescription(getAccessiblityTitle(folderInfo.title));
+
+        setAccessibilityDelegate(activity.getAccessibilityDelegate());
 
         mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
         mPreviewVerifier.setFolderInfo(folderInfo);
@@ -546,7 +549,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     public void onItemsChanged(boolean animate) {
         updatePreviewItems(false);
         updateDotInfo();
-        // TextLauncher: no content description (no folder titles).
+        setContentDescription(getAccessiblityTitle(mInfo.title));
         updatePreviewItems(animate);
         invalidate();
         requestLayout();
@@ -581,6 +584,27 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     @Override
     public void getWorkspaceVisualDragBounds(Rect bounds) {
         getPreviewBounds(bounds);
+    }
+
+    public String getAccessiblityTitle(CharSequence title) {
+        if (title == null) {
+            // Avoids "Talkback -> Folder: null" announcement.
+            title = getContext().getString(R.string.unnamed_folder);
+        }
+        int size = mInfo.getContents().size();
+        // TextLauncher: no home screen files (HomeScreenFilesUtils.isFeatureEnabled).
+        String folder_type = getContext().getString(R.string.folder_type_name);
+        if (size < MAX_NUM_ITEMS_IN_PREVIEW) {
+            return getContext().getString(hasDot()
+                            ? R.string.apps_folder_name_format_exact_with_dot
+                            : R.string.apps_folder_name_format_exact,
+                    folder_type, title, size);
+        } else {
+            return getContext().getString(hasDot()
+                            ? R.string.apps_folder_name_format_overflow_with_dot
+                            : R.string.apps_folder_name_format_overflow,
+                    folder_type, title, MAX_NUM_ITEMS_IN_PREVIEW);
+        }
     }
 
     @NonNull

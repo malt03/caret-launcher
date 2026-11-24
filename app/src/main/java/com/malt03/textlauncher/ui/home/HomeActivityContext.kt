@@ -18,7 +18,6 @@ import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.PendingAddItemInfo
 import com.android.launcher3.ShortcutAndWidgetContainer
-import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.dagger.ActivityComponent
 import com.android.launcher3.dagger.LauncherComponentProvider
 import com.android.launcher3.deviceprofile.DropTargetProfile
@@ -27,6 +26,7 @@ import com.android.launcher3.model.IModelWriter
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.pm.UserCache
 import com.android.launcher3.popup.PopupDataProvider
 import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.states.RotationHelper
@@ -48,17 +48,15 @@ import com.android.launcher3.LauncherState
 import com.android.launcher3.statemanager.StateManager
 import com.android.launcher3.statemanager.StateManager.StateHandler
 import com.android.launcher3.states.StateAnimationConfig
-import java.util.function.Consumer
 
 /**
  * Launcher of the home screen, which is also the ActivityContext of the copied code as in
  * Launcher3: the device profile, the drag layer and controller, the item click handler, and the
- * model and accessibility delegate the long-press menu's shortcut rows use.
+ * model the long-press menu's shortcut rows use.
  */
 internal class HomeActivityContext(private val home: HomeController) :
     Launcher(home.root.overlay, home.root.hotseat, home.root.scrim),
-    LauncherModel,
-    LauncherAccessibilityDelegate {
+    LauncherModel {
     private val context = home.context
     private val gridSpec = home.gridSpec
 
@@ -137,8 +135,6 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun getPopupControllerForAppIcons(): PopupController<Launcher> =
         home.itemLongClickListener.popupControllerForAppIcons
 
-    override fun getAccessibilityDelegate(): LauncherAccessibilityDelegate = this
-
     override fun getModel(): LauncherModel = this
 
     /**
@@ -195,6 +191,8 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun onStateSetEnd(state: LauncherState) {
         val lastStableState = stableState
         stableState = state
+        // Workspace.onEndStateTransition: the workspace is not a state handler yet.
+        home.workspace.updateAccessibilityFlags()
         home.host.onStateSetEnd(state, lastStableState)
     }
 
@@ -234,12 +232,9 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun addPendingItem(info: PendingAddItemInfo, container: Int, screenId: Int, cell: IntArray?, spanX: Int, spanY: Int) =
         home.addPendingItem(info, container, cell, spanX, spanY)
 
-    /** LauncherAccessibilityDelegate.addToWorkspace for the menu's add button. */
-    override fun addToWorkspace(item: ItemInfo, accessibility: Boolean, finishCallback: Consumer<Boolean>?): Boolean {
-        val added = home.addToWorkspace(item)
-        finishCallback?.accept(added)
-        return added
-    }
+    /** AppInfo.makeWorkspaceItem: the home screen's item for an app of the all apps list. */
+    override fun makeWorkspaceItem(appInfo: AppInfo): WorkspaceItemInfo =
+        AppItemInfo(appInfo, UserCache.INSTANCE.get(context).getSerialNumberForUser(appInfo.user))
 }
 
 /**

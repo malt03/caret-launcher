@@ -127,6 +127,11 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
     }
 
     @Override
+    public int getAccessibilityAction() {
+        return mCurrentAccessibilityAction;
+    }
+
+    @Override
     protected void setupItemInfo(ItemInfo info) {
         int buttonType = getButtonType(info, getViewUnderDrag(info));
         if (buttonType != INVALID) {
@@ -137,6 +142,11 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
     @Override
     protected boolean supportsDrop(ItemInfo info) {
         return getButtonType(info, getViewUnderDrag(info)) != INVALID;
+    }
+
+    @Override
+    public int getSupportedAccessibilityAction(ItemInfo info, View view) {
+        return getButtonType(info, view);
     }
 
     private int getButtonType(ItemInfo info, View view) {
@@ -249,6 +259,12 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
                     + " item=" + info);
             return null;
         }
+    }
+
+    @Override
+    public void onAccessibilityDrop(View view, ItemInfo item, int action) {
+        // TextLauncher: no logging (doLog).
+        performDropAction(view, item, action);
     }
 
     /**

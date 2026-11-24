@@ -55,4 +55,32 @@
     <string name="default_scroll_format" msgid="7475544710230993317">"Pagina %1$d di %2$d"</string>
     <string name="remove_drop_target_label" msgid="7812859488053230776">"Rimuovi"</string>
     <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Disinstalla"</string>
+    <string name="action_close" msgid="1077760267194136901">"Chiudi"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"Riduci altezza"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"Aumenta altezza"</string>
+    <string name="action_move" msgid="4339390619886385032">"Sposta elemento"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"Sposta elemento qui"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"Sposta nella schermata Home"</string>
+    <string name="action_resize" msgid="1802976324781771067">"Ridimensiona"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"Aggiungi alla cartella con <xliff:g id="NAME">%1$s</xliff:g>. Riga <xliff:g id="NUMBER_0">%2$s</xliff:g>, colonna <xliff:g id="NUMBER_1">%3$s</xliff:g>, in <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"Aggiungi alla cartella <xliff:g id="NAME">%1$s</xliff:g>. Riga <xliff:g id="NUMBER_0">%2$s</xliff:g>, colonna <xliff:g id="NUMBER_1">%3$s</xliff:g> in <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"Lista di app"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> elementi"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> elementi, ha notifiche"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> o più elementi"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> o più elementi, ha notifiche"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"Crea cartella con <xliff:g id="NAME">%1$s</xliff:g>. Riga <xliff:g id="NUMBER_0">%2$s</xliff:g>, colonna <xliff:g id="NUMBER_1">%3$s</xliff:g>, in <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"Non suggerire app"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"Cartella chiusa"</string>
+    <string name="folder_opened" msgid="94695026776264709">"Cartella aperta, <xliff:g id="WIDTH">%1$d</xliff:g> per <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"Tocca per chiudere la cartella"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"Cartella"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"Impostazioni widget"</string>
+    <string name="home_screen" msgid="5629429142036709174">"Home"</string>
+    <string name="item_moved" msgid="4606538322571412879">"Elemento spostato"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"Spostati alla riga <xliff:g id="NUMBER_0">%1$s</xliff:g> colonna <xliff:g id="NUMBER_1">%2$s</xliff:g> in <xliff:g id="STRING">%3$s</xliff:g>"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"Sposta nella posizione <xliff:g id="NUMBER">%1$s</xliff:g> dei preferiti"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"Sposta nella posizione <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"Cartella senza nome"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"Schermata Home %1$d di %2$d"</string>
 </resources>

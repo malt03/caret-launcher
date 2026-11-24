@@ -37,8 +37,8 @@ import com.android.launcher3.model.data.ItemInfo
  * allows us to decouple drop target controllers from Launcher to enable easier testing.
  *
  * Stand-in for Launcher3's DropTargetHandler (android-17.0.0_r1), made from DropTargetHandler.kt
- * by deleting what TextLauncher does not use (undo, home screen files, widget reconfiguration,
- * accessible drops); changes are marked with "TextLauncher:".
+ * by deleting what TextLauncher does not use (undo, home screen files, widget reconfiguration);
+ * changes are marked with "TextLauncher:".
  */
 class DropTargetHandler(
     private val launcher: Launcher,
@@ -81,6 +81,10 @@ class DropTargetHandler(
 
     fun getDragLayer(): DragLayer {
         return launcher.dragLayer
+    }
+
+    fun onClick(buttonDropTarget: ButtonDropTarget) {
+        launcher.accessibilityDelegate.handleAccessibleDrop(buttonDropTarget, null)
     }
 
     private fun removeItemAndStripEmptyScreens(view: View?, item: ItemInfo) {

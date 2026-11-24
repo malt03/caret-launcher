@@ -1,6 +1,6 @@
 ---
 id: Tex-44r9
-status: open
+status: closed
 deps: [Tex-ydua]
 links: [Tex-4cve, Tex-op7u]
 created: 2026-11-23T04:37:46Z
@@ -26,3 +26,7 @@ tags: [home, launcher3]
 **2026-11-24T13:36:17Z**
 
 2026-11-24: 設計の見直し（Tex-op7u）で ③ にした。② の後なら大部分が上流のコードになる: LauncherAccessibilityDelegate・BaseAccessibilityDelegate を derived、WorkspaceAccessibilityHelper・DragAndDropAccessibilityDelegate・AccessibleDragListenerAdapter を path=。TalkBack での移動は CellLayout が画面にある状態での Workspace.startDrag（isAccessibleDrag、上流 1777-1801）。HomeController の addToWorkspace・addPendingItemToWorkspace・findSpaceOnWorkspace（405-456、625）は上流の LauncherAccessibilityDelegate.addToWorkspace（408）・findSpaceOnWorkspace（358）に戻る。削っていた setAccessibilityDelegate(getAccessibilityDelegate())（上流 BubbleTextView:423、FolderIcon:247、LauncherAppWidgetHostView:109）と ButtonDropTarget の操作を戻す。印: 追加の画面はない（findSpaceOnWorkspace は空きがなければトースト）。操作のメニューは ⑤ の PopupController の形を使う。範囲はホーム全体に決めた
+
+**2026-11-24T15:41:48Z**
+
+2026-11-25: ホーム全体の TalkBack 対応を移した。BaseAccessibilityDelegate・LauncherAccessibilityDelegate・WorkspaceAccessibilityHelper・DragViewStateAnnouncer・ItemLongClickListener（beginDrag だけ）・UtilitiesKt（isPersistedModelItem だけ）を derived、DragAndDropAccessibilityDelegate・AccessibleDragListenerAdapter・FolderAccessibilityHelper・WidgetResizePopupDataSource・PropertyListBuilder を path=。CellLayout・Workspace・Folder・FolderPagedView・FolderIcon・BubbleTextView・LauncherAppWidgetHostView・AppWidgetResizeFrameCompose・ドロップターゲット・DragLayer・BaseDragLayer・LauncherState・AllAppsState の a11y 部分を戻した。Launcher の互換クラスが delegate を作り、bindInflatedItems・inflateAndBindItemWithAnimation を上流から移した。HomeController の addToWorkspace 系は削除。ドラッグレイヤーが重ねた層なので、フォルダ等が開いている間のホームの隠し（addChildrenForAccessibility・onRequestSendAccessibilityEvent・hover）は LauncherRootLayout でもする。エミュレータで UiAutomation から、移動（仮想セル）、ホーム画面に追加、削除、フォルダ内の並べ替え、フォルダを開いている間にホームが木から消えることを確認。TalkBack そのものでの確認は実機で（docs/device-checklist.md）

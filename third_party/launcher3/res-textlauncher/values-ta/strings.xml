@@ -55,4 +55,32 @@
     <string name="default_scroll_format" msgid="7475544710230993317">"பக்கம் %1$d / %2$d"</string>
     <string name="remove_drop_target_label" msgid="7812859488053230776">"அகற்று"</string>
     <string name="uninstall_drop_target_label" msgid="4722034217958379417">"நிறுவல் நீக்கு"</string>
+    <string name="action_close" msgid="1077760267194136901">"மூடும்"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"உயரத்தைக் குறை"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"உயரத்தை அதிகரி"</string>
+    <string name="action_move" msgid="4339390619886385032">"நகர்த்து"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"இங்கு நகர்த்து"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"முகப்புத் திரைக்கு நகர்த்து"</string>
+    <string name="action_resize" msgid="1802976324781771067">"அளவு மாற்று"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"<xliff:g id="NAME">%1$s</xliff:g> உள்ள ஃபோல்டரில் சேர்க்கும். <xliff:g id="STRING">%4$s</xliff:g> இல் <xliff:g id="NUMBER_0">%2$s</xliff:g>வது வரிசை, <xliff:g id="NUMBER_1">%3$s</xliff:g>வது நெடுவரிசை"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"<xliff:g id="NAME">%1$s</xliff:g> உள்ள ஃபோல்டரில் சேர்க்கும். <xliff:g id="STRING">%4$s</xliff:g> இல் <xliff:g id="NUMBER_0">%2$s</xliff:g>வது வரிசை, <xliff:g id="NUMBER_1">%3$s</xliff:g>வது நெடுவரிசை"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"ஆப்ஸ் பட்டியல்"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> ஃபைல்கள்"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> ஃபைல்கள், அறிவிப்புகள் உள்ளன"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g> <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> அல்லது அதற்கு மேற்பட்ட ஃபைல்கள்"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> அல்லது அதற்கு மேற்பட்ட ஃபைல்கள், அறிவிப்புகள் உள்ளன"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"<xliff:g id="NAME">%1$s</xliff:g> உள்ள ஃபோல்டரில் உருவாக்கும். <xliff:g id="STRING">%4$s</xliff:g> இல் <xliff:g id="NUMBER_0">%2$s</xliff:g>வது வரிசை, <xliff:g id="NUMBER_1">%3$s</xliff:g>வது நெடுவரிசை"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"பரிந்துரைக்காதே"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"ஃபோல்டர் மூடப்பட்டது"</string>
+    <string name="folder_opened" msgid="94695026776264709">"திறக்கப்பட்ட ஃபோல்டர், <xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"ஃபோல்டரை மூட, தட்டவும்"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"ஃபோல்டர்"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"விட்ஜெட் அமைப்புகள்"</string>
+    <string name="home_screen" msgid="5629429142036709174">"முகப்பு"</string>
+    <string name="item_moved" msgid="4606538322571412879">"உருப்படி நகர்த்தப்பட்டது"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"<xliff:g id="STRING">%3$s</xliff:g> என்பதில் <xliff:g id="NUMBER_0">%1$s</xliff:g>வது வரிசை <xliff:g id="NUMBER_1">%2$s</xliff:g>வது நெடுவரிசைக்கு நகர்த்தப்படும்"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"விரும்பும் நிலை <xliff:g id="NUMBER">%1$s</xliff:g>க்கு நகர்த்து"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"நிலை <xliff:g id="NUMBER">%1$s</xliff:g>க்கு நகர்த்து"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"பெயரிடப்படாத ஃபோல்டர்"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"முகப்புத் திரை %1$d of %2$d"</string>
 </resources>

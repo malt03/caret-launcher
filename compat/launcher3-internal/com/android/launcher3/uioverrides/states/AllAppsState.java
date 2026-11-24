@@ -62,7 +62,17 @@ public class AllAppsState extends LauncherState {
     // TextLauncher: no jank monitor (onBackStarted, onBackInvoked, onBackCancelled,
     // onBackAnimationCompleted).
 
-    // TextLauncher: no accessible descriptions (getDescription, getTitle), Tex-44r9.
+    @Override
+    public String getDescription(Launcher launcher) {
+        // TextLauncher: ActivityAllAppsContainerView.getDescription without tabs or the search
+        // results (TextLauncher's search results are not the all apps list's).
+        return launcher.asContext().getString(R.string.all_apps_button_label);
+    }
+
+    @Override
+    public int getTitle() {
+        return R.string.all_apps_list_label;
+    }
 
     @Override
     public float getVerticalProgress(Launcher launcher) {

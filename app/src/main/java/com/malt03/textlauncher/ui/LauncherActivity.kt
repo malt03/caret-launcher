@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import android.view.WindowInsets
+import android.view.accessibility.AccessibilityEvent
 import android.window.OnBackInvokedDispatcher
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -453,8 +454,29 @@ class LauncherActivity :
         }
     }
 
+    /**
+     * Launcher.dispatchPopulateAccessibilityEvent: the window's events are titled with the state's
+     * description (the home screen or the apps list).
+     */
+    override fun dispatchPopulateAccessibilityEvent(event: AccessibilityEvent): Boolean {
+        val result = super.dispatchPopulateAccessibilityEvent(event)
+        val text = event.text
+        text.clear()
+        // Populate event with a fake title based on the current state.
+        text.add(
+            if (!::home.isInitialized) {
+                getString(com.android.launcher3.R.string.home_screen)
+            } else {
+                home.launcher.stateManager.state.getDescription(home.launcher)
+            },
+        )
+        return result
+    }
+
     /** Launcher.onStateSetEnd */
     override fun onStateSetEnd(state: LauncherState, lastStableState: LauncherState) {
+        // Set screen title for Talkback (Launcher.setTitle)
+        setTitle(state.title)
         if (state != NORMAL) return
         if (lastStableState == SPRING_LOADED) {
             // Launcher.onStateSetStart: the lock is cleared going back to NORMAL.

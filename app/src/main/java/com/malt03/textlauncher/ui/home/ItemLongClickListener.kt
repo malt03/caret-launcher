@@ -26,7 +26,6 @@ import com.android.launcher3.popup.Popup
 import com.android.launcher3.popup.PopupController
 import com.android.launcher3.popup.PopupItemDragHandler
 import com.android.launcher3.popup.SystemShortcut
-import com.android.launcher3.pm.UserCache
 import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.shortcuts.ShortcutDragPreviewProvider
 import com.android.launcher3.views.ActivityContext
@@ -72,8 +71,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
     }
 
     /** AppInfo.makeWorkspaceItem: the home screen's item for an app of the list. */
-    private fun toHomeItem(app: AppInfo): AppItemInfo =
-        AppItemInfo(app, UserCache.INSTANCE.get(context).getSerialNumberForUser(app.user))
+    private fun toHomeItem(app: AppInfo) = home.launcher.makeWorkspaceItem(app)
 
     /**
      * ItemLongClickListener.INSTANCE_WORKSPACE: Workspace.startDrag with the item's CellInfo, which

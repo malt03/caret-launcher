@@ -247,9 +247,9 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             // Save widget item info as tag on resize frame; so that, the accessibility
             // delegate can attach actions that typically happen on widget (e.g. resize,
             // move) also on the resize frame.
-            // TextLauncher: no accessibility delegate with widget actions.
             resizeFrame.apply {
                 tag = widgetView.tag
+                accessibilityDelegate = activityContext.accessibilityDelegate
                 contentDescription =
                     activityContext
                         .asContext()

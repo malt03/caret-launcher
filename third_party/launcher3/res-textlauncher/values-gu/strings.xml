@@ -55,4 +55,32 @@
     <string name="default_scroll_format" msgid="7475544710230993317">"%2$dમાંથી %1$d પેજ"</string>
     <string name="remove_drop_target_label" msgid="7812859488053230776">"કાઢી નાખો"</string>
     <string name="uninstall_drop_target_label" msgid="4722034217958379417">"અનઇન્સ્ટૉલ કરો"</string>
+    <string name="action_close" msgid="1077760267194136901">"બંધ કરો"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"ઊંચાઈ ઘટાડો"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"ઊંચાઈ વધારો"</string>
+    <string name="action_move" msgid="4339390619886385032">"આઇટમ ખસેડો"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"આઇટમ અહીં ખસેડો"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"હોમ સ્ક્રીન પર ખસેડો"</string>
+    <string name="action_resize" msgid="1802976324781771067">"આકાર બદલો"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"<xliff:g id="NAME">%1$s</xliff:g> સાથે ફોલ્ડરમાં ઉમેરો. <xliff:g id="STRING">%4$s</xliff:g>માં પંક્તિ <xliff:g id="NUMBER_0">%2$s</xliff:g>, કૉલમ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"<xliff:g id="NAME">%1$s</xliff:g> ફોલ્ડરમાં ઉમેરો. <xliff:g id="STRING">%4$s</xliff:g>માં પંક્તિ <xliff:g id="NUMBER_0">%2$s</xliff:g>, કૉલમ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"ઍપની સૂચિ"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> આઇટમ"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> આઇટમ, નોટિફિકેશન ધરાવે છે"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> અથવા વધુ આઇટમ"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> અથવા વધુ આઇટમ, નોટિફિકેશન ધરાવે છે"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"<xliff:g id="NAME">%1$s</xliff:g> નામનું ફોલ્ડર બનાવો. <xliff:g id="STRING">%4$s</xliff:g>માં પંક્તિ <xliff:g id="NUMBER_0">%2$s</xliff:g>, કૉલમ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"ઍપ સૂચવશો નહીં"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"ફોલ્ડર બંધ કર્યું"</string>
+    <string name="folder_opened" msgid="94695026776264709">"<xliff:g id="WIDTH">%1$d</xliff:g> બાય <xliff:g id="HEIGHT">%2$d</xliff:g> નું ફોલ્ડર ખોલ્યું"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"ફોલ્ડર બંધ કરવા માટે ટૅપ કરો"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"ફોલ્ડર"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"વિજેટ સેટિંગ"</string>
+    <string name="home_screen" msgid="5629429142036709174">"હોમ સ્ક્રીન"</string>
+    <string name="item_moved" msgid="4606538322571412879">"આઇટમ ખસેડી"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"<xliff:g id="STRING">%3$s</xliff:g>માં પંક્તિ <xliff:g id="NUMBER_0">%1$s</xliff:g> કૉલમ <xliff:g id="NUMBER_1">%2$s</xliff:g> પર આ આઇટમને ખસેડો"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"મનપસંદ સ્થિતિ <xliff:g id="NUMBER">%1$s</xliff:g> પર ખસેડો"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"<xliff:g id="NUMBER">%1$s</xliff:g> સ્થિતિ પર ખસેડો"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"અનામાંકિત ફોલ્ડર"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"%2$d માંથી %1$d હોમ સ્ક્રીન"</string>
 </resources>

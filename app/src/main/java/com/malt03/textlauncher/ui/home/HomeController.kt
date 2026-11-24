@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.graphics.ColorUtils
@@ -220,6 +219,8 @@ class HomeController(
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
+        // Workspace.setState at the start (onEndStateTransition): the page's accessibility flags.
+        workspace.updateAccessibilityFlags()
         // DragLayer.recreateControllers: the activity sets them (Launcher.createTouchControllers).
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(WorkspaceTouchListener(launcher, scrollView))
@@ -388,59 +389,6 @@ class HomeController(
     internal fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
 
     /**
-     * LauncherAccessibilityDelegate.addToWorkspace for the menu's add button and the widget
-     * picker's: the first free cell, bound with Launcher.bindInflatedItems' bounce, or for a
-     * widget or shortcut from the picker, Launcher.addPendingItem.
-     */
-    internal fun addToWorkspace(item: ItemInfo): Boolean {
-        // TextLauncher: nothing is added while the home screen loads (Launcher3's menu cannot be
-        // opened then, as no drag or long press starts); the search results' can (Tex-twu9).
-        if (isWorkspaceLoading) return false
-        if (item is PendingAddItemInfo) return addPendingItemToWorkspace(item)
-        // LauncherAccessibilityDelegate.addToWorkspace: the menu's item is copied.
-        val info = (item as? WorkspaceItemInfo ?: return false).clone()
-        // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
-        // while it is showing, so findSpaceOnWorkspace may try to use those cells.
-        AbstractFloatingView.closeOpenViews(activityContext, false, AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME)
-        val cell = IntArray(2)
-        if (!findSpaceOnWorkspace(info, cell)) {
-            // TextLauncher: one page, so where Launcher3 adds a page there is no room; it says so
-            // as Workspace.onNoCellFound does for a drop (Tex-8w0r).
-            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
-            return false
-        }
-        // Launcher3 goes to the NORMAL state first, and binds the item when it gets there.
-        host.showHome {
-            model.writer.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
-            animateNewItem(addInScreen(info)!!)
-        }
-        return true
-    }
-
-    /**
-     * LauncherAccessibilityDelegate.addToWorkspace for a widget or shortcut from the widget picker
-     * (PendingAddItemInfo): with room for it, its size options and Launcher.addPendingItem.
-     */
-    private fun addPendingItemToWorkspace(info: PendingAddItemInfo): Boolean {
-        // Dismiss widget resize frame if it is showing. The frame marks its cells as unoccupied
-        // while it is showing, so findSpaceOnWorkspace may try to use those cells.
-        AbstractFloatingView.closeOpenViews(activityContext, false, AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME)
-        host.showHome()
-        val cell = IntArray(2)
-        if (!findSpaceOnWorkspace(info, cell)) {
-            // TextLauncher: one page, so no room means it is not added (Launcher3 would add a
-            // page); it says so as for the menu's items.
-            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (info is PendingAddWidgetInfo && info.bindOptions == null) {
-            info.bindOptions = info.getDefaultSizeOptions(context)
-        }
-        addPendingItem(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, cell, info.spanX, info.spanY)
-        return true
-    }
-
-    /**
      * Launcher.addPendingItem for a widget or shortcut from the widget picker, added with its add
      * button or dropped (Workspace.onDropExternal), at [cell] with the spans it takes there.
      */
@@ -490,7 +438,7 @@ class HomeController(
             return false
         }
         model.writer.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellXY[0], cellXY[1])
-        animateNewItem(addInScreen(info)!!)
+        launcher.inflateAndBindItemWithAnimation(info)
         return true
     }
 
@@ -590,31 +538,6 @@ class HomeController(
     /** LauncherModel.onPackageIconsUpdated: CacheDataUpdatedTask for the home items. */
     fun onPackageIconsUpdated(packages: Set<String>) = loader.onPackageIconsUpdated(packages)
 
-    /**
-     * Launcher.bindInflatedItems with createNewAppBounceAnimation: an item added from the menu
-     * scales in. TextLauncher: the grid scrolls to it instead of snapping to its page.
-     */
-    private fun animateNewItem(view: View) {
-        view.alpha = 0f
-        view.scaleX = 0f
-        view.scaleY = 0f
-        view.post {
-            view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), false)
-            view.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setDuration(NEW_SHORTCUT_BOUNCE_DURATION)
-                .setInterpolator(OvershootInterpolator(BOUNCE_ANIMATION_TENSION))
-                .start()
-        }
-    }
-
-    /**
-     * LauncherAccessibilityDelegate.findSpaceOnWorkspace: the first free cell of the grid.
-     * TextLauncher: there is one page and no extra empty screen to add, so it returns false when
-     * the grid is full.
-     */
-    private fun findSpaceOnWorkspace(info: ItemInfo, outCoordinates: IntArray): Boolean =
-        cellLayout.findCellForSpan(outCoordinates, info.spanX, info.spanY)
-
     // ---- model changes ----
 
     /**
@@ -664,11 +587,5 @@ class HomeController(
         /** RecyclerViewFastScroller.MAX_TRACK_ALPHA */
         const val SCROLLBAR_TRACK_ALPHA = 30
         const val TAG = "HomeController"
-
-        /** ItemInstallQueue.NEW_SHORTCUT_BOUNCE_DURATION */
-        const val NEW_SHORTCUT_BOUNCE_DURATION = 450L
-
-        /** Launcher.BOUNCE_ANIMATION_TENSION */
-        const val BOUNCE_ANIMATION_TENSION = 1.3f
     }
 }

@@ -29,6 +29,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -49,14 +50,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.view.ViewCompat;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.accessibility.DragAndDropAccessibilityDelegate;
 import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.celllayout.CellLayoutLayoutParams;
 import com.android.launcher3.celllayout.DelegatedCellDrawing;
@@ -215,7 +219,8 @@ public class CellLayout extends ViewGroup {
 
     private final MSDLPlayerWrapper mMSDLPlayerWrapper;
 
-    // TextLauncher: no accessible drag and drop (DragAndDropAccessibilityDelegate, Tex-44r9).
+    // Related to accessible drag and drop
+    DragAndDropAccessibilityDelegate mTouchHelper;
 
     CellLayoutContainer mCellLayoutContainer;
 
@@ -332,13 +337,46 @@ public class CellLayout extends ViewGroup {
         mCellLayoutContainer = cellLayoutContainer;
     }
 
-    // TextLauncher: no accessible drag and drop (setDragAndDropAccessibilityDelegate,
-    // getDragAndDropAccessibilityDelegate, dispatchHoverEvent), Tex-44r9.
+    /**
+     * Sets or clears a delegate used for accessible drag and drop
+     */
+    public void setDragAndDropAccessibilityDelegate(DragAndDropAccessibilityDelegate delegate) {
+        ViewCompat.setAccessibilityDelegate(this, delegate);
+
+        mTouchHelper = delegate;
+        int accessibilityFlag = mTouchHelper != null
+                ? IMPORTANT_FOR_ACCESSIBILITY_YES : IMPORTANT_FOR_ACCESSIBILITY_NO;
+        setImportantForAccessibility(accessibilityFlag);
+        getShortcutsAndWidgets().setImportantForAccessibility(accessibilityFlag);
+        // ExploreByTouchHelper sets focusability. Clear it when the delegate is cleared.
+        setFocusable(delegate != null);
+        // Invalidate the accessibility hierarchy
+        if (getParent() != null) {
+            getParent().notifySubtreeAccessibilityStateChanged(
+                    this, this, AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE);
+        }
+    }
+
+    /**
+     * Returns the currently set accessibility delegate
+     */
+    public DragAndDropAccessibilityDelegate getDragAndDropAccessibilityDelegate() {
+        return mTouchHelper;
+    }
+
+    @Override
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        // Always attempt to dispatch hover events to accessibility first.
+        if (mTouchHelper != null && mTouchHelper.dispatchHoverEvent(event)) {
+            return true;
+        }
+        return super.dispatchHoverEvent(event);
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        // TextLauncher: no accessible drag and drop (mTouchHelper).
-        return mInterceptTouchListener != null && mInterceptTouchListener.onTouch(this, ev);
+        return mTouchHelper != null
+                || (mInterceptTouchListener != null && mInterceptTouchListener.onTouch(this, ev));
     }
 
     public void enableHardwareLayer(boolean hasLayer) {
@@ -1167,8 +1205,9 @@ public class CellLayout extends ViewGroup {
             mDragOutlineAnims[mDragOutlineCurrent].animateIn();
             invalidate();
 
-            // TextLauncher: no accessible drag and drop, so there is nothing to announce
-            // (Tex-44r9).
+            if (dragObject.stateAnnouncer != null) {
+                dragObject.stateAnnouncer.announce(getItemMoveDescription(cellX, cellY));
+            }
 
         }
     }
@@ -1181,8 +1220,29 @@ public class CellLayout extends ViewGroup {
         }
     }
 
-    // TextLauncher: no accessible drag and drop (getItemMoveDescription,
-    // getContainerPageDescription), Tex-44r9.
+    @SuppressLint("StringFormatMatches")
+    public String getItemMoveDescription(int cellX, int cellY) {
+        if (mContainerType == HOTSEAT) {
+            return getContext().getString(R.string.move_to_hotseat_position,
+                    Math.max(cellX, cellY) + 1);
+        } else {
+            int row = cellY + 1;
+            int col = Utilities.isRtl(getResources()) ? mCountX - cellX : cellX + 1;
+            int panelCount = mCellLayoutContainer.getPanelCount();
+            int pageIndex = mCellLayoutContainer.getCellLayoutIndex(this);
+            if (panelCount > 1) {
+                // Increment the column if the target is on the right side of a two panel home
+                col += (pageIndex % panelCount) * mCountX;
+            }
+            return getContext().getString(R.string.move_to_empty_cell_description, row, col,
+                    mCellLayoutContainer.getPageDescription(pageIndex));
+        }
+    }
+
+    public String getContainerPageDescription() {
+        int pageIndex = mCellLayoutContainer.getCellLayoutIndex(this);
+        return mCellLayoutContainer.getPageDescription(pageIndex);
+    }
 
     public void clearDragOutlines() {
         final int oldIndex = mDragOutlineCurrent;

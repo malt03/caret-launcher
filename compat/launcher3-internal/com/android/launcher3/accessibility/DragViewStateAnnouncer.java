@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
@@ -20,20 +21,55 @@
 
 package com.android.launcher3.accessibility;
 
+import static com.android.launcher3.compat.AccessibilityManagerCompat.isAccessibilityEnabled;
+
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
+
+import com.android.launcher3.Launcher;
 
 /**
- * Stand-in for Launcher3's DragViewStateAnnouncer. TextLauncher has no drag accessibility
- * announcements yet, so none is created.
+ * Periodically sends accessibility events to announce ongoing state changed. Based on the
+ * implementation in ProgressBar.
  */
-public class DragViewStateAnnouncer {
-    public static DragViewStateAnnouncer createFor(View v) {
-        return null;
+/*
+ * TextLauncher: derived from DragViewStateAnnouncer.java (android-17.0.0_r1); changes are marked
+ * with "TextLauncher:".
+ */
+public class DragViewStateAnnouncer implements Runnable {
+
+    private static final int TIMEOUT_SEND_ACCESSIBILITY_EVENT = 200;
+
+    private final View mTargetView;
+
+    private DragViewStateAnnouncer(View view) {
+        mTargetView = view;
     }
 
-    public void announce(CharSequence msg) { }
+    public void announce(CharSequence msg) {
+        mTargetView.setContentDescription(msg);
+        mTargetView.removeCallbacks(this);
+        mTargetView.postDelayed(this, TIMEOUT_SEND_ACCESSIBILITY_EVENT);
+    }
 
-    public void cancel() { }
+    public void cancel() {
+        mTargetView.removeCallbacks(this);
+    }
 
-    public void completeAction(int actionId) { }
+    @Override
+    public void run() {
+        mTargetView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
+    }
+
+    public void completeAction(int announceResId) {
+        cancel();
+        Launcher launcher = Launcher.getLauncher(mTargetView.getContext());
+        // TextLauncher: the Launcher stand-in is not a Context.
+        launcher.getDragLayer().announceForAccessibility(
+                launcher.asContext().getText(announceResId));
+    }
+
+    public static DragViewStateAnnouncer createFor(View v) {
+        return isAccessibilityEnabled(v.getContext()) ? new DragViewStateAnnouncer(v) : null;
+    }
 }

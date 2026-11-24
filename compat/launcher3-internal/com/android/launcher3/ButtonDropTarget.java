@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.DragEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.TextView;
 
@@ -49,11 +50,11 @@ import com.google.android.msdl.data.model.MSDLToken;
  * Implements a DropTarget.
  *
  * <p>Stand-in for Launcher3's ButtonDropTarget (android-17.0.0_r1), made from
- * ButtonDropTarget.java by deleting what TextLauncher does not use (accessible drags, the tooltip);
+ * ButtonDropTarget.java by deleting what TextLauncher does not use (the tooltip);
  * changes are marked with "TextLauncher:".
  */
 public abstract class ButtonDropTarget extends TextView
-        implements DropTarget, DragController.DragListener { // TextLauncher: no accessible drags.
+        implements DropTarget, DragController.DragListener, OnClickListener {
 
     private static final int[] sTempCords = new int[2];
     private static final int DRAG_VIEW_DROP_DURATION = 285;
@@ -68,6 +69,8 @@ public abstract class ButtonDropTarget extends TextView
 
     /** Whether this drop target is active for the current drag */
     protected boolean mActive;
+    /** Whether an accessible drag is in progress */
+    private boolean mAccessibleDrag;
     /** An item must be dragged at least this many pixels before this drop target is enabled. */
     private final int mDragDistanceThreshold;
     /** The size of the drawable shown in the drop target. */
@@ -174,7 +177,9 @@ public abstract class ButtonDropTarget extends TextView
             mActive = supportsDrop(dragObject.dragInfo);
         }
         setVisibility(mActive ? View.VISIBLE : View.GONE);
-        // TextLauncher: no accessible drags.
+
+        mAccessibleDrag = options.isAccessibleDrag;
+        setOnClickListener(mAccessibleDrag ? this : null);
     }
 
     @Override
@@ -189,9 +194,14 @@ public abstract class ButtonDropTarget extends TextView
 
     protected abstract boolean supportsDrop(ItemInfo info);
 
+    /**
+     * Returns the accessibility action that {@link ButtonDropTarget} supports for the itemInfo.
+     */
+    public abstract int getSupportedAccessibilityAction(ItemInfo info, View view);
+
     @Override
     public boolean isDropEnabled() {
-        return mActive && ( // TextLauncher: no accessible drags (mAccessibleDrag).
+        return mActive && (mAccessibleDrag ||
                 mActivityContext.getDragController().getDistanceDragged()
                         >= mDragDistanceThreshold);
     }
@@ -199,6 +209,7 @@ public abstract class ButtonDropTarget extends TextView
     @Override
     public void onDragEnd() {
         mActive = false;
+        setOnClickListener(null);
         setSelected(false);
     }
 
@@ -233,8 +244,13 @@ public abstract class ButtonDropTarget extends TextView
                 DragLayer.ANIMATION_END_DISAPPEAR, null);
     }
 
+    public abstract int getAccessibilityAction();
+
     @Override
     public void prepareAccessibilityDrop() { }
+
+    /** Performs a drop in case of accessibility services with the provided action for the item. */
+    public abstract void onAccessibilityDrop(View view, ItemInfo item, int action);
 
     public abstract void completeDrop(DragObject d);
 
@@ -291,6 +307,11 @@ public abstract class ButtonDropTarget extends TextView
         int x = mTextVisible ? 0
                 : (getWidth() - getPaddingLeft() - getPaddingRight()) / 2 - mDrawableSize / 2;
         mDrawable.setBounds(x, 0, x + mDrawableSize, mDrawableSize);
+    }
+
+    @Override
+    public void onClick(View v) {
+        mDropTargetHandler.onClick(this);
     }
 
     public void setTextVisible(boolean isVisible) {

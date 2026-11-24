@@ -495,6 +495,10 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         return null;
     }
 
+    public String getAccessibilityDescription() {
+        return getContext().getString(R.string.folder_opened, mGridCountX, mGridCountY);
+    }
+
     /**
      * Sets the focus on the first visible child.
      */
@@ -583,6 +587,10 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                 // TextLauncher: no app pairs.
             }
         }
+    }
+
+    public int getAllocatedContentSize() {
+        return mAllocatedContentSize;
     }
 
     /**
