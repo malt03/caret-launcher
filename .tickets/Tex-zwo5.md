@@ -1,6 +1,6 @@
 ---
 id: Tex-zwo5
-status: open
+status: closed
 deps: [Tex-00l4, Tex-q3gh, Tex-ojza]
 links: []
 created: 2026-11-24T13:35:59Z
@@ -20,3 +20,9 @@ tags: [launcher3, upstream]
 
 規模: 大。④・⑤・⑧-1 が落ち着いてから、やるかどうかを決める。
 
+
+## Notes
+
+**2026-11-24T23:06:27Z**
+
+2026-11-25: しないと決めた。上流の Launcher の処理のうち意味のあるものは Activity でない互換の Launcher に derived の区画として入れ、Activity は上流にない検索・キーボードの処理と生存期間のつなぎだけにする。理由（残りは削除の印ばかりで更新の手間が上回る、キーボードの配置を DragLayer のインセットに作り直す危険、持ち主の向き・Kotlin/Java・recreate の作り替えで直した競合が戻るおそれ、得られるものが小さい）は docs/launcher3-porting.md の「自前で書くもの」に記録した

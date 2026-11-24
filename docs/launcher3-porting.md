@@ -102,6 +102,13 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 
 ホームの Activity（`LauncherActivity`）は、Launcher3 の `BaseActivity` と同じくフレームワークの `Activity` を継承し、AppCompat と Material Components は使わない。テーマは `BaseLauncherTheme` と同じく `Theme.DeviceDefault.DayNight` を継ぎ、ダイアログは `android.app.AlertDialog`、色は dynamiccolors の `materialColor*`（システムの色）で取る。Compose（ウィジェットのリサイズ枠）に要るライフサイクルと保存状態は、`BaseActivity` と同じく `LifecycleHelper` で持つ。戻る操作は `registerBackDispatcher` と同じく `OnBackInvokedDispatcher` で受ける。AppCompat の View の置き換え（`TextView` を `MaterialTextView` に）は、ウィジェットの RemoteViews の表示にも効いて壊すため（Tex-uus1）。constraintlayout が AppCompat を推移的に持ち込むのは Launcher3 と同じで、使いはしない。
 
+ホームの Activity は上流の `Launcher.java`（`StatefulActivity` のサブクラス）のコピーにしない（2026-11-25 に決定、Tex-zwo5）。上流の `Launcher` の処理のうちこのランチャーで意味のあるもの（ドラッグ、アクセシビリティ、ポップアップ、アイテムの追加とバインド、ウィジェット追加の流れ）は、Activity でない互換の `Launcher`（`compat/launcher3-internal`）に上流の順で `derived=` の区画として入れ、`HomeActivityContext` がそれを継ぐ。Activity に残るのは生存期間のつなぎと、上流にない検索フィールド・常時キーボード・検索結果の処理である。理由は次のとおり。
+
+- `Launcher.java`（2,903 行）の残りの大部分は Activity の生存期間のつなぎ（Dagger の `LauncherComponent`、オーバーレイ、Quickstep のフック、回転、ページ、ホットシート）で、コピーにしても削除の印ばかりになり、上流の更新を当てる手間が上流に合わせる利点を上回る
+- 上流は `DragLayer` をルートにしてキーボードをインセットで扱うが、このランチャーは `LauncherRootLayout` が「ドラッグレイヤーはキーボードの上まで」を受け持つ。キーボードの出入りのアニメーション中の配置はこのランチャーの土台で、作り直す危険が大きい
+- `HomeController` が `Launcher` を作る今の持ち主の向きを逆にし、Kotlin から Java に移し、設定の変化を `recreate()` から `onIdpChanged` に変えることになり、直してきたドラッグや読み込みの競合が戻るおそれがある
+- 得られるもの（互換の `addEventCallback`・`LauncherTracker`・`LauncherContextWrapper` がなくなる、予測型の戻る操作）は小さい。予測型の戻る操作が要る全アプリ一覧は、`AllAppsTransitionController.onBackProgressed`（Tex-ojza）で入る
+
 ---
 
 ## 置き場所と記録
