@@ -38,6 +38,11 @@ import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
 import com.malt03.textlauncher.ui.GridSpec
+import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
+import com.android.launcher3.LauncherState
+import com.android.launcher3.statemanager.StateManager
+import com.android.launcher3.statemanager.StateManager.StateHandler
+import com.android.launcher3.states.StateAnimationConfig
 import java.util.function.Consumer
 
 /**
@@ -146,6 +151,44 @@ internal class HomeActivityContext(private val home: HomeController) :
         (context as Activity).intent = intent
     }
 
+    override fun collectStateHandlers(out: MutableList<StateHandler<LauncherState>>) = home.host.collectStateHandlers(out)
+
+    /**
+     * TextLauncher: the state the last transition went to, which the next one comes from (the
+     * state manager's state before it changes), and the stable state the last one ended in.
+     */
+    private var transitionState: LauncherState = LauncherState.NORMAL
+    private var stableState: LauncherState = LauncherState.NORMAL
+
+    override fun onStateSetStart(state: LauncherState) {
+        super.onStateSetStart(state)
+        val fromState = transitionState
+        transitionState = state
+        // Animated unless the handlers are set to the state at once (StateManager.goToState).
+        val animated = stateManager.isInTransition || stateManager.hasUserControlledSwipe()
+        home.host.onStateSetStart(fromState, state, animated)
+    }
+
+    override fun onStateSetEnd(state: LauncherState) {
+        val lastStableState = stableState
+        stableState = state
+        home.host.onStateSetEnd(state, lastStableState)
+    }
+
+    /**
+     * QuickstepAtomicAnimationFactory.prepareForAtomicAnimation: the interpolators of the all apps
+     * transitions.
+     */
+    override fun createAtomicAnimationFactory() = object : StateManager.AtomicAnimationFactory<LauncherState>(0) {
+        override fun prepareForAtomicAnimation(fromState: LauncherState, toState: LauncherState, config: StateAnimationConfig) {
+            if (fromState == LauncherState.ALL_APPS && toState == LauncherState.NORMAL) {
+                AllAppsSwipeController.applyAllAppsToNormalConfig(config)
+            } else if (fromState == LauncherState.NORMAL && toState == LauncherState.ALL_APPS) {
+                AllAppsSwipeController.applyNormalToAllAppsAnimConfig(config)
+            }
+        }
+    }
+
     /** StateManager.goToState(NORMAL): the home screen, without the search results or all apps. */
     override fun goToNormalState(animated: Boolean, onDone: Runnable?) =
         home.host.showHome { onDone?.run() }
@@ -193,6 +236,7 @@ internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfi
             gridSpec.iconSizePx, /* iconCenterVertically= */ true,
             context.resources.getDimensionPixelSize(com.android.launcher3.R.dimen.grid_visualization_horizontal_cell_spacing),
             context.resources.getDimensionPixelSize(com.android.launcher3.R.dimen.grid_visualization_vertical_cell_spacing),
+            context.resources.getFloat(com.android.launcher3.R.dimen.workspace_content_scale),
         ),
         DeviceProfile.DeviceProperties(
             context.resources.displayMetrics.heightPixels, gridSpec.isLargeScreen, gridSpec.isTwoPanels,
@@ -200,6 +244,7 @@ internal fun newDeviceProfile(context: Context, gridSpec: GridSpec): DeviceProfi
         DeviceProfile.AllAppsProfile(
             gridSpec.columns, gridSpec.allAppsCellHeightPx, gridSpec.iconSizePx,
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, gridSpec.iconTextSizeSp, context.resources.displayMetrics),
+            ALL_APPS_OPEN_DURATION_MS, ALL_APPS_CLOSE_DURATION_MS,
         ),
         DropTargetProfile.createDropTargetProfile(context.resources, shouldApplyWidePortraitDimens = false),
     )
@@ -230,3 +275,9 @@ internal class LauncherContextWrapper(base: Context, private val launcher: Launc
     ContextWrapper(base), ActivityContext.Provider {
     override fun getActivityContext(): ActivityContext = launcher
 }
+
+/** config_allAppsOpenDuration */
+private const val ALL_APPS_OPEN_DURATION_MS = 600
+
+/** config_allAppsCloseDuration */
+private const val ALL_APPS_CLOSE_DURATION_MS = 300

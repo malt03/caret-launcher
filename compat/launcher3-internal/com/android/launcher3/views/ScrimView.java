@@ -21,11 +21,42 @@
 package com.android.launcher3.views;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 
 /** Stand-in for Launcher3's ScrimView: a full-size view behind floating views such as folders. */
 public class ScrimView extends View {
     public ScrimView(Context context) {
         super(context);
+    }
+
+    /**
+     * Set foreground and background color to this ScrimView
+     */
+    public void setScrimColors(ScrimColors scrimColors) {
+        this.setBackgroundColor(scrimColors.getBackgroundColor());
+        setForeground(new ColorDrawable(scrimColors.getForegroundColor()));
+    }
+
+    /**
+     * returns foreground and background color of this ScrimView
+     */
+    public ScrimColors getScrimColors() {
+        int backgroundColor;
+        if (getBackground() instanceof ColorDrawable colorDrawable) {
+            backgroundColor = colorDrawable.getColor();
+        } else {
+            backgroundColor = Color.TRANSPARENT;
+        }
+
+        int foregroundColor;
+        if (getForeground() instanceof ColorDrawable colorDrawable) {
+            foregroundColor = colorDrawable.getColor();
+        } else {
+            foregroundColor = Color.TRANSPARENT;
+        }
+
+        return new ScrimColors(backgroundColor, foregroundColor);
     }
 }

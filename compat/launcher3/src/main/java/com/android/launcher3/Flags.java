@@ -94,4 +94,14 @@ public final class Flags {
     public static boolean enableCursorDrivenWorkflows() {
         return false;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean centerSpringLoadedStateVertically() {
+        return false;
+    }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean allAppsSurface() {
+        return false;
+    }
 }

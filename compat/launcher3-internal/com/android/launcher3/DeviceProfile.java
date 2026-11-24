@@ -46,6 +46,7 @@ public class DeviceProfile {
         mDeviceProperties = deviceProperties;
         mAllAppsProfile = allAppsProfile;
         mDropTargetProfile = dropTargetProfile;
+        mBottomSheetProfile = new BottomSheetProfile(deviceProperties, workspaceProfile);
     }
 
     /** The drop target bar's dimensions (DropTargetProfile.createDropTargetProfile). */
@@ -69,12 +70,27 @@ public class DeviceProfile {
         private final int mIconSizePx;
         private final float mIconTextSizePx;
 
+        private final int mOpenDuration;
+        private final int mCloseDuration;
+
         public AllAppsProfile(int numShownAllAppsColumns, int cellHeightPx, int iconSizePx,
-                float iconTextSizePx) {
+                float iconTextSizePx, int openDuration, int closeDuration) {
             mNumShownAllAppsColumns = numShownAllAppsColumns;
             mCellHeightPx = cellHeightPx;
             mIconSizePx = iconSizePx;
             mIconTextSizePx = iconTextSizePx;
+            mOpenDuration = openDuration;
+            mCloseDuration = closeDuration;
+        }
+
+        /** config_allAppsOpenDuration */
+        public int getOpenDuration() {
+            return mOpenDuration;
+        }
+
+        /** config_allAppsCloseDuration */
+        public int getCloseDuration() {
+            return mCloseDuration;
         }
 
         public int getIconSizePx() {
@@ -140,13 +156,21 @@ public class DeviceProfile {
 
         private final int mGridVisualizationPaddingX;
         private final int mGridVisualizationPaddingY;
+        private final float mWorkspaceContentScale;
 
         public WorkspaceProfile(int iconSizePx, boolean iconCenterVertically,
-                int gridVisualizationPaddingX, int gridVisualizationPaddingY) {
+                int gridVisualizationPaddingX, int gridVisualizationPaddingY,
+                float workspaceContentScale) {
             mIconSizePx = iconSizePx;
             mIconCenterVertically = iconCenterVertically;
             mGridVisualizationPaddingX = gridVisualizationPaddingX;
             mGridVisualizationPaddingY = gridVisualizationPaddingY;
+            mWorkspaceContentScale = workspaceContentScale;
+        }
+
+        /** workspace_content_scale: the home screen's scale behind the all apps list. */
+        public float getWorkspaceContentScale() {
+            return mWorkspaceContentScale;
         }
 
         /**
@@ -209,6 +233,52 @@ public class DeviceProfile {
     /** TextLauncher: set by the home screen; see {@link #getWorkspaceSpringLoadScale}. */
     public void setWorkspaceSpringLoadScale(java.util.function.Supplier<Float> scale) {
         mWorkspaceSpringLoadScale = scale;
+    }
+
+    private java.util.function.Supplier<Float> mCellLayoutSpringLoadShrunkTop = () -> 0f;
+
+    /**
+     * The top of the page in the spring-loaded state, below the drop target bar, in the coordinates
+     * of the workspace's parent (SpringLoadedState). TextLauncher: the home screen works it out from
+     * its own layout and sets it with {@link #setCellLayoutSpringLoadShrunkTop}.
+     */
+    public float getCellLayoutSpringLoadShrunkTop() {
+        return mCellLayoutSpringLoadShrunkTop.get();
+    }
+
+    /** TextLauncher: set by the home screen; see {@link #getCellLayoutSpringLoadShrunkTop}. */
+    public void setCellLayoutSpringLoadShrunkTop(java.util.function.Supplier<Float> top) {
+        mCellLayoutSpringLoadShrunkTop = top;
+    }
+
+    private final BottomSheetProfile mBottomSheetProfile;
+
+    public BottomSheetProfile getBottomSheetProfile() {
+        return mBottomSheetProfile;
+    }
+
+    /** Stand-in for DeviceProfile's bottom sheet values: the depth behind the all apps list. */
+    public static class BottomSheetProfile {
+        /** config_wallpaperMaxScale */
+        private static final float MAX_WALLPAPER_SCALE = 1.1f;
+
+        private final float mBottomSheetDepth;
+
+        BottomSheetProfile(DeviceProperties deviceProperties, WorkspaceProfile workspaceProfile) {
+            // BottomSheetProfile.Factory: 0.3 on a device with several displays (two panels);
+            // otherwise the depth that zooms the wallpaper to config_wallpaperMaxScale times
+            // workspace_content_scale.
+            mBottomSheetDepth = deviceProperties.isTwoPanels()
+                    ? 0.3f
+                    : Utilities.mapToRange(
+                            MAX_WALLPAPER_SCALE * workspaceProfile.getWorkspaceContentScale(),
+                            MAX_WALLPAPER_SCALE, 1f, 0f, 1f,
+                            com.android.app.animation.Interpolators.LINEAR);
+        }
+
+        public float getBottomSheetDepth() {
+            return mBottomSheetDepth;
+        }
     }
 
     public FolderProfile getFolderProfile() {

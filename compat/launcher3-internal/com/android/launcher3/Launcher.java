@@ -20,6 +20,8 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.LauncherState.NORMAL;
+
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
@@ -41,6 +43,9 @@ import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainer;
 import com.android.launcher3.popup.WorkspaceLongPressOptions;
+import com.android.launcher3.statemanager.StateManager;
+import com.android.launcher3.statemanager.StateManager.StateHandler;
+import com.android.launcher3.statemanager.StatefulContainer;
 import com.android.launcher3.states.RotationHelper;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
@@ -49,13 +54,15 @@ import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.ScrimView;
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 
+import java.util.List;
+
 /**
  * Stand-in for Launcher3's Launcher (android-17.0.0_r1). As in Launcher3, the launcher is the
  * ActivityContext of the home screen, so copied code can use {@link #getLauncher(Context)} and
  * {@code instanceof Launcher}. TextLauncher's home screen extends this; the launcher is not an
  * Activity here, and only the members copied code uses are declared.
  */
-public abstract class Launcher implements ActivityContext {
+public abstract class Launcher implements StatefulContainer<LauncherState> {
     /**
      * TextLauncher: a ContextTracker rather than ContextTracker.ActivityTracker, since the launcher
      * is not a BaseActivity; the home is started as {@link #isStarted()} says. The home screen
@@ -76,6 +83,10 @@ public abstract class Launcher implements ActivityContext {
     private final Hotseat mHotseat;
     private final ScrimView mScrimView;
     private final StatsLogManager mStatsLogManager = new StatsLogManager();
+
+    // TextLauncher: made here, as the launcher is not an Activity (Launcher.onCreate).
+    private final StateManager<LauncherState, Launcher> mStateManager =
+            new StateManager<>(this, NORMAL);
 
     public Launcher(DragLayer dragLayer, Workspace<?> workspace, Hotseat hotseat,
             ScrimView scrimView) {
@@ -102,8 +113,33 @@ public abstract class Launcher implements ActivityContext {
         return mHotseat;
     }
 
+    @Override
     public ScrimView getScrimView() {
         return mScrimView;
+    }
+
+    @Override
+    public StateManager<LauncherState, Launcher> getStateManager() {
+        return mStateManager;
+    }
+
+    /**
+     * TextLauncher: the home screen gives the handlers (Launcher.collectStateHandlers: the all apps
+     * transition and the depth controller).
+     */
+    @Override
+    public abstract void collectStateHandlers(List<StateHandler<LauncherState>> out);
+
+    /** TextLauncher: no overview, so the background app state is the home screen. */
+    @Override
+    public LauncherState getBackgroundAppState() {
+        return NORMAL;
+    }
+
+    /** TextLauncher: no forced invisibility (Launcher.shouldAnimateStateChange). */
+    @Override
+    public boolean shouldAnimateStateChange() {
+        return isStarted();
     }
 
     /**

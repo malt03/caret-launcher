@@ -18,6 +18,8 @@ import java.util.function.Predicate
 import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.CellLayout
+import com.android.launcher3.LauncherState
+import com.android.launcher3.statemanager.StateManager.StateHandler
 import com.android.launcher3.DragSource
 import com.android.launcher3.DropTarget
 import com.android.launcher3.DropTarget.DragObject
@@ -80,6 +82,15 @@ class HomeController(
 ) {
 
     interface Host {
+        /** Launcher.collectStateHandlers */
+        fun collectStateHandlers(out: MutableList<StateHandler<LauncherState>>)
+        /**
+         * Launcher.onStateSetStart. TextLauncher: with the state the transition comes from, and
+         * whether it is animated (the handlers are not set to the state at once).
+         */
+        fun onStateSetStart(fromState: LauncherState, toState: LauncherState, animated: Boolean)
+        /** Launcher.onStateSetEnd, with the stable state before. */
+        fun onStateSetEnd(state: LauncherState, lastStableState: LauncherState)
         fun launch(info: ItemInfo, view: View)
         /** An app shortcut (ItemClickHandler.onClickAppShortcut). */
         fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)

@@ -14,8 +14,10 @@ import com.android.launcher3.states.StateAnimationConfig.ANIM_DEPTH
 import com.android.launcher3.states.StateAnimationConfig.SKIP_DEPTH_CONTROLLER
 import com.android.launcher3.util.MultiPropertyFactory
 import com.android.launcher3.util.MultiPropertyFactory.MULTI_PROPERTY_VALUE
-import com.malt03.textlauncher.ui.LauncherState
-import com.malt03.textlauncher.ui.statemanager.StateManager
+import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherState
+import com.android.launcher3.LauncherState.SPRING_LOADED
+import com.android.launcher3.statemanager.StateManager
 import java.util.function.Consumer
 
 /**
@@ -32,7 +34,7 @@ class DepthController(
     private val activity: Activity,
     private val rootView: View,
     private val workspaceContent: View,
-) : StateManager.StateHandler {
+) : StateManager.StateHandler<LauncherState> {
     /** Property to set the depth for state transition. */
     val stateDepth: MultiPropertyFactory<DepthController>.MultiProperty
 
@@ -87,8 +89,15 @@ class DepthController(
         })
     }
 
+    /**
+     * LauncherState.getDepth. TextLauncher: SPRING_LOADED's (SpringLoadedState.DEPTH_15_PERCENT) is
+     * SpringLoadedListener's ([springLoadedDepth]), which animates it with the drag.
+     */
+    private fun depth(state: LauncherState): Float =
+        if (state == SPRING_LOADED) 0f else state.getDepth(Launcher.getLauncher(activity))
+
     override fun setState(state: LauncherState) {
-        stateDepth.setValue(state.getDepth(activity))
+        stateDepth.setValue(depth(state))
     }
 
     override fun setStateWithAnimation(toState: LauncherState, config: StateAnimationConfig, animation: PendingAnimation) {
@@ -96,7 +105,7 @@ class DepthController(
             return
         }
 
-        val toDepth = toState.getDepth(activity)
+        val toDepth = depth(toState)
         animation.setFloat(stateDepth, MULTI_PROPERTY_VALUE, toDepth, config.getInterpolator(ANIM_DEPTH, Interpolators.LINEAR))
     }
 

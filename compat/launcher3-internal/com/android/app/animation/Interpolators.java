@@ -51,6 +51,7 @@ public class Interpolators {
     public static final Interpolator EMPHASIZED_ACCELERATE = new PathInterpolator(
             0.3f, 0f, 0.8f, 0.15f);
     public static final Interpolator ACCELERATE = new AccelerateInterpolator();
+    public static final Interpolator ACCELERATE_2 = new AccelerateInterpolator(2);
     public static final Interpolator DECELERATED_EASE = new PathInterpolator(0, 0, .2f, 1f);
     public static final Interpolator DECELERATE_1_5 = new DecelerateInterpolator(1.5f);
     public static final Interpolator DECELERATE_1_7 = new DecelerateInterpolator(1.7f);

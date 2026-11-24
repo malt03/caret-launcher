@@ -79,4 +79,12 @@ public class StatsLogManager {
     public StatsLogger logger() {
         return new StatsLogger() { };
     }
+
+    // StatsLogManager.Companion: the states LauncherState logs (Kotlin constants in Launcher3).
+    public static final int LAUNCHER_STATE_UNSPECIFIED = 0;
+    public static final int LAUNCHER_STATE_BACKGROUND = 1;
+    public static final int LAUNCHER_STATE_HOME = 2;
+    public static final int LAUNCHER_STATE_OVERVIEW = 3;
+    public static final int LAUNCHER_STATE_ALLAPPS = 4;
+    public static final int LAUNCHER_STATE_UNCHANGED = 5;
 }

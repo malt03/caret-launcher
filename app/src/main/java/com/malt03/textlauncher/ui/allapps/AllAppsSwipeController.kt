@@ -21,10 +21,11 @@ import com.android.launcher3.touch.SingleAxisSwipeDetector
 import com.android.launcher3.util.TouchController
 import com.android.launcher3.views.ActivityContext
 import com.malt03.textlauncher.ui.LauncherRootLayout
-import com.malt03.textlauncher.ui.LauncherState
-import com.malt03.textlauncher.ui.LauncherState.ALL_APPS
-import com.malt03.textlauncher.ui.LauncherState.NORMAL
-import com.malt03.textlauncher.ui.statemanager.StateManager
+import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherState
+import com.android.launcher3.LauncherState.ALL_APPS
+import com.android.launcher3.LauncherState.NORMAL
+import com.android.launcher3.statemanager.StateManager
 import kotlin.math.abs
 
 /**
@@ -52,7 +53,7 @@ class AllAppsSwipeController(
     context: Context,
     private val root: LauncherRootLayout,
     private val transition: AllAppsTransitionController,
-    private val stateManager: StateManager,
+    private val stateManager: StateManager<LauncherState, Launcher>,
     private val activityContext: ActivityContext,
     private val callbacks: Callbacks,
 ) : TouchController, SingleAxisSwipeDetector.Listener {
@@ -120,7 +121,7 @@ class AllAppsSwipeController(
         if (AbstractFloatingView.getTopOpenView(activityContext) != null) {
             return false
         }
-        if (!stateManager.isInState(NORMAL) && !stateManager.isInState(ALL_APPS)) {
+        if (stateManager.state != NORMAL && stateManager.state != ALL_APPS) {
             // Don't listen for the swipe gesture if we are already in some other state.
             return false
         }
@@ -128,11 +129,11 @@ class AllAppsSwipeController(
         if (callbacks.isDragging()) {
             return false
         }
-        if (stateManager.isInState(ALL_APPS) && !callbacks.shouldContainerScroll(ev)) {
+        if (stateManager.state == ALL_APPS && !callbacks.shouldContainerScroll(ev)) {
             return false
         }
         // TextLauncher: a swipe up opens the list only from the field or the home screen's bottom.
-        if (stateManager.isInState(NORMAL) && !callbacks.canOpenFrom(ev)) {
+        if (stateManager.state == NORMAL && !callbacks.canOpenFrom(ev)) {
             return false
         }
         return true
@@ -171,7 +172,7 @@ class AllAppsSwipeController(
         // the drag layer gives them to the floating view's controller.
         if (!detector.isDraggingOrSettling && (
                 AbstractFloatingView.getTopOpenView(activityContext) != null || callbacks.isDragging() ||
-                    (!stateManager.isInState(NORMAL) && !stateManager.isInState(ALL_APPS))
+                    (stateManager.state != NORMAL && stateManager.state != ALL_APPS)
                 )
         ) {
             noIntercept = true
@@ -209,10 +210,10 @@ class AllAppsSwipeController(
     override fun onDragStart(start: Boolean, startDisplacement: Float) {
         if (!hasCurrentAnimation) {
             hasCurrentAnimation = true
-            opening = !stateManager.isInState(ALL_APPS)
+            opening = stateManager.state != ALL_APPS
             // An animation without a gesture (back, the menu's "Apps") gives way to the swipe, as
             // createAnimationToNewWorkspace cancels the state animation.
-            mustSettle = stateManager.isAnimating
+            mustSettle = stateManager.isInTransition
             stateManager.setCurrentUserControlledAnimation(clearStateOnCancel)
         } else {
             // AbstractStateChangeTouchController.onDragStart: mCurrentAnimation.pause(). Its end
@@ -287,12 +288,12 @@ class AllAppsSwipeController(
             progress > SUCCESS_TRANSITION_PROGRESS
         }
         val targetState = if (toOpen) ALL_APPS else NORMAL
-        val target = targetState.getVerticalProgress()
+        val target = transition.verticalProgress(targetState)
         val duration = BaseSwipeDetector.calculateDuration(velocity, abs(target - progress))
         // AbstractStateChangeTouchController.goToTargetState: only when the launcher is not in the
         // target state already. TextLauncher: the state changes when the finger lifts toward the
         // other state (or the field came up past the hold), and its end follows the animation.
-        val changesState = !stateManager.isInState(targetState)
+        val changesState = stateManager.state != targetState
         val settles = changesState || mustSettle
         mustSettle = settles
         if (changesState) stateManager.onUserControlledTransitionStart(targetState)
@@ -326,7 +327,7 @@ class AllAppsSwipeController(
 
     private fun onSwipeInteractionCompleted(targetState: LauncherState, settles: Boolean) {
         clearState()
-        stateManager.onUserControlledTransitionEnd(targetState, changed = settles)
+        stateManager.onUserControlledTransitionEnd(targetState, /* changed= */ settles)
     }
 
     private fun clearState() {

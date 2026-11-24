@@ -19,9 +19,11 @@ import com.android.launcher3.states.StateAnimationConfig.ANIM_WORKSPACE_SCALE
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.ui.LauncherRootLayout
-import com.malt03.textlauncher.ui.LauncherState
+import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherState
+import com.android.launcher3.LauncherState.SPRING_LOADED
 import com.malt03.textlauncher.ui.statehandlers.DepthController
-import com.malt03.textlauncher.ui.statemanager.StateManager
+import com.android.launcher3.statemanager.StateManager
 
 /**
  * AllAppsTransitionController (android-17.0.0_r1): the all apps list's vertical progress, which
@@ -36,10 +38,10 @@ import com.malt03.textlauncher.ui.statemanager.StateManager
  */
 class AllAppsTransitionController(
     private val root: LauncherRootLayout,
-    private val stateManager: StateManager,
+    private val stateManager: StateManager<LauncherState, Launcher>,
     private val depthController: DepthController,
     private val workspace: Workspace<*>,
-) : StateManager.StateHandler {
+) : StateManager.StateHandler<LauncherState> {
 
     // When {@link mProgress} is 0, all apps container is pulled down.
     // When {@link mProgress} is 1, all apps container is pulled up.
@@ -48,6 +50,22 @@ class AllAppsTransitionController(
     /** TextLauncher: the scale of the workspace's state (SCALE_INDEX_WORKSPACE_STATE) set here. */
     private var workspaceScale = 1f
     private val context = root.context
+
+    /** The home screen's Launcher, which the states read (Launcher.getLauncher). */
+    private val launcher: Launcher get() = Launcher.getLauncher(context)
+
+    /**
+     * LauncherState.getVerticalProgress. TextLauncher: 1 is open and 0 closed, the other way round
+     * from Launcher3's.
+     */
+    fun verticalProgress(state: LauncherState): Float = 1f - state.getVerticalProgress(launcher)
+
+    /**
+     * The scale of LauncherState.getWorkspaceScaleAndTranslation. TextLauncher: SPRING_LOADED's is
+     * SpringLoadedListener's, which animates it with the drag.
+     */
+    private fun workspaceScale(state: LauncherState): Float =
+        if (state == SPRING_LOADED) 1f else state.getWorkspaceScaleAndTranslation(launcher).scale
 
     init {
         root.onAllAppsLayoutChanged = ::applyProgress
@@ -96,9 +114,9 @@ class AllAppsTransitionController(
     fun setUserControlledProgress(progress: Float) {
         setProgress(progress)
         val sheetDepth = AllAppsSwipeController.ALL_APPS_SHEET_DEPTH.getInterpolation(progress)
-        val allAppsScale = LauncherState.ALL_APPS.getWorkspaceScale(context)
+        val allAppsScale = workspaceScale(LauncherState.ALL_APPS)
         setWorkspaceScale(1f + (allAppsScale - 1f) * sheetDepth)
-        depthController.stateDepth.setValue(LauncherState.ALL_APPS.getDepth(context) * sheetDepth)
+        depthController.stateDepth.setValue(LauncherState.ALL_APPS.getDepth(launcher) * sheetDepth)
     }
 
     private fun setWorkspaceScale(scale: Float) {
@@ -111,10 +129,10 @@ class AllAppsTransitionController(
      * accordingly.
      */
     override fun setState(state: LauncherState) {
-        setProgress(state.getVerticalProgress())
+        setProgress(verticalProgress(state))
         // WorkspaceStateTransitionAnimation.setWorkspaceProperty. TextLauncher: only when it
         // changes, as SpringLoadedListener uses the same index.
-        val scale = state.getWorkspaceScale(context)
+        val scale = workspaceScale(state)
         if (workspaceScale != scale) setWorkspaceScale(scale)
     }
 
@@ -127,11 +145,11 @@ class AllAppsTransitionController(
     override fun setStateWithAnimation(toState: LauncherState, config: StateAnimationConfig, builder: PendingAnimation) {
         // WorkspaceStateTransitionAnimation.setWorkspaceProperty: the workspace's scale.
         builder.setFloat(
-            this, WORKSPACE_STATE_SCALE, toState.getWorkspaceScale(context),
+            this, WORKSPACE_STATE_SCALE, workspaceScale(toState),
             config.getInterpolator(ANIM_WORKSPACE_SCALE, Interpolators.ZOOM_OUT),
         )
 
-        val targetProgress = toState.getVerticalProgress()
+        val targetProgress = verticalProgress(toState)
         if (progress.compareTo(targetProgress) == 0) {
             // Fail fast
             return
@@ -149,7 +167,7 @@ class AllAppsTransitionController(
         builder.add(anim)
 
         // This controls both haptics for tapping on QSB and going to all apps.
-        if (toState == LauncherState.ALL_APPS && stateManager.isInState(LauncherState.NORMAL)) {
+        if (toState == LauncherState.ALL_APPS && stateManager.state == LauncherState.NORMAL) {
             performStateHaptic(config.isUserControlled)
         }
     }

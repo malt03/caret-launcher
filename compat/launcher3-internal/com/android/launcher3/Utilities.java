@@ -37,13 +37,19 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.TransactionTooLargeException;
 import android.util.DisplayMetrics;
+import android.util.Log;
+
+
 import android.view.View;
+import android.view.animation.Interpolator;
 import android.view.ViewConfiguration;
 
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
 
 import java.util.Objects;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Various utilities shared amongst the Launcher's classes.
@@ -53,6 +59,8 @@ import java.util.Objects;
  * "TextLauncher:".
  */
 public final class Utilities {
+
+    private static final String TAG = "Launcher.Utilities";
 
     private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
 
@@ -190,6 +198,29 @@ public final class Utilities {
         }
     }
 
+    /**
+     * Maps t from one range to another range.
+     * @param t The value to map.
+     * @param fromMin The lower bound of the range that t is being mapped from.
+     * @param fromMax The upper bound of the range that t is being mapped from.
+     * @param toMin The lower bound of the range that t is being mapped to.
+     * @param toMax The upper bound of the range that t is being mapped to.
+     * @return The mapped value of t.
+     */
+    public static float mapToRange(float t, float fromMin, float fromMax, float toMin, float toMax,
+            Interpolator interpolator) {
+        if (fromMin == fromMax || toMin == toMax) {
+            Log.e(TAG, "mapToRange: range has 0 length");
+            return toMin;
+        }
+        float progress = getProgress(t, fromMin, fromMax);
+        return mapRange(interpolator.getInterpolation(progress), toMin, toMax);
+    }
+
+    public static float getProgress(float current, float min, float max) {
+        return Math.abs(current - min) / Math.abs(max - min);
+    }
+
     public static float mapRange(float value, float min, float max) {
         return min + (value * (max - min));
     }
@@ -301,5 +332,17 @@ public final class Utilities {
     public static boolean shouldReduceWorkspaceBlurUsage(Context context) {
         return reduceWorkspaceBlurUsage() && context.getResources().getBoolean(
                 R.bool.reduce_workspace_blur_usage);
+    }
+
+    /**
+     * Returns a partial, loggable stack trace.
+     */
+    public static String getTrimmedStackTrace(String callingMethodName) {
+        String stackTrace = Log.getStackTraceString(new Exception());
+        return Arrays.stream(stackTrace.split("\\n"))
+                .skip(2) // Removes the line "java.lang.Exception" and "getTrimmedStackTrace".
+                .filter(traceLine -> !traceLine.contains(callingMethodName))
+                .limit(3)
+                .collect(Collectors.joining("\n"));
     }
 }

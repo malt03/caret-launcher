@@ -22,3 +22,9 @@ ui/statemanager/StateManager.kt（217 行、上流 743 行）と ui/LauncherStat
 
 リスク: onStateSetStart でのフォーカスとキーボードのタイミング、ウィジェットのリサイズ枠が編集モードを保つこと。規模: 中。
 
+
+## Notes
+
+**2026-11-24T14:38:31Z**
+
+2026-11-24: 前半を済ませた。上流の StateManager（derived。アプリのスワイプが性質を自分で動かすので、setCurrentUserControlledAnimation(Runnable)・onUserControlledTransitionStart/End・hasUserControlledSwipe を印付きで足した）、LauncherState（NORMAL・SPRING_LOADED・ALL_APPS だけの derived）、SpringLoadedState（derived）、quickstep の AllAppsState（derived）。BaseState・StatefulContainer・AnimatorPlaybackController・PendingAnimation・AnimatedPropertySetter・PropertySetter・AnimatorListeners・SpringProperty・ScrimColors(Evaluator)・StateManagerProtoLogProxy（src_no_quickstep）は path=。互換の Launcher が StatefulContainer として StateManager を持ち、HomeActivityContext が onStateSetStart/End に移る前の状態とアニメーションの有無を添えてアクティビティに渡す。アプリの StateManager.kt と LauncherState.kt は削除。残り: SpringLoadedListener を上流の WorkspaceStateTransitionAnimation（Workspace の StateHandler）にすること。これは Workspace のコピー（②、Tex-ydua）と一緒にやる。エミュレータ（折りたたみ・スマホ）でドラッグ、全アプリ一覧のスワイプ・戻る・メニューからの開閉を確認

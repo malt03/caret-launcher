@@ -35,6 +35,8 @@
     <integer name="config_dropAnimMinDuration">100</integer>
     <integer name="config_dropAnimMaxDuration">500</integer>
     <integer name="config_dropAnimMaxDist">800</integer>
+    <!-- attrs.xml: the all apps state's scrim (AllAppsState.getWorkspaceScrimColor) -->
+    <attr name="allAppsScrimColor" format="color" />
     <!-- CellLayout: attrs.xml (containerType) and id.xml (the saved state of its children) -->
     <declare-styleable name="CellLayout">
         <attr name="containerType" format="integer">

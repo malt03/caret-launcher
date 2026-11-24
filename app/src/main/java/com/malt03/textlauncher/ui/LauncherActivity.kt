@@ -45,20 +45,21 @@ import com.malt03.textlauncher.ui.home.HomeController
 import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
 import com.android.launcher3.util.TouchController
 import com.android.launcher3.views.ActivityContext
-import com.malt03.textlauncher.ui.LauncherState.ALL_APPS
-import com.malt03.textlauncher.ui.LauncherState.NORMAL
-import com.malt03.textlauncher.ui.LauncherState.SPRING_LOADED
+import com.android.launcher3.LauncherState
+import com.android.launcher3.LauncherState.ALL_APPS
+import com.android.launcher3.LauncherState.NORMAL
+import com.android.launcher3.LauncherState.SPRING_LOADED
+import com.android.launcher3.anim.AnimatorListeners
+import com.android.launcher3.statemanager.StateManager.StateHandler
 import com.malt03.textlauncher.ui.search.SearchResults
 import com.malt03.textlauncher.ui.statehandlers.DepthController
-import com.malt03.textlauncher.ui.statemanager.StateManager
 
 /**
  * The home screen. The search field always has focus and the keyboard is always shown
  * (docs/spec.md 1).
  */
 class LauncherActivity :
-    Activity(), HomeController.Host, ActivityContext.Provider, LifecycleOwner, SavedStateRegistryOwner,
-    StateManager.StatefulContainer {
+    Activity(), HomeController.Host, ActivityContext.Provider, LifecycleOwner, SavedStateRegistryOwner {
 
     // BaseActivity: the framework's Activity, as in Launcher3 (no AppCompat), with the lifecycle
     // and saved state that Compose (the widget resize frame) looks up in the view tree.
@@ -87,8 +88,11 @@ class LauncherActivity :
     /** The all apps swipe; none with two panels (docs/spec.md 5.5). */
     private var allAppsSwipe: AllAppsSwipeController? = null
 
-    /** Launcher.mStateManager: NORMAL, SPRING_LOADED (edit mode) or ALL_APPS. */
-    private val stateManager = StateManager(this)
+    /**
+     * Launcher.mStateManager: NORMAL, SPRING_LOADED (edit mode) or ALL_APPS. TextLauncher: the home
+     * screen's Launcher holds it.
+     */
+    private val stateManager get() = home.launcher.stateManager
 
     /** Launcher.mDepthController */
     override lateinit var depthController: DepthController
@@ -181,8 +185,6 @@ class LauncherActivity :
             addUpdateListener(appsStoreListener)
         }
         allAppsTransition = AllAppsTransitionController(root, stateManager, depthController, home.workspace)
-        // Launcher.createStateHandlers
-        stateManager.stateHandlers = arrayOf(allAppsTransition, depthController)
         if (!isTwoPanels) {
             root.allAppsSheet.setSearchResults(allAppsResults.view)
             // ActivityAllAppsContainerView.setInsets: the list and the search results on the sheet
@@ -214,12 +216,12 @@ class LauncherActivity :
         // AppsSearchContainerLayout.preDispatchKeyEvent's focus: docs/spec.md 6.5, the search in
         // the all apps list keeps the keyboard as it is.
         root.searchBar.requestFocusForKey = {
-            if (stateManager.isInState(ALL_APPS)) root.searchBar.editText.requestFocus() else focusSearch()
+            if (stateManager.state == ALL_APPS) root.searchBar.editText.requestFocus() else focusSearch()
         }
         // docs/spec.md 6.5: tapping the field with the all apps list open searches in it; the field
         // gets the focus and the keyboard comes up, over the list.
         root.searchBar.onFocusChanged = { hasFocus ->
-            if (hasFocus && stateManager.isInState(ALL_APPS) && !isAllAppsAnimating) {
+            if (hasFocus && stateManager.state == ALL_APPS && !isAllAppsAnimating) {
                 WindowCompat.getInsetsController(window, root.searchBar.editText).show(WindowInsets.Type.ime())
             }
         }
@@ -339,12 +341,12 @@ class LauncherActivity :
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && !stateManager.isInState(SPRING_LOADED)) focusSearch()
+        if (hasFocus && stateManager.state != SPRING_LOADED) focusSearch()
     }
 
     private fun focusSearch() {
         // docs/spec.md 6.4: with the all apps list open, the field has no focus or keyboard.
-        if (stateManager.isInState(SPRING_LOADED) || allAppsTransition.isAllAppsShown) return
+        if (stateManager.state == SPRING_LOADED || allAppsTransition.isAllAppsShown) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
@@ -361,12 +363,12 @@ class LauncherActivity :
     private fun onKeyboardHidden() {
         // docs/spec.md 6.5: closing the keyboard while searching in the all apps list keeps the
         // query and shows the filtered list without the focus.
-        if (stateManager.isInState(ALL_APPS) && !isAllAppsAnimating && root.searchBar.editText.hasFocus()) {
+        if (stateManager.state == ALL_APPS && !isAllAppsAnimating && root.searchBar.editText.hasFocus()) {
             root.requestFocus()
             return
         }
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
-        if (stateManager.isInState(SPRING_LOADED) || allAppsTransition.isAllAppsShown || isLaunching ||
+        if (stateManager.state == SPRING_LOADED || allAppsTransition.isAllAppsShown || isLaunching ||
             !isResumedState || !hasWindowFocus()
         ) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
@@ -391,7 +393,7 @@ class LauncherActivity :
 
     /** TextLauncher: a state animation of the all apps list, with a gesture or without, is running. */
     private val isAllAppsAnimating: Boolean
-        get() = stateManager.isAnimating || allAppsSwipe?.isSettling == true
+        get() = stateManager.isInTransition || allAppsSwipe?.isSettling == true
 
     /** The all apps swipe (docs/spec.md 6.1, 6.2, 6.6): where it may start. */
     private val allAppsSwipeCallbacks = object : AllAppsSwipeController.Callbacks {
@@ -411,6 +413,12 @@ class LauncherActivity :
     private fun isInSearchBar(ev: MotionEvent): Boolean {
         val bar = root.searchBarArea
         return ev.y >= bar.y && ev.y < bar.y + bar.height
+    }
+
+    /** Launcher.collectStateHandlers: the all apps transition and the depth controller. */
+    override fun collectStateHandlers(out: MutableList<StateHandler<LauncherState>>) {
+        out.add(allAppsTransition)
+        out.add(depthController)
     }
 
     /**
@@ -492,13 +500,13 @@ class LauncherActivity :
      * the search results, the all apps list or edit mode.
      */
     override fun canShowOptions(): Boolean =
-        stateManager.isInState(NORMAL) && !allAppsTransition.isAllAppsShown && currentQuery().isEmpty()
+        stateManager.state == NORMAL && !allAppsTransition.isAllAppsShown && currentQuery().isEmpty()
 
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
     private fun openAllApps() {
         // docs/spec.md 5.5: with two panels, the list is always shown.
-        if (!stateManager.isInState(NORMAL) || isTwoPanels) return
-        stateManager.goToState(ALL_APPS, animated = true)
+        if (stateManager.state != NORMAL || isTwoPanels) return
+        stateManager.goToState(ALL_APPS, true)
     }
 
     /**
@@ -509,11 +517,11 @@ class LauncherActivity :
      * keeps it.
      */
     private fun closeAllApps(animate: Boolean, onClosed: () -> Unit = {}) {
-        if (stateManager.isInState(SPRING_LOADED)) {
+        if (stateManager.state == SPRING_LOADED) {
             onClosed()
             return
         }
-        stateManager.goToState(NORMAL, animate, onClosed)
+        stateManager.goToState(NORMAL, animate, AnimatorListeners.forSuccessCallback(onClosed))
     }
 
     private fun currentQuery(): String = root.searchBar.query
@@ -533,7 +541,7 @@ class LauncherActivity :
             }
             return
         }
-        if (stateManager.isInState(ALL_APPS)) {
+        if (stateManager.state == ALL_APPS) {
             // docs/spec.md 6.5: the results replace the list on the sheet, without an animation.
             results.hide()
             home.scrollView.visibility = View.VISIBLE
@@ -567,7 +575,7 @@ class LauncherActivity :
 
     /** Edit mode is Launcher3's SPRING_LOADED state (docs/spec.md 5.4). */
     override fun onEditModeChanged(editing: Boolean) {
-        stateManager.goToState(if (editing) SPRING_LOADED else NORMAL, animated = false)
+        stateManager.goToState(if (editing) SPRING_LOADED else NORMAL, false)
     }
 
     /**
@@ -591,7 +599,7 @@ class LauncherActivity :
     override fun getActivityContext(): ActivityContext = home.activityContext
 
     private fun launchTopResult() {
-        val shown = if (stateManager.isInState(ALL_APPS)) allAppsResults else results
+        val shown = if (stateManager.state == ALL_APPS) allAppsResults else results
         val top = shown.topResult ?: return
         launch(top, shown.topResultView, fromSearch = true)
     }

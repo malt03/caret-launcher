@@ -25,12 +25,23 @@ import android.util.Property;
 import android.view.View;
 
 import com.android.launcher3.util.MultiScalePropertyFactory;
+import com.android.launcher3.views.ScrimColors;
+import com.android.launcher3.views.ScrimView;
 
 /**
  * Stand-in for Launcher3's LauncherAnimUtils (android-17.0.0_r1), made from LauncherAnimUtils.java
  * by deleting what TextLauncher does not use.
  */
 public class LauncherAnimUtils {
+    /**
+     * Durations for various state animations. These are not defined in resources to allow
+     * easier access from static classes and enums
+     */
+    public static final int SPRING_LOADED_EXIT_DELAY = 500;
+
+    // Progress after which the transition is assumed to be a success
+    public static final float SUCCESS_TRANSITION_PROGRESS = 0.5f;
+
     public static final FloatProperty<View> SCALE_PROPERTY = getScaleProperty();
 
     /** Used to debug b/489475544, after the crash is fixed, caller can just use SCALE_PROPERTY t*/
@@ -103,6 +114,19 @@ public class LauncherAnimUtils {
     public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);
 
     public static final FloatProperty<View> VIEW_ALPHA = convert(View.ALPHA);
+
+    public static final Property<ScrimView, ScrimColors> SCRIM_COLORS =
+            new Property<ScrimView, ScrimColors>(ScrimColors.class, "scrimColors") {
+                @Override
+                public void set(ScrimView scrimView, ScrimColors scrimColors) {
+                    scrimView.setScrimColors(scrimColors);
+                }
+
+                @Override
+                public ScrimColors get(ScrimView scrimView) {
+                    return scrimView.getScrimColors();
+                }
+            };
 
     private static FloatProperty<View> convert(Property<View, Float> property) {
         if (property instanceof FloatProperty<View> f) return f;
