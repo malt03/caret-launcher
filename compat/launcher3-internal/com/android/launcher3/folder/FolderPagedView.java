@@ -386,8 +386,9 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                 lp.setCellXY(mOrganizer.getPosForRank(rank));
                 currentPage.addViewToCellLayout(v, -1, info.getViewId(), lp, true);
 
-                // TextLauncher: the home screen loads the icons of the items in folders in full
-                // (AppIconLoader), so there are no low-res preview icons to verify.
+                if (mOrganizer.isItemInPreview(rank) && v instanceof BubbleTextView) {
+                    ((BubbleTextView) v).verifyHighRes();
+                }
             }
 
             rank++;
@@ -559,8 +560,32 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         return p == getNextPage();
     }
 
-    // TextLauncher: no onPageBeginTransition and verifyVisibleHighResIcons: the home screen loads
-    // the icons of the items in folders in full (AppIconLoader).
+    @Override
+    protected void onPageBeginTransition() {
+        super.onPageBeginTransition();
+        // Ensure that adjacent pages have high resolution icons
+        verifyVisibleHighResIcons(getCurrentPage() - 1);
+        verifyVisibleHighResIcons(getCurrentPage() + 1);
+    }
+
+    // TextLauncher: no getTotalChildCount (unused).
+
+    /**
+     * Ensures that all the icons on the given page are of high-res
+     */
+    public void verifyVisibleHighResIcons(int pageNo) {
+        CellLayout page = getPageAt(pageNo);
+        if (page != null) {
+            ShortcutAndWidgetContainer parent = page.getShortcutsAndWidgets();
+            for (int i = parent.getChildCount() - 1; i >= 0; i--) {
+                View iconView = parent.getChildAt(i);
+                if (iconView instanceof BubbleTextView btv) {
+                    btv.verifyHighRes();
+                }
+                // TextLauncher: no app pairs.
+            }
+        }
+    }
 
     /**
      * Reorders the items such that the {@param empty} spot moves to {@param target}

@@ -588,6 +588,7 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
         if (mActivityContext.getDragController().isDragging()) {
             mActivityContext.getDragController().forceTouchMove();
         }
+        mContent.verifyVisibleHighResIcons(mContent.getNextPage());
     }
 
     /**
