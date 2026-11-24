@@ -19,3 +19,7 @@ parent: Tex-ogmk
 **2026-11-23T16:39:42Z**
 
 Launcher3 に合わせてフォルダのページ送りを移植した（ユーザーの「Launcher3 に従う」の決まりに沿って、行を増やす案ではなくこちら）。PagedView を ref= の1ページの互換クラスから上流のほぼ丸ごとの derived= に替え（Studio ビルドだけのアニメーション倍率を削除）、FolderPagedView と Folder で削っていたページ送り・スクロールのヒントとアラーム（onDragOver の mOnScrollHintAlarm / mScrollPauseAlarm）・ページのインジケーターと矢印・FLAG_MULTI_PAGE_ANIMATION・onMeasure・updateTextViewFocus を上流から戻した。PagedOrientationHandler・DefaultPagedViewHandler・EdgeEffectCompat・PageIndicator・PageIndicatorDots・PaginationArrow と矢印のドロワブルはそのままコピー。フッターは user_folder_icon_normalized.xml から名前の欄を除いた res-textlauncher/layout/folder_footer.xml。名前がないので、ページが1つのときはフッターの高さを取らない（TextLauncher の決め）。後ろのホームのアイテムが隣のページより先にフォーカスを取らないよう、HomeFolder.focusSearch でフォーカスの探索をフォルダの中に閉じた。FLAG_MULTI_PAGE_ANIMATION は DB に保存しない（起動し直すとインジケーターのアニメーションをもう一度見せる）。実機では未確認
+
+**2026-11-24T13:39:12Z**
+
+2026-11-24: 実機でページ送りが問題なく動くことを確認（ユーザー）。1ページのフォルダで下の段を出さない判断もこのままにする
