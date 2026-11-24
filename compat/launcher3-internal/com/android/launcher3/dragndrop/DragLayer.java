@@ -463,8 +463,6 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         };
     }
 
-    // TextLauncher: members TextLauncher adds.
-
     /**
      * mContainer: the home screen's Launcher, looked up when needed, as this layer is made before
      * it; null until then.
@@ -472,5 +470,21 @@ public class DragLayer extends BaseDragLayer<Launcher> {
     @Nullable
     private Launcher getLauncher() {
         return (Launcher) ActivityContext.lookupContextNoThrow(getContext());
+    }
+
+    private View mWorkspaceDragScrim;
+
+    /**
+     * DragLayer.getWorkspaceDragScrim: the view behind the home screen that darkens the wallpaper
+     * while editing (Launcher3 draws a Scrim on this layer, which is the home screen's parent
+     * there).
+     */
+    public View getWorkspaceDragScrim() {
+        return mWorkspaceDragScrim;
+    }
+
+    /** Set by the home screen's root layout, which holds the scrim's view. */
+    public void setWorkspaceDragScrim(View scrim) {
+        mWorkspaceDragScrim = scrim;
     }
 }

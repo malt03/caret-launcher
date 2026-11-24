@@ -244,6 +244,21 @@ public class DeviceProfile {
         mWorkspaceSpringLoadScale = scale;
     }
 
+    private java.util.function.Supplier<Integer> mCellLayoutHeight = () -> 0;
+
+    /**
+     * The page's height. TextLauncher: the home screen's page with the keyboard down, which it has
+     * while editing (docs/spec.md 5.4), set with {@link #setCellLayoutHeight}.
+     */
+    public int getCellLayoutHeight() {
+        return mCellLayoutHeight.get();
+    }
+
+    /** TextLauncher: set by the home screen; see {@link #getCellLayoutHeight}. */
+    public void setCellLayoutHeight(java.util.function.Supplier<Integer> height) {
+        mCellLayoutHeight = height;
+    }
+
     private java.util.function.Supplier<Float> mCellLayoutSpringLoadShrunkTop = () -> 0f;
 
     /**

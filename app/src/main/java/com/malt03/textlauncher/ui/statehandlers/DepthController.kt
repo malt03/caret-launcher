@@ -16,7 +16,6 @@ import com.android.launcher3.util.MultiPropertyFactory
 import com.android.launcher3.util.MultiPropertyFactory.MULTI_PROPERTY_VALUE
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherState
-import com.android.launcher3.LauncherState.SPRING_LOADED
 import com.android.launcher3.statemanager.StateManager
 import java.util.function.Consumer
 
@@ -37,13 +36,6 @@ class DepthController(
 ) : StateManager.StateHandler<LauncherState> {
     /** Property to set the depth for state transition. */
     val stateDepth: MultiPropertyFactory<DepthController>.MultiProperty
-
-    /**
-     * TextLauncher: the spring-loaded state's depth, which SpringLoadedListener animates on its own
-     * (SpringLoadedState.getDepth); it is combined with [stateDepth] with max, as Launcher3 combines
-     * the state's and the widget picker's depths.
-     */
-    val springLoadedDepth: MultiPropertyFactory<DepthController>.MultiProperty
 
     /** Blur radius when completely zoomed out, in pixels. */
     private val maxBlurRadius = activity.resources.getDimensionPixelSize(R.dimen.max_depth_blur_radius_enhanced)
@@ -73,7 +65,6 @@ class DepthController(
     init {
         val depthProperty = MultiPropertyFactory(this, DEPTH, DEPTH_INDEX_COUNT) { a, b -> maxOf(a, b) }
         stateDepth = depthProperty.get(DEPTH_INDEX_STATE_TRANSITION)
-        springLoadedDepth = depthProperty.get(DEPTH_INDEX_SPRING_LOADED)
         // DepthController.ensureDependencies, with the blur state's listener.
         rootView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
             override fun onViewAttachedToWindow(view: View) {
@@ -89,12 +80,8 @@ class DepthController(
         })
     }
 
-    /**
-     * LauncherState.getDepth. TextLauncher: SPRING_LOADED's (SpringLoadedState.DEPTH_15_PERCENT) is
-     * SpringLoadedListener's ([springLoadedDepth]), which animates it with the drag.
-     */
-    private fun depth(state: LauncherState): Float =
-        if (state == SPRING_LOADED) 0f else state.getDepth(Launcher.getLauncher(activity))
+    /** LauncherState.getDepth */
+    private fun depth(state: LauncherState): Float = state.getDepth(Launcher.getLauncher(activity))
 
     override fun setState(state: LauncherState) {
         stateDepth.setValue(depth(state))
@@ -124,8 +111,13 @@ class DepthController(
             currentBlur = newBlur
             activity.window.setBackgroundBlurRadius(currentBlur)
         }
-        // TextLauncher: the home screen in this window, with the all apps sheet's depth only.
-        val workspaceBlur = if (shouldBlur()) mapDepthToBlur(stateDepth.value) * maxBlurRadius else 0f
+        // LauncherDepthController.blurWorkspaceDepthTargets. TextLauncher: the home screen in this
+        // window, with the state's depth (not the widget picker's).
+        val workspaceBlur = if (shouldBlur() && shouldBlurWorkspace()) {
+            mapDepthToBlur(stateDepth.value) * maxBlurRadius
+        } else {
+            0f
+        }
         if (workspaceBlur != currentWorkspaceBlur) {
             currentWorkspaceBlur = workspaceBlur
             workspaceContent.setRenderEffect(
@@ -136,6 +128,20 @@ class DepthController(
                 },
             )
         }
+    }
+
+    /**
+     * LauncherDepthController.blurWorkspaceDepthTargets: whether the state blurs the home screen
+     * with the wallpaper (the all apps list's states do; edit mode does not). TextLauncher: a swipe
+     * of the all apps list moves the depth itself, and blurs it too.
+     */
+    private fun shouldBlurWorkspace(): Boolean {
+        val launcher = Launcher.getLauncher(activity)
+        val stateManager = launcher.stateManager
+        if (stateManager.hasUserControlledSwipe()) return true
+        val targetState = stateManager.targetState ?: stateManager.state
+        // Only blur workspace if the current state wants to blur based on the target state.
+        return stateManager.currentStableState.shouldBlurWorkspace(launcher, targetState)
     }
 
     /**
@@ -159,8 +165,8 @@ class DepthController(
 
         const val DEPTH_INDEX_STATE_TRANSITION = 0
 
-        /** TextLauncher: in place of DEPTH_INDEX_WIDGET. */
-        const val DEPTH_INDEX_SPRING_LOADED = 1
+        /** TextLauncher: nothing sets it, as the widget picker is its own activity. */
+        const val DEPTH_INDEX_WIDGET = 1
         const val DEPTH_INDEX_COUNT = 2
 
         /**

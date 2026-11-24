@@ -239,7 +239,18 @@ public abstract class LauncherState implements BaseState<LauncherState> {
         return 0f;
     }
 
-    // TextLauncher: the depth controller blurs the wallpaper only (shouldBlurWorkspace).
+    /**
+     * Returns whether the workspace should be blurred alongside wallpaper depth.
+     *
+     * @param launcher - The launcher activity
+     * @param targetState - The target state if a transition is in progress, or current state
+     * @return {@code true} if the workspace should be blurred alongside wallpaper depth.
+     */
+    public boolean shouldBlurWorkspace(Launcher launcher, LauncherState targetState) {
+        // TextLauncher: the Launcher stand-in is not a Context.
+        return !Utilities.shouldReduceWorkspaceBlurUsage(launcher.asContext())
+                && targetState == ALL_APPS;
+    }
 
     public String getDescription(Launcher launcher) {
         return launcher.getWorkspace().getCurrentPageDescription();

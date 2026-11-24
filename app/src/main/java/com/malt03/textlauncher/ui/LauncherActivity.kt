@@ -342,12 +342,18 @@ class LauncherActivity :
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && stateManager.state != SPRING_LOADED) focusSearch()
+        if (hasFocus && !isEditMode) focusSearch()
     }
+
+    /**
+     * docs/spec.md 5.4: the home screen is edited (SPRING_LOADED, or a widget's resize frame,
+     * which Launcher3 has in NORMAL), and the field has no focus or keyboard.
+     */
+    private val isEditMode: Boolean get() = stateManager.state == SPRING_LOADED || home.isWidgetResizeFrameOpen
 
     private fun focusSearch() {
         // docs/spec.md 6.4: with the all apps list open, the field has no focus or keyboard.
-        if (stateManager.state == SPRING_LOADED || allAppsTransition.isAllAppsShown) return
+        if (isEditMode || allAppsTransition.isAllAppsShown) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
@@ -369,7 +375,7 @@ class LauncherActivity :
             return
         }
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
-        if (stateManager.state == SPRING_LOADED || allAppsTransition.isAllAppsShown || isLaunching ||
+        if (isEditMode || allAppsTransition.isAllAppsShown || isLaunching ||
             !isResumedState || !hasWindowFocus()
         ) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
@@ -416,9 +422,10 @@ class LauncherActivity :
         return ev.y >= bar.y && ev.y < bar.y + bar.height
     }
 
-    /** Launcher.collectStateHandlers: the all apps transition and the depth controller. */
+    /** Launcher.collectStateHandlers: the all apps transition, the workspace and the depth controller. */
     override fun collectStateHandlers(out: MutableList<StateHandler<LauncherState>>) {
         out.add(allAppsTransition)
+        out.add(home.workspace)
         out.add(depthController)
     }
 
@@ -448,8 +455,7 @@ class LauncherActivity :
                     allApps.reset()
                     refreshResults()
                 }
-                root.requestFocus()
-                WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
+                // The keyboard goes down with edit mode (onEditLayoutChanged).
             }
         }
     }
@@ -483,10 +489,12 @@ class LauncherActivity :
             rotationHelper.setCurrentStateRequest(REQUEST_NONE)
             // docs/spec.md 5.5: the all apps panel shows the icon a drag from it hid.
             if (isTwoPanels) allApps.rebindCells()
-        } else {
-            allApps.reset()
-            refreshResults()
+            // The keyboard comes back as edit mode ends (onEditLayoutChanged), unless a widget's
+            // resize frame keeps it.
+            return
         }
+        allApps.reset()
+        refreshResults()
         focusSearch()
     }
 
@@ -595,9 +603,17 @@ class LauncherActivity :
         }
     }
 
-    /** Edit mode is Launcher3's SPRING_LOADED state (docs/spec.md 5.4). */
-    override fun onEditModeChanged(editing: Boolean) {
-        stateManager.goToState(if (editing) SPRING_LOADED else NORMAL, false)
+    /**
+     * docs/spec.md 5.4: while the home screen is edited, the field has no focus and the keyboard
+     * is down; it comes back after.
+     */
+    override fun onEditLayoutChanged(editing: Boolean) {
+        if (editing) {
+            root.requestFocus()
+            WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
+        } else {
+            focusSearch()
+        }
     }
 
     /**

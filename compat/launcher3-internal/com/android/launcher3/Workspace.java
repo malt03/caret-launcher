@@ -175,7 +175,7 @@ import java.util.function.Predicate;
 // home screen's subclass gives the long-click listener, the page and its scroll container.
 public abstract class Workspace<T> extends FrameLayout
         implements DropTarget, DragSource, CellLayoutContainer,
-        DragController.DragListener,
+        DragController.DragListener, StateHandler<LauncherState>,
         WorkspaceLayoutManager, LauncherBindableItemsContainer {
 
     /**
@@ -326,6 +326,8 @@ public abstract class Workspace<T> extends FrameLayout
         mMoveItemA11yState = new MoveItemA11yState(movedItemCell, deferAccessibilityFocus);
     }
 
+    private final WorkspaceStateTransitionAnimation mStateTransitionAnimation;
+
     @Nullable
     private DragController.DragListener mAccessibilityDragListener;
 
@@ -349,8 +351,8 @@ public abstract class Workspace<T> extends FrameLayout
     public Workspace(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mLauncher = Launcher.getLauncher(context);
-        // TextLauncher: no launcher UI state, and the states' look is the app's
-        // (WorkspaceStateTransitionAnimation).
+        // TextLauncher: no launcher UI state.
+        mStateTransitionAnimation = new WorkspaceStateTransitionAnimation(mLauncher, this);
         mWallpaperManager = WallpaperManager.getInstance(context);
         mAllAppsIconSize = mLauncher.getDeviceProfile().getAllAppsProfile().getIconSizePx();
         // TextLauncher: one page, so no wallpaper offsets (WallpaperOffsetInterpolator).
@@ -460,8 +462,9 @@ public abstract class Workspace<T> extends FrameLayout
         if (mAccessibilityDragListener != null) {
             mAccessibilityDragListener.onDragStart(dragObject, options);
         }
-        // TextLauncher: edit mode (SPRING_LOADED, docs/spec.md 5.4) follows the drag in the home
-        // screen's SpringLoadedListener, which also keeps it while a widget's resize frame is open.
+        // TextLauncher: no edit mode state (EDIT_MODE), and no mouse drags
+        // (enableCursorDrivenWorkflows is off in the release).
+        mLauncher.getStateManager().goToState(SPRING_LOADED);
         mStatsLogManager.logger().withItemInfo(dragObject.dragInfo)
                 .withInstanceId(dragObject.logInstanceId)
                 .log(LauncherEvent.LAUNCHER_ITEM_DRAG_STARTED);
@@ -561,6 +564,57 @@ public abstract class Workspace<T> extends FrameLayout
                 position[0], position[1], 0, null);
     }
 
+    private void onStartStateTransition() {
+        mIsSwitchingState = true;
+        mTransitionProgress = 0;
+
+        // TextLauncher: no page layers (updateChildrenLayersEnabled).
+    }
+
+    private void onEndStateTransition() {
+        mIsSwitchingState = false;
+        // TextLauncher: one page, so no adjacent pages to draw (mForceDrawAdjacentPages), and no
+        // page layers (updateChildrenLayersEnabled).
+        mTransitionProgress = 1;
+
+        updateAccessibilityFlags();
+    }
+
+    /**
+     * Sets the current workspace {@link LauncherState} and updates the UI without any animations
+     */
+    @Override
+    public void setState(LauncherState toState) {
+        onStartStateTransition();
+        mLauncher.getStateManager().getState().onLeavingState(mLauncher, toState);
+        mStateTransitionAnimation.setState(toState);
+        onEndStateTransition();
+    }
+
+    /**
+     * Sets the current workspace {@link LauncherState}, then animates the UI
+     */
+    @Override
+    public void setStateWithAnimation(
+            LauncherState toState, StateAnimationConfig config, PendingAnimation animation) {
+        StateTransitionListener listener = new StateTransitionListener();
+        mLauncher.getStateManager().getState().onLeavingState(mLauncher, toState);
+        mStateTransitionAnimation.setStateWithAnimation(toState, config, animation);
+
+        // TextLauncher: one page, so no adjacent pages to draw (FLAG_MULTI_PAGE,
+        // mForceDrawAdjacentPages).
+        invalidate(); // This will call dispatchDraw(), which calls getVisiblePages().
+
+        ValueAnimator stepAnimator = ValueAnimator.ofFloat(0, 1);
+        stepAnimator.addUpdateListener(listener);
+        stepAnimator.addListener(listener);
+        animation.add(stepAnimator);
+    }
+
+    public WorkspaceStateTransitionAnimation getStateTransitionAnimation() {
+        return mStateTransitionAnimation;
+    }
+
     @Override
     public void announceForAccessibility(CharSequence text) {
         // Don't announce if apps is on top of us.
@@ -569,8 +623,6 @@ public abstract class Workspace<T> extends FrameLayout
         }
     }
 
-    // TextLauncher: called as the launcher's state is set (Launcher.onStateSetEnd), as this
-    // workspace is not a state handler yet (onEndStateTransition).
     public void updateAccessibilityFlags() {
         // TODO: Update the accessibility flags appropriately when dragging.
         int accessibilityFlag =
@@ -1049,7 +1101,8 @@ public abstract class Workspace<T> extends FrameLayout
                         distance, false, d)
                         || addToExistingFolderIfNecessary(cell, dropTargetLayout, mTargetCell,
                         distance, d, false)) {
-                    // TextLauncher: edit mode ends with the drag (SpringLoadedListener).
+                    // TextLauncher: no edit mode state (EDIT_MODE).
+                    mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
                     return;
                 }
 
@@ -1181,11 +1234,12 @@ public abstract class Workspace<T> extends FrameLayout
                     mLauncher.getDragController().animateDragViewToOriginalPosition(
                             /* onComplete= */ callbackList::executeAllAndDestroy, cell,
                             currentState.getTransitionDuration(mLauncher, true /* isToState */));
-                    // TextLauncher: edit mode ends with the drag (SpringLoadedListener); the callback
-                    // runs once the home screen is back in NORMAL.
-                    if (onCompleteCallback != null) {
-                        runWhenNormal(() -> callbackList.add(onCompleteCallback));
-                    }
+                    // TextLauncher: no edit mode state (EDIT_MODE).
+                    mLauncher.getStateManager().goToState(NORMAL, /* delay= */ 0,
+                            onCompleteCallback == null
+                                    ? null
+                                    : forSuccessCallback(
+                                            () -> callbackList.add(onCompleteCallback)));
                     mLauncher.getDropTargetBar().onDragEnd();
                     parent.onDropChild(cell);
                     return;
@@ -1209,11 +1263,9 @@ public abstract class Workspace<T> extends FrameLayout
             }
             parent.onDropChild(cell);
 
-            // TextLauncher: edit mode ends with the drag (SpringLoadedListener); the callback (the
-            // widget's resize frame) runs once the home screen is back in NORMAL.
-            if (onCompleteRunnable != null) {
-                runWhenNormal(onCompleteRunnable);
-            }
+            // TextLauncher: no edit mode state (EDIT_MODE).
+            mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY,
+                    onCompleteRunnable == null ? null : forSuccessCallback(onCompleteRunnable));
             mStatsLogManager.logger().withItemInfo(d.dragInfo).withInstanceId(d.logInstanceId)
                     .log(LauncherEvent.LAUNCHER_ITEM_DROP_COMPLETED);
         }
@@ -1738,6 +1790,11 @@ public abstract class Workspace<T> extends FrameLayout
                     // widgets/shortcuts/folders in a slightly different way
                     mLauncher.addPendingItem(pendingInfo, container, screenId, mTargetCell,
                             item.spanX, item.spanY);
+                    // TextLauncher: the home screen leaves the spring-loaded state here, where
+                    // Launcher3 leaves it as its add flow completes (Launcher.onActivityResult,
+                    // completeTwoStageWidgetDrop); the home screen's add flow waits until it is
+                    // resumed and may show the system's bind dialog.
+                    mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
                     mStatsLogManager.logger().withItemInfo(d.dragInfo)
                             .withInstanceId(d.logInstanceId)
                             .log(LauncherEvent.LAUNCHER_ITEM_DROP_COMPLETED);
@@ -1761,7 +1818,7 @@ public abstract class Workspace<T> extends FrameLayout
                     animationStyle, finalView, true);
         } else {
             // This is for other drag/drop cases, like dragging from All Apps
-            // TextLauncher: edit mode ends with the drag (SpringLoadedListener).
+            mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
             // TODO(b/414409465) We could just create a new info making a copy with all the new
             //  needed values instead of choosing on each case what to modify.
             // TextLauncher: the home screen inflates the item (its HomeItemInflater is
@@ -2181,6 +2238,25 @@ public abstract class Workspace<T> extends FrameLayout
         return mLauncher.getCellPosMapper();
     }
 
+    private class StateTransitionListener extends AnimatorListenerAdapter
+            implements AnimatorUpdateListener {
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator anim) {
+            mTransitionProgress = anim.getAnimatedFraction();
+        }
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+            onStartStateTransition();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            onEndStateTransition();
+        }
+    }
+
     // TextLauncher: members TextLauncher adds.
 
     /** PagedView.mCurrentPage: the one page. */
@@ -2199,6 +2275,8 @@ public abstract class Workspace<T> extends FrameLayout
         mPageScrollContainer = scrollContainer;
         addView(scrollContainer, new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT));
+        mStateTransitionAnimation.applyChildState(
+                mLauncher.getStateManager().getState(), page, 0);
     }
 
     /** The page's scroll container, in which the page is visible. */
@@ -2254,12 +2332,6 @@ public abstract class Workspace<T> extends FrameLayout
     public boolean isPageInTransition() {
         return false;
     }
-
-    /**
-     * StateManager.goToState(NORMAL) with a success callback: runs the callback once the home
-     * screen is back from edit mode (the home screen's SpringLoadedListener).
-     */
-    protected abstract void runWhenNormal(Runnable callback);
 
     /**
      * Workspace.getWorkspaceAndHotseatCellLayouts. TextLauncher: the one page, and no hotseat.

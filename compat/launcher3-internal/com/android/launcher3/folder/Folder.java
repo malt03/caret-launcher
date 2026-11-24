@@ -20,6 +20,8 @@
 
 package com.android.launcher3.folder;
 
+import static com.android.launcher3.LauncherAnimUtils.SPRING_LOADED_EXIT_DELAY;
+import static com.android.launcher3.LauncherState.NORMAL;
 import static com.android.launcher3.folder.FolderGridOrganizer.createFolderGridOrganizer;
 import static com.android.launcher3.model.data.FolderInfo.willAcceptItemType;
 import static com.android.launcher3.pageindicators.PaginationArrow.DISABLED_ARROW_OPACITY;
@@ -1276,8 +1278,13 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
                     mActivityContext.getModelWriter());
         }
 
-        // TextLauncher: the home screen leaves its spring-loaded state as the drag ends
-        // (SpringLoadedListener), and there are no drag announcements or logs.
+        // TextLauncher: no edit mode state (EDIT_MODE).
+        launcher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
+
+        if (d.stateAnnouncer != null) {
+            d.stateAnnouncer.completeAction(R.string.item_moved);
+        }
+        // TextLauncher: no logs.
     }
 
     // This is used so the item doesn't immediately appear in the folder when added. In one case

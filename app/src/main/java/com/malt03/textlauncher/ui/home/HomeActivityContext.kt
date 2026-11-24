@@ -185,14 +185,14 @@ internal class HomeActivityContext(private val home: HomeController) :
         transitionState = state
         // Animated unless the handlers are set to the state at once (StateManager.goToState).
         val animated = stateManager.isInTransition || stateManager.hasUserControlledSwipe()
+        home.onStateSetStart(state)
         home.host.onStateSetStart(fromState, state, animated)
     }
 
     override fun onStateSetEnd(state: LauncherState) {
         val lastStableState = stableState
         stableState = state
-        // Workspace.onEndStateTransition: the workspace is not a state handler yet.
-        home.workspace.updateAccessibilityFlags()
+        home.onStateSetEnd(state)
         home.host.onStateSetEnd(state, lastStableState)
     }
 

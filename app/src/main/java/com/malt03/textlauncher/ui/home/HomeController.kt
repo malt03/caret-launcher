@@ -65,7 +65,7 @@ import com.malt03.textlauncher.ui.statehandlers.DepthController
  * - [HomeItemInflater]: ItemInflater and ItemClickHandler
  * - [ItemLongClickListener]: ItemLongClickListener, PopupControllerForAppIcon and
  *   LauncherPopupItemDragHandler
- * - [SpringLoadedListener]: the SPRING_LOADED state while dragging
+ * - Workspace (WorkspaceStateTransitionAnimation): the SPRING_LOADED state while dragging
  * - [HomeWorkspace], [LauncherDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
  * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget and
@@ -95,8 +95,11 @@ class HomeController(
         fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)
         /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
         fun editSearchTerms(app: AppItemInfo)
-        /** Edit mode (docs/spec.md 5.4) starts with a drag and ends after it. */
-        fun onEditModeChanged(editing: Boolean)
+        /**
+         * docs/spec.md 5.4: the home screen is edited, with the keyboard down (the
+         * SPRING_LOADED state, or a widget's resize frame in NORMAL), or not any more.
+         */
+        fun onEditLayoutChanged(editing: Boolean)
         /**
          * Shows the home screen, leaving the search results or the all apps list (Launcher3's
          * goToState(NORMAL, true, forSuccessCallback(onDone))); [onDone] runs once it is shown.
@@ -161,7 +164,6 @@ class HomeController(
 
     /** Launcher.mDragController */
     internal val dragController = LauncherDragController(launcher)
-    private val springLoadedListener = SpringLoadedListener(this)
     /**
      * Launcher3's DropTargetBar (drop_target_bar.xml), inflated in a context that gives the
      * launcher, as the activity holds the home screen only once it is made. The home screen places
@@ -209,18 +211,20 @@ class HomeController(
         scrollView.onCellSizeChanged = { width, height ->
             launcher.deviceProfile.workspaceProfile.setCellSize(width, height, widgetPadding)
         }
-        // DeviceProfile.getWorkspaceSpringLoadScale, from the home screen's layout.
-        launcher.deviceProfile.setWorkspaceSpringLoadScale(springLoadedListener::workspaceSpringLoadScale)
+        // DeviceProfile's page height, spring-loaded scale and shrunk top, from the home screen's
+        // layout (SpringLoadedState.getWorkspaceScaleAndTranslation).
+        launcher.deviceProfile.setCellLayoutHeight { editCellLayoutHeight().toInt() }
+        launcher.deviceProfile.setWorkspaceSpringLoadScale(::workspaceSpringLoadScale)
+        launcher.deviceProfile.setCellLayoutSpringLoadShrunkTop {
+            root.statusBarTop + root.dropTargetBarShrunkHeight - root.contentArea.top.toFloat()
+        }
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
         workspace.setup(dragController)
         dragController.addDragListener(workspace)
-        dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
-        // Workspace.setState at the start (onEndStateTransition): the page's accessibility flags.
-        workspace.updateAccessibilityFlags()
         // DragLayer.recreateControllers: the activity sets them (Launcher.createTouchControllers).
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(WorkspaceTouchListener(launcher, scrollView))
@@ -385,9 +389,6 @@ class HomeController(
         if (loader.removeItems(matcher::test)) loader.rebuild()
     }
 
-    /** StateManager.goToState(NORMAL) with a success callback (SpringLoadedListener). */
-    internal fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
-
     /**
      * Launcher.addPendingItem for a widget or shortcut from the widget picker, added with its add
      * button or dropped (Workspace.onDropExternal), at [cell] with the spans it takes there.
@@ -483,18 +484,82 @@ class HomeController(
 
     /**
      * docs/spec.md 5.4: resizing a widget is edit mode, so the keyboard goes down while its frame
-     * is open, and comes back when it closes. A frame that closes as its widget's drag starts
-     * leaves edit mode to the drag (SpringLoadedListener).
+     * is open, and comes back when it closes. TextLauncher: the launcher stays in NORMAL, as in
+     * Launcher3. A frame that closes as its widget's drag starts leaves edit mode to the drag
+     * (SPRING_LOADED).
      */
     internal fun onWidgetResizeFrameOpenChanged(open: Boolean) {
         isWidgetResizeFrameOpen = open
         if (open) {
-            root.isEditLayout = true
-            host.onEditModeChanged(true)
-        } else if (!dragController.isDragging) {
-            root.isEditLayout = false
-            host.onEditModeChanged(false)
+            setEditLayout(true)
+        } else if (!dragController.isDragging && launcher.stateManager.state != LauncherState.SPRING_LOADED) {
+            setEditLayout(false)
         }
+    }
+
+    /**
+     * Launcher.onStateSetStart. TextLauncher: edit mode (SPRING_LOADED) lays the home screen out
+     * with the keyboard down at once (docs/spec.md 5.4).
+     */
+    internal fun onStateSetStart(toState: LauncherState) {
+        if (toState == LauncherState.SPRING_LOADED) setEditLayout(true)
+    }
+
+    /**
+     * Launcher.onStateSetEnd. TextLauncher: back in NORMAL, edit mode ends unless a widget's resize
+     * frame keeps it; the frame opens as the transition ends (Workspace.onDrop's success
+     * callback), so this looks after the callbacks. In SPRING_LOADED, the drag sees what is under
+     * it now that the page has shrunk.
+     */
+    internal fun onStateSetEnd(state: LauncherState) {
+        when (state) {
+            LauncherState.SPRING_LOADED -> if (dragController.isDragging) dragController.forceTouchMove()
+            LauncherState.NORMAL -> root.post {
+                if (!isWidgetResizeFrameOpen && !dragController.isDragging &&
+                    launcher.stateManager.state == LauncherState.NORMAL
+                ) {
+                    setEditLayout(false)
+                }
+            }
+            else -> Unit
+        }
+    }
+
+    private fun setEditLayout(editing: Boolean) {
+        if (root.isEditLayout == editing) return
+        root.isEditLayout = editing
+        host.onEditLayoutChanged(editing)
+    }
+
+    /**
+     * DeviceProfile.getCellLayoutHeight: the page's height with the keyboard down, which it takes
+     * while editing (docs/spec.md 5.4); a drag works it out before the layout changes.
+     */
+    private fun editCellLayoutHeight(): Float = root.keyboardHiddenBarTop - root.statusBarTop - workspace.top
+
+    /**
+     * DeviceProfile.getWorkspaceSpringLoadScale, which SpringLoadedState and the widget drag scale
+     * (WidgetDragScaleUtils) use: the page shrinks to fit between the drop target bar and the
+     * hotseat (the search field with the keyboard down), at most so that 48dp of the next pages
+     * would show on each side.
+     */
+    private fun workspaceSpringLoadScale(): Float {
+        val cellLayoutHeight = editCellLayoutHeight()
+        if (cellLayoutHeight <= 0f) return 1f
+        val res = context.resources
+        // getCellLayoutSpringLoadShrunkTop: the drop target bar with its margins, in root coordinates.
+        val shrunkTop = root.statusBarTop + root.dropTargetBarShrunkHeight.toFloat()
+        // getCellLayoutSpringLoadShrunkBottom: above the hotseat and its spring-loaded top margin.
+        val shrunkBottom = root.keyboardHiddenBarTop -
+            res.getDimensionPixelSize(com.android.launcher3.R.dimen.spring_loaded_hotseat_top_margin)
+        var scale = ((shrunkBottom - shrunkTop) / cellLayoutHeight).coerceAtMost(1f)
+        // Reduce scale if next pages would not be visible after scaling the workspace.
+        val workspaceWidth = workspace.width.toFloat()
+        val scaledWorkspaceWidth = workspaceWidth * scale
+        val maxAvailableWidth = workspaceWidth -
+            2 * res.getDimensionPixelSize(com.android.launcher3.R.dimen.dynamic_grid_spring_loaded_min_next_space_visible)
+        if (scaledWorkspaceWidth > maxAvailableWidth) scale *= maxAvailableWidth / scaledWorkspaceWidth
+        return scale
     }
 
     /**

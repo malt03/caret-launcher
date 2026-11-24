@@ -95,7 +95,12 @@ public class AllAppsState extends LauncherState {
                 : context.getDeviceProfile().getBottomSheetProfile().getBottomSheetDepth();
     }
 
-    // TextLauncher: the depth controller blurs the wallpaper only (shouldBlurWorkspace).
+    @Override
+    public boolean shouldBlurWorkspace(Launcher launcher, LauncherState targetState) {
+        // TextLauncher: the Launcher stand-in is not a Context.
+        return !shouldReduceWorkspaceBlurUsage(launcher.asContext()) && (targetState == ALL_APPS
+                || targetState == NORMAL);
+    }
 
     // TextLauncher: no launcher UI state (getVisibleElements) or floating search bar
     // (getFloatingSearchBarRestingMargin*, shouldFloatingSearchBarUsePillWhenUnfocused).

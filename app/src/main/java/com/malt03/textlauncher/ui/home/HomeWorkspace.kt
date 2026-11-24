@@ -37,7 +37,16 @@ class HomeWorkspace internal constructor(
 
     override fun getWorkspaceChildOnLongClickListener(): View.OnLongClickListener = itemLongClickListener
 
-    override fun runWhenNormal(callback: Runnable) = home.runWhenNormal(callback)
+    /**
+     * TextLauncher: the workspace scales about the middle of its keyboard-down height
+     * (DeviceProfile.getCellLayoutHeight), which SpringLoadedState's translation assumes, as the
+     * page grows to that height while editing starts.
+     */
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        pivotX = width / 2f
+        pivotY = home.launcher.deviceProfile.cellLayoutHeight / 2f
+    }
 
     /**
      * Workspace.persistRemoveItemsByMatcher. TextLauncher: the home screen removes the items from

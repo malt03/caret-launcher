@@ -194,6 +194,10 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     @Override
     public boolean onRequestSendAccessibilityEvent(View child, AccessibilityEvent event) {
+        // TextLauncher: a layer outside the launcher (the widget picker's) has no container.
+        if (getContainer() == null) {
+            return super.onRequestSendAccessibilityEvent(child, event);
+        }
         // Shortcuts can appear above folder
         View topView = AbstractFloatingView.getTopOpenViewWithType(getContainer(),
                 AbstractFloatingView.TYPE_ACCESSIBLE);
@@ -210,6 +214,11 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     @Override
     public void addChildrenForAccessibility(ArrayList<View> childrenForAccessibility) {
+        // TextLauncher: a layer outside the launcher (the widget picker's) has no container.
+        if (getContainer() == null) {
+            super.addChildrenForAccessibility(childrenForAccessibility);
+            return;
+        }
         View topView = AbstractFloatingView.getTopOpenViewWithType(getContainer(),
                 AbstractFloatingView.TYPE_ACCESSIBLE);
         if (topView != null) {
@@ -339,10 +348,11 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     /**
      * TextLauncher: mContainer, looked up when needed, as this layer is made before the home
-     * screen's Launcher it belongs to.
+     * screen's Launcher it belongs to; null outside the launcher (the widget picker).
      */
+    @androidx.annotation.Nullable
     protected ActivityContext getContainer() {
-        return ActivityContext.lookupContext(getContext());
+        return ActivityContext.lookupContextNoThrow(getContext());
     }
 
     public static class LayoutParams extends InsettableFrameLayout.LayoutParams {

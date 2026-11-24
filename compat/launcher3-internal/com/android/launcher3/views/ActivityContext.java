@@ -171,9 +171,11 @@ public interface ActivityContext {
      * Returns the ActivityContext associated with the given Context, or null if
      * the Context is not associated with any ActivityContext.
      */
-    // TextLauncher: as lookupContext.
+    // TextLauncher: also through a Provider, as lookupContext.
     static ActivityContext lookupContextNoThrow(Context context) {
-        if (context instanceof Provider p) {
+        if (context instanceof ActivityContext activityContext) {
+            return activityContext;
+        } else if (context instanceof Provider p) {
             return p.getActivityContext();
         } else if (context instanceof ContextWrapper cw) {
             return lookupContextNoThrow(cw.getBaseContext());

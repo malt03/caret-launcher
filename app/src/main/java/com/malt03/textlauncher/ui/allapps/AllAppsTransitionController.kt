@@ -15,13 +15,11 @@ import com.android.launcher3.Workspace
 import com.android.launcher3.anim.PendingAnimation
 import com.android.launcher3.states.StateAnimationConfig
 import com.android.launcher3.states.StateAnimationConfig.ANIM_VERTICAL_PROGRESS
-import com.android.launcher3.states.StateAnimationConfig.ANIM_WORKSPACE_SCALE
 import com.android.launcher3.util.MSDLPlayerWrapper
 import com.google.android.msdl.data.model.MSDLToken
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherState
-import com.android.launcher3.LauncherState.SPRING_LOADED
 import com.malt03.textlauncher.ui.statehandlers.DepthController
 import com.android.launcher3.statemanager.StateManager
 
@@ -47,8 +45,6 @@ class AllAppsTransitionController(
     // When {@link mProgress} is 1, all apps container is pulled up.
     private var progress = 0f // [0, 1]
 
-    /** TextLauncher: the scale of the workspace's state (SCALE_INDEX_WORKSPACE_STATE) set here. */
-    private var workspaceScale = 1f
     private val context = root.context
 
     /** The home screen's Launcher, which the states read (Launcher.getLauncher). */
@@ -59,13 +55,6 @@ class AllAppsTransitionController(
      * from Launcher3's.
      */
     fun verticalProgress(state: LauncherState): Float = 1f - state.getVerticalProgress(launcher)
-
-    /**
-     * The scale of LauncherState.getWorkspaceScaleAndTranslation. TextLauncher: SPRING_LOADED's is
-     * SpringLoadedListener's, which animates it with the drag.
-     */
-    private fun workspaceScale(state: LauncherState): Float =
-        if (state == SPRING_LOADED) 1f else state.getWorkspaceScaleAndTranslation(launcher).scale
 
     init {
         root.onAllAppsLayoutChanged = ::applyProgress
@@ -114,14 +103,9 @@ class AllAppsTransitionController(
     fun setUserControlledProgress(progress: Float) {
         setProgress(progress)
         val sheetDepth = AllAppsSwipeController.ALL_APPS_SHEET_DEPTH.getInterpolation(progress)
-        val allAppsScale = workspaceScale(LauncherState.ALL_APPS)
-        setWorkspaceScale(1f + (allAppsScale - 1f) * sheetDepth)
+        val allAppsScale = LauncherState.ALL_APPS.getWorkspaceScaleAndTranslation(launcher).scale
+        WORKSPACE_SCALE_PROPERTY.set(workspace, 1f + (allAppsScale - 1f) * sheetDepth)
         depthController.stateDepth.setValue(LauncherState.ALL_APPS.getDepth(launcher) * sheetDepth)
-    }
-
-    private fun setWorkspaceScale(scale: Float) {
-        workspaceScale = scale
-        WORKSPACE_SCALE_PROPERTY.set(workspace, scale)
     }
 
     /**
@@ -130,10 +114,6 @@ class AllAppsTransitionController(
      */
     override fun setState(state: LauncherState) {
         setProgress(verticalProgress(state))
-        // WorkspaceStateTransitionAnimation.setWorkspaceProperty. TextLauncher: only when it
-        // changes, as SpringLoadedListener uses the same index.
-        val scale = workspaceScale(state)
-        if (workspaceScale != scale) setWorkspaceScale(scale)
     }
 
     /**
@@ -143,11 +123,6 @@ class AllAppsTransitionController(
      * This method also dictates where along the progress the haptics should be played.
      */
     override fun setStateWithAnimation(toState: LauncherState, config: StateAnimationConfig, builder: PendingAnimation) {
-        // WorkspaceStateTransitionAnimation.setWorkspaceProperty: the workspace's scale.
-        builder.setFloat(
-            this, WORKSPACE_STATE_SCALE, workspaceScale(toState),
-            config.getInterpolator(ANIM_WORKSPACE_SCALE, Interpolators.ZOOM_OUT),
-        )
 
         val targetProgress = verticalProgress(toState)
         if (progress.compareTo(targetProgress) == 0) {
@@ -200,16 +175,11 @@ class AllAppsTransitionController(
                 controller.setProgress(progress)
         }
 
-        /** WorkspaceStateTransitionAnimation.WORKSPACE_SCALE_PROPERTY */
+        /**
+         * WorkspaceStateTransitionAnimation.WORKSPACE_SCALE_PROPERTY, which a swipe moves itself
+         * (the workspace animates it in the state transitions).
+         */
         val WORKSPACE_SCALE_PROPERTY: FloatProperty<Workspace<*>> =
             WORKSPACE_SCALE_PROPERTY_FACTORY.get(SCALE_INDEX_WORKSPACE_STATE)
-
-        /** TextLauncher: [WORKSPACE_SCALE_PROPERTY] through [workspaceScale]. */
-        val WORKSPACE_STATE_SCALE = object : FloatProperty<AllAppsTransitionController>("workspaceStateScale") {
-            override fun get(controller: AllAppsTransitionController): Float = controller.workspaceScale
-
-            override fun setValue(controller: AllAppsTransitionController, scale: Float) =
-                controller.setWorkspaceScale(scale)
-        }
     }
 }

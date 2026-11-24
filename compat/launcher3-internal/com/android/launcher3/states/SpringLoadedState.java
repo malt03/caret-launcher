@@ -65,9 +65,12 @@ public class SpringLoadedState extends LauncherState {
         // hotseat).
 
         float shrunkTop = grid.getCellLayoutSpringLoadShrunkTop();
-        float halfHeight = ws.getHeight() / 2;
+        // TextLauncher: the page grows to its keyboard-down height as editing starts, so its
+        // height is that one (getCellLayoutHeight), which the workspace's pivot follows
+        // (HomeWorkspace), and the page fills the workspace.
+        float halfHeight = grid.getCellLayoutHeight() / 2f;
         float myCenter = ws.getTop() + halfHeight;
-        float cellTopFromCenter = halfHeight - ws.getChildAt(0).getTop();
+        float cellTopFromCenter = halfHeight;
         float actualCellTop = myCenter - cellTopFromCenter * scale;
         return new ScaleAndTranslation(scale, 0, shrunkTop - actualCellTop);
     }

@@ -45,8 +45,7 @@ class DropTargetHandler(
     // TextLauncher: no undo, home screen files or main executor.
 ) {
     fun onDropAnimationComplete() {
-        // TextLauncher: the home screen leaves the spring-loaded state as the drag ends
-        // (SpringLoadedListener.onDragEnd).
+        launcher.stateManager.goToState(LauncherState.NORMAL)
     }
 
     fun onSecondaryTargetCompleteDrop(target: ComponentName?, d: DragObject) {

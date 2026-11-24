@@ -213,8 +213,8 @@ public class DropTargetBar extends FrameLayout
 
         DeviceProfile dp = mLauncher.getDeviceProfile();
         // TextLauncher: the home grid shrinks about its horizontal center while dragging
-        // (SpringLoadedListener) and is centered under the bar, so the bar's center stands for
-        // the scaled cell layout's, and the bar's width for the scaled panel width.
+        // (WorkspaceStateTransitionAnimation) and is centered under the bar, so the bar's center
+        // stands for the scaled cell layout's, and the bar's width for the scaled panel width.
         int barCenter;
         barCenter = (right - left) / 2;
 

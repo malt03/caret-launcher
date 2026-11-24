@@ -3,7 +3,6 @@ package com.malt03.textlauncher.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.MotionEvent
-import com.android.app.animation.Interpolators
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
@@ -46,7 +45,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
 
     /**
      * DragLayer's workspace drag scrim: darkens the wallpaper while editing, behind the home
-     * screen ([animateWallpaperScrim]).
+     * screen. WorkspaceStateTransitionAnimation.setScrim fades it with the state
+     * (DragLayer.getWorkspaceDragScrim).
      */
     private val wallpaperScrim = View(context).apply {
         setBackgroundColor(context.getColor(com.android.launcher3.R.color.wallpaper_popup_scrim))
@@ -201,6 +201,8 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     init {
         clipChildren = false
         addView(wallpaperScrim)
+        overlay.workspaceDragScrim = wallpaperScrim
+        overlay.workspaceDragScrim = wallpaperScrim
         addView(contentArea)
         addView(allAppsSheet)
         allAppsSheet.visibility = GONE
@@ -373,27 +375,6 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
         overlay.layout(0, 0, width, height - overlayBottomCut)
         scrim.layout(0, 0, width, height)
         wallpaperScrim.layout(0, 0, width, height)
-    }
-
-    /**
-     * DragLayer's workspace drag scrim (graphics/Scrim, wallpaper_popup_scrim) with the
-     * spring-loaded state: SpringLoadedState.getWorkspaceBackgroundAlpha (0.2), animated over
-     * SpringLoadedState.getTransitionDuration (150ms, both ways) with LINEAR
-     * (WorkspaceStateTransitionAnimation.setScrim).
-     */
-    fun animateWallpaperScrim(visible: Boolean) {
-        val finalAlpha = if (visible) SPRING_LOADED_BACKGROUND_ALPHA else 0f
-        wallpaperScrim.animate().cancel()
-        wallpaperScrim.animate().alpha(finalAlpha)
-            .setDuration(SPRING_LOADED_TRANSITION_MS)
-            .setInterpolator(Interpolators.LINEAR)
-            .start()
-    }
-
-    private companion object {
-        const val SPRING_LOADED_TRANSITION_MS = 150L
-        /** SpringLoadedState.getWorkspaceBackgroundAlpha */
-        const val SPRING_LOADED_BACKGROUND_ALPHA = 0.2f
     }
 
     /**

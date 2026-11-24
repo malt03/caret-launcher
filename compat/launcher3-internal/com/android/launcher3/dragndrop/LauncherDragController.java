@@ -141,8 +141,10 @@ public class LauncherDragController extends DragController {
 
     @Override
     protected void exitDrag() {
-        // TextLauncher: edit mode (SPRING_LOADED) ends with the drag in the home screen's
-        // SpringLoadedListener.
+        // TextLauncher: no edit mode state (EDIT_MODE).
+        if (!mIsInPreDrag) {
+            mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
+        }
     }
 
     // TextLauncher: no fling to delete (endWithFlingAnimation, endDrag).
