@@ -25,3 +25,7 @@ tags: [launcher3, upstream, home]
 **2026-11-24T16:10:51Z**
 
 2026-11-25: 前半（長押しとメニュー）を移した。touch/ItemLongClickListener.java（全体）、popup/PopupItemDragHandler.kt（LauncherPopupItemDragHandler を含む）、PopupControllerAppIcons.kt、PopupControllerForExtraHomeScreenItems.kt、PopupDataRepository.kt（Dagger なし）、PopupDataSource.kt（削除・フォルダ・ウィジェットだけ）、PopupDataMapper.kt を derived、PopupResizeStrategy.kt を path=。PopupController の factory、PopupContainerWithArrow.configureForLauncher（ライブ更新なし）、SystemShortcut.Factory と APP_INFO、ActivityContext.getSupportedShortcuts、BubbleTextView.configureMinimalPopup、LauncherAppWidgetInfo.widgetFeatures（ビューを作るときに設定）を戻した。アプリ側は HomeSystemShortcuts（getSupportedShortcuts: 検索文字列を編集・アプリ情報）だけ。ウィジェットの「設定」は Launcher.startWidgetReconfigure（印）でアプリの追加の流れへ。残り: ウィジェット追加の流れ（PendingRequestArgs・WidgetAddFlowHandler・Launcher の add flow）
+
+**2026-11-24T16:11:13Z**
+
+2026-11-25: 後半（ウィジェット追加の流れ）は今回は見送った。HomeWidgets.kt はすでに Launcher.addAppWidgetFromDrop / handleActivityResult / completeAdd* をほぼ上流どおり書き写していて、derived の Launcher に移しても挙動は変わらない一方、確かめるにはシステムのウィジェット作成の許可ダイアログ（ACTION_APPWIDGET_BIND）を通す必要があり、エージェントは押せない。実機で許可を出せるときに、PendingRequestArgs・WidgetAddFlowHandler・ActivityResultInfo（path=）と互換の Launcher の区画に移す。Tex-iuyb も同じ理由で後に。
