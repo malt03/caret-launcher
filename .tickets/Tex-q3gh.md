@@ -19,3 +19,9 @@ tags: [launcher3, upstream, home]
 
 リスク: 互換の Launcher は Activity でないので、2,903 行の Launcher.java の一部を derived にすると更新時の食い違いが多い。規模: 中。
 
+
+## Notes
+
+**2026-11-24T16:10:51Z**
+
+2026-11-25: 前半（長押しとメニュー）を移した。touch/ItemLongClickListener.java（全体）、popup/PopupItemDragHandler.kt（LauncherPopupItemDragHandler を含む）、PopupControllerAppIcons.kt、PopupControllerForExtraHomeScreenItems.kt、PopupDataRepository.kt（Dagger なし）、PopupDataSource.kt（削除・フォルダ・ウィジェットだけ）、PopupDataMapper.kt を derived、PopupResizeStrategy.kt を path=。PopupController の factory、PopupContainerWithArrow.configureForLauncher（ライブ更新なし）、SystemShortcut.Factory と APP_INFO、ActivityContext.getSupportedShortcuts、BubbleTextView.configureMinimalPopup、LauncherAppWidgetInfo.widgetFeatures（ビューを作るときに設定）を戻した。アプリ側は HomeSystemShortcuts（getSupportedShortcuts: 検索文字列を編集・アプリ情報）だけ。ウィジェットの「設定」は Launcher.startWidgetReconfigure（印）でアプリの追加の流れへ。残り: ウィジェット追加の流れ（PendingRequestArgs・WidgetAddFlowHandler・Launcher の add flow）

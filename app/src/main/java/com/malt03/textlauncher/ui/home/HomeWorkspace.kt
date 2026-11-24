@@ -3,11 +3,9 @@ package com.malt03.textlauncher.ui.home
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Workspace
 import com.android.launcher3.model.data.ItemInfo
-import com.android.launcher3.widget.LauncherAppWidgetHostView
 import java.util.function.Predicate
 
 /**
@@ -21,21 +19,6 @@ class HomeWorkspace internal constructor(
     context: Context,
     private val home: HomeController,
 ) : Workspace<Any>(context, null) {
-
-    /**
-     * ItemLongClickListener.INSTANCE_WORKSPACE (WorkspaceLayoutManager.addInScreen sets it on the
-     * page's items): the item's menu, and a drag once the finger moves.
-     */
-    private val itemLongClickListener = View.OnLongClickListener { v ->
-        when (v) {
-            is AppIconView -> home.itemLongClickListener.onHomeItemLongPress(v)
-            is FolderIconView -> home.itemLongClickListener.onHomeFolderLongPress(v)
-            is LauncherAppWidgetHostView -> home.itemLongClickListener.onHomeWidgetLongPress(v)
-        }
-        true
-    }
-
-    override fun getWorkspaceChildOnLongClickListener(): View.OnLongClickListener = itemLongClickListener
 
     /**
      * TextLauncher: the workspace scales about the middle of its keyboard-down height

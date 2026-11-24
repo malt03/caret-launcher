@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
@@ -20,11 +21,75 @@
 
 package com.android.launcher3.popup
 
+import android.graphics.Point
+import android.view.MotionEvent
+import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.View.OnTouchListener
+import com.android.launcher3.Launcher
+import com.android.launcher3.LauncherSettings
+import com.android.launcher3.dragndrop.DragOptions
+import com.android.launcher3.dragndrop.DraggableView
+import com.android.launcher3.popup.ArrowPopup.TYPE_FOLDER
+import com.android.launcher3.popup.ArrowPopup.closeOpenContainer
+import com.android.launcher3.shortcuts.DeepShortcutView
+import com.android.launcher3.shortcuts.ShortcutDragPreviewProvider
+import com.android.launcher3.touch.ItemLongClickListener
 
-/**
- * Stand-in for Launcher3's PopupItemDragHandler: drags an app shortcut out of the long-press
- * menu. The app implements it the way LauncherPopupItemDragHandler does.
- */
+// TextLauncher: derived from PopupItemDragHandler.kt (android-17.0.0_r1); changes are marked with
+// "TextLauncher:".
+
+/** Handler to control drag-and-drop for popup items */
 interface PopupItemDragHandler : OnLongClickListener, OnTouchListener
+
+/** Drag and drop handler for popup items in Launcher activity */
+class LauncherPopupItemDragHandler
+internal constructor(
+    private val mLauncher: Launcher,
+    private val mContainer: PopupContainerWithArrow<*>,
+) : PopupItemDragHandler {
+    private val mIconLastTouchPos: Point = Point()
+
+    override fun onTouch(v: View, ev: MotionEvent): Boolean {
+        // Touched a shortcut, update where it was touched so we can drag from there on
+        // long click.
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN,
+            MotionEvent.ACTION_MOVE -> mIconLastTouchPos[ev.x.toInt()] = ev.y.toInt()
+        }
+        return false
+    }
+
+    override fun onLongClick(v: View): Boolean {
+        if (!ItemLongClickListener.canStartDrag(mLauncher)) return false
+        // Return early if not the correct view
+        if (v.parent !is DeepShortcutView) return false
+
+        // Long clicked on a shortcut.
+        val sv = v.parent as DeepShortcutView
+        sv.setWillDrawIcon(false)
+
+        // Move the icon to align with the center-top of the touch point
+        val iconShift = Point()
+        iconShift.x = mIconLastTouchPos.x - sv.iconCenter.x
+        iconShift.y = mIconLastTouchPos.y - mLauncher.deviceProfile.workspaceProfile.iconSizePx
+
+        val draggableView = DraggableView.ofType(DraggableView.DRAGGABLE_ICON)
+        val itemInfo = sv.finalInfo
+        itemInfo.container = LauncherSettings.Favorites.CONTAINER_SHORTCUTS
+        val dv =
+            mLauncher.workspace.beginDragShared(
+                sv.iconView,
+                draggableView,
+                mContainer,
+                itemInfo,
+                ShortcutDragPreviewProvider(sv.iconView, iconShift),
+                DragOptions(),
+            )
+        dv.animateShift(-iconShift.x, -iconShift.y)
+
+        // TODO: support dragging from within folder without having to close it
+        closeOpenContainer(mLauncher, TYPE_FOLDER)
+        return false
+    }
+}

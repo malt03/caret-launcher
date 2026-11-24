@@ -338,24 +338,3 @@ open class PopupContainer<T : ActivityContext>(
         super.onDetachedFromWindow()
     }
 }
-
-// TextLauncher: PopupCategory and PopupData are from PopupDataMapper.kt (android-17.0.0_r1), which
-// is not copied (PopupDataMapper itself is not used). PopupData has no eventId: TextLauncher logs
-// no stats, and its StatsLogManager has no LauncherEvent.IGNORE.
-
-/**
- * Enum for the category of popup we have, as we handle different categories of shortcuts
- * differently depending on the category.
- */
-enum class PopupCategory {
-    SYSTEM_SHORTCUT,
-    SYSTEM_SHORTCUT_FIXED,
-}
-
-/** Data class which stores all the values we need to create a long press menu shortcut. */
-data class PopupData(
-    val iconResId: Int,
-    val labelResId: Int,
-    val category: PopupCategory,
-    val popupAction: (context: ActivityContext, itemInfo: ItemInfo, view: View) -> Unit,
-)

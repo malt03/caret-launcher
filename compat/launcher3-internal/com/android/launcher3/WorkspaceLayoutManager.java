@@ -29,6 +29,7 @@ import com.android.launcher3.celllayout.CellPosMapper.CellPos;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.touch.ItemLongClickListener;
 import com.android.launcher3.util.IntSet;
 
 /**
@@ -148,16 +149,12 @@ public interface WorkspaceLayoutManager {
         //    search_container_workspace doesn't match its draggable child.
         // Retain the condition to avoid regression of the two issues above.
         if (childId != R.id.search_container_workspace) {
-            child.setOnLongClickListener(getWorkspaceChildOnLongClickListener());
+            child.setOnLongClickListener(ItemLongClickListener.INSTANCE_WORKSPACE);
         }
         if (child instanceof DropTarget) {
             onAddDropTarget((DropTarget) child);
         }
     }
-
-    // TextLauncher: the home screen gives its long-click listener (ItemLongClickListener is the
-    // app's).
-    View.OnLongClickListener getWorkspaceChildOnLongClickListener();
 
     /**
      * Returns the mapper for converting between model and presenter

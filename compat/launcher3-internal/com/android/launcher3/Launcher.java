@@ -53,12 +53,18 @@ import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainer;
+import com.android.launcher3.dragndrop.LauncherDragController;
+import com.android.launcher3.popup.AppWidgetSystemShortcuts;
+import com.android.launcher3.popup.FolderSystemShortcuts;
 import com.android.launcher3.popup.PopupController;
+import com.android.launcher3.popup.PopupDataRepository;
+import com.android.launcher3.popup.SystemShortcut;
 import com.android.launcher3.popup.WorkspaceLongPressOptions;
 import com.android.launcher3.statemanager.StateManager;
 import com.android.launcher3.statemanager.StateManager.StateHandler;
 import com.android.launcher3.statemanager.StatefulContainer;
 import com.android.launcher3.states.RotationHelper;
+import com.android.launcher3.touch.ItemLongClickListener;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.ContextTracker;
 import com.android.launcher3.util.RunnableList;
@@ -69,6 +75,8 @@ import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Stand-in for Launcher3's Launcher (android-17.0.0_r1). As in Launcher3, the launcher is the
@@ -162,13 +170,50 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     /** TextLauncher: the home screen's drop target bar. */
     public abstract DropTargetBar getDropTargetBar();
 
-    /**
-     * Launcher.getPopupControllerForHomeScreenItems and getPopupControllerForAppIcons. TextLauncher:
-     * the home screen makes the controllers (its long-press menus).
-     */
-    public abstract PopupController<Launcher> getPopupControllerForHomeScreenItems();
+    // TextLauncher: made on first use (Launcher.setupViews makes them), as the home screen makes
+    // the drag controller after this launcher.
+    private PopupController<Launcher> mPopupControllerForHomeScreenItems;
+    private PopupController<Launcher> mPopupControllerForAppIcons;
 
-    public abstract PopupController<Launcher> getPopupControllerForAppIcons();
+    public PopupController<Launcher> getPopupControllerForHomeScreenItems() {
+        if (mPopupControllerForHomeScreenItems == null) {
+            // TextLauncher: LauncherModelModule's mappers, without Dagger.
+            mPopupControllerForHomeScreenItems =
+                    PopupController.PopupControllerFactory.createPopupController(
+                            new PopupDataRepository(Set.of(FolderSystemShortcuts.INSTANCE,
+                                    AppWidgetSystemShortcuts.INSTANCE)),
+                            (LauncherDragController) getDragController());
+        }
+        return mPopupControllerForHomeScreenItems;
+    }
+
+    public PopupController<Launcher> getPopupControllerForAppIcons() {
+        if (mPopupControllerForAppIcons == null) {
+            mPopupControllerForAppIcons =
+                    PopupController.PopupControllerFactory.createPopupController();
+        }
+        return mPopupControllerForAppIcons;
+    }
+
+    @Override
+    public View.OnLongClickListener getAllAppsItemLongClickListener() {
+        return ItemLongClickListener.INSTANCE_ALL_APPS;
+    }
+
+    /**
+     * @return a stream of supported system shortcuts.
+     */
+    // TextLauncher: the home screen gives its options (docs/spec.md 5.3): App info, and its own.
+    @Override
+    public abstract Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo);
+
+    /**
+     * TextLauncher: the widget menu's "Settings" (AppWidgetSystemShortcuts): the home screen starts
+     * the widget's configuration (Launcher.setWaitingForResult and
+     * LauncherWidgetHolder.startConfigActivity with REQUEST_RECONFIGURE_APPWIDGET).
+     */
+    public abstract void startWidgetReconfigure(
+            com.android.launcher3.widget.LauncherAppWidgetHostView view);
 
     public Hotseat getHotseat() {
         return mHotseat;

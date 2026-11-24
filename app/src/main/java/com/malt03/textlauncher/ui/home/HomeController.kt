@@ -63,8 +63,7 @@ import com.malt03.textlauncher.ui.statehandlers.DepthController
  * - [HomeActivityContext]: Launcher itself (the stand-in), the ActivityContext of the copied code
  * - [HomeLoader]: LoaderTask, PackageUpdatedTask and ShortcutsChangedTask
  * - [HomeItemInflater]: ItemInflater and ItemClickHandler
- * - [ItemLongClickListener]: ItemLongClickListener, PopupControllerForAppIcon and
- *   LauncherPopupItemDragHandler
+ * - [HomeSystemShortcuts]: Launcher.getSupportedShortcuts, the options of the long-press menu
  * - Workspace (WorkspaceStateTransitionAnimation): the SPRING_LOADED state while dragging
  * - [HomeWorkspace], [LauncherDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
@@ -176,7 +175,7 @@ class HomeController(
     internal val widgetAddFlow = HomeWidgetAddFlow(this)
 
     internal val itemInflater = HomeItemInflater(this)
-    internal val itemLongClickListener = ItemLongClickListener(this)
+    internal val systemShortcuts = HomeSystemShortcuts(this)
     private val loader = HomeLoader(this)
 
     /** Whether the home screen was loaded and bound once. */
@@ -470,12 +469,6 @@ class HomeController(
             }
         }
         return true
-    }
-
-    /** The widget menu's "Remove" (PopupDataSource.removePopupData, DropTargetHandler.onDeleteComplete). */
-    internal fun removeHomeItem(view: View) {
-        val info = view.tag as? ItemInfo ?: return
-        launcher.removeItem(view, info, true /* deleteFromDb */, "removed from its menu")
     }
 
     /** Whether a widget's resize frame is open. */

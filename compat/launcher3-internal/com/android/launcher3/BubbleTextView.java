@@ -199,6 +199,8 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     private boolean mHighResUpdateInProgress = false;
 
+    private boolean mIsShowingMinimalPopup;
+
     public BubbleTextView(Context context) {
         this(context, null, 0);
     }
@@ -268,7 +270,8 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         mDotParams.scale = 0f;
         mForceHideDot = false;
         setBackground(null);
-        // TextLauncher: no minimal popups and no taskbar line indicators.
+        configureMinimalPopup(false);
+        // TextLauncher: no taskbar line indicators.
 
         setTag(null);
         if (mIconLoadRequest != null) {
@@ -781,6 +784,21 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         args.put("app_name", appName);
         args.put("count", notificationCount);
         return icuCountFormat.format(args);
+    }
+
+    /**
+     * Configures the BubbleTextView on long click disabling animations and hiding system shortcuts.
+     *
+     * @param shouldDisableAnimationAndShortcuts {@code true} to show the minimal popup and not show
+     * long press animation and system shortcuts.
+     * {@code false} to show long press animation and system shortcuts.
+     */
+    public void configureMinimalPopup(boolean shouldDisableAnimationAndShortcuts) {
+        mIsShowingMinimalPopup = shouldDisableAnimationAndShortcuts;
+    }
+
+    public boolean getShowingMinimalPopup() {
+        return mIsShowingMinimalPopup;
     }
 
     public boolean canShowLongPressPopup() {

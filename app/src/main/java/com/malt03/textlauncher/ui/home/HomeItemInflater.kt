@@ -8,6 +8,7 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
@@ -58,8 +59,9 @@ internal class HomeItemInflater(private val home: HomeController) {
      */
     private fun createWidgetView(info: WidgetItemInfo): View? {
         val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
-        return home.widgetHost.createView(context, info.appWidgetId, providerInfo).apply {
-        }
+        // WorkspaceItemProcessor: the widget's features (LauncherAppWidgetInfo.isReconfigurable).
+        info.updateWidgetFeatures(LauncherAppWidgetProviderInfo.fromProviderInfo(context, providerInfo))
+        return home.widgetHost.createView(context, info.appWidgetId, providerInfo)
     }
 
     private fun createItemView(info: WorkspaceItemInfo): AppIconView =

@@ -28,6 +28,7 @@ import android.os.Process;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.util.ContentWriter;
 
@@ -44,6 +45,17 @@ public class LauncherAppWidgetInfo extends ItemInfo {
     public static final int RESTORE_COMPLETED = 0;
 
     public static final int NO_ID = -1;
+
+    /**
+     * Flags for recording all the features that a widget has enabled.
+     * @see widgetFeatures
+     */
+    public static final int FEATURE_RECONFIGURABLE = 1;
+    public static final int FEATURE_OPTIONAL_CONFIGURATION = 1 << 1;
+    public static final int FEATURE_PREVIEW_LAYOUT = 1 << 2;
+    public static final int FEATURE_TARGET_CELL_SIZE = 1 << 3;
+    public static final int FEATURE_MIN_SIZE = 1 << 4;
+    public static final int FEATURE_MAX_SIZE = 1 << 5;
 
     /**
      * Identifier for this widget when talking with
@@ -73,6 +85,14 @@ public class LauncherAppWidgetInfo extends ItemInfo {
      */
     public int sourceContainer = LauncherSettings.Favorites.CONTAINER_UNKNOWN;
 
+    /**
+     * Contains a binary representation indicating which widget features are enabled. This value is
+     * -1 if widget features could not be identified.
+     */
+    // TextLauncher: set as the widget's view is made (the home screen's ItemInflater), where
+    // Launcher3 sets it as the item loads (WorkspaceItemProcessor); -1 until then.
+    private int widgetFeatures = -1;
+
     public LauncherAppWidgetInfo(int appWidgetId, ComponentName providerName) {
         this.appWidgetId = appWidgetId;
         this.providerName = providerName;
@@ -91,6 +111,36 @@ public class LauncherAppWidgetInfo extends ItemInfo {
 
     public LauncherAppWidgetInfo() {
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET;
+    }
+
+    /**
+     * @return true if the widget is reconfigurable.
+     */
+    public boolean isReconfigurable() {
+        return widgetFeatures != -1 && (widgetFeatures & FEATURE_RECONFIGURABLE) != 0;
+    }
+
+    @SuppressWarnings("NewApi")
+    public void updateWidgetFeatures(LauncherAppWidgetProviderInfo providerInfo) {
+        widgetFeatures = 0;
+        if (providerInfo.isReconfigurable()) {
+            widgetFeatures |= FEATURE_RECONFIGURABLE;
+        }
+        if (providerInfo.isConfigurationOptional()) {
+            widgetFeatures |= FEATURE_OPTIONAL_CONFIGURATION;
+        }
+        if (providerInfo.previewLayout != android.content.res.Resources.ID_NULL) {
+            widgetFeatures |= FEATURE_PREVIEW_LAYOUT;
+        }
+        if (providerInfo.targetCellWidth > 0 || providerInfo.targetCellHeight > 0) {
+            widgetFeatures |= FEATURE_TARGET_CELL_SIZE;
+        }
+        if (providerInfo.minResizeWidth > 0 || providerInfo.minResizeHeight > 0) {
+            widgetFeatures |= FEATURE_MIN_SIZE;
+        }
+        if (providerInfo.maxResizeWidth > 0 || providerInfo.maxResizeHeight > 0) {
+            widgetFeatures |= FEATURE_MAX_SIZE;
+        }
     }
 
     @Nullable

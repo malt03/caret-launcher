@@ -41,7 +41,9 @@ import com.android.launcher3.CellLayout
 import com.android.launcher3.DropTargetBar
 import com.android.launcher3.Workspace
 import com.android.launcher3.folder.FolderIcon
-import com.android.launcher3.popup.PopupController
+import com.android.launcher3.popup.SystemShortcut
+import com.android.launcher3.widget.LauncherAppWidgetHostView
+import java.util.stream.Stream
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.android.launcher3.LauncherState
@@ -81,12 +83,6 @@ internal class HomeActivityContext(private val home: HomeController) :
         LauncherBindableItemsContainer { op -> home.mapOverItems(op) }
     override fun getDeviceProfile(): DeviceProfile = deviceProfile
     override fun getActivityComponent(): ActivityComponent = activityComponent
-
-    /** ItemLongClickListener.INSTANCE_ALL_APPS: the menu, and a drag once the finger moves. */
-    override fun getAllAppsItemLongClickListener(): View.OnLongClickListener = View.OnLongClickListener { v ->
-        home.itemLongClickListener.onAllAppsItemLongPress(v as BubbleTextView)
-        true
-    }
 
     /** ItemClickHandler, for the items in folders and the long-press menu's app shortcuts. */
     override fun getItemOnClickListener(): View.OnClickListener = ItemClickHandler.INSTANCE
@@ -129,11 +125,11 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun inflateItem(info: ItemInfo, parent: CellLayout, container: Int): View =
         home.itemInflater.inflateItem(info)!!
 
-    override fun getPopupControllerForHomeScreenItems(): PopupController<Launcher> =
-        home.itemLongClickListener.popupControllerForHomeScreenItems
+    /** Launcher.getSupportedShortcuts: the long-press menu's options (docs/spec.md 5.3). */
+    override fun getSupportedShortcuts(itemInfo: ItemInfo): Stream<SystemShortcut.Factory<*>> =
+        home.systemShortcuts.getSupportedShortcuts()
 
-    override fun getPopupControllerForAppIcons(): PopupController<Launcher> =
-        home.itemLongClickListener.popupControllerForAppIcons
+    override fun startWidgetReconfigure(view: LauncherAppWidgetHostView) = home.widgetAddFlow.startReconfigure(view)
 
     override fun getModel(): LauncherModel = this
 

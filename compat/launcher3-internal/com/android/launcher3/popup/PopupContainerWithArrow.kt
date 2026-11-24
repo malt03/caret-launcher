@@ -33,10 +33,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.LayoutRes
 import com.android.launcher3.DragSource
+import com.android.launcher3.Launcher
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.ItemInfoWithIcon
 import com.android.launcher3.shortcuts.DeepShortcutTextView
 import com.android.launcher3.shortcuts.DeepShortcutView
 import com.android.launcher3.util.Executors
@@ -52,7 +54,6 @@ import kotlin.math.max
  * Flags.expandableLongPressMenu turns on and the release config disables; live updates of the
  * shortcuts; the widget shortcut; the private space popup); changes are marked with
  * "TextLauncher:".
- * configureForLauncher's drag handler is set by the app (ItemLongClickListener).
  *
  * @param <T> The activity on with the popup shows </T>
  */
@@ -99,6 +100,17 @@ private constructor(
 
     fun setPopupItemDragHandler(popupItemDragHandler: PopupItemDragHandler?) {
         itemDragHandler = popupItemDragHandler
+    }
+
+    fun configureForLauncher(launcher: Launcher, itemInfo: ItemInfo) {
+        // TextLauncher: no live updates of the menu (LauncherPopupLiveUpdateHandler).
+        if (
+            (itemInfo !is ItemInfoWithIcon) ||
+                (itemInfo.runtimeStatusFlags and ItemInfoWithIcon.FLAG_NOT_PINNABLE) == 0
+        ) {
+            itemDragHandler = LauncherPopupItemDragHandler(launcher, this)
+        }
+        launcher.dragController.addDragListener(this)
     }
 
     override fun handleClose(animate: Boolean) {

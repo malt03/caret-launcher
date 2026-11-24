@@ -214,6 +214,13 @@ derived=src/com/android/launcher3/accessibility/WorkspaceAccessibilityHelper.jav
 derived=src/com/android/launcher3/accessibility/DragViewStateAnnouncer.java compat/launcher3-internal/com/android/launcher3/accessibility/DragViewStateAnnouncer.java
 derived=src/com/android/launcher3/UtilitiesKt.kt compat/launcher3-internal/com/android/launcher3/UtilitiesKt.kt
 derived=src/com/android/launcher3/touch/ItemLongClickListener.java compat/launcher3-internal/com/android/launcher3/touch/ItemLongClickListener.java
+derived=src/com/android/launcher3/popup/PopupItemDragHandler.kt compat/launcher3-internal/com/android/launcher3/popup/PopupItemDragHandler.kt
+derived=src/com/android/launcher3/popup/PopupControllerAppIcons.kt compat/launcher3-internal/com/android/launcher3/popup/PopupControllerAppIcons.kt
+derived=src/com/android/launcher3/popup/PopupControllerForExtraHomeScreenItems.kt compat/launcher3-internal/com/android/launcher3/popup/PopupControllerForExtraHomeScreenItems.kt
+derived=src/com/android/launcher3/popup/PopupDataRepository.kt compat/launcher3-internal/com/android/launcher3/popup/PopupDataRepository.kt
+derived=src/com/android/launcher3/popup/PopupDataSource.kt compat/launcher3-internal/com/android/launcher3/popup/PopupDataSource.kt
+derived=src/com/android/launcher3/popup/PopupDataMapper.kt compat/launcher3-internal/com/android/launcher3/popup/PopupDataMapper.kt
+path=src/com/android/launcher3/popup/PopupResizeStrategy.kt
 path=src/com/android/launcher3/accessibility/DragAndDropAccessibilityDelegate.java
 path=src/com/android/launcher3/accessibility/AccessibleDragListenerAdapter.kt
 path=src/com/android/launcher3/accessibility/FolderAccessibilityHelper.java
@@ -363,7 +370,6 @@ ref=src/com/android/launcher3/LauncherAppState.kt compat/launcher3-internal/com/
 ref=src/com/android/launcher3/LauncherModel.kt compat/launcher3-internal/com/android/launcher3/LauncherModel.java
 ref=src/com/android/launcher3/LauncherSettings.java compat/launcher3-internal/com/android/launcher3/LauncherSettings.java
 ref=src/com/android/launcher3/pm/UserCache.kt compat/launcher3-internal/com/android/launcher3/pm/UserCache.java
-ref=src/com/android/launcher3/popup/PopupItemDragHandler.kt compat/launcher3-internal/com/android/launcher3/popup/PopupItemDragHandler.kt
 ref=src/com/android/launcher3/compat/AccessibilityManagerCompat.java compat/launcher3-internal/com/android/launcher3/compat/AccessibilityManagerCompat.java
 ref=src/com/android/launcher3/util/ApiWrapper.java compat/launcher3-internal/com/android/launcher3/util/ApiWrapper.java
 ref=src/com/android/launcher3/util/ApplicationInfoWrapper.kt compat/launcher3-internal/com/android/launcher3/util/ApplicationInfoWrapper.java
@@ -426,7 +432,6 @@ ref=src/com/android/launcher3/model/LoaderCursor.kt app/src/main/java/com/malt03
 ref=src/com/android/launcher3/model/LoaderCursor.kt app/src/main/java/com/malt03/textlauncher/ui/home/HomeLoader.kt
 ref=src/com/android/launcher3/touch/AllAppsSwipeController.java app/src/main/java/com/malt03/textlauncher/ui/allapps/AllAppsSwipeController.kt
 ref=src/com/android/launcher3/touch/AbstractStateChangeTouchController.java app/src/main/java/com/malt03/textlauncher/ui/allapps/AllAppsSwipeController.kt
-ref=src/com/android/launcher3/touch/ItemLongClickListener.java app/src/main/java/com/malt03/textlauncher/ui/home/ItemLongClickListener.kt
 ref=src/com/android/launcher3/Launcher.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
 ref=src/com/android/launcher3/widget/WidgetAddFlowHandler.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
 ref=src/com/android/launcher3/util/PendingRequestArgs.java app/src/main/java/com/malt03/textlauncher/ui/home/HomeWidgets.kt
@@ -482,7 +487,7 @@ ref=AndroidManifest-common.xml app/src/main/AndroidManifest.xml
 | `com.android.launcher3.util.Executors`（`MODEL_EXECUTOR`・`UI_HELPER_EXECUTOR`・`MAIN_EXECUTOR`・`ORDERED_BG_EXECUTOR`） | `IconCache` のスレッド、長押しメニューのショートカットの問い合わせ（`PopupContainerWithArrow`）、`dragndrop/DragView.java`、ウィジェットピッカー |
 | `com.android.launcher3.Flags` | `iconloaderlib`（`third_party/systemui/`）、`shapes/ShapesProvider.kt`、ドラッグ、フォルダ、`keyboard/`（`enableFocusOutline` は bp1a で有効）、全アプリ一覧（`letterFastScroller` はどのリリース設定にもなく、既定の無効） |
 | `com.android.launcher3.LauncherSettings`、`BuildConfig`、`dagger/`、`logging/`、`graphics.PreloadIconDelegate`、`graphics.AutomatedIconDelegate`、`apppairs/`、`widget.LauncherAppWidgetHostView` | ドラッグと `folder/PreviewItemManager.java`。TextLauncher で起きない場合（App Pair、インストール中のアプリなど）は何もしないか、通らない |
-| `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`popup.PopupItemDragHandler`、`SystemShortcut`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）は持たない。`PopupItemDragHandler` はインターフェースだけを置き、`LauncherPopupItemDragHandler` はアプリ側（`ItemLongClickListener`）に移した。`shortcuts/DeepShortcutView.java` はそのままコピーし、追加ボタンとバッジ付きのコピーは `Launcher` の互換クラス（`getAccessibilityDelegate().addToWorkspace`、`getModel().updateAndBindWorkspaceItem`）を通してアプリが受ける。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
+| `com.android.launcher3.popup.PopupContainer`、`PopupContainerWithArrow`、`SystemShortcut`、`popup.PopupDataProvider`、`util.ApplicationInfoWrapper`、`util.ShortcutUtil`、`logging.FileLog`、`anim.PendingAnimation`、`compat.AccessibilityManagerCompat`、`com.android.wm.shell.Flags` | 長押しメニュー（`popup/ArrowPopup.java`、`AbstractFloatingView.java`、`popup/PopupPopulator.java`）。システムショートカットとアプリのショートカットの行を出す経路のメソッドを元のファイルから移した。ショートカット数は Launcher3 のモデルが裏で持つ代わりに、メニューを開くときに同じ条件で問い合わせる。Compose 版のメニュー（`Flags.expandableLongPressMenu` はリリース設定で無効）は持たない。`PopupItemDragHandler` と `LauncherPopupItemDragHandler` は上流から削った互換クラス（`derived=`）。`shortcuts/DeepShortcutView.java` はそのままコピーし、追加ボタンとバッジ付きのコピーは `Launcher` の互換クラス（`getAccessibilityDelegate().addToWorkspace`、`getModel().updateAndBindWorkspaceItem`）を通してアプリが受ける。`BubbleTextView` は元と同じく `TextView` を継承し、`IconViewController` を実装する |
 | `com.android.launcher3.util.MSDLPlayerWrapper`（Dagger の代わりに `INSTANCE.get(context)` でアプリに1つのプレイヤーを返す。履歴の dump は持たない） | ドラッグのハプティック（`CellLayout`、`HomeWorkspace`、`ButtonDropTarget`。`msdllib` は `third_party/systemui/msdllib/`） |
 | `com.android.users.UserType` | `iconloaderlib`（`third_party/systemui/`） |
 | `popup.PopupDataProvider`（通知ドットの `getDotInfoForItem` と更新（`updateNotificationDots`）を上流から移した。Dagger の代わりにアプリが通知のリポジトリと `AllAppsStore` を渡し、`closeOnDestroy` の代わりに `close` を呼ぶ）、`dagger.ActivityComponent`（`AllAppsStore` を1つ持つ。上流の `@ActivityContextSingleton`）、`allapps.AllAppsStore`（`registerIconContainer`・`updateNotificationDots`）、`util.LauncherBindableItemsContainer`（`ItemOperator` と `mapOverItems` だけ）、`views.ActivityContext`（`getContent`・`getDotInfoForItem`）、`folder.Folder`（`mapOverItems`）、`model.data.FolderInfo`（`anyMatch`）、`BubbleTextView`・`folder.FolderIcon`（ドットの描画・`applyDotState`・`updateDotInfo`・`setForceHideDot` を上流から移した）、`graphics.ThemeManager`（`getIconShapeInfo`。選んだ形状のパスから）、`util.ShortcutUtil`（`getShortcutIdIfPinnedShortcut`・`getPersonKeysIfPinnedShortcut`）、`model.data.WorkspaceItemInfo`（`getPersonKeys`。システムアプリでないので常に空）、`util.SettingsCache`（`derived=`）、`dagger.LauncherAppModule`（`SettingsModule` の通知ドットの既定値、`@LightweightBackground(UI)` の `UI_HELPER_EXECUTOR`）、`Utilities`（`EMPTY_STRING_ARRAY`） | 通知ドット（`notification/`、`dot/`）。`NotificationListener` はアプリのマニフェストに上流と同じく宣言する |

@@ -34,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.AbstractFloatingViewHelper;
@@ -49,7 +50,7 @@ import com.android.launcher3.views.ActivityContext;
  * Example system shortcuts, defined as inner classes, include Widgets and AppInfo.
  *
  * <p>Stand-in for Launcher3's SystemShortcut (android-17.0.0_r1), made from SystemShortcut.java by
- * deleting what TextLauncher does not use (the factories and every option but App info); changes
+ * deleting what TextLauncher does not use (every factory and option but App info); changes
  * are marked with "TextLauncher:".
  *
  * @param <T> extends {@link ActivityContext}
@@ -115,6 +116,17 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
     public boolean hasHandlerForAction(int action) {
         return mAccessibilityActionId == action;
     }
+
+    public interface Factory<T extends ActivityContext> {
+
+        @Nullable
+        SystemShortcut<T> getShortcut(T context, ItemInfo itemInfo, @NonNull View originalView);
+    }
+
+    // TextLauncher: App info is the only factory TextLauncher uses (no WIDGETS, INSTALL,
+    // DONT_SUGGEST_APP, ...); the launcher adds its own options (Launcher.getSupportedShortcuts).
+
+    public static final Factory<ActivityContext> APP_INFO = AppInfo::new;
 
     public static class AppInfo<T extends ActivityContext> extends SystemShortcut<T> {
 

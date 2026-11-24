@@ -21,13 +21,15 @@
 package com.android.launcher3.popup
 
 import android.view.View
+import com.android.launcher3.dragndrop.LauncherDragController
+import com.android.launcher3.views.ActivityContext
 
 /**
  * Controller interface for popups. It handles actions for the popups such as showing and dismissing
  * popups.
  */
-// TextLauncher: T is not bound to a Context and an ActivityContext, as the Launcher stand-in is not
-// a Context (Launcher.getPopupControllerForAppIcons gives a PopupController<Launcher>).
+// TextLauncher: T is not bound to a Context, as the Launcher stand-in is not one
+// (Launcher.getPopupControllerForAppIcons gives a PopupController<Launcher>).
 interface PopupController<T> {
     /**
      * Shows the popup when called.
@@ -39,6 +41,29 @@ interface PopupController<T> {
     /** Dismisses the popup when called. */
     fun dismiss()
 
-    // TextLauncher: no factory (PopupControllerFactory); the home screen makes its controllers
-    // (PopupControllerAppIcons, PopupControllerForExtraHomeScreenItems).
+    /** Factory for making a popup controller. */
+    companion object PopupControllerFactory {
+        /**
+         * Creates a popup controller.
+         *
+         * @param popupDataRepository has the popup data for each item.
+         * @param dragController handles drag actions.
+         * @return a new PopupController.
+         */
+        fun <T> createPopupController(
+            popupDataRepository: PopupDataRepository,
+            dragController: LauncherDragController,
+        ): PopupController<T> where T : ActivityContext {
+            return PopupControllerForExtraHomeScreenItems(popupDataRepository, dragController)
+        }
+
+        /**
+         * Creates a popup controller.
+         *
+         * @return a new PopupController.
+         */
+        fun <T> createPopupController(): PopupController<T> where T : ActivityContext {
+            return PopupControllerForAppIcon()
+        }
+    }
 }

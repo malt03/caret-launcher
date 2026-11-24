@@ -36,8 +36,11 @@ import com.android.launcher3.dragndrop.DragController;
 import com.android.launcher3.model.IModelWriter;
 import com.android.launcher3.celllayout.CellPosMapper;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.popup.SystemShortcut;
 import com.android.launcher3.util.LauncherBindableItemsContainer;
 import com.android.launcher3.util.RunnableList;
+
+import java.util.stream.Stream;
 
 /**
  * An interface to be used along with a context for various activities in Launcher. This allows a
@@ -145,6 +148,16 @@ public interface ActivityContext {
     default IModelWriter getModelWriter() {
         // TextLauncher: the home screen's Launcher returns its model's writer; nothing else
         // changes the home model.
+        return null;
+    }
+
+    /**
+     * Returns a stream of system shortcuts supported for the given item info.
+     *
+     * @param itemInfo The item info for which to retrieve supported shortcuts.
+     * @return A stream of system shortcuts.
+     */
+    default Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo) {
         return null;
     }
 
