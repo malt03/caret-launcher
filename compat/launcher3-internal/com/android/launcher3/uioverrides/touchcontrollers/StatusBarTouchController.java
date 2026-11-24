@@ -31,12 +31,16 @@ import android.annotation.SuppressLint;
 import android.app.StatusBarManager;
 import android.graphics.PointF;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.Flags;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.util.MSDLPlayerWrapper;
 import com.android.launcher3.util.TouchController;
+import com.google.android.msdl.data.model.MSDLToken;
 
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -58,7 +62,8 @@ import java.util.function.Predicate;
  * TextLauncher: SystemUiProxy is only bound by the launcher that is the system's Recents, so the
  * touches cannot be forwarded to the System UI. Once the swipe is detected, the notification
  * shade is opened with StatusBarManager.expandNotificationsPanel (EXPAND_STATUS_BAR) instead, and
- * it opens with its own animation rather than following the finger.
+ * it opens with its own animation rather than following the finger. As the shade does not move
+ * with the finger, a haptic marks the moment it opens (TextLauncher's own; Launcher3 has none).
  */
 public class StatusBarTouchController implements TouchController {
 
@@ -196,8 +201,24 @@ public class StatusBarTouchController implements TouchController {
         }
         try {
             EXPAND_NOTIFICATIONS_PANEL.invoke(statusBarManager);
+            performOpenHaptic();
         } catch (ReflectiveOperationException | RuntimeException e) {
             Log.w(TAG, "Unable to open the notification shade", e);
+        }
+    }
+
+    /**
+     * The haptic of the shade opening: the one Launcher3 plays when a swipe gets past its
+     * threshold (AllAppsTransitionController.setStateWithAnimation's SWIPE_THRESHOLD_INDICATOR),
+     * as the swipe has just got past the touch slop.
+     */
+    private void performOpenHaptic() {
+        if (Flags.msdlFeedback()) {
+            MSDLPlayerWrapper.INSTANCE.get(mLauncher.asContext())
+                    .playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR);
+        } else {
+            mLauncher.getDragLayer().performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY,
+                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         }
     }
 }
