@@ -42,6 +42,7 @@ import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.popup.PopupContainer;
+import com.android.launcher3.popup.PopupController;
 import com.android.launcher3.popup.WorkspaceLongPressOptions;
 import com.android.launcher3.statemanager.StateManager;
 import com.android.launcher3.statemanager.StateManager.StateHandler;
@@ -79,7 +80,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     private final DragLayer mDragLayer;
-    private final Workspace<?> mWorkspace;
+    // TextLauncher: the workspace is the home screen's (getWorkspace), made once this launcher is.
     private final Hotseat mHotseat;
     private final ScrimView mScrimView;
     private final StatsLogManager mStatsLogManager = new StatsLogManager();
@@ -88,10 +89,8 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private final StateManager<LauncherState, Launcher> mStateManager =
             new StateManager<>(this, NORMAL);
 
-    public Launcher(DragLayer dragLayer, Workspace<?> workspace, Hotseat hotseat,
-            ScrimView scrimView) {
+    public Launcher(DragLayer dragLayer, Hotseat hotseat, ScrimView scrimView) {
         mDragLayer = dragLayer;
-        mWorkspace = workspace;
         mHotseat = hotseat;
         mScrimView = scrimView;
     }
@@ -105,9 +104,52 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         return mDragLayer;
     }
 
-    public Workspace<?> getWorkspace() {
-        return mWorkspace;
+    /**
+     * TextLauncher: the home screen's workspace, which is made with this launcher as its context
+     * (Workspace's constructor looks the launcher up).
+     */
+    public abstract Workspace<?> getWorkspace();
+
+    public boolean isHotseatLayout(View layout) {
+        // TODO: Remove this method
+        return mHotseat != null && (layout == mHotseat);
     }
+
+    /**
+     * Creates and adds new folder to CellLayout. TextLauncher: the home screen makes the folder's
+     * views (FolderIcon.inflateFolderAndIcon), adds them (Workspace.addInScreen) and writes the
+     * folder to the model.
+     */
+    public abstract FolderIcon addFolder(CellLayout layout, int container, final int screenId,
+            int cellX, int cellY);
+
+    /**
+     * Launcher.isTouchInProgress. TextLauncher: the home screen's root view says it, as it gets the
+     * touches.
+     */
+    public abstract boolean isTouchInProgress();
+
+    /**
+     * ItemInflater.inflateItem: the view of an item dropped from elsewhere on the page.
+     * TextLauncher: the home screen inflates it (its HomeItemInflater).
+     */
+    public abstract View inflateItem(ItemInfo info, CellLayout parent, int container);
+
+    public CellLayout getCellLayout(int container, int screenId) {
+        // TextLauncher: no hotseat.
+        return getWorkspace().getScreenWithId(screenId);
+    }
+
+    /** TextLauncher: the home screen's drop target bar. */
+    public abstract DropTargetBar getDropTargetBar();
+
+    /**
+     * Launcher.getPopupControllerForHomeScreenItems and getPopupControllerForAppIcons. TextLauncher:
+     * the home screen makes the controllers (its long-press menus).
+     */
+    public abstract PopupController<Launcher> getPopupControllerForHomeScreenItems();
+
+    public abstract PopupController<Launcher> getPopupControllerForAppIcons();
 
     public Hotseat getHotseat() {
         return mHotseat;
@@ -210,7 +252,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             @Nullable final String reason) {
         if (itemInfo instanceof WorkspaceItemInfo) {
             if (!removeItemFromCollectionIfNecessary(itemInfo, deleteFromDb)) {
-                mWorkspace.removeWorkspaceItem(v);
+                getWorkspace().removeWorkspaceItem(v);
             }
             if (deleteFromDb) {
                 getModelWriter().deleteItemFromDatabase(itemInfo, reason);
@@ -218,14 +260,14 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         } else if (itemInfo instanceof FolderInfo ci) {
             // TextLauncher: FolderInfo is the only CollectionInfo.
             if (!removeItemFromCollectionIfNecessary(itemInfo, deleteFromDb)) {
-                mWorkspace.removeWorkspaceItem(v);
+                getWorkspace().removeWorkspaceItem(v);
             }
             if (deleteFromDb) {
                 getModelWriter().deleteCollectionAndContentsFromDatabase(ci);
             }
         } else if (itemInfo instanceof LauncherAppWidgetInfo) {
             final LauncherAppWidgetInfo widgetInfo = (LauncherAppWidgetInfo) itemInfo;
-            mWorkspace.removeWorkspaceItem(v);
+            getWorkspace().removeWorkspaceItem(v);
             if (deleteFromDb) {
                 getModelWriter().deleteWidgetInfo(widgetInfo, getAppWidgetHolder(), reason);
             }
@@ -245,7 +287,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
      * @return true if we removed an item from a collection, false otherwise.
      */
     private boolean removeItemFromCollectionIfNecessary(ItemInfo itemInfo, boolean deleteFromDb) {
-        View collectionIcon = mWorkspace.getViewByItemId(itemInfo.container);
+        View collectionIcon = getWorkspace().getViewByItemId(itemInfo.container);
         if (collectionIcon instanceof FolderIcon folderIcon) {
             // Remove the shortcut from the folder before removing it from launcher
             Folder folder = folderIcon.getFolder();

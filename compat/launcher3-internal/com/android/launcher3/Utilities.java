@@ -187,6 +187,20 @@ public final class Utilities {
                 localY < (v.getHeight() + slop);
     }
 
+    public static float shrinkRect(Rect r, float scaleX, float scaleY) {
+        float scale = Math.min(Math.min(scaleX, scaleY), 1.0f);
+        if (scale < 1.0f) {
+            int deltaX = (int) (r.width() * (scaleX - scale) * 0.5f);
+            r.left += deltaX;
+            r.right -= deltaX;
+
+            int deltaY = (int) (r.height() * (scaleY - scale) * 0.5f);
+            r.top += deltaY;
+            r.bottom -= deltaY;
+        }
+        return scale;
+    }
+
     public static void scaleRectAboutCenter(Rect r, float scale) {
         if (scale != 1.0f) {
             float cx = r.exactCenterX();

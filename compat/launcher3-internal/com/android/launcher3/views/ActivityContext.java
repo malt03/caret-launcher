@@ -33,6 +33,7 @@ import com.android.launcher3.dagger.ActivityComponent;
 import com.android.launcher3.dot.DotInfo;
 import com.android.launcher3.dragndrop.DragController;
 import com.android.launcher3.model.IModelWriter;
+import com.android.launcher3.celllayout.CellPosMapper;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.LauncherBindableItemsContainer;
 import com.android.launcher3.util.RunnableList;
@@ -128,6 +129,11 @@ public interface ActivityContext {
             View v, Intent intent, @Nullable ItemInfo item) {
         // TextLauncher: the home screen (Launcher) starts activities; nothing else does.
         return null;
+    }
+
+    default CellPosMapper getCellPosMapper() {
+        // TextLauncher: no hotseat, so the model's cells are the presenter's.
+        return CellPosMapper.DEFAULT;
     }
 
     /** Returns a writer for updating model properties */

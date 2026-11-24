@@ -220,6 +220,16 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         return Utilities.getDescendantCoordRelativeToAncestor(descendant, mappingRootFor(descendant), coord, false);
     }
 
+    /**
+     * Given a coordinate relative to the descendant, find the coordinate in this DragLayer's
+     * coordinates. TextLauncher: through the mapping root, as the other overloads.
+     */
+    public float getDescendantCoordRelativeToSelf(View descendant, float[] coord,
+            boolean includeRootScroll) {
+        return Utilities.getDescendantCoordRelativeToAncestor(descendant, mappingRootFor(descendant),
+                coord, includeRootScroll);
+    }
+
     public float getLocationInDragLayer(View child, int[] loc) {
         loc[0] = 0;
         loc[1] = 0;

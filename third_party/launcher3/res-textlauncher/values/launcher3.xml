@@ -46,6 +46,10 @@
         </attr>
     </declare-styleable>
     <item type="id" name="cell_layout_jail_id" />
+    <!-- id.xml: the QSB on the workspace, which WorkspaceLayoutManager leaves without a long click -->
+    <item type="id" name="search_container_workspace" />
+    <!-- id.xml: Workspace's drag event order check (ENFORCE_DRAG_EVENT_ORDER) -->
+    <item type="id" name="drag_event_parity" />
     <!-- CellLayout drop location -->
     <attr name="workspaceAccentColor" format="color" />
     <color name="workspace_accent_color_light">#D3E3FD</color>

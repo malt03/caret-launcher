@@ -1,6 +1,6 @@
 ---
 id: Tex-ydua
-status: open
+status: closed
 deps: [Tex-mibn]
 links: []
 created: 2026-11-23T09:06:34Z
@@ -48,3 +48,7 @@ tags: [launcher3, upstream, home]
 **2026-11-24T13:36:17Z**
 
 2026-11-24: 設計の見直し（Tex-op7u）で、この残り（Workspace と LauncherDragController）を ② にした。先に ①（Tex-mibn、ホームの CellLayout を画面につなぐ）をやる。形: Workspace は PagedView にせず FrameLayout（編集中に縮める）> NestedScrollView > CellLayout。上流のメソッドの本体をそのまま残すため、クラスの最後に1ページ用のメンバー（getPageCount()=1、getPageAt(0)、getCurrentPage()/getNextPage()=0、getVisiblePageIndices()={0}、isPageInTransition()=false）を足し、mWorkspaceScreens は1つだけ持つ。座標: getDropView は上流と同じく Workspace、mapPointFromDropLayout は常にホットシートの分岐（Workspace.java:2750-2757。Utilities.mapCoordInSelfToDescendant が scrollY を見る）を通す印1つ。AccessibleDragListenerAdapter はスクロールの View で作る（子は CellLayout だけ）。自動スクロールは onDragOver・onDragExit・onDragEnd のフック。HomeWorkspace.kt は 150 行ほどのフックに、HomeController の匿名の Workspace（133-176）と WorkspaceHost と HomeDragController はなくなる。印: PagedView でない、1ページのメンバー、スクロールを見る座標変換、自動スクロール、onNoCellFound のトースト、事前に bind しない PendingAddItemInfo、rebuildOccupied、遅れて来る占有の結果。⑤ の ItemLongClickListener（beginDragShared が PopupController を呼ぶ）は一緒に進めてよい
+
+**2026-11-24T15:01:17Z**
+
+2026-11-25: 済み。互換の Workspace を上流から作り直した（derived。ドラッグとドロップ、フォルダ作成、並べ替え、外からのドロップ、アイテムの削除を上流のまま残し、ページ・ホットシート・オーバーレイ・壁紙のオフセット・状態の遷移・タッチ・保存・システムのドラッグ・ホーム画面のファイルを削除）。PagedView でなく FrameLayout で、1ページ用のメンバー（addPage、getPageAt、getPageCount、getDestinationPage、snapToPage、isVisible、isPageInTransition など）を末尾に足した。座標は上流と同じく Workspace の座標で、mapPointFromDropLayout はドラッグレイヤーを通してスクロールを考える。setDropLayoutForDragObject はページのスクロールの入れ物の範囲。編集モードへの出入り（EDIT_MODE／SPRING_LOADED の goToState）は印を付けて SpringLoadedListener に任せ、コールバックは runWhenNormal（Workspace の abstract）。WorkspaceLayoutManager（derived、ホットシートを削除、長押しの受け口は abstract）、LauncherDragController（derived、フリックでの削除を削除）、PopupController（derived、型の制約と factory を削除）。CellPosMapper・CellInfo・IntSparseArrayMap は path=。互換の Launcher は getWorkspace・addFolder・getDropTargetBar・getPopupControllerFor*・isTouchInProgress・inflateItem・getCellLayout・isHotseatLayout を持つ（Workspace はコンストラクターで Launcher を引くので、Launcher を先に作る）。アプリの HomeWorkspace は Workspace を継承し、長押しの受け口・persistRemoveItemsByMatcher・自動スクロールだけ。HomeDragController は削除。ItemLongClickListener は上流と同じく Workspace.startDrag(CellInfo) を呼び、メニューは PopupController（popupControllerForAppIcons／ForHomeScreenItems）。エミュレータ（スマホ）でメニュー、移動、フォルダへの追加、全アプリ一覧からのフォルダ作成、再起動後の保存、フォルダから外へ、削除への落としを確認。残り: SpringLoadedListener を WorkspaceStateTransitionAnimation にすること（Tex-00l4 の残り）

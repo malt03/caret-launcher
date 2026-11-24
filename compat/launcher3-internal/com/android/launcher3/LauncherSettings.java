@@ -146,6 +146,8 @@ public class LauncherSettings {
 
         public static final int CONTAINER_UNKNOWN = -1;
         public static final int CONTAINER_DESKTOP = -100;
+        public static final int CONTAINER_HOTSEAT = -101;
+        public static final int CONTAINER_HOTSEAT_PREDICTION = -103;
         public static final int CONTAINER_ALL_APPS = -104;
         public static final int CONTAINER_SHORTCUTS = -107;
         public static final int CONTAINER_WIDGETS_PREDICTION = -111;

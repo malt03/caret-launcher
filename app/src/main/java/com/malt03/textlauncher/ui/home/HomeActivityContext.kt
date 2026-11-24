@@ -37,6 +37,11 @@ import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.isDeepShortcut
+import com.android.launcher3.CellLayout
+import com.android.launcher3.DropTargetBar
+import com.android.launcher3.Workspace
+import com.android.launcher3.folder.FolderIcon
+import com.android.launcher3.popup.PopupController
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.android.launcher3.LauncherState
@@ -51,7 +56,7 @@ import java.util.function.Consumer
  * model and accessibility delegate the long-press menu's shortcut rows use.
  */
 internal class HomeActivityContext(private val home: HomeController) :
-    Launcher(home.root.overlay, home.workspace, home.root.hotseat, home.root.scrim),
+    Launcher(home.root.overlay, home.root.hotseat, home.root.scrim),
     LauncherModel,
     LauncherAccessibilityDelegate {
     private val context = home.context
@@ -113,6 +118,24 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun hideKeyboard() = Unit
 
     override fun getDragController(): DragController = home.dragController
+
+    override fun getWorkspace(): Workspace<*> = home.workspace
+
+    override fun isTouchInProgress(): Boolean = home.root.isTouchInProgress
+
+    override fun addFolder(layout: CellLayout, container: Int, screenId: Int, cellX: Int, cellY: Int): FolderIcon =
+        home.addFolder(container, screenId, cellX, cellY)
+
+    override fun getDropTargetBar(): DropTargetBar = home.dropTargetBar
+
+    override fun inflateItem(info: ItemInfo, parent: CellLayout, container: Int): View =
+        home.itemInflater.inflateItem(info)!!
+
+    override fun getPopupControllerForHomeScreenItems(): PopupController<Launcher> =
+        home.itemLongClickListener.popupControllerForHomeScreenItems
+
+    override fun getPopupControllerForAppIcons(): PopupController<Launcher> =
+        home.itemLongClickListener.popupControllerForAppIcons
 
     override fun getAccessibilityDelegate(): LauncherAccessibilityDelegate = this
 

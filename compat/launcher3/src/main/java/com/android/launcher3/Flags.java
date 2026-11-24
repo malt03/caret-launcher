@@ -95,6 +95,11 @@ public final class Flags {
         return false;
     }
 
+    /** cp1a: ENABLED */
+    public static boolean homeScreenEditImprovements() {
+        return true;
+    }
+
     /** Not set in bp4a / cp1a: declaration default (disabled). */
     public static boolean centerSpringLoadedStateVertically() {
         return false;

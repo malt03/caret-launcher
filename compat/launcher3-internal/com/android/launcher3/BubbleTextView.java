@@ -69,7 +69,10 @@ import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.dragndrop.DragOptions;
 import com.android.launcher3.popup.IconViewController;
+import com.android.launcher3.popup.Popup;
+import com.android.launcher3.popup.PopupController;
 import com.android.launcher3.util.CancellableTask;
 import com.android.launcher3.util.MultiPropertyFactory;
 import com.android.launcher3.util.MultiTranslateDelegate;
@@ -102,6 +105,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     public static final int DISPLAY_ALL_APPS = 1;
     public static final int DISPLAY_FOLDER = 2;
     public static final int DISPLAY_TASKBAR = 5;
+    public static final int DISPLAY_SEARCH_RESULT = 6;
     public static final int DISPLAY_SEARCH_RESULT_SMALL = 7;
     public static final int DISPLAY_SEARCH_RESULT_APP_ROW = 9;
 
@@ -680,6 +684,20 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     public int getIconSize() {
         return mIconSize;
+    }
+
+    public boolean isDisplaySearchResult() {
+        return mDisplay == DISPLAY_SEARCH_RESULT
+                || mDisplay == DISPLAY_SEARCH_RESULT_SMALL
+                || mDisplay == DISPLAY_SEARCH_RESULT_APP_ROW;
+    }
+
+    /**
+     * Starts a long press action and returns the corresponding pre-drag condition
+     */
+    public DragOptions.PreDragCondition startLongPressAction(PopupController<?> popupController) {
+        Popup popup = popupController.show(this);
+        return popup != null ? popup.createPreDragCondition() : null;
     }
 
     public int getIconDisplay() {

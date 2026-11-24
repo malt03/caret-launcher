@@ -52,7 +52,7 @@ import com.malt03.textlauncher.data.AppItemInfo
 import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
-import com.malt03.textlauncher.ui.drag.HomeDragController
+import com.android.launcher3.dragndrop.LauncherDragController
 import com.malt03.textlauncher.ui.statehandlers.DepthController
 
 /**
@@ -67,7 +67,7 @@ import com.malt03.textlauncher.ui.statehandlers.DepthController
  * - [ItemLongClickListener]: ItemLongClickListener, PopupControllerForAppIcon and
  *   LauncherPopupItemDragHandler
  * - [SpringLoadedListener]: the SPRING_LOADED state while dragging
- * - [HomeWorkspace], [HomeDragController], [DropTargetBar]: Workspace's drag and drop,
+ * - [HomeWorkspace], [LauncherDragController], [DropTargetBar]: Workspace's drag and drop,
  *   LauncherDragController and the drop targets
  * - [HomeWidgetHost], [HomeWidgetAddFlow]: LauncherWidgetHolder and Launcher's widget and
  *   shortcut adding (the widget sizes are Launcher3's WidgetSizes and WidgetSizeHandler, with the
@@ -140,51 +140,6 @@ class HomeController(
         }
     }
 
-    /** Launcher3's Workspace stand-in: holds the home screen's page and shrinks while editing. */
-    val workspace = object : Workspace<Any>(context) {
-        override fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>, reason: String?) {
-            if (loader.removeItems(matcher::test)) loader.rebuild()
-        }
-
-        /** Workspace.removeWorkspaceItem: the view leaves the page; the model is not changed. */
-        override fun removeWorkspaceItem(v: View?) {
-            if (v != null && v.parent === cellLayout.shortcutsAndWidgets) cellLayout.removeView(v)
-            if (v is DropTarget) dragController.removeDropTarget(v)
-        }
-
-        override fun getViewByItemId(id: Int): View? =
-            cellLayout.mapOverItems { info, _ -> info?.id == id }
-
-        override fun removeItemsByMatcher(matcher: Predicate<ItemInfo>, persistChanges: Boolean) {
-            // TextLauncher: one CellLayout.
-            val container = cellLayout.shortcutsAndWidgets
-            // Iterate in reverse order as we are removing items
-            for (i in container.childCount - 1 downTo 0) {
-                val child = container.getChildAt(i)
-                val info = child.tag as? ItemInfo ?: continue
-
-                if (matcher.test(info)) {
-                    cellLayout.removeViewInLayout(child)
-                    if (child is DropTarget) dragController.removeDropTarget(child)
-                } else if (child is FolderIconView) {
-                    val folderInfo = info as FolderInfo
-                    val matches = folderInfo.contents.filter(matcher::test).toTypedArray()
-                    if (matches.isNotEmpty()) {
-                        child.folder.removeFolderContent(false, *matches)
-                        if (child.folder.isOpen) child.folder.close(false /* animate */)
-                    }
-                }
-                // TextLauncher: no app pairs.
-            }
-            // TextLauncher: one page, so no empty screens to strip.
-            cellLayout.requestLayout()
-        }
-
-        override fun getFirstCellLayout(): CellLayout = cellLayout
-    }.apply {
-        addView(scrollView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
-    }
-
     /**
      * Launcher3's Launcher stand-in, which is the ActivityContext of the copied folder, drag and
      * long-press menu code.
@@ -193,23 +148,27 @@ class HomeController(
     val activityContext: ActivityContext get() = launcher
 
     /**
-     * The home screen's page (Workspace's CellLayout), in a context that gives the launcher, as the
-     * activity holds the home screen only once it is made.
+     * Launcher3's Workspace: the drag and drop on the home screen's page, which it holds in its
+     * scroll container and shrinks while editing. Made in a context that gives the launcher, as
+     * the activity holds the home screen only once it is made.
      */
+    val workspace = HomeWorkspace(LauncherContextWrapper(context, launcher), this)
+
+    /** The home screen's page (Workspace's CellLayout). */
     val cellLayout: CellLayout = CellLayout(LauncherContextWrapper(context, launcher), workspace).also {
         scrollView.cellLayout = it
+        workspace.addPage(it, scrollView)
     }
 
-    internal val dragController: HomeDragController = HomeDragController(activityContext) { root.isTouchInProgress }
-    private val workspaceHost = WorkspaceHost()
-    internal val homeWorkspace = HomeWorkspace(activityContext, launcher, cellLayout, scrollView, dragController, workspaceHost)
+    /** Launcher.mDragController */
+    internal val dragController = LauncherDragController(launcher)
     private val springLoadedListener = SpringLoadedListener(this)
     /**
      * Launcher3's DropTargetBar (drop_target_bar.xml), inflated in a context that gives the
      * launcher, as the activity holds the home screen only once it is made. The home screen places
      * it (LauncherRootLayout.attachDropTargetBar).
      */
-    private val dropTargetBar = LayoutInflater.from(context).cloneInContext(LauncherContextWrapper(context, launcher))
+    internal val dropTargetBar = LayoutInflater.from(context).cloneInContext(LauncherContextWrapper(context, launcher))
         .inflate(com.android.launcher3.R.layout.drop_target_bar, null) as DropTargetBar
 
     internal val widgetHost = HomeWidgetHost(context)
@@ -231,11 +190,7 @@ class HomeController(
     /** Folder's LauncherDelegate: what the folder asks of the workspace and the model. */
     internal val launcherDelegate = object : LauncherDelegate(launcher) {
         override fun beginDragShared(child: View, source: DragSource, options: DragOptions) {
-            val item = child.tag as? WorkspaceItemInfo ?: return
-            homeWorkspace.beginDragShared(
-                child, source, item, DragPreviewProvider(child), options,
-                itemLongClickListener.startLongPressAction(child, item),
-            )
+            workspace.beginDragShared(child, source, options)
         }
 
         override fun replaceFolderWithFinalItem(folder: Folder): Boolean =
@@ -260,8 +215,8 @@ class HomeController(
 
         // Launcher.setupViews
         root.overlay.setDragController(dragController)
-        dragController.defaultDropTarget = homeWorkspace
-        dragController.addDragListener(homeWorkspace)
+        workspace.setup(dragController)
+        dragController.addDragListener(workspace)
         dragController.addDragListener(springLoadedListener)
         root.attachDropTargetBar(dropTargetBar)
         dropTargetBar.setup(dragController)
@@ -401,28 +356,36 @@ class HomeController(
         for (item in items) addInScreen(item)
     }
 
-    /** ItemInflater.inflateItem and Workspace.addInScreen: the item's view on the grid. */
+    /** ItemInflater.inflateItem and Workspace.addInScreenFromBind: the item's view on the page. */
     private fun addInScreen(item: ItemInfo): View? {
         val view = itemInflater.inflateItem(item) ?: return null
-        addViewToCellLayout(view, item)
+        workspace.addInScreenFromBind(view, item)
         return view
     }
 
-    /**
-     * Workspace.addInScreen's CellLayout part: the view in the item's cells, which are marked as
-     * occupied (CellLayout.addViewToCellLayout, with the item's id as the view id as
-     * Launcher.getViewIdForItem gives it).
-     */
-    internal fun addViewToCellLayout(view: View, item: ItemInfo) {
-        view.tag = item
-        val lp = CellLayoutLayoutParams(item.cellX, item.cellY, item.spanX, item.spanY)
-        if (!cellLayout.addViewToCellLayout(view, -1, item.id, lp, true)) {
-            // TODO: This branch occurs when the workspace is adding views
-            // outside of the defined grid
-            // maybe we should be deleting these items from the LauncherModel?
-            Log.e(TAG, "Failed to add to item at (${lp.cellX},${lp.cellY}) to CellLayout")
-        }
+    /** Launcher.addFolder: an empty folder at the cell, written to the model and added to the page. */
+    internal fun addFolder(container: Int, screenId: Int, cellX: Int, cellY: Int): FolderIconView {
+        val folderInfo = FolderInfo()
+
+        // Update the model
+        model.writer.addItemToDatabase(folderInfo, container, screenId, cellX, cellY)
+
+        // Create the view
+        val newFolder = itemInflater.inflateItem(folderInfo) as FolderIconView
+        workspace.addInScreen(newFolder, folderInfo)
+        // Force measure the new folder icon
+        val parent = workspace.getParentCellLayoutForView(newFolder)
+        parent.shortcutsAndWidgets.measureChild(newFolder)
+        return newFolder
     }
+
+    /** Workspace.persistRemoveItemsByMatcher: the items leave the model, which is bound again. */
+    internal fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>) {
+        if (loader.removeItems(matcher::test)) loader.rebuild()
+    }
+
+    /** StateManager.goToState(NORMAL) with a success callback (SpringLoadedListener). */
+    internal fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
 
     /**
      * LauncherAccessibilityDelegate.addToWorkspace for the menu's add button and the widget
@@ -685,7 +648,7 @@ class HomeController(
                 if (newIcon != null && finalItem != null) {
                     // We add the child after removing the folder to prevent both from existing
                     // at the same time in the CellLayout.
-                    addViewToCellLayout(newIcon, finalItem)
+                    workspace.addInScreenFromBind(newIcon, finalItem)
                 }
             }
         }
@@ -696,35 +659,6 @@ class HomeController(
         }
         return true
     }
-
-    /** HomeWorkspace's Launcher side (Launcher.addFolder, Workspace.addInScreen). */
-    private inner class WorkspaceHost : HomeWorkspace.Host {
-        /** Launcher.addFolder */
-        override fun addFolder(cellX: Int, cellY: Int): FolderIconView {
-            val folderInfo = FolderInfo()
-
-            // Update the model
-            model.writer.addItemToDatabase(folderInfo, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellX, cellY)
-
-            // Create the view
-            return addInScreen(folderInfo) as FolderIconView
-        }
-
-        override fun addItem(info: WorkspaceItemInfo, cellX: Int, cellY: Int): View {
-            // Add the item to DB before adding to screen ensures that the container and other
-            // values of the info is properly updated.
-            model.writer.addOrMoveItemInDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellX, cellY)
-            return addInScreen(info)!!
-        }
-
-        override fun removeWorkspaceItem(view: View) = workspace.removeWorkspaceItem(view)
-
-        override fun updateWidgetSize(view: AppWidgetHostView, spanX: Int, spanY: Int) =
-            view.updateSizeRanges(spanX, spanY)
-
-        override fun runWhenNormal(callback: Runnable) = springLoadedListener.runWhenNormal(callback)
-    }
-
 
     private companion object {
         /** RecyclerViewFastScroller.MAX_TRACK_ALPHA */

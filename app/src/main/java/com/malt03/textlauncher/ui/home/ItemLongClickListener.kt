@@ -8,7 +8,9 @@ import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AppWidgetResizeFrame
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.DragSource
+import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherSettings
+import com.android.launcher3.celllayout.CellInfo
 import com.android.launcher3.R as L3R
 import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.dragndrop.DraggableView
@@ -20,6 +22,8 @@ import com.android.launcher3.popup.PopupCategory
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.popup.PopupContainerWithArrow
 import com.android.launcher3.popup.PopupData
+import com.android.launcher3.popup.Popup
+import com.android.launcher3.popup.PopupController
 import com.android.launcher3.popup.PopupItemDragHandler
 import com.android.launcher3.popup.SystemShortcut
 import com.android.launcher3.pm.UserCache
@@ -59,18 +63,34 @@ internal class ItemLongClickListener(private val home: HomeController) {
     fun onAllAppsItemLongPress(iconView: BubbleTextView) {
         val app = iconView.tag as? AppInfo ?: return
         if (!canStartDrag()) return
-        // AppInfo.makeWorkspaceItem: the home screen gets its own item, not the list's AppInfo.
-        val info = AppItemInfo(app, UserCache.INSTANCE.get(context).getSerialNumberForUser(app.user))
-        home.homeWorkspace.beginDragShared(
-            iconView, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
-            startLongPressAction(iconView, info),
+        // TextLauncher: the home screen gets its own item (AppInfo.makeWorkspaceItem), not the
+        // list's AppInfo, which ItemInflater would make on the drop.
+        val info = toHomeItem(app)
+        home.workspace.beginDragShared(
+            iconView, null, searchDragSource, info, DragPreviewProvider(iconView), DragOptions(),
         )
     }
 
+    /** AppInfo.makeWorkspaceItem: the home screen's item for an app of the list. */
+    private fun toHomeItem(app: AppInfo): AppItemInfo =
+        AppItemInfo(app, UserCache.INSTANCE.get(context).getSerialNumberForUser(app.user))
+
+    /**
+     * ItemLongClickListener.INSTANCE_WORKSPACE: Workspace.startDrag with the item's CellInfo, which
+     * shows the item's menu (Launcher.getPopupControllerForAppIcons) and drags once the finger
+     * moves.
+     */
     fun onHomeItemLongPress(view: AppIconView) {
         if (!canStartDrag()) return
         val info = view.tag as? WorkspaceItemInfo ?: return
-        home.homeWorkspace.startDrag(view, info, DragOptions(), startLongPressAction(view, info))
+        startDrag(view, info)
+    }
+
+    /** ItemLongClickListener.beginDrag */
+    private fun startDrag(view: View, info: ItemInfo) {
+        home.workspace.startDrag(
+            CellInfo(view, info, activityContext.cellPosMapper.mapModelToPresenter(info)), DragOptions(),
+        )
     }
 
     /**
@@ -80,8 +100,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
      */
     fun onHomeFolderLongPress(view: FolderIconView) {
         if (!canStartDrag()) return
-        val info = view.folderInfo
-        home.homeWorkspace.startDrag(view, info, DragOptions()) { showExtraHomeScreenItemPopup(view, info) }
+        startDrag(view, view.folderInfo)
     }
 
     /**
@@ -94,7 +113,48 @@ internal class ItemLongClickListener(private val home: HomeController) {
     fun onHomeWidgetLongPress(view: LauncherAppWidgetHostView) {
         if (!canStartDrag()) return
         val info = view.tag as? ItemInfo ?: return
-        home.homeWorkspace.startDrag(view, info, DragOptions()) { showExtraHomeScreenItemPopup(view, info) }
+        startDrag(view, info)
+    }
+
+    /**
+     * Launcher.getPopupControllerForHomeScreenItems (PopupControllerForExtraHomeScreenItems): the
+     * menu of a folder or a widget, and a widget's resize frame.
+     */
+    val popupControllerForHomeScreenItems = object : PopupController<Launcher> {
+        override fun show(view: View): Popup? {
+            val info = view.tag as? ItemInfo ?: return null
+            val condition = showExtraHomeScreenItemPopup(view, info)
+            return object : Popup {
+                override fun createPreDragCondition(): DragOptions.PreDragCondition = condition
+            }
+        }
+
+        override fun dismiss() {
+            PopupContainer.getOpen(activityContext)?.close(true)
+        }
+    }
+
+    /**
+     * Launcher.getPopupControllerForAppIcons (PopupControllerAppIcons): the long-press menu of an
+     * app or shortcut, on the home screen, in a folder or in the all apps list.
+     */
+    val popupControllerForAppIcons = object : PopupController<Launcher> {
+        override fun show(view: View): Popup? {
+            val item = when (val tag = view.tag) {
+                is WorkspaceItemInfo -> tag
+                // TextLauncher: the menu's options are the home screen item's (search terms).
+                is AppInfo -> toHomeItem(tag)
+                else -> return null
+            }
+            val condition = startLongPressAction(view, item)() ?: return null
+            return object : Popup {
+                override fun createPreDragCondition(): DragOptions.PreDragCondition = condition
+            }
+        }
+
+        override fun dismiss() {
+            PopupContainer.getOpen(activityContext)?.close(true)
+        }
     }
 
     /**
@@ -243,7 +303,7 @@ internal class ItemLongClickListener(private val home: HomeController) {
             val itemInfo = sv.finalInfo
             itemInfo.container = LauncherSettings.Favorites.CONTAINER_SHORTCUTS
             val dv =
-                home.homeWorkspace.beginDragShared(
+                home.workspace.beginDragShared(
                     sv.iconView,
                     draggableView,
                     mContainer,

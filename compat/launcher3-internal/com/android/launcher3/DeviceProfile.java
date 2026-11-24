@@ -54,6 +54,15 @@ public class DeviceProfile {
         return mDropTargetProfile;
     }
 
+    /**
+     * DeviceProfile.getAppWidgetScale. TextLauncher: widgets are not scaled (the scale is 1 outside
+     * the multi-window and preview profiles).
+     */
+    public android.graphics.PointF getAppWidgetScale(
+            @androidx.annotation.Nullable com.android.launcher3.model.data.ItemInfo itemInfo) {
+        return new android.graphics.PointF(1f, 1f);
+    }
+
     /** TextLauncher: no hotseat at the side, so never a vertical bar layout. */
     public boolean isVerticalBarLayout() {
         return false;

@@ -85,6 +85,13 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         setChildrenDrawingOrderEnabled(true);
     }
 
+    public void animateViewIntoPosition(DragView dragView, final int[] pos, float alpha,
+            float scaleX, float scaleY, int animationEndStyle, Runnable onFinishRunnable,
+            int duration) {
+        animateViewIntoPosition(dragView, pos[0], pos[1], alpha, scaleX, scaleY,
+                onFinishRunnable, animationEndStyle, duration, null);
+    }
+
     public void animateViewIntoPosition(DragView dragView, final View child, View anchorView) {
         animateViewIntoPosition(dragView, child, -1, anchorView);
     }

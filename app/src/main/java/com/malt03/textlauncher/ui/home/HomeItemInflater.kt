@@ -53,16 +53,12 @@ internal class HomeItemInflater(private val home: HomeController) {
 
     /**
      * WidgetInflater.inflateAppWidget and ItemInflater.prepareAppWidget: the widget's view from
-     * the host, which starts a drag on a long press. A widget whose provider is gone has no view
-     * (the loader deletes it).
+     * the host. A widget whose provider is gone has no view (the loader deletes it). As in
+     * Launcher3, Workspace.addInScreen sets the long-click listener of the page's items.
      */
     private fun createWidgetView(info: WidgetItemInfo): View? {
         val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
         return home.widgetHost.createView(context, info.appWidgetId, providerInfo).apply {
-            setOnLongClickListener {
-                (this as? LauncherAppWidgetHostView)?.let { home.itemLongClickListener.onHomeWidgetLongPress(it) }
-                true
-            }
         }
     }
 
@@ -72,10 +68,6 @@ internal class HomeItemInflater(private val home: HomeController) {
             // ItemInflater: the item's focus listener is Launcher.getFocusHandler.
             setFocusableAsLauncher3Icon(scrollView.focusIndicatorHelper)
             setOnClickListener(ItemClickHandler.INSTANCE)
-            setOnLongClickListener {
-                home.itemLongClickListener.onHomeItemLongPress(this)
-                true
-            }
         }
 
     /** FolderIcon.inflateIcon */
@@ -87,9 +79,5 @@ internal class HomeItemInflater(private val home: HomeController) {
                 loadIcon(item) { updatePreviewItems { it === item } }
             }
             setOnClickListener(ItemClickHandler.INSTANCE)
-            setOnLongClickListener {
-                home.itemLongClickListener.onHomeFolderLongPress(this)
-                true
-            }
         }
 }

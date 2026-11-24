@@ -44,7 +44,12 @@ public class StatsLogManager {
         LAUNCHER_WIDGET_PICKER_OPEN_ANIMATION_END(1980),
         LAUNCHER_WIDGET_PICKER_APP_EXPAND_ANIMATION_BEGIN(1981),
         LAUNCHER_WIDGET_PICKER_APP_EXPAND_ANIMATION_END(1982),
-        LAUNCHER_WIDGET_ADD_BUTTON_TAP(1622);
+        LAUNCHER_WIDGET_ADD_BUTTON_TAP(1622),
+        LAUNCHER_ITEM_DRAG_STARTED(383),
+        LAUNCHER_ITEM_DROP_COMPLETED(385),
+        LAUNCHER_ITEM_DROP_FOLDER_CREATED(386),
+        LAUNCHER_ITEM_DROP_COMPLETED_ON_FOLDER_ICON(697),
+        LAUNCHER_ITEM_DROP_FAILED_INSUFFICIENT_SPACE(872);
 
         private final int mId;
 
@@ -61,6 +66,10 @@ public class StatsLogManager {
     /** Builds and logs an event; TextLauncher's logs nothing. */
     public interface StatsLogger {
         default StatsLogger withItemInfo(ItemInfo itemInfo) {
+            return this;
+        }
+
+        default StatsLogger withInstanceId(InstanceId instanceId) {
             return this;
         }
 
