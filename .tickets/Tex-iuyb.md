@@ -24,3 +24,7 @@ tags: [home, launcher3]
 **2026-11-23T17:30:37Z**
 
 2026-11-24: 後半（ほかのアプリからのピン留めの要求）は今回も残した。下地はできた: ホームのモデルは BgDataModel と ModelWriter（Tex-2es1）になり、BgDataModel.pendingShortcuts（ItemInstallQueue.getPendingShortcuts の受け口。固定の更新でキューの中のショートカットを外さない）を用意した。HomeController には bindItemsUpdated / bindWorkspaceComponentsRemoved（Tex-3dnt）があるが bindItemsAdded はまだない。残る作業: (1) ItemInstallQueue（ファイルに保存するキュー、Launcher.onResume で flush）と AddWorkspaceItemsTask（WorkspaceItemSpaceFinder はページが1つなので空きがなければ追加しない・Toast を出すかは要判断）を移し、ModelCallbacks.bindItemsAdded で bindInflatedItems のバウンスを付けて置く、(2) AddItemActivity（CONFIRM_PIN_SHORTCUT / CONFIRM_PIN_APPWIDGET を受ける Activity。上流は WidgetCell のプレビュー・「自動で追加」・ドラッグ（PinItemDragListener）を持つシート）をマニフェストに足し、ウィジェットは PinWidgetFlowHandler（bind の後に PinItemRequest.accept、HomeWidgetAddFlow の保存状態に入れる）で追加する。シートの見た目（上流の AddItemActivity は Compose 版のウィジェットピッカーとは別の View 版）をどちらで作るかは製品判断が要る
+
+**2026-11-24T12:20:53Z**
+
+2026-11-24 訂正: 上の「上流の AddItemActivity は View 版」は android-16 の話だった。android-17.0.0_r1 の AddItemActivity.kt は add_item_confirmation_activity_compose（SimpleDragLayer だけ）を出し、WidgetPickerComposeWrapper.showWidgetsForPinRequest で widgetpicker モジュールの PinAppWidgetCatalog（移植済みの third_party/launcher3/modules/widgetpicker/.../ui/pin）を表示する。見た目の判断は要らず、上流どおり移植すればよい。互換の WidgetPickerComposeWrapper は showWidgetsForPinRequest を削っている（44 行目）ので、そこを戻すところから

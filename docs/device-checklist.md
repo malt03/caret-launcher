@@ -7,12 +7,12 @@
 ### 判断が要るもの
 
 - Tex-2t22 検索の並び順：Launcher3 の LabelComparator にそろえた（端末の言語の照合順）。日本語の照合順に固定したいなら 183119e を戻す
-- Tex-iuyb ほかのアプリからのピン留めの要求（AddItemActivity）：Launcher3 は View 版のシート、TextLauncher のピッカーは Compose 版。どちらの見た目で作るかが決まれば移植できる
 - Tex-44r9 TalkBack の操作：リサイズ枠だけでなく、ホーム全体の TalkBack 対応（LauncherAccessibilityDelegate、アクセシブルなドラッグ）として1つのチケットにするか
 - Tex-ymk9 フォルダのページ送り：1ページのフォルダでは下の段（名前の欄の代わり）を出さないことにした
 
 ### まだ残っているもの
 
+- Tex-iuyb ほかのアプリからのピン留めの要求（AddItemActivity）：android-17.0.0_r1 の AddItemActivity は、移植済みの Compose 版ピッカーの PinAppWidgetCatalog でシートを出すので、判断は要らない（View 版の WidgetCell のシートは android-16 まで）
 - Tex-ydua ホームのドラッグ処理（Workspace）と LauncherDragController を derived コピーにする（手順はチケットのノート）
 - 実機での確認のチケット：Tex-w8ui（壁紙とスタイル）、Tex-s1vy（Pixel 6a）、Tex-wuyv（未確認の画面）
 
