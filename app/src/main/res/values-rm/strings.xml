@@ -6,14 +6,14 @@
 <resources>
     <string name="search_hint">Tschertgar apps</string>
     <string name="search_hint_share">Tschertgar</string>
-    <string name="menu_search_terms">Modifitgar ils chavazzins da tschertgar</string>
-    <string name="search_terms_title">Chavazzins da tschertgar per %1$s</string>
+    <string name="menu_search_terms">Modifitgar ils chavazzins da retschertga</string>
+    <string name="search_terms_title">Chavazzins da retschertga per %1$s</string>
     <string name="search_terms_hint">Agiuntar in chavazzin</string>
     <string name="search_terms_add">Agiuntar</string>
     <string name="search_terms_close">Serrar</string>
     <string name="search_terms_remove">Allontanar</string>
     <string name="share_text_title">Cundivider il text</string>
-    <string name="share_text_message">Tscherna fin a 3 apps che vegnan mussadas sper il champ da tschertgar. Tutga ina per cundivider il text che ti has endatà.</string>
+    <string name="share_text_message">Tscherna fin a 3 apps che vegnan mussadas sper il champ da retschertga. Tutga ina per cundivider il text che ti has endatà.</string>
     <string name="share_text_move_up">Spustar ensi</string>
     <string name="share_text_move_down">Spustar engiu</string>
     <string name="licenses">Licenzas</string>
