@@ -1,0 +1,25 @@
+Caret Launcher je domovská obrazovka (launcher), na které je klávesnice pořád vysunutá.
+Stačí napsat pár písmen a aplikace se otevře. Nad klávesnicí je úplně běžná plocha.
+
+Aplikaci jsem si původně udělal pro sebe a nakonec jsem se rozhodl nabídnout ji i ostatním. Vydělávat na ní neplánuji.
+Je open source a vychází pod Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Napište název a aplikace se otevře
+- Na domovské obrazovce je klávesnice vždy připravená.
+- Při hledání nezáleží na velkých a malých písmenech.
+- Aplikacím můžete dát vlastní názvy: třeba „galerie“ nebo „obrázky“ pro aplikaci s fotkami, původní název aplikace, která se mezitím přejmenovala, nebo krátkou přezdívku.
+
+■ Domovská obrazovka
+- Dokud nic nenapíšete, je nad klávesnicí domovská obrazovka postavená na standardním launcheru systému Android.
+- Přejetím prstem nahoru zobrazíte seznam všech aplikací.
+- V nastavení „Tapety a styl“ si zvolíte tematické ikony a jejich tvar.
+- Když rozevřete skládací telefon, obrazovka se rozdělí na dvě části: vlevo všechny aplikace, vpravo domovská obrazovka.
+
+■ Hledejte rovnou tím, co jste napsali
+- Vyberte až tři aplikace a jejich tlačítka se objeví na pravém konci vyhledávacího pole. Hodí se třeba prohlížeč nebo aplikace s AI.
+- Napište text, klepněte na tlačítko a text se předá dané aplikaci.
+
+■ Soukromí
+- Caret Launcher nemá oprávnění k přístupu na internet. To, co napíšete, ani informace o tom, které aplikace otevíráte, nikdy neopustí váš telefon.
+- Žádné reklamy, žádné sledování, žádná registrace.

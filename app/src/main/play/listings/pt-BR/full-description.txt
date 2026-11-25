@@ -1,0 +1,25 @@
+O Caret Launcher é uma tela inicial (um launcher) em que o teclado fica sempre aberto.
+Digite poucas letras e o app abre. Acima do teclado, fica uma tela inicial comum.
+
+Criei o app para uso próprio e resolvi compartilhar. Não tenho planos de ganhar dinheiro com ele.
+O código é aberto, sob a Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Digite o nome do app para abrir
+- Na tela inicial, o teclado está sempre pronto para digitar.
+- Tanto faz escrever com letras maiúsculas ou minúsculas.
+- Dê aos apps os nomes que você quiser: "galeria" ou "álbum" para o app de fotos, o nome antigo de um app que mudou de nome ou um apelido curto.
+
+■ Tela inicial
+- Quando você não digitou nada, o espaço acima do teclado é uma tela inicial baseada no launcher do próprio Android.
+- Deslize para cima para ver a lista completa de apps.
+- Em "Plano de fundo e estilo", escolha ícones com tema e o formato dos ícones.
+- Nos celulares dobráveis, é só abrir o aparelho para a tela se dividir em duas: todos os apps à esquerda e a tela inicial à direita.
+
+■ Pesquise direto com o que você digitou
+- Escolha até três apps, e os botões deles aparecem no canto direito do campo de busca. Um navegador ou um app de IA são ótimas opções.
+- Digite um texto e toque em um botão para enviá-lo ao app.
+
+■ Privacidade
+- O Caret Launcher não tem permissão para acessar a internet. O que você digita e os apps que você abre nunca saem do seu celular.
+- Sem anúncios, sem rastreamento e sem cadastro.

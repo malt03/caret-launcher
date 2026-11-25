@@ -1,0 +1,25 @@
+O Caret Launcher é um ecrã inicial, ou launcher, com o teclado sempre aberto.
+Basta escrever umas letras para abrir uma aplicação. Por cima do teclado fica um ecrã inicial normal.
+
+Criei-o para uso próprio e decidi partilhá-lo. Não tenho planos para ganhar dinheiro com ele.
+É de código aberto, sob a Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Escreva o nome de uma aplicação para a abrir
+- No ecrã inicial, o teclado está sempre pronto.
+- A pesquisa não faz distinção entre maiúsculas e minúsculas.
+- Dê às aplicações os nomes que quiser: "galeria" ou "álbum" para a aplicação de fotos, o nome antigo de uma aplicação que mudou de nome ou uma alcunha curta.
+
+■ Ecrã inicial
+- Enquanto não escrever nada, o espaço por cima do teclado é um ecrã inicial baseado no launcher do próprio Android.
+- Deslize para cima para ver a lista completa de aplicações.
+- Escolha ícones temáticos e a forma dos ícones em "Estilo e fundo de ecrã".
+- Num telemóvel dobrável, ao abri-lo fica com dois painéis: todas as aplicações à esquerda e o ecrã inicial à direita.
+
+■ Pesquise diretamente a partir do que escreveu
+- Escolha até três aplicações e os respetivos botões aparecem no lado direito do campo de pesquisa. Um browser ou uma aplicação de IA são boas opções.
+- Escreva um texto e toque num botão para o passar a essa aplicação.
+
+■ Privacidade
+- O Caret Launcher não tem permissão para aceder à Internet. O que escreve e as aplicações que abre nunca saem do seu telemóvel.
+- Sem anúncios, sem rastreio e sem registo.

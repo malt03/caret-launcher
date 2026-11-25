@@ -1,0 +1,25 @@
+Caret Launcher to launcher, czyli aplikacja ekranu głównego, w której klawiatura jest zawsze na wierzchu.
+Wystarczy wpisać kilka liter, żeby otworzyć aplikację. Nad klawiaturą masz zwykły ekran główny.
+
+Zrobiłem go dla siebie i postanowiłem się nim podzielić. Nie zamierzam na nim zarabiać.
+To projekt open source, udostępniony na licencji Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Wpisz nazwę aplikacji i gotowe
+- Na ekranie głównym klawiatura jest zawsze gotowa do pisania.
+- Wyszukiwanie nie zwraca uwagi na wielkość liter.
+- Nadaj aplikacjom własne nazwy: na przykład „galeria” albo „fotki” dla aplikacji ze zdjęciami, dawną nazwę aplikacji, która zmieniła nazwę, albo krótką ksywkę.
+
+■ Ekran główny
+- Gdy nic nie wpisujesz, nad klawiaturą jest ekran główny oparty na standardowym launcherze Androida.
+- Przesuń palcem w górę, żeby zobaczyć listę wszystkich aplikacji.
+- W ustawieniu „Tapeta i styl” wybierzesz ikony z motywem i kształt ikon.
+- Na składanym telefonie po rozłożeniu ekran dzieli się na dwa panele: po lewej wszystkie aplikacje, po prawej ekran główny.
+
+■ Szukaj od razu tym, co wpiszesz
+- Wybierz maksymalnie trzy aplikacje, a ich przyciski pojawią się po prawej stronie pola wyszukiwania. Dobrze sprawdzi się przeglądarka albo aplikacja AI.
+- Wpisz tekst i stuknij przycisk, żeby przekazać go do tej aplikacji.
+
+■ Prywatność
+- Caret Launcher nie ma uprawnień dostępu do internetu. To, co wpisujesz, i to, jakie aplikacje otwierasz, nigdy nie opuszcza telefonu.
+- Bez reklam, bez śledzenia, bez zakładania konta.

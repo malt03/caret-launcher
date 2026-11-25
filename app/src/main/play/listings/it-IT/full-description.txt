@@ -1,0 +1,25 @@
+Caret Launcher è un'app per la schermata Home, un launcher, con la tastiera sempre aperta.
+Bastano poche lettere per aprire un'app. Sopra la tastiera trovi una normale schermata Home.
+
+L'ho creato per me e ho deciso di condividerlo. Non ho intenzione di guadagnarci.
+È open source (Apache License 2.0).
+https://github.com/malt03/caret-launcher
+
+■ Scrivi il nome di un'app e aprila
+- Nella schermata Home la tastiera è sempre pronta.
+- Nella ricerca maiuscole e minuscole non fanno differenza.
+- Puoi dare alle app nomi tutti tuoi: «galleria» o «rullino» per l'app delle foto, il vecchio nome di un'app che l'ha cambiato, oppure un soprannome breve.
+
+■ Schermata Home
+- Quando non hai scritto niente, lo spazio sopra la tastiera è una schermata Home basata sul launcher standard di Android.
+- Scorri verso l'alto per vedere l'elenco di tutte le app.
+- In «Sfondo e stile» puoi scegliere le icone a tema e la forma delle icone.
+- Sui pieghevoli, aprendo il telefono ottieni due riquadri: a sinistra tutte le app, a destra la schermata Home.
+
+■ Cerca subito quello che hai scritto
+- Scegli fino a tre app: i loro pulsanti compaiono all'estremità destra del campo di ricerca. Ideali un browser o un'app di IA.
+- Scrivi un testo e tocca un pulsante per passarlo a quell'app.
+
+■ Privacy
+- Caret Launcher non ha l'autorizzazione per accedere a Internet. Ciò che scrivi e le app che apri non escono mai dal telefono.
+- Niente pubblicità, niente tracciamento, nessuna registrazione.

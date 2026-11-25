@@ -1,0 +1,25 @@
+Caret Launcher er en startskærm-app, en launcher, hvor tastaturet altid er fremme.
+Skriv et par bogstaver for at åbne en app. Over tastaturet er der en helt almindelig startskærm.
+
+Jeg lavede den til mig selv og har valgt at dele den. Jeg har ingen planer om at tjene penge på den.
+Den er open source under Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Skriv appens navn for at åbne den
+- På startskærmen står tastaturet altid klar.
+- Søgningen skelner ikke mellem store og små bogstaver.
+- Giv dine apps dine egne navne: »billeder« eller »galleri« til foto-appen, det gamle navn på en app, der har skiftet navn, eller et kort kælenavn.
+
+■ Startskærm
+- Når du ikke har skrevet noget, er pladsen over tastaturet en startskærm, der bygger på Androids egen launcher.
+- Stryg opad for at se alle dine apps.
+- Vælg temaikoner og ikonform under »Baggrund og stil«.
+- Folder du en foldbar telefon ud, får du to ruder: alle dine apps til venstre og startskærmen til højre.
+
+■ Søg direkte på det, du har skrevet
+- Vælg op til tre apps, så får de hver deres knap yderst til højre i søgefeltet. En browser eller en AI-app er oplagt.
+- Skriv en tekst, og tryk på en knap for at sende den videre til appen.
+
+■ Privatliv
+- Caret Launcher har ikke tilladelse til at bruge internettet. Det, du skriver, og hvilke apps du åbner, forlader aldrig din telefon.
+- Ingen reklamer, ingen sporing, ingen tilmelding.

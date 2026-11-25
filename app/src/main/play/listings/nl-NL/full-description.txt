@@ -1,0 +1,25 @@
+Caret Launcher is een startscherm-app, oftewel een launcher, waarbij het toetsenbord altijd in beeld is.
+Typ een paar letters en je app gaat open. Boven het toetsenbord zit gewoon een normaal startscherm.
+
+Ik heb de app voor mezelf gemaakt en besloten hem met anderen te delen. Ik ben niet van plan er geld mee te verdienen.
+De app is open source onder de Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Typ de naam van een app en open hem
+- Op het startscherm staat het toetsenbord altijd voor je klaar.
+- Hoofdletters of kleine letters maken bij het zoeken niet uit.
+- Geef apps je eigen namen: "galerij" of "album" voor je foto-app, de oude naam van een app die anders is gaan heten, of een korte bijnaam.
+
+■ Startscherm
+- Zolang je niets hebt getypt, is de ruimte boven het toetsenbord een startscherm dat gebouwd is op de eigen launcher van Android.
+- Veeg omhoog voor de lijst met al je apps.
+- Kies bij Achtergrond en stijl voor pictogrammen met thema en een vorm voor de pictogrammen.
+- Vouw je vouwbare telefoon open en je krijgt twee panelen: links al je apps, rechts je startscherm.
+
+■ Meteen zoeken met wat je typt
+- Kies maximaal drie apps, dan verschijnen hun knoppen rechts in het zoekveld. Een browser of een AI-app is daar heel geschikt voor.
+- Typ wat tekst en tik op een knop om die tekst aan die app door te geven.
+
+■ Privacy
+- Caret Launcher heeft geen toestemming om verbinding te maken met internet. Wat je typt en welke apps je opent, blijft op je telefoon.
+- Geen advertenties, geen tracking, geen account nodig.

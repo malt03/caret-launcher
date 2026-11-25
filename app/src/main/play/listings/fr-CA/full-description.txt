@@ -1,0 +1,25 @@
+Caret Launcher est un écran d'accueil, un lanceur d'applications, dont le clavier reste toujours affiché.
+Tapez quelques lettres et l'application s'ouvre. Au-dessus du clavier, vous retrouvez un écran d'accueil comme les autres.
+
+Je l'ai conçu pour mon propre usage, puis j'ai décidé de le partager. Je n'ai pas l'intention d'en tirer de l'argent.
+Le code source est ouvert, sous Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Tapez le nom d'une application pour l'ouvrir
+- À l'écran d'accueil, le clavier est toujours prêt.
+- La recherche ne fait pas de différence entre majuscules et minuscules.
+- Donnez vos propres noms à vos applications : « galerie » ou « pics » pour votre application de photos, l'ancien nom d'une application qui a changé de nom, ou encore un petit surnom.
+
+■ Écran d'accueil
+- Quand vous n'avez rien tapé, l'espace au-dessus du clavier est un écran d'accueil construit à partir du lanceur d'Android lui-même.
+- Balayez vers le haut pour afficher la liste complète de vos applications.
+- Choisissez des icônes thématiques et la forme des icônes dans « Fond d'écran et style ».
+- Sur un appareil pliable, dépliez-le pour obtenir deux volets : toutes vos applications à gauche et votre écran d'accueil à droite.
+
+■ Lancez une recherche à partir de ce que vous avez tapé
+- Choisissez jusqu'à trois applications : leurs boutons s'affichent tout au bout, à droite du champ de recherche. Un navigateur ou une application d'IA, c'est idéal.
+- Tapez du texte, puis touchez un bouton pour l'envoyer à l'application correspondante.
+
+■ Confidentialité
+- Caret Launcher n'a pas l'autorisation d'accéder à Internet. Ce que vous tapez et les applications que vous ouvrez ne quittent jamais votre téléphone.
+- Aucune publicité, aucun suivi, aucune inscription.

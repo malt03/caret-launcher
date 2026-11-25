@@ -1,0 +1,25 @@
+Caret Launcher ist ein Launcher, also eine App für den Startbildschirm (Homescreen), bei der die Tastatur immer eingeblendet ist.
+Ein paar Buchstaben tippen, und schon öffnet sich die App. Über der Tastatur liegt ein ganz normaler Startbildschirm.
+
+Ich habe die App eigentlich für mich selbst gebaut und teile sie jetzt mit anderen. Geld verdienen will ich damit nicht.
+Sie ist Open Source und steht unter der Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ App-Namen eintippen und öffnen
+- Auf dem Startbildschirm ist die Tastatur jederzeit bereit.
+- Bei der Suche spielt Groß- und Kleinschreibung keine Rolle.
+- Gib Apps eigene Namen: zum Beispiel „Bilder“ oder „Galerie“ für die Foto-App, den alten Namen einer umbenannten App oder einen kurzen Spitznamen.
+
+■ Startbildschirm
+- Solange du nichts eingetippt hast, ist der Bereich über der Tastatur ein Startbildschirm, der auf dem Android-eigenen Launcher aufbaut.
+- Wisch nach oben, um die Liste aller Apps zu öffnen.
+- Unter „Hintergrund & Stil“ wählst du Designsymbole und die Form der Symbole aus.
+- Klappst du ein Foldable auf, teilt sich die Ansicht in zwei Bereiche: links alle Apps, rechts der Startbildschirm.
+
+■ Direkt mit dem Getippten suchen
+- Wähle bis zu drei Apps aus, dann erscheinen ihre Schaltflächen rechts im Suchfeld. Gut passen zum Beispiel ein Browser oder eine KI-App.
+- Text eintippen, auf eine Schaltfläche tippen, und schon landet der Text in dieser App.
+
+■ Datenschutz
+- Caret Launcher hat keine Berechtigung für den Internetzugriff. Was du eintippst und welche Apps du öffnest, verlässt nie dein Smartphone.
+- Keine Werbung, kein Tracking, keine Registrierung.

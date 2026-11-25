@@ -1,0 +1,25 @@
+Caret Launcher es una pantalla de inicio, un launcher, con el teclado siempre a la vista.
+Escribe unas cuantas letras y abre la app que buscas. Arriba del teclado tienes una pantalla de inicio normal.
+
+La hice para usarla yo y decidí compartirla. No tengo planes de ganar dinero con ella.
+Es de código abierto, con Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Escribe el nombre de una app para abrirla
+- En la pantalla de inicio, el teclado siempre está listo.
+- La búsqueda no distingue entre mayúsculas y minúsculas.
+- Ponles a tus apps los nombres que tú quieras: "galería" o "photos" para tu app de fotos, el nombre que tenía antes una app que se lo cambió, o un apodo corto.
+
+■ Pantalla de inicio
+- Cuando no has escrito nada, el espacio arriba del teclado es una pantalla de inicio basada en el launcher del propio Android.
+- Desliza hacia arriba para ver la lista de todas tus apps.
+- En Fondo de pantalla y estilo puedes elegir íconos temáticos y la forma de los íconos.
+- En un celular plegable, al abrirlo tienes dos paneles: todas tus apps a la izquierda y tu pantalla de inicio a la derecha.
+
+■ Busca directo con lo que escribiste
+- Elige hasta tres apps y sus botones aparecen en el extremo derecho del campo de búsqueda. Un navegador o una app de IA funcionan muy bien.
+- Escribe un texto y toca un botón para pasárselo a esa app.
+
+■ Privacidad
+- Caret Launcher no tiene permiso para acceder a internet. Lo que escribes y las apps que abres nunca salen de tu celular.
+- Sin anuncios, sin rastreo y sin necesidad de crear una cuenta.

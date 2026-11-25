@@ -1,0 +1,25 @@
+Caret Launcher adalah aplikasi layar utama, alias launcher, dengan keyboard yang selalu tampil.
+Cukup ketik beberapa huruf untuk membuka aplikasi. Di atas keyboard ada layar utama seperti biasa.
+
+Awalnya saya buat untuk dipakai sendiri, lalu saya putuskan untuk membagikannya. Tidak ada rencana mencari untung dari aplikasi ini.
+Aplikasi ini open source di bawah Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Ketik nama aplikasi untuk membukanya
+- Di layar utama, keyboard selalu siap dipakai.
+- Pencarian tidak membedakan huruf besar dan huruf kecil.
+- Beri nama sendiri untuk aplikasi: "galeri" atau "album" untuk aplikasi foto, nama lama aplikasi yang sudah ganti nama, atau nama panggilan yang singkat.
+
+■ Layar utama
+- Selama kamu belum mengetik apa pun, area di atas keyboard adalah layar utama yang berbasis launcher bawaan Android.
+- Geser ke atas untuk melihat daftar semua aplikasi.
+- Pilih ikon bertema dan bentuk ikon di Wallpaper & gaya.
+- Di ponsel lipat, buka lipatannya untuk mendapatkan dua panel: semua aplikasi di kiri, layar utama di kanan.
+
+■ Langsung cari dari yang kamu ketik
+- Pilih hingga tiga aplikasi, dan tombolnya akan muncul di ujung kanan kolom pencarian. Cocok untuk browser atau aplikasi AI.
+- Ketik teks, lalu ketuk salah satu tombol untuk meneruskannya ke aplikasi itu.
+
+■ Privasi
+- Caret Launcher tidak punya izin untuk mengakses internet. Apa yang kamu ketik dan aplikasi apa yang kamu buka tidak pernah keluar dari ponselmu.
+- Tanpa iklan, tanpa pelacakan, tanpa perlu mendaftar.

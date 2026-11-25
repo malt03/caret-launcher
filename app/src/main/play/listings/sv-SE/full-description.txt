@@ -1,0 +1,25 @@
+Caret Launcher är en hemskärmsapp, en launcher, där tangentbordet alltid är framme.
+Skriv några bokstäver så öppnas appen. Ovanför tangentbordet finns en vanlig hemskärm.
+
+Jag gjorde den för eget bruk och bestämde mig för att dela med mig av den. Jag har inga planer på att tjäna pengar på den.
+Den är öppen källkod under Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Skriv appens namn för att öppna den
+- På hemskärmen är tangentbordet alltid redo.
+- Sökningen skiljer inte på stora och små bokstäver.
+- Ge apparna egna namn: ”bilder” eller ”galleri” för fotoappen, det gamla namnet på en app som har bytt namn eller ett kort smeknamn.
+
+■ Hemskärm
+- När du inte har skrivit något är ytan ovanför tangentbordet en hemskärm som bygger på Androids egen launcher.
+- Svep uppåt för att se alla appar.
+- Välj tematiska ikoner och ikonform under ”Bakgrund och utseende”.
+- Fäller du upp en vikbar mobil får du två delar: alla appar till vänster och hemskärmen till höger.
+
+■ Sök direkt på det du har skrivit
+- Välj upp till tre appar, så visas deras knappar längst till höger i sökfältet. En webbläsare eller en AI-app passar bra.
+- Skriv en text och tryck på en knapp för att skicka den till appen.
+
+■ Integritet
+- Caret Launcher har ingen behörighet att använda internet. Det du skriver och vilka appar du öppnar lämnar aldrig telefonen.
+- Inga annonser, ingen spårning, ingen registrering.

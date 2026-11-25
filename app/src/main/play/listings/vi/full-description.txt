@@ -1,0 +1,25 @@
+Caret Launcher là ứng dụng màn hình chính (launcher) mà bàn phím lúc nào cũng hiện sẵn.
+Chỉ cần gõ vài chữ là mở được ứng dụng. Phía trên bàn phím vẫn là một màn hình chính bình thường.
+
+Tôi làm ứng dụng này để tự dùng, rồi quyết định chia sẻ với mọi người. Tôi không có ý định kiếm tiền từ nó.
+Đây là phần mềm mã nguồn mở, phát hành theo Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Gõ tên ứng dụng để mở
+- Ở màn hình chính, bàn phím luôn sẵn sàng để bạn gõ.
+- Tìm kiếm không phân biệt chữ hoa hay chữ thường.
+- Bạn có thể tự đặt thêm tên cho ứng dụng: "hinh" hoặc "thư viện" cho ứng dụng ảnh, tên cũ của một ứng dụng đã đổi tên, hay một biệt danh ngắn gọn.
+
+■ Màn hình chính
+- Khi bạn chưa gõ gì, phần phía trên bàn phím là màn hình chính được xây dựng dựa trên launcher gốc của Android.
+- Vuốt lên để xem danh sách tất cả ứng dụng.
+- Chọn biểu tượng theo chủ đề và kiểu dáng biểu tượng trong "Hình nền và phong cách".
+- Trên điện thoại gập, mở máy ra là màn hình chia đôi: bên trái là tất cả ứng dụng, bên phải là màn hình chính.
+
+■ Tìm kiếm ngay từ chữ bạn vừa gõ
+- Chọn tối đa ba ứng dụng, nút của chúng sẽ hiện ở đầu bên phải ô tìm kiếm. Trình duyệt hoặc ứng dụng AI là lựa chọn rất hợp.
+- Gõ nội dung rồi chạm vào một nút để chuyển nội dung đó sang ứng dụng tương ứng.
+
+■ Quyền riêng tư
+- Caret Launcher không có quyền truy cập Internet. Những gì bạn gõ và những ứng dụng bạn mở không bao giờ rời khỏi điện thoại.
+- Không quảng cáo, không theo dõi, không cần đăng ký tài khoản.

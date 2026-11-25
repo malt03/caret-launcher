@@ -1,0 +1,25 @@
+Caret Launcher on aloitusnäyttösovellus eli käynnistin (launcher), jossa näppäimistö on aina auki.
+Kirjoita muutama kirjain, niin sovellus aukeaa. Näppäimistön yläpuolella on tavallinen aloitusnäyttö.
+
+Tein sovelluksen alun perin itselleni ja päätin jakaa sen muillekin. En aio ansaita sillä rahaa.
+Se on avointa lähdekoodia, ja lisenssinä on Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Avaa sovellus kirjoittamalla sen nimi
+- Aloitusnäytöllä näppäimistö on aina valmiina.
+- Haussa isoilla ja pienillä kirjaimilla ei ole väliä.
+- Anna sovelluksille omia nimiä: esimerkiksi kuvasovellukselle ”galleria” tai ”photos”, uudelleennimetylle sovellukselle sen vanha nimi tai jokin lyhyt lempinimi.
+
+■ Aloitusnäyttö
+- Kun et ole kirjoittanut mitään, näppäimistön yläpuolella on aloitusnäyttö, joka perustuu Androidin omaan käynnistimeen.
+- Pyyhkäise ylös, niin näet kaikki sovellukset.
+- Valitse teemakuvakkeet ja kuvakkeiden muoto kohdasta ”Taustakuva ja tyyli”.
+- Kun avaat taittuvan puhelimen, näkymä jakautuu kahteen ruutuun: vasemmalla kaikki sovellukset, oikealla aloitusnäyttö.
+
+■ Hae suoraan kirjoittamallasi tekstillä
+- Valitse enintään kolme sovellusta, niin niiden painikkeet ilmestyvät hakukentän oikeaan reunaan. Esimerkiksi selain tai tekoälysovellus sopii tähän hyvin.
+- Kirjoita tekstiä ja napauta painiketta, niin teksti siirtyy kyseiseen sovellukseen.
+
+■ Tietosuoja
+- Caret Launcherilla ei ole lupaa käyttää internetiä. Kirjoittamasi teksti ja tieto avaamistasi sovelluksista eivät koskaan lähde puhelimestasi.
+- Ei mainoksia, ei seurantaa, ei rekisteröitymistä.

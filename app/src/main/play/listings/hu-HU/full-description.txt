@@ -1,0 +1,25 @@
+A Caret Launcher egy kezdőképernyő-alkalmazás, vagyis launcher, amelyben mindig kint van a billentyűzet.
+Elég néhány betűt begépelni, és már nyílik is az alkalmazás. A billentyűzet fölött megszokott kezdőképernyőt találsz.
+
+Magamnak készítettem, aztán úgy döntöttem, hogy másokkal is megosztom. Nem tervezek pénzt keresni vele.
+Nyílt forráskódú, az Apache License 2.0 alatt érhető el.
+https://github.com/malt03/caret-launcher
+
+■ Írd be az alkalmazás nevét, és megnyílik
+- A kezdőképernyőn a billentyűzet mindig készenlétben áll.
+- A keresés nem tesz különbséget kis- és nagybetű között.
+- Saját neveket is adhatsz az alkalmazásoknak: a fotós alkalmazásnak például „képek” vagy „galéria”, egy átnevezett alkalmazásnak a régi nevét, vagy akár egy rövid becenevet.
+
+■ Kezdőképernyő
+- Amíg nem gépeltél be semmit, a billentyűzet fölötti rész egy kezdőképernyő, amely az Android saját launcherére épül.
+- Felfelé húzva megjelenik az összes alkalmazás listája.
+- A „Háttérkép és stílus” beállításban témás ikonokat és ikonformát választhatsz.
+- Összehajtható telefonon széthajtás után két panel jelenik meg: balra az összes alkalmazás, jobbra a kezdőképernyő.
+
+■ Keresés egyenesen abból, amit begépeltél
+- Válassz ki legfeljebb három alkalmazást, és a gombjaik megjelennek a keresőmező jobb szélén. Erre például egy böngésző vagy egy MI-alkalmazás kiválóan alkalmas.
+- Írj be valamilyen szöveget, koppints egy gombra, és a szöveg átkerül a választott alkalmazásba.
+
+■ Adatvédelem
+- A Caret Launchernek nincs engedélye az internet elérésére. Sem az, amit begépelsz, sem az, hogy mely alkalmazásokat nyitod meg, nem hagyja el a telefonodat.
+- Nincs reklám, nincs követés, nincs regisztráció.

@@ -1,0 +1,25 @@
+Caret Launcher, klavyenin hep açık durduğu bir ana ekran uygulaması, yani bir başlatıcı (launcher).
+Birkaç harf yazman yeterli, uygulama açılır. Klavyenin üstünde de alışık olduğun bir ana ekran var.
+
+Aslında kendim için yaptım, sonra herkesle paylaşmaya karar verdim. Bundan para kazanmak gibi bir planım yok.
+Apache License 2.0 lisansıyla açık kaynak.
+https://github.com/malt03/caret-launcher
+
+■ Adını yaz, uygulama açılsın
+- Ana ekranda klavye her an hazır.
+- Aramada büyük ya da küçük harf fark etmez.
+- Uygulamalara kendi adlarını ver: fotoğraf uygulaman için "galeri" ya da "resim", adı değişen bir uygulama için eski adı ya da kısa bir lakap.
+
+■ Ana ekran
+- Hiçbir şey yazmadığında klavyenin üstündeki alan, Android'in kendi başlatıcısı üzerine kurulu bir ana ekrandır.
+- Tüm uygulamaların listesi için yukarı kaydır.
+- Temalı simgeleri ve simge şeklini "Duvar kağıdı ve stil" bölümünden seçebilirsin.
+- Katlanabilir telefonu açtığında ekran ikiye ayrılır: solda tüm uygulamaların, sağda ana ekranın.
+
+■ Yazdığınla doğrudan ara
+- En fazla üç uygulama seç, düğmeleri arama alanının sağ ucunda belirsin. Tarayıcı ya da yapay zekâ uygulaması bunun için biçilmiş kaftan.
+- Bir şey yaz, düğmeye dokun, yazdığın metin o uygulamaya geçsin.
+
+■ Gizlilik
+- Caret Launcher'ın internete erişme izni yok. Yazdıkların da hangi uygulamaları açtığın da telefonundan dışarı çıkmaz.
+- Reklam yok, takip yok, üyelik yok.

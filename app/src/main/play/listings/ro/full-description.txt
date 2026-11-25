@@ -1,0 +1,25 @@
+Caret Launcher este o aplicație pentru ecranul de pornire, un launcher, cu tastatura mereu afișată.
+Tastezi câteva litere și se deschide aplicația. Deasupra tastaturii ai un ecran de pornire obișnuit.
+
+L-am făcut pentru mine și m-am hotărât să-l împart cu alții. Nu am de gând să câștig bani din el.
+Este open source, sub Apache License 2.0.
+https://github.com/malt03/caret-launcher
+
+■ Scrii numele aplicației și o deschizi
+- Pe ecranul de pornire, tastatura e mereu gata de scris.
+- La căutare nu contează dacă folosești litere mari sau mici.
+- Dă-le aplicațiilor nume alese de tine: „poze” sau „galerie” pentru aplicația de fotografii, vechiul nume al unei aplicații care între timp și-a schimbat numele sau o poreclă scurtă.
+
+■ Ecranul de pornire
+- Cât timp n-ai tastat nimic, spațiul de deasupra tastaturii este un ecran de pornire construit pe baza launcherului standard din Android.
+- Glisează în sus și vezi lista cu toate aplicațiile.
+- Alege pictograme tematice și forma pictogramelor din „Imagine de fundal și stil”.
+- Pe un dispozitiv pliabil, când îl deschizi, ecranul se împarte în două: toate aplicațiile în stânga, ecranul de pornire în dreapta.
+
+■ Caută direct ce ai scris
+- Alege până la trei aplicații, iar butoanele lor apar în capătul din dreapta al câmpului de căutare. Un browser sau o aplicație de AI se potrivesc foarte bine.
+- Scrii un text, atingi un buton și textul ajunge în aplicația respectivă.
+
+■ Confidențialitate
+- Caret Launcher nu are permisiunea de a accesa internetul. Ce tastezi și ce aplicații deschizi nu ies niciodată din telefon.
+- Fără reclame, fără urmărire, fără cont.
