@@ -1,6 +1,6 @@
 ---
 id: Tex-vs8t
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-22T00:57:38Z
