@@ -1,8 +1,10 @@
 package com.malt03.caretlauncher.icons
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.Matrix
@@ -76,6 +78,16 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     init {
         settings.addListener(::onSettingsChanged)
         updateThemeManager()
+        // InvariantDeviceProfile's locale receiver: a new locale is a new model state
+        // (InvariantDeviceProfile.toModelState has it), so ModelInitializer.refreshAndReloadLauncher
+        // looks the icons and the app names up again.
+        context.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) = refreshIcons()
+            },
+            IntentFilter(Intent.ACTION_LOCALE_CHANGED),
+            Context.RECEIVER_NOT_EXPORTED,
+        )
     }
 
     /**
@@ -130,10 +142,17 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         if (themeChanged) {
             // ModelInitializer.refreshAndReloadLauncher for a theme change: the icons are made
             // again. A shape change only rebinds, since the shape is applied when drawn.
-            generation++
-            iconPool.clear()
-            iconCache.updateIconParams(iconDpi, iconSize)
+            refreshIcons()
+        } else {
+            changeListeners.toList().forEach { it() }
         }
+    }
+
+    /** ModelInitializer.refreshAndReloadLauncher: the icons and names are made again and reloaded. */
+    private fun refreshIcons() {
+        generation++
+        iconPool.clear()
+        iconCache.updateIconParams(iconDpi, iconSize)
         changeListeners.toList().forEach { it() }
     }
 

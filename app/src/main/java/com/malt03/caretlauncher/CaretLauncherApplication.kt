@@ -98,10 +98,10 @@ class CaretLauncherApplication : Application() {
                 { model },
             ),
         )
-        // ModelInitializer: the LauncherApps callback, and the icons made again when the icon
-        // settings change (refreshAndReloadLauncher).
+        // ModelInitializer: the LauncherApps callback, and the icons and names made again when the
+        // icon settings or the locale change (refreshAndReloadLauncher).
         getSystemService(LauncherApps::class.java).registerCallback(model.newModelCallbacks())
-        iconLoader.addChangeListener { model.forceReload("icon settings") }
+        iconLoader.addChangeListener { model.forceReload("icons changed") }
         // InvariantDeviceProfile: the grid from the device, until the home screen sets its own.
         InvariantDeviceProfile.setGridInitializer(HomeGridInitializer)
 
