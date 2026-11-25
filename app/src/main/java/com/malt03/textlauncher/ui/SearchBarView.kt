@@ -121,6 +121,8 @@ class SearchBarView(context: Context) : FrameLayout(context) {
     /** The share buttons' apps (docs/spec.md 2.7), in order. */
     fun setShareTargets(targets: List<ShareTarget>) {
         shareTargets = targets
+        // docs/spec.md 1.3: "Search" once the text also goes to the share buttons' apps.
+        editText.hint = context.getString(if (targets.isEmpty()) R.string.search_hint else R.string.search_hint_share)
         shareButtons.removeAllViews()
         val size = dp(44f).toInt()
         val padding = dp(6f).toInt()

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"යෙදුම් සොයන්න"</string>
+    <string name="search_hint_share">"සොයන්න"</string>
     <string name="share_text_title">පෙළ බෙදා ගන්න</string>
     <string name="share_text_message">සෙවුම් ක්ෂේත්‍රය අසල පෙන්වීමට යෙදුම් 3ක් දක්වා තෝරන්න. ඔබ ටයිප් කළ පෙළ බෙදා ගැනීමට එකක් තට්ටු කරන්න.</string>
     <string name="share_text_move_up">ඉහළට ගෙන යන්න</string>

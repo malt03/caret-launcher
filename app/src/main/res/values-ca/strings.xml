@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"Cerca aplicacions"</string>
+    <string name="search_hint_share">"Cerca"</string>
     <string name="share_text_title">Comparteix el text</string>
     <string name="share_text_message">Tria fins a 3 aplicacions per mostrar al costat del camp de cerca. Toca\'n una per compartir el text que has escrit.</string>
     <string name="share_text_move_up">Mou cap amunt</string>

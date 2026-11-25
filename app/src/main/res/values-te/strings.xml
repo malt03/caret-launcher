@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"యాప్‌ల కోసం సెర్చ్ చేయండి"</string>
+    <string name="search_hint_share">"సెర్చ్"</string>
     <string name="share_text_title">టెక్స్ట్‌ను షేర్ చేయండి</string>
     <string name="share_text_message">సెర్చ్ ఫీల్డ్ పక్కన చూపడానికి గరిష్ఠంగా 3 యాప్‌లను ఎంచుకోండి. టైప్ చేసిన టెక్స్ట్‌ను షేర్ చేయడానికి ఒకదానిని ట్యాప్ చేయండి.</string>
     <string name="share_text_move_up">పైకి తరలించండి</string>

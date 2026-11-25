@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"Otsige rakendusi"</string>
+    <string name="search_hint_share">"Otsing"</string>
     <string name="share_text_title">Jaga teksti</string>
     <string name="share_text_message">Valige kuni 3 rakendust, mida otsinguvälja kõrval kuvada. Sisestatud teksti jagamiseks puudutage ühte neist.</string>
     <string name="share_text_move_up">Teisalda üles</string>

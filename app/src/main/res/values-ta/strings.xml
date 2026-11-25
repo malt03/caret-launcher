@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"ஆப்ஸில் தேடுக"</string>
+    <string name="search_hint_share">"தேடு"</string>
     <string name="share_text_title">உரையைப் பகிர்</string>
     <string name="share_text_message">தேடல் புலத்திற்கு அருகில் காட்ட 3 ஆப்ஸ் வரை தேர்வுசெய்யுங்கள். டைப் செய்த உரையைப் பகிர ஏதேனும் ஒன்றைத் தட்டுங்கள்.</string>
     <string name="share_text_move_up">மேலே நகர்த்து</string>

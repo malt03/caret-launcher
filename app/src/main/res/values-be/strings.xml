@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  search_hint and menu_app_info are taken from Launcher3 res/values*/strings.xml
-  (android-17.0.0_r1): all_apps_search_bar_hint, app_info_drop_target_label.
+  search_hint, search_hint_share and menu_app_info are taken from Launcher3
+  res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
+  app_info_drop_target_label.
 -->
 <resources>
     <string name="search_hint">"Пошук праграм"</string>
+    <string name="search_hint_share">"Шукаць"</string>
     <string name="share_text_title">Абагуліць тэкст</string>
     <string name="share_text_message">Выберыце да 3 праграм, якія будуць паказвацца побач з полем пошуку. Націсніце на адну, каб абагуліць уведзены тэкст.</string>
     <string name="share_text_move_up">Перамясціць уверх</string>
