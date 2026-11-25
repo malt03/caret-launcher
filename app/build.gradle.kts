@@ -2,6 +2,7 @@ import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.play.publisher)
 }
 
 /**
@@ -68,6 +69,20 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    playConfigs {
+        // The debug build has the same application ID; only the release variant talks to Google Play.
+        register("debug") { enabled.set(false) }
+    }
+}
+
+/**
+ * Google Play (Gradle Play Publisher): the store listing in src/main/play is published with
+ * scripts/publish-listing.sh. The service account key stays outside the repository; the script hands
+ * its contents to this build only, in ANDROID_PUBLISHER_CREDENTIALS, which the plugin reads.
+ */
+play {
+    defaultToAppBundles.set(true)
 }
 
 dependencies {

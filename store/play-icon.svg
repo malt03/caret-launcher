@@ -1,6 +1,7 @@
 <!-- Caret Launcher's Play Store icon (512x512, full bleed; Google Play rounds the corners).
      The adaptive icon's visible part (the middle 72 of its 108 viewport) with the same layers as
-     app/src/main/res/drawable/ic_launcher_background.xml and ic_launcher_foreground.xml. -->
+     app/src/main/res/drawable/ic_launcher_background.xml and ic_launcher_foreground.xml. Rendered to
+     app/src/main/play/listings/en-US/graphics/icon/1.png. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="18 18 72 72">
   <rect x="0" y="0" width="108" height="108" fill="#1F2229"/>
   <path d="M54,37L54,71M45,35Q54,35 54,41Q54,35 63,35M45,73Q54,73 54,67Q54,73 63,73"
