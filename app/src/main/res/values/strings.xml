@@ -5,7 +5,7 @@
   app_info_drop_target_label.
 -->
 <resources>
-    <string name="app_name" translatable="false">Text Launcher</string>
+    <string name="app_name" translatable="false">Caret Launcher</string>
     <string name="search_hint">Search apps</string>
     <string name="search_hint_share">Search</string>
     <string name="menu_search_terms">Edit search keywords</string>

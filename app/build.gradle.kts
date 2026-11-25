@@ -9,7 +9,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.malt03.textlauncher"
+        applicationId = "com.malt03.caretlauncher"
         minSdk = 37
         targetSdk = 37
         versionCode = 1
