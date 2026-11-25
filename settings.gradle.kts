@@ -42,3 +42,7 @@ project(":intentresolver").projectDir = file("third_party/intentresolver")
 // Stand-ins for the parts of AOSP the copied code depends on
 include(":launcher3-compat")
 project(":launcher3-compat").projectDir = file("compat/launcher3")
+
+// The store screenshots' helper APK (scripts/store-screenshots.py)
+include(":store-tools")
+project(":store-tools").projectDir = file("store/tools")

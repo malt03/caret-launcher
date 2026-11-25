@@ -15,3 +15,8 @@
 local.properties
 **/build/
 .claude/worktrees/
+
+# Store screenshots of the listing languages: scripts/store-screenshots.py makes them again; only
+# the default language's (en-US) are kept.
+/app/src/main/play/listings/*/graphics/
+!/app/src/main/play/listings/en-US/graphics/
