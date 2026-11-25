@@ -1,5 +1,5 @@
-Caret Launcher is a keyboard-first home screen: you open apps by typing.
-Whenever you go home, the cursor is already in the search field and the keyboard is up.
+Caret Launcher is a home screen app, a launcher, with the keyboard always up.
+Type a few letters to open an app. Above the keyboard is a normal home screen.
 
 I built it for myself and decided to share it. There are no plans to make money from it.
 It's open source under the Apache License 2.0.
