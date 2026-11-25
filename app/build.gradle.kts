@@ -15,6 +15,19 @@ val appVersionCode = appVersionName.split(".").map(String::toInt).let { (major, 
     major * 1_000_000 + minor * 1_000 + patch
 }
 
+/**
+ * The release signing key: the upload key of Google Play App Signing, kept outside the repository.
+ * scripts/build-release.sh asks for it and its passwords and hands them to this build only, in the
+ * environment (CARET_SIGNING_STORE_FILE, CARET_SIGNING_STORE_PASSWORD, CARET_SIGNING_KEY_ALIAS,
+ * CARET_SIGNING_KEY_PASSWORD), so they are never written down. A release APK or bundle cannot be
+ * made without them (see the check below); the rest of the release build (R8, the license assets)
+ * can.
+ */
+val releaseSigning = listOf("STORE_FILE", "STORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD")
+    .associateWith { providers.environmentVariable("CARET_SIGNING_$it").orNull?.takeIf(String::isNotEmpty) }
+    .takeIf { values -> values.values.all { it != null } }
+    ?.mapValues { it.value!! }
+
 android {
     namespace = "com.malt03.textlauncher"
     compileSdk {
@@ -31,8 +44,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (releaseSigning != null) {
+            create("release") {
+                storeFile = file(releaseSigning.getValue("STORE_FILE"))
+                storePassword = releaseSigning.getValue("STORE_PASSWORD")
+                keyAlias = releaseSigning.getValue("KEY_ALIAS")
+                keyPassword = releaseSigning.getValue("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -58,6 +83,22 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 }
+// A release APK or bundle is only made signed: without the key, packaging it stops with how to
+// make it, instead of leaving an APK that cannot be installed or uploaded.
+val isReleaseSigned = releaseSigning != null
+tasks.matching { it.name in setOf("packageRelease", "signReleaseBundle", "packageReleaseUniversalApk") }
+    .configureEach {
+        val signed = isReleaseSigned
+        doFirst {
+            if (!signed) {
+                throw GradleException(
+                    "The release is signed with the upload key: build it with scripts/build-release.sh, " +
+                        "which asks for the key and its passwords.",
+                )
+            }
+        }
+    }
+
 /**
  * The Apache License 2.0 terms (section 4): the APK carries the license and the NOTICE, in
  * assets/licenses/, worked out again from the dependencies at every build:
