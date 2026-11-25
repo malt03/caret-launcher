@@ -19,6 +19,10 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.android.launcher3.R as L3R
 import com.malt03.textlauncher.R
 import com.malt03.textlauncher.data.ShareTarget
@@ -56,6 +60,12 @@ class SearchBarView(context: Context) : FrameLayout(context) {
 
     /** Called when a share button is tapped (docs/spec.md 2.7), with the button. */
     var onShare: ((ShareTarget, View) -> Unit)? = null
+
+    /** Called when a share button is long-pressed (docs/spec.md 2.7): opens "Share text". */
+    var onEditShareTargets: (() -> Unit)? = null
+
+    /** There is text to share (docs/spec.md 2.7); the buttons look disabled without it. */
+    private val canShare: Boolean get() = query.isNotBlank()
 
     /** The share buttons (docs/spec.md 2.7), right of the text. */
     private val shareButtons = LinearLayout(context).apply {
@@ -124,26 +134,42 @@ class SearchBarView(context: Context) : FrameLayout(context) {
                 setPadding(padding, padding, padding, padding)
                 setBackgroundResource(ripple)
                 contentDescription = target.description
-                tooltipText = target.description
-                setOnClickListener { onShare?.invoke(target, it) }
+                // No tooltip: the long press opens "Share text".
+                setOnClickListener { if (canShare) onShare?.invoke(target, it) }
+                setOnLongClickListener {
+                    onEditShareTargets?.invoke()
+                    true
+                }
+                // TalkBack: no click without text, and the long press is named.
+                ViewCompat.setAccessibilityDelegate(this, object : AccessibilityDelegateCompat() {
+                    override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                        super.onInitializeAccessibilityNodeInfo(host, info)
+                        if (!canShare) {
+                            info.isClickable = false
+                            info.removeAction(AccessibilityActionCompat.ACTION_CLICK)
+                        }
+                        info.addAction(AccessibilityActionCompat(
+                            AccessibilityNodeInfoCompat.ACTION_LONG_CLICK,
+                            context.getString(R.string.share_text_title),
+                        ))
+                    }
+                })
             }, LinearLayout.LayoutParams(size, size))
         }
         updateShareButtons()
     }
 
     /**
-     * docs/spec.md 2.7: the buttons are always shown, and disabled while there is no text to share,
-     * with Material's disabled opacity.
+     * docs/spec.md 2.7: the buttons are always shown, and look disabled while there is no text to
+     * share, with Material's disabled opacity. They stay enabled for their long press, which opens
+     * "Share text"; a tap does nothing then.
      */
     private fun updateShareButtons() {
         val shown = shareTargets.isNotEmpty()
-        val enabled = query.isNotBlank()
+        val enabled = canShare
         shareButtons.visibility = if (shown) View.VISIBLE else View.GONE
         for (i in 0 until shareButtons.childCount) {
-            shareButtons.getChildAt(i).apply {
-                isEnabled = enabled
-                alpha = if (enabled) 1f else DISABLED_ALPHA
-            }
+            shareButtons.getChildAt(i).alpha = if (enabled) 1f else DISABLED_ALPHA
         }
         editText.setPaddingRelative(dp(20f).toInt(), 0, dp(if (shown) 4f else 20f).toInt(), 0)
     }

@@ -223,6 +223,7 @@ class LauncherActivity :
         })
         root.searchBar.onEnter = { launchTopResult() }
         root.searchBar.onShare = ::share
+        root.searchBar.onEditShareTargets = ::editShareTargets
         app.shareTargets.addListener(shareTargetsListener)
         refreshShareButtons()
         // AppsSearchContainerLayout.preDispatchKeyEvent's focus: docs/spec.md 6.5, the search in
