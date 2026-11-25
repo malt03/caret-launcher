@@ -21,6 +21,7 @@
 package com.android.launcher3.model.data;
 
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Process;
 import android.os.UserHandle;
@@ -212,6 +213,17 @@ public class ItemInfo {
                 .put(LauncherSettings.Favorites.SPANX, spanX)
                 .put(LauncherSettings.Favorites.SPANY, spanY)
                 .put(LauncherSettings.Favorites.RANK, rank);
+    }
+
+    public void readFromValues(@NonNull final ContentValues values) {
+        itemType = values.getAsInteger(LauncherSettings.Favorites.ITEM_TYPE);
+        container = values.getAsInteger(LauncherSettings.Favorites.CONTAINER);
+        screenId = values.getAsInteger(LauncherSettings.Favorites.SCREEN);
+        cellX = values.getAsInteger(LauncherSettings.Favorites.CELLX);
+        cellY = values.getAsInteger(LauncherSettings.Favorites.CELLY);
+        spanX = values.getAsInteger(LauncherSettings.Favorites.SPANX);
+        spanY = values.getAsInteger(LauncherSettings.Favorites.SPANY);
+        rank = values.getAsInteger(LauncherSettings.Favorites.RANK);
     }
 
     /**

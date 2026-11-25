@@ -20,11 +20,35 @@
 
 package com.android.launcher3;
 
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_BIND_APPWIDGET;
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_BIND_PENDING_APPWIDGET;
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_CREATE_APPWIDGET;
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_CREATE_SHORTCUT;
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_PICK_APPWIDGET;
+import static com.android.launcher3.LauncherConstants.ActivityCodes.REQUEST_RECONFIGURE_APPWIDGET;
+import static com.android.launcher3.LauncherConstants.SavedInstanceKeys.RUNTIME_STATE_PENDING_ACTIVITY_RESULT;
+import static com.android.launcher3.LauncherConstants.SavedInstanceKeys.RUNTIME_STATE_PENDING_REQUEST_ARGS;
 import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_DESKTOP;
 import static com.android.launcher3.LauncherState.NORMAL;
 import static com.android.launcher3.anim.AnimatorListeners.forEndCallback;
 
 import android.animation.AnimatorSet;
+import android.app.Activity;
+import android.appwidget.AppWidgetHostView;
+import android.appwidget.AppWidgetManager;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.view.accessibility.AccessibilityEvent;
+import com.android.launcher3.DropTarget.DragObject;
+import com.android.launcher3.pm.PinRequestHelper;
+import com.android.launcher3.util.ActivityResultInfo;
+import com.android.launcher3.util.PendingRequestArgs;
+import com.android.launcher3.widget.LauncherAppWidgetHostView;
+import com.android.launcher3.widget.PendingAddShortcutInfo;
+import com.android.launcher3.widget.PendingAddWidgetInfo;
+import com.android.launcher3.widget.WidgetAddFlowHandler;
+import com.android.launcher3.widget.WidgetManagerHelper;
+import com.android.launcher3.widget.util.WidgetSizeHandler;
 import android.animation.ValueAnimator;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
@@ -208,12 +232,15 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     public abstract Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo);
 
     /**
-     * TextLauncher: the widget menu's "Settings" (AppWidgetSystemShortcuts): the home screen starts
-     * the widget's configuration (Launcher.setWaitingForResult and
-     * LauncherWidgetHolder.startConfigActivity with REQUEST_RECONFIGURE_APPWIDGET).
+     * TextLauncher: the widget menu's "Settings" (AppWidgetSystemShortcuts' widget settings):
+     * WidgetAddFlowHandler.startConfigActivity with REQUEST_RECONFIGURE_APPWIDGET.
      */
-    public abstract void startWidgetReconfigure(
-            com.android.launcher3.widget.LauncherAppWidgetHostView view);
+    public void startWidgetReconfigure(LauncherAppWidgetHostView view) {
+        AppWidgetProviderInfo providerInfo = view.getAppWidgetInfo();
+        if (providerInfo == null || !(view.getTag() instanceof LauncherAppWidgetInfo info)) return;
+        new WidgetAddFlowHandler(providerInfo).startConfigActivity(
+                this, info, REQUEST_RECONFIGURE_APPWIDGET);
+    }
 
     public Hotseat getHotseat() {
         return mHotseat;
@@ -403,13 +430,434 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
      */
     public abstract void goToNormalState(boolean animated, @Nullable Runnable onDone);
 
+    // ---- Launcher.java: adding widgets and shortcuts (TextLauncher: in upstream order) ----
+
     /**
-     * Launcher.addPendingItem: a widget or shortcut dropped from the widget picker
-     * (Workspace.onDropExternal) at {@code cell}, with the spans it takes.
-     * TextLauncher: one page and no hotseat, so the screen id and container are kept as given.
+     * Process any pending activity result if it was put on hold for any reason like item binding.
      */
-    public abstract void addPendingItem(PendingAddItemInfo info, int container, int screenId,
-            int[] cell, int spanX, int spanY);
+    public void processActivityResult() {
+        if (mPendingActivityResult != null) {
+            handleActivityResult(mPendingActivityResult.requestCode,
+                    mPendingActivityResult.resultCode, mPendingActivityResult.data);
+            mPendingActivityResult = null;
+            updatePendingWidgetIds();
+        }
+    }
+
+    private void handleActivityResult(
+            final int requestCode, final int resultCode, final Intent data) {
+        if (isWorkspaceLoading()) {
+            // process the result once the workspace has loaded.
+            mPendingActivityResult = new ActivityResultInfo(requestCode, resultCode, data);
+            updatePendingWidgetIds();
+            return;
+        }
+        mPendingActivityResult = null;
+
+        // TextLauncher: no home role request (REQUEST_HOME_ROLE).
+
+        // Reset the startActivity waiting flag
+        final PendingRequestArgs requestArgs = mPendingRequestArgs;
+        setWaitingForResult(null);
+        if (requestArgs == null) {
+            return;
+        }
+
+        final int pendingAddWidgetId = requestArgs.getWidgetId();
+
+        // TextLauncher: no extra empty screens (removeExtraEmptyScreenDelayed); the add waits
+        // until the home screen is resumed in the normal state (runWhenResumed).
+
+        if (requestCode == REQUEST_BIND_APPWIDGET) {
+            // This is called only if the user did not previously have permissions to bind widgets
+            final int widgetId = data != null ?
+                    data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) : -1;
+            // TextLauncher: the bind result's id falls back to the flow's too.
+            final int appWidgetId = widgetId < 0 ? pendingAddWidgetId : widgetId;
+            if (resultCode == RESULT_CANCELED) {
+                completeTwoStageWidgetDrop(RESULT_CANCELED, appWidgetId, requestArgs);
+            } else if (resultCode == RESULT_OK) {
+                addAppWidgetImpl(
+                        appWidgetId, requestArgs, null,
+                        requestArgs.getWidgetHandler(),
+                        ON_ACTIVITY_RESULT_ANIMATION_DELAY);
+            }
+            return;
+        }
+
+        boolean isWidgetDrop = (requestCode == REQUEST_PICK_APPWIDGET ||
+                requestCode == REQUEST_CREATE_APPWIDGET);
+
+        // We have special handling for widgets
+        if (isWidgetDrop) {
+            final int appWidgetId;
+            int widgetId = data != null ? data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+                    : -1;
+            if (widgetId < 0) {
+                appWidgetId = pendingAddWidgetId;
+            } else {
+                appWidgetId = widgetId;
+            }
+
+            final int result;
+            if (appWidgetId < 0 || resultCode == RESULT_CANCELED) {
+                Log.e(TAG, "Error: appWidgetId (EXTRA_APPWIDGET_ID) was not " +
+                        "returned from the widget configuration activity.");
+                result = RESULT_CANCELED;
+                completeTwoStageWidgetDrop(result, appWidgetId, requestArgs);
+            } else {
+                // TextLauncher: one page, so no drop layout to make sure of
+                // (ensurePendingDropLayoutExists) or to mark as drop pending.
+                completeTwoStageWidgetDrop(resultCode, appWidgetId, requestArgs);
+            }
+            return;
+        }
+
+        if (requestCode == REQUEST_RECONFIGURE_APPWIDGET
+                || requestCode == REQUEST_BIND_PENDING_APPWIDGET) {
+            if (resultCode == RESULT_OK) {
+                // Update the widget view.
+                completeAdd(requestCode, data, pendingAddWidgetId, requestArgs);
+            }
+            // Leave the widget in the pending state if the user canceled the configure.
+            return;
+        }
+
+        if (requestCode == REQUEST_CREATE_SHORTCUT) {
+            // Handle custom shortcuts created using ACTION_CREATE_SHORTCUT.
+            if (resultCode == RESULT_OK && requestArgs.container != ItemInfo.NO_ID) {
+                completeAdd(requestCode, data, -1, requestArgs);
+            }
+        }
+
+        getDragLayer().clearAnimatedView();
+    }
+
+    /** TextLauncher: Activity.onActivityResult, from the home screen's activity. */
+    public void onActivityResult(
+            final int requestCode, final int resultCode, final Intent data) {
+        handleActivityResult(requestCode, resultCode, data);
+    }
+
+    void completeTwoStageWidgetDrop(
+            final int resultCode, final int appWidgetId, final PendingRequestArgs requestArgs) {
+        // TextLauncher: no drop animation (Workspace.animateWidgetDrop) or pending widget view;
+        // the widget is added once its configuration activity comes back.
+        if (resultCode == RESULT_OK) {
+            completeAddAppWidget(appWidgetId, requestArgs, null, null, false, true, null);
+        } else if (resultCode == RESULT_CANCELED) {
+            // TextLauncher: only an allocated id is given back.
+            if (appWidgetId >= 0) getAppWidgetHolder().deleteAppWidgetId(appWidgetId);
+        }
+    }
+
+    /**
+     * Returns whether we should delay spring loaded mode -- for shortcuts and widgets that have
+     * a configuration step, this allows the proper animations to run after other transitions.
+     */
+    private int completeAdd(
+            int requestCode, Intent intent, int appWidgetId, PendingRequestArgs info) {
+        CellPos cellPos = getCellPosMapper().mapModelToPresenter(info);
+        // TextLauncher: one page (ensurePendingDropLayoutExists).
+        int screenId = cellPos.screenId;
+
+        switch (requestCode) {
+            case REQUEST_CREATE_SHORTCUT:
+                completeAddShortcut(intent, info.container, screenId,
+                        cellPos.cellX, cellPos.cellY, info);
+                break;
+            case REQUEST_CREATE_APPWIDGET:
+                completeAddAppWidget(appWidgetId, info, null, null, false, true, null);
+                break;
+            // TextLauncher: no restored widgets to complete (REQUEST_RECONFIGURE_APPWIDGET only
+            // reconfigures a widget, which updates itself; REQUEST_BIND_PENDING_APPWIDGET).
+        }
+        return screenId;
+    }
+
+    /**
+     * Add a shortcut to the workspace or to a Folder.
+     *
+     * @param data The intent describing the shortcut.
+     */
+    protected void completeAddShortcut(Intent data, int container, int screenId, int cellX,
+            int cellY, PendingRequestArgs args) {
+        if (args.getRequestCode() != REQUEST_CREATE_SHORTCUT) {
+            return;
+        }
+
+        int[] cellXY = mTmpAddItemCellCoordinates;
+        CellLayout layout = getCellLayout(container, screenId);
+
+        // TextLauncher: a result without data has no request.
+        WorkspaceItemInfo info = PinRequestHelper.createWorkspaceItemFromPinItemRequest(
+                    asContext(), data == null ? null : PinRequestHelper.getPinItemRequest(data), 0);
+        if (info == null) {
+            Log.e(TAG, "Unable to parse a valid shortcut result");
+            return;
+        }
+
+        if (container < 0) {
+            // Adding a shortcut to the Workspace.
+            final View view = inflateItem(info, layout, container);
+            boolean foundCellSpan = false;
+            // First we check if we already know the exact location where we want to add this item.
+            if (cellX >= 0 && cellY >= 0) {
+                cellXY[0] = cellX;
+                cellXY[1] = cellY;
+                foundCellSpan = true;
+
+                DragObject dragObject = new DragObject(asContext().getApplicationContext());
+                dragObject.dragInfo = info;
+                // If appropriate, either create a folder or add to an existing folder
+                if (getWorkspace().createUserFolderIfNecessary(view, container, layout, cellXY, 0,
+                        true, dragObject)) {
+                    return;
+                }
+                if (getWorkspace().addToExistingFolderIfNecessary(view, layout, cellXY, 0,
+                        dragObject, true)) {
+                    return;
+                }
+                // TextLauncher: the cell may have been taken while the app's activity was in
+                // front (the home screen may have been loaded again); then the first free one.
+                if (layout.isOccupied(cellX, cellY)) {
+                    foundCellSpan = layout.findCellForSpan(cellXY, 1, 1);
+                }
+            } else {
+                foundCellSpan = layout.findCellForSpan(cellXY, 1, 1);
+            }
+
+            if (!foundCellSpan) {
+                getWorkspace().onNoCellFound(layout, info, /* logInstanceId= */ null);
+                return;
+            }
+
+            getModelWriter().addItemToDatabase(info, container, screenId, cellXY[0], cellXY[1]);
+            AnimatorSet anim = new AnimatorSet();
+            anim.addListener(forEndCallback(() ->
+                    view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)));
+            bindInflatedItems(Collections.singletonList(Pair.create(info, view)), anim);
+        }
+        // TextLauncher: shortcuts are added to the home page only (no folder container).
+    }
+
+    /**
+     * Add a widget to the workspace.
+     *
+     * @param appWidgetId The app widget id
+     */
+    void completeAddAppWidget(int appWidgetId, ItemInfo itemInfo,
+            @Nullable AppWidgetHostView hostView, LauncherAppWidgetProviderInfo appWidgetInfo,
+            boolean showPendingWidget, boolean updateWidgetSize,
+            @Nullable Drawable widgetPreviewDrawable) {
+
+        if (appWidgetInfo == null) {
+            appWidgetInfo = new WidgetManagerHelper(asContext()).getLauncherAppWidgetInfo(
+                    appWidgetId, itemInfo.getTargetComponent());
+        }
+        // TextLauncher: a widget whose provider is gone is not added, and its id given back.
+        if (appWidgetInfo == null) {
+            getAppWidgetHolder().deleteAppWidgetId(appWidgetId);
+            return;
+        }
+
+        if (hostView == null && !showPendingWidget) {
+            // Perform actual inflation because we're live
+            hostView = getAppWidgetHolder().createView(asContext(), appWidgetId, appWidgetInfo);
+        }
+
+        LauncherAppWidgetInfo launcherInfo;
+        launcherInfo =
+                new LauncherAppWidgetInfo(appWidgetId, appWidgetInfo.provider);
+        launcherInfo.spanX = itemInfo.spanX;
+        launcherInfo.spanY = itemInfo.spanY;
+        launcherInfo.minSpanX = itemInfo.minSpanX;
+        launcherInfo.minSpanY = itemInfo.minSpanY;
+        launcherInfo.user = appWidgetInfo.getProfile();
+        CellPos presenterPos = getCellPosMapper().mapModelToPresenter(itemInfo);
+        // TextLauncher: no pending widget view (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
+        // The cell may have been taken while an activity was in front; then the first free one,
+        // and no room is said (Workspace.onNoCellFound) where Launcher3 would add a page.
+        CellLayout layout = getCellLayout(itemInfo.container, presenterPos.screenId);
+        int[] cell = {presenterPos.cellX, presenterPos.cellY};
+        if (!layout.isRegionVacant(cell[0], cell[1], launcherInfo.spanX, launcherInfo.spanY)
+                && !layout.findCellForSpan(cell, launcherInfo.spanX, launcherInfo.spanY)) {
+            getWorkspace().onNoCellFound(layout, launcherInfo, /* logInstanceId= */ null);
+            getAppWidgetHolder().deleteAppWidgetId(appWidgetId);
+            return;
+        }
+        if (updateWidgetSize) {
+            WidgetSizeHandler.updateSizeRanges(hostView, itemInfo.spanX, itemInfo.spanY);
+        }
+        if (itemInfo instanceof PendingAddWidgetInfo) {
+            launcherInfo.sourceContainer = ((PendingAddWidgetInfo) itemInfo).sourceContainer;
+        } else if (itemInfo instanceof PendingRequestArgs) {
+            launcherInfo.sourceContainer =
+                    ((PendingRequestArgs) itemInfo).getWidgetSourceContainer();
+        }
+        getModelWriter().addItemToDatabase(launcherInfo,
+                itemInfo.container, presenterPos.screenId, cell[0], cell[1]);
+
+        hostView.setVisibility(View.VISIBLE);
+        // TextLauncher: ItemInflater.prepareAppWidget, as the home screen's widget views have it.
+        hostView.setTag(launcherInfo);
+        launcherInfo.updateWidgetFeatures(appWidgetInfo);
+        if (hostView.getParent() == null) {
+            getWorkspace().addInScreen(hostView, launcherInfo);
+        }
+
+        // Show the widget resize frame.
+        if (hostView instanceof LauncherAppWidgetHostView) {
+            final LauncherAppWidgetHostView launcherHostView = (LauncherAppWidgetHostView) hostView;
+            showWidgetResizeFrame(launcherHostView, launcherInfo, presenterPos);
+        }
+        // TextLauncher: no widget visibility tracker.
+    }
+
+    /** Show widget resize frame. */
+    private void showWidgetResizeFrame(
+            LauncherAppWidgetHostView launcherHostView,
+            LauncherAppWidgetInfo launcherInfo,
+            CellPos presenterPos) {
+        CellLayout cellLayout = getCellLayout(launcherInfo.container, presenterPos.screenId);
+        // TextLauncher: the home page scrolls, so the widget is brought into view first, and the
+        // frame is shown once it is laid out (no state animation to wait for).
+        launcherHostView.post(() -> {
+            launcherHostView.requestRectangleOnScreen(
+                    new Rect(0, 0, launcherHostView.getWidth(), launcherHostView.getHeight()),
+                    true);
+            AppWidgetResizeFrame.showForWidget(launcherHostView, cellLayout);
+        });
+    }
+
+    void addAppWidgetFromDropImpl(int appWidgetId, ItemInfo info, AppWidgetHostView boundWidget,
+            WidgetAddFlowHandler addFlowHandler) {
+        addAppWidgetImpl(appWidgetId, info, boundWidget, addFlowHandler, 0);
+    }
+
+    /**
+     * If FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2 is enabled, we always add widget
+     * host view to workspace, otherwise we only add widget to host view if config activity is
+     * not started.
+     */
+    void addAppWidgetImpl(int appWidgetId, ItemInfo info,
+            AppWidgetHostView boundWidget, WidgetAddFlowHandler addFlowHandler, int delay) {
+        final boolean isActivityStarted = addFlowHandler.startConfigActivity(
+                this, appWidgetId, info, REQUEST_CREATE_APPWIDGET);
+
+        // TextLauncher: a widget that is configured is added once its configuration activity
+        // comes back (no pending widget view from the drop's preview).
+        if (isActivityStarted) {
+            getDragLayer().clearAnimatedView();
+            return;
+        }
+
+        completeAddAppWidget(appWidgetId, info, boundWidget,
+                addFlowHandler.getProviderInfo(asContext()), addFlowHandler.needsConfigure(),
+                false, null);
+    }
+
+    public void addPendingItem(PendingAddItemInfo info, int container, int screenId,
+            int[] cell, int spanX, int spanY) {
+        if (cell == null) {
+            CellPos modelPos = getCellPosMapper().mapPresenterToModel(0, 0, screenId, container);
+            info.screenId = modelPos.screenId;
+        } else {
+            CellPos modelPos = getCellPosMapper().mapPresenterToModel(
+                    cell[0],  cell[1], screenId, container);
+            info.screenId = modelPos.screenId;
+            info.cellX = modelPos.cellX;
+            info.cellY = modelPos.cellY;
+        }
+        info.container = container;
+        info.spanX = spanX;
+        info.spanY = spanY;
+
+        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
+        // permission), so it starts no activity while the picker is still in front. TextLauncher
+        // may need the system's bind dialog or the widget's configuration activity, and a
+        // shortcut needs its app's activity, which the home intent the picker starts as it closes
+        // would clear (the launcher is singleTask), so the add waits until the home screen is
+        // resumed.
+        runWhenResumed(() -> {
+            if (info instanceof PendingAddWidgetInfo) {
+                addAppWidgetFromDrop((PendingAddWidgetInfo) info);
+            } else { // info can only be PendingAddShortcutInfo
+                processShortcutFromDrop((PendingAddShortcutInfo) info);
+            }
+        });
+    }
+
+    /**
+     * Process a shortcut drop.
+     */
+    private void processShortcutFromDrop(PendingAddShortcutInfo info) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_SHORTCUT).setComponent(info.componentName);
+        setWaitingForResult(PendingRequestArgs.forIntent(REQUEST_CREATE_SHORTCUT, intent, info));
+        // TextLauncher: no test logging; the Launcher stand-in is not an Activity.
+        Activity activity = (Activity) asContext();
+        if (!info.getActivityInfo(activity).startConfigActivity(activity, REQUEST_CREATE_SHORTCUT)) {
+            handleActivityResult(REQUEST_CREATE_SHORTCUT, RESULT_CANCELED, null);
+        }
+    }
+
+    /**
+     * Process a widget drop.
+     */
+    private void addAppWidgetFromDrop(PendingAddWidgetInfo info) {
+        final int appWidgetId;
+        WidgetAddFlowHandler addFlowHandler = info.getHandler();
+        // TextLauncher: no widget bound while it was dragged (boundWidget) or custom widgets; the
+        // size options of WidgetHostViewLoader.preloadWidget.
+        // In this case, we either need to start an activity to get permission to bind
+        // the widget, or we need to start an activity to configure the widget, or both.
+        appWidgetId = getAppWidgetHolder().allocateAppWidgetId();
+        if (info.bindOptions == null) {
+            info.bindOptions = info.getDefaultSizeOptions(asContext());
+        }
+        Bundle options = info.bindOptions;
+
+        boolean success = new WidgetManagerHelper(asContext()).bindAppWidgetIdIfAllowed(
+                appWidgetId, info.info, options);
+        if (success) {
+            addAppWidgetFromDropImpl(appWidgetId, info, null, addFlowHandler);
+        } else {
+            addFlowHandler.startBindFlow(this, appWidgetId, info, REQUEST_BIND_APPWIDGET);
+        }
+    }
+
+    public void setWaitingForResult(PendingRequestArgs args) {
+        mPendingRequestArgs = args;
+        updatePendingWidgetIds();
+    }
+
+    /** TextLauncher: the activity's saved state of the add flow (Launcher.restoreState). */
+    public void restoreAddFlowState(@Nullable Bundle savedState) {
+        if (savedState == null) return;
+        PendingRequestArgs requestArgs = savedState.getParcelable(
+                RUNTIME_STATE_PENDING_REQUEST_ARGS, PendingRequestArgs.class);
+        if (requestArgs != null) {
+            setWaitingForResult(requestArgs);
+        }
+        mPendingActivityResult = savedState.getParcelable(
+                RUNTIME_STATE_PENDING_ACTIVITY_RESULT, ActivityResultInfo.class);
+        updatePendingWidgetIds();
+    }
+
+    /** TextLauncher: Launcher.onSaveInstanceState for the add flow. */
+    public void saveAddFlowState(Bundle outState) {
+        if (mPendingRequestArgs != null) {
+            outState.putParcelable(RUNTIME_STATE_PENDING_REQUEST_ARGS, mPendingRequestArgs);
+        }
+        if (mPendingActivityResult != null) {
+            outState.putParcelable(RUNTIME_STATE_PENDING_ACTIVITY_RESULT, mPendingActivityResult);
+        }
+    }
+
+    /**
+     * TextLauncher: runs {@code runnable} once the home screen is resumed (at once if it is).
+     */
+    public abstract void runWhenResumed(Runnable runnable);
 
     /**
      * The empty space's long-press menu (WorkspaceTouchListener), at the point in the drag layer's
@@ -580,5 +1028,38 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         public MultiPropertyFactory<?>.MultiProperty getFolderZoom() {
             return null;
         }
+    }
+
+    // ---- TextLauncher: the add flow's state (Launcher.mPendingRequestArgs and
+    // mPendingActivityResult) ----
+
+    private PendingRequestArgs mPendingRequestArgs;
+    private ActivityResultInfo mPendingActivityResult;
+    private final int[] mTmpAddItemCellCoordinates = new int[2];
+    private Set<Integer> mPendingWidgetIds = Collections.emptySet();
+
+    /** Launcher.ON_ACTIVITY_RESULT_ANIMATION_DELAY */
+    private static final int ON_ACTIVITY_RESULT_ANIMATION_DELAY = 500;
+    private static final int RESULT_OK = Activity.RESULT_OK;
+    private static final int RESULT_CANCELED = Activity.RESULT_CANCELED;
+
+    /**
+     * TextLauncher: the widget ids of the add flow in progress and of its result waiting for the
+     * load, which LoaderTask must not take for ghosts.
+     */
+    public Set<Integer> getPendingWidgetIds() {
+        return mPendingWidgetIds;
+    }
+
+    private void updatePendingWidgetIds() {
+        Set<Integer> ids = new java.util.HashSet<>();
+        if (mPendingRequestArgs != null && mPendingRequestArgs.getWidgetId() > 0) {
+            ids.add(mPendingRequestArgs.getWidgetId());
+        }
+        if (mPendingActivityResult != null && mPendingActivityResult.data != null) {
+            int id = mPendingActivityResult.data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+            if (id >= 0) ids.add(id);
+        }
+        mPendingWidgetIds = ids;
     }
 }

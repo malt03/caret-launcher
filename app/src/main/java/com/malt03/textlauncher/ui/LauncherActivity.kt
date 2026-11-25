@@ -316,11 +316,8 @@ class LauncherActivity :
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // Launcher.onActivityResult: the widget add flow (docs/spec.md 5.2).
-        if (!home.onActivityResult(requestCode, resultCode, data)) {
-            @Suppress("DEPRECATION")
-            super.onActivityResult(requestCode, resultCode, data)
-        }
+        // Launcher.onActivityResult: the widget and shortcut add flow (docs/spec.md 5.2).
+        home.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onStop() {

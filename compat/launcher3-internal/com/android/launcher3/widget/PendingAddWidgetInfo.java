@@ -32,8 +32,8 @@ import com.android.launcher3.dagger.LauncherComponentProvider;
  *
  * @see {@link PendingAddItemInfo}
  *
- * <p>Stand-in for Launcher3's PendingAddWidgetInfo (android-17.0.0_r1). TextLauncher: no
- * WidgetAddFlowHandler (the home screen's widget add flow takes the info) and no logging proto.
+ * <p>Stand-in for Launcher3's PendingAddWidgetInfo (android-17.0.0_r1). TextLauncher: no logging
+ * proto.
  */
 public class PendingAddWidgetInfo extends PendingAddItemInfo {
     public int previewImage;
@@ -62,7 +62,9 @@ public class PendingAddWidgetInfo extends PendingAddItemInfo {
         this.sourceContainer = this.container = container;
     }
 
-    // TextLauncher: no WidgetAddFlowHandler (getHandler).
+    public WidgetAddFlowHandler getHandler() {
+        return new WidgetAddFlowHandler(info);
+    }
 
     public Bundle getDefaultSizeOptions(Context context) {
         return LauncherComponentProvider.get(context)

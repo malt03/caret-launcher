@@ -1,6 +1,6 @@
 ---
 id: Tex-q3gh
-status: open
+status: closed
 deps: [Tex-ydua]
 links: []
 created: 2026-11-24T13:35:59Z
@@ -29,3 +29,7 @@ tags: [launcher3, upstream, home]
 **2026-11-24T16:11:13Z**
 
 2026-11-25: 後半（ウィジェット追加の流れ）は今回は見送った。HomeWidgets.kt はすでに Launcher.addAppWidgetFromDrop / handleActivityResult / completeAdd* をほぼ上流どおり書き写していて、derived の Launcher に移しても挙動は変わらない一方、確かめるにはシステムのウィジェット作成の許可ダイアログ（ACTION_APPWIDGET_BIND）を通す必要があり、エージェントは押せない。実機で許可を出せるときに、PendingRequestArgs・WidgetAddFlowHandler・ActivityResultInfo（path=）と互換の Launcher の区画に移す。Tex-iuyb も同じ理由で後に。
+
+**2026-11-25T00:17:26Z**
+
+2026-11-25: 後半も移した。互換の Launcher に addPendingItem・processShortcutFromDrop・addAppWidgetFromDrop・handleActivityResult・completeTwoStageWidgetDrop・completeAdd・completeAddShortcut・completeAddAppWidget・addAppWidgetImpl・setWaitingForResult を上流の順で置き、PendingRequestArgs・ActivityResultInfo・LauncherConstants を path=、WidgetAddFlowHandler を derived（バインドの許可と設定画面を自分で開く）、PendingAddWidgetInfo.getHandler を戻した。HomeWidgets.kt は HomeWidgetHost だけになった。印: 保留中のウィジェットの View なし（設定画面から戻ってから置く）、ホームが前面に出るまで待つ（runWhenResumed）、埋まったセルは最初の空きへ。エミュレータではピッカーの追加から OS の許可ダイアログが出るところまで確かめた（ダイアログの操作はしない）

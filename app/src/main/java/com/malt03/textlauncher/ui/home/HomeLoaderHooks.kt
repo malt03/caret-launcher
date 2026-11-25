@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
+import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherSettings.Favorites
 import com.android.launcher3.model.LoaderTask
@@ -60,7 +61,8 @@ internal class HomeLoaderHooks(private val context: Context) : LoaderTask.Hooks 
         MAIN_EXECUTOR.execute {
             // TextLauncher: the ids of an add flow in progress, and of its result waiting for the
             // load, are not ghosts.
-            HomeWidgetHost(context).removeGhostWidgets(valid + HomeWidgetAddFlow.pendingWidgetIds)
+            val pending: Set<Int> = Launcher.ACTIVITY_TRACKER.getCreatedContext<Launcher>()?.pendingWidgetIds.orEmpty()
+            HomeWidgetHost(context).removeGhostWidgets(valid + pending)
         }
     }
 

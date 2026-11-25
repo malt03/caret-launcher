@@ -177,7 +177,6 @@ class HomeController(
         .inflate(com.android.launcher3.R.layout.drop_target_bar, null) as DropTargetBar
 
     internal val widgetHost = HomeWidgetHost(context)
-    internal val widgetAddFlow = HomeWidgetAddFlow(this)
 
     internal val itemInflater = HomeItemInflater(this)
     internal val systemShortcuts = HomeSystemShortcuts(this)
@@ -192,7 +191,8 @@ class HomeController(
             isWorkspaceLoading = false
             if (!isLoaded) {
                 isLoaded = true
-                widgetAddFlow.onLoaded()
+                // Launcher.finishBindingItems: Launcher.processActivityResult
+                launcher.processActivityResult()
             }
         }
 
@@ -345,14 +345,19 @@ class HomeController(
     }
 
     /** Launcher.restoreState: the widget add flow that was waiting for an activity's result. */
-    fun restoreState(savedState: android.os.Bundle?) = widgetAddFlow.restoreState(savedState)
+    fun restoreState(savedState: android.os.Bundle?) = launcher.restoreAddFlowState(savedState)
 
     /** Launcher.onSaveInstanceState: the widget add flow waiting for an activity's result. */
-    fun onSaveInstanceState(outState: android.os.Bundle) = widgetAddFlow.onSaveInstanceState(outState)
+    fun onSaveInstanceState(outState: android.os.Bundle) = launcher.saveAddFlowState(outState)
 
-    /** Launcher.onActivityResult for the widget add flow. Returns whether it was for it. */
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
-        widgetAddFlow.onActivityResult(requestCode, resultCode, data)
+    /** Launcher.onActivityResult */
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) =
+        launcher.onActivityResult(requestCode, resultCode, data)
+
+    /** Launcher.runWhenResumed (TextLauncher): the widget picker's add waits for the home screen. */
+    internal fun runWhenResumed(runnable: Runnable) {
+        if (isResumed) runnable.run() else runOnResume = { runnable.run() }
+    }
 
     fun cancelDrag() {
         dragController.cancelDrag()
@@ -425,89 +430,6 @@ class HomeController(
         val parent = workspace.getParentCellLayoutForView(newFolder)
         parent.shortcutsAndWidgets.measureChild(newFolder)
         return newFolder
-    }
-
-    /**
-     * Launcher.addPendingItem for a widget or shortcut from the widget picker, added with its add
-     * button or dropped (Workspace.onDropExternal), at [cell] with the spans it takes there.
-     */
-    internal fun addPendingItem(info: PendingAddItemInfo, container: Int, cell: IntArray?, spanX: Int, spanY: Int) {
-        if (cell != null) {
-            info.cellX = cell[0]
-            info.cellY = cell[1]
-        }
-        info.container = container
-        info.spanX = spanX
-        info.spanY = spanY
-
-        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
-        // permission), so it starts no activity while the picker is still in front. TextLauncher
-        // may need the system's bind dialog or the widget's configuration activity, and a
-        // shortcut needs its app's activity, which the home intent the picker starts as it closes
-        // would clear (the launcher is singleTask), so the add waits until the home screen is
-        // resumed.
-        val add = if (info is PendingAddWidgetInfo) {
-            // TextLauncher: WidgetHostViewLoader.preloadWidget's size options, as the widget is
-            // not preloaded while it is dragged.
-            if (info.bindOptions == null) {
-                info.bindOptions = info.getDefaultSizeOptions(context)
-            }
-            { widgetAddFlow.addAppWidgetFromDrop(info) }
-        } else { // info can only be PendingAddShortcutInfo
-            { widgetAddFlow.processShortcutFromDrop(info as PendingAddShortcutInfo) }
-        }
-        if (isResumed) add() else runOnResume = add
-    }
-
-    /**
-     * Launcher.completeAddShortcut's workspace part: the shortcut an app's activity made, in the
-     * cell Launcher.addPendingItem chose ([cellX], [cellY]), bound with
-     * Launcher.bindInflatedItems' bounce. TextLauncher: when that cell is no longer free (an
-     * item is there, or the home screen changed while the activity was in front), the first free
-     * cell, as no folder is made or added to (Workspace.createUserFolderIfNecessary); and when
-     * there is no room, it says so (Workspace.onNoCellFound) and returns false.
-     */
-    internal fun completeAddShortcut(info: WorkspaceItemInfo, cellX: Int, cellY: Int): Boolean {
-        host.showHome()
-        val cellXY = intArrayOf(cellX, cellY)
-        val foundCellSpan = (cellX >= 0 && cellY >= 0 && cellLayout.occupied.isRegionVacant(cellX, cellY, 1, 1)) ||
-            cellLayout.findCellForSpan(cellXY, 1, 1)
-        if (!foundCellSpan) {
-            Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
-            return false
-        }
-        modelWriter.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellXY[0], cellXY[1])
-        launcher.inflateAndBindItemWithAnimation(info)
-        return true
-    }
-
-    /**
-     * Launcher.completeAddAppWidget's model and view part: the widget in the cell
-     * Launcher.addPendingItem chose ([cellX], [cellY]), told its size. TextLauncher: when that
-     * cell is no longer free (the home screen may have changed or been loaded again while an
-     * activity was in front), the first free cell (LauncherAccessibilityDelegate
-     * .findSpaceOnWorkspace); returns false when there is no room, where Launcher3 would add a
-     * page.
-     */
-    internal fun addWidget(item: LauncherAppWidgetInfo, cellX: Int, cellY: Int): Boolean {
-        host.showHome()
-        val cell = intArrayOf(cellX, cellY)
-        if (!cellLayout.occupied.isRegionVacant(cellX, cellY, item.spanX, item.spanY) &&
-            !cellLayout.findCellForSpan(cell, item.spanX, item.spanY)
-        ) {
-            return false
-        }
-        modelWriter.addItemToDatabase(item, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
-        val view = addInScreen(item)
-        if (view is AppWidgetHostView) {
-            view.updateSizeRanges(item.spanX, item.spanY)
-            view.post {
-                view.requestRectangleOnScreen(Rect(0, 0, view.width, view.height), true)
-                // Launcher.showWidgetResizeFrame
-                if (view is LauncherAppWidgetHostView) AppWidgetResizeFrame.showForWidget(view, cellLayout)
-            }
-        }
-        return true
     }
 
     /** Whether a widget's resize frame is open. */

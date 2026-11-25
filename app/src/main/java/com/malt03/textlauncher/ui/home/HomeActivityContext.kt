@@ -129,8 +129,6 @@ internal class HomeActivityContext(private val home: HomeController) :
     override fun getSupportedShortcuts(itemInfo: ItemInfo): Stream<SystemShortcut.Factory<*>> =
         home.systemShortcuts.getSupportedShortcuts()
 
-    override fun startWidgetReconfigure(view: LauncherAppWidgetHostView) = home.widgetAddFlow.startReconfigure(view)
-
     /** The widget's spans on the home grid, for the resize frame (LauncherAppWidgetProviderInfo). */
     override fun getLauncherAppWidgetInfo(info: AppWidgetProviderInfo?): LauncherAppWidgetProviderInfo? =
         info?.let { LauncherAppWidgetProviderInfo.fromProviderInfo(context, it) }
@@ -208,9 +206,8 @@ internal class HomeActivityContext(private val home: HomeController) :
 
     override fun showNotificationAccessConfirmation() = NotificationAccessConfirmation.show(context)
 
-    /** Launcher.addPendingItem: a widget or shortcut dropped from the widget picker. */
-    override fun addPendingItem(info: PendingAddItemInfo, container: Int, screenId: Int, cell: IntArray?, spanX: Int, spanY: Int) =
-        home.addPendingItem(info, container, cell, spanX, spanY)
+    /** Launcher.runWhenResumed: the widget picker's add waits for the home screen to be resumed. */
+    override fun runWhenResumed(runnable: Runnable) = home.runWhenResumed(runnable)
 }
 
 /**
