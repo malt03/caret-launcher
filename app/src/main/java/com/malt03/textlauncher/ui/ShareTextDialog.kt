@@ -2,7 +2,6 @@ package com.malt03.textlauncher.ui
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ComponentName
 import android.content.Context
 import android.content.res.ColorStateList
 import android.util.TypedValue
@@ -26,14 +25,13 @@ import com.malt03.textlauncher.data.ShareTargetStore
 
 /**
  * The empty space's menu's "Share text" (docs/spec.md 2.7): the apps of the share buttons, up to
- * [ShareTargetStore.MAX]. "Add" opens the system's activity picker ([pick]), which the activity
- * hands back with [onPicked]; a row's handle drags it to reorder, and its remove button takes it
- * out. The framework's dialog, as SearchTermsDialog's.
+ * [ShareTargetStore.MAX]. "Add" lists the apps that take the text ([ShareTargetPicker]); a row's
+ * handle drags it to reorder, and its remove button takes it out. The framework's dialog, as
+ * SearchTermsDialog's.
  */
 class ShareTextDialog(
     private val context: Context,
     private val store: ShareTargetStore,
-    private val pick: () -> Unit,
     private val onDismiss: () -> Unit,
 ) {
     private val density = context.resources.displayMetrics.density
@@ -42,6 +40,8 @@ class ShareTextDialog(
     private val touchHelper = ItemTouchHelper(DragCallback())
     private var dialog: AlertDialog? = null
     private val storeListener: () -> Unit = { reload() }
+    /** The list of "Add" is loading or shown. */
+    private var isPicking = false
 
     fun show() {
         // The apps that no longer take the text are dropped, so that they do not hold a place.
@@ -66,8 +66,16 @@ class ShareTextDialog(
             }
             .create()
         created.setOnShowListener {
-            // Kept open: the picker's app comes back to this dialog (onPicked).
-            created.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { pick() }
+            // Kept open: the picked app is added to this dialog's list.
+            created.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                // One list at a time: "Add" waits for it to close.
+                isPicking = true
+                updateAddButton()
+                ShareTargetPicker.show(context, targets.map { it.component }, store::add) {
+                    isPicking = false
+                    updateAddButton()
+                }
+            }
             updateAddButton()
         }
         dialog = created
@@ -80,11 +88,6 @@ class ShareTextDialog(
         dialog?.dismiss()
     }
 
-    /** The app the system's picker returned. */
-    fun onPicked(component: ComponentName) {
-        if (ShareTargetStore.resolve(context, component) != null) store.add(component)
-    }
-
     @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
         targets.clear()
@@ -95,7 +98,8 @@ class ShareTextDialog(
 
     /** docs/spec.md 2.7: no more than [ShareTargetStore.MAX] apps. */
     private fun updateAddButton() {
-        dialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = targets.size < ShareTargetStore.MAX
+        dialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled =
+            !isPicking && targets.size < ShareTargetStore.MAX
     }
 
     /** Saves the rows' order. */

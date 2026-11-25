@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import com.android.launcher3.util.LabelComparator
 
 /**
  * The apps the typed text is shared with (docs/spec.md 2.7): up to [MAX] activities that take
@@ -68,12 +69,32 @@ class ShareTargetStore(private val context: Context) {
         /** ACTION_SEND of plain text, the intent the targets take. */
         fun sendIntent(): Intent = Intent(Intent.ACTION_SEND).setType("text/plain")
 
+        /**
+         * Every activity that takes the text, as the share sheet lists them (without the launcher
+         * itself), sorted by label like the all apps list (LabelComparator). Slow: not on the main
+         * thread.
+         */
+        fun available(context: Context): List<ShareTarget> {
+            val pm = context.packageManager
+            val comparator = LabelComparator()
+            return pm.queryIntentActivities(sendIntent(), PackageManager.MATCH_DEFAULT_ONLY)
+                .filter { it.activityInfo.exported && it.activityInfo.packageName != context.packageName }
+                .map { info ->
+                    val activity = info.activityInfo
+                    ShareTarget(ComponentName(activity.packageName, activity.name), info.loadLabel(pm), info.loadIcon(pm))
+                }
+                .distinctBy { it.component }
+                .sortedWith { a, b -> comparator.compare(a.label.toString(), b.label.toString()) }
+        }
+
         /** [component] as a target, or null when it no longer takes the text. */
         fun resolve(context: Context, component: ComponentName): ShareTarget? {
+            // Asked as [available] asks, so that a target resolves exactly when the list has it, with
+            // the label and icon of its intent filter.
             val pm = context.packageManager
-            val info = pm.resolveActivity(sendIntent().setComponent(component), PackageManager.MATCH_DEFAULT_ONLY)
+            val info = pm.queryIntentActivities(sendIntent().setPackage(component.packageName), PackageManager.MATCH_DEFAULT_ONLY)
+                .firstOrNull { it.activityInfo.name == component.className && it.activityInfo.exported }
                 ?: return null
-            if (!info.activityInfo.exported || !info.activityInfo.isEnabled) return null
             return ShareTarget(component, info.loadLabel(pm), info.loadIcon(pm))
         }
     }
