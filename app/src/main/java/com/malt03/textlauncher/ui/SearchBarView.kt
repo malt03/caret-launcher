@@ -131,10 +131,20 @@ class SearchBarView(context: Context) : FrameLayout(context) {
         updateShareButtons()
     }
 
-    /** docs/spec.md 2.7: the buttons are shown while there is text to share. */
+    /**
+     * docs/spec.md 2.7: the buttons are always shown, and disabled while there is no text to share,
+     * with Material's disabled opacity.
+     */
     private fun updateShareButtons() {
-        val shown = shareTargets.isNotEmpty() && query.isNotBlank()
+        val shown = shareTargets.isNotEmpty()
+        val enabled = query.isNotBlank()
         shareButtons.visibility = if (shown) View.VISIBLE else View.GONE
+        for (i in 0 until shareButtons.childCount) {
+            shareButtons.getChildAt(i).apply {
+                isEnabled = enabled
+                alpha = if (enabled) 1f else DISABLED_ALPHA
+            }
+        }
         editText.setPaddingRelative(dp(20f).toInt(), 0, dp(if (shown) 4f else 20f).toInt(), 0)
     }
 
@@ -176,4 +186,9 @@ class SearchBarView(context: Context) : FrameLayout(context) {
     }
 
     private fun dp(value: Float): Float = value * resources.displayMetrics.density
+
+    private companion object {
+        /** Material's opacity of disabled content. */
+        const val DISABLED_ALPHA = 0.38f
+    }
 }
