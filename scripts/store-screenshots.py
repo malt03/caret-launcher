@@ -52,8 +52,10 @@ PROFILES = {
 }
 
 # Google Play's listing language -> the device locale.
+# (Android names Chinese by script, and has no es-419 or plain ar among its device locales.)
 DEVICE_LOCALE = {"iw-IL": "he-IL", "no-NO": "nb-NO", "id": "id-ID", "sk": "sk-SK", "ro": "ro-RO",
-                 "uk": "uk-UA", "vi": "vi-VN", "th": "th-TH", "ar": "ar"}
+                 "uk": "uk-UA", "vi": "vi-VN", "th": "th-TH", "ar": "ar-EG", "es-419": "es-MX",
+                 "zh-CN": "zh-Hans-CN", "zh-TW": "zh-Hant-TW", "zh-HK": "zh-Hant-HK"}
 # Google Play's listing language -> the app's resource qualifiers to read the menu texts from.
 RES_QUALIFIERS = {"en-US": [""], "es-419": ["es-rUS"], "es-US": ["es-rUS"], "no-NO": ["nb"],
                   "id": ["in"], "iw-IL": ["iw"]}
@@ -85,10 +87,16 @@ class Device:
     def screencap(self):
         return self.adb("exec-out", "screencap", "-p", binary=True)
 
+    def ui_xml(self):
+        for attempt in range(3):
+            if self.adb("shell", "uiautomator dump /sdcard/ui.xml", check=False).find("dumped") >= 0:
+                break
+            time.sleep(2)
+        return self.adb("exec-out", "cat", "/sdcard/ui.xml")
+
     def nodes(self):
         """The UI nodes of the window in front: (text, (left, top, right, bottom), class)."""
-        self.shell("uiautomator dump /sdcard/ui.xml")
-        xml = self.adb("exec-out", "cat", "/sdcard/ui.xml")
+        xml = self.ui_xml()
         out = []
         for m in re.finditer(r"<node [^>]*>", xml):
             n = m.group(0)
@@ -98,7 +106,7 @@ class Device:
             out.append((text, b, cls))
         return out
 
-    def find(self, texts, timeout=6):
+    def find(self, texts, timeout=40):
         """The center of the first node whose text is one of [texts]."""
         deadline = time.time() + timeout
         while time.time() < deadline:
@@ -108,20 +116,28 @@ class Device:
             time.sleep(0.5)
         raise RuntimeError(f"not on screen: {texts}")
 
-    def search_field(self):
-        for _, b, cls in self.nodes():
-            if cls == "android.widget.EditText":
-                return b
+    def search_field(self, timeout=40):
+        """The search field's bounds, once the launcher shows it (an emulator can be slow)."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            for _, b, cls in self.nodes():
+                if cls == "android.widget.EditText":
+                    return b
+            time.sleep(1)
         raise RuntimeError("no search field")
 
     def set_search_text(self, text):
         encoded = base64.b64encode(text.encode("utf-8")).decode()
-        out = self.shell(f"am instrument -w -e text64 {encoded} com.malt03.caretlauncher.storetools/.SetSearchText")
-        if "set" not in out:
-            raise RuntimeError(f"could not set the search text: {out.strip()}")
+        for attempt in range(3):  # UiAutomation can time out connecting on a busy emulator
+            out = self.shell(f"am instrument -w -e text64 {encoded} com.malt03.caretlauncher.storetools/.SetSearchText")
+            if "set" in out:
+                return
+            time.sleep(3)
+        raise RuntimeError(f"could not set the search text: {out.strip()}")
 
     def set_locale(self, locale):
         self.shell(f"cmd locale set-device-locale {locale}")
+        time.sleep(6)
 
     def locale(self):
         return self.shell("cmd locale get-device-locale").strip()
@@ -195,34 +211,65 @@ def set_photo_keywords(device, keywords):
         device.put_launcher_db(open(f.name, "rb").read())
 
 
-def home(device, wait=4):
+def home(device, wait=2):
+    """Goes home and waits until the search field shows."""
     device.key("HOME")
     time.sleep(wait)
+    return device.search_field()
+
+
+def settled_home(device, warmup_text):
+    """Home after a locale change: the keyboard in the new language and every home item loaded."""
+    home(device, 4)
+    # Gboard switches to the new language only when it is shown again; until then a
+    # screenshot can have the previous language's keyboard.
+    device.set_search_text(warmup_text)
+    time.sleep(2)
+    field = home(device)
+    # The model reloads after a locale change; wait until the widget and the icons are back
+    # and their number stops changing.
+    last, deadline = None, time.time() + 40
+    while time.time() < deadline:
+        xml = device.ui_xml()
+        icons = len(re.findall(r'class="android.widget.TextView"[^>]*content-desc="[^"]+"', xml))
+        if "android.appwidget.AppWidgetHostView" in xml and icons and icons == last:
+            break
+        last = icons
+        time.sleep(2)
+    time.sleep(2)
+    return field
 
 
 def shoot_language(device, profile, lang, out):
     keywords = json.load(open(os.path.join(KEYWORDS, f"{lang}.json"), encoding="utf-8"))["keywords"]
     device.set_locale(DEVICE_LOCALE.get(lang, lang))
-    time.sleep(6)
     set_photo_keywords(device, keywords)
-    home(device, 6)
-
-    field = device.search_field()
+    field = settled_home(device, keywords[0])
     png24(with_cursor(device, field), os.path.join(out, "01_home.png"))
 
     device.set_search_text(keywords[0])
-    time.sleep(3)
-    shot = with_cursor(device, field)
     # The photo app's name, as the only result shows it (the name in this locale).
-    photos = [t for t, b, cls in device.nodes() if t and cls != "android.widget.EditText" and b[3] <= field[1]]
-    png24(shot, os.path.join(out, "02_search.png"))
+    photos = []
+    deadline = time.time() + 20
+    while not photos and time.time() < deadline:
+        time.sleep(2)
+        photos = [t for t, b, cls in device.nodes() if t and cls != "android.widget.EditText" and b[3] <= field[1]]
     if not photos:
         raise RuntimeError(f"{lang}: {keywords[0]} found no app")
+    time.sleep(1)
+    png24(with_cursor(device, field), os.path.join(out, "02_search.png"))
 
-    home(device, 2)
     cx, cy = (field[0] + field[2]) // 2, (field[1] + field[3]) // 2
-    device.swipe(cx, cy, cx, 150)
-    time.sleep(3)
+    for attempt in range(3):  # the swipe sometimes doesn't open all apps on a slow emulator
+        home(device)
+        device.swipe(cx, cy, cx, 150)
+        try:
+            device.find({photos[0]}, timeout=25)  # one dump can take 8 s
+            break
+        except RuntimeError:
+            if attempt == 2:
+                raise
+    time.sleep(2)
     png24(device.screencap(), os.path.join(out, "03_all_apps.png"))
 
     device.long_press(*device.find({photos[0]}))
@@ -233,7 +280,8 @@ def shoot_language(device, profile, lang, out):
     device.key("BACK")
     time.sleep(1)
     device.key("BACK")
-    home(device, 2)
+    home(device)
+    time.sleep(2)
 
     device.long_press(*profile["empty_home"])
     time.sleep(1.5)
@@ -241,13 +289,14 @@ def shoot_language(device, profile, lang, out):
     time.sleep(3)
     png24(device.screencap(), os.path.join(out, "05_share_text.png"))
     device.key("BACK")
-    home(device, 2)
+    home(device)
 
 
 def set_themed_icons(device, profile, themed):
     """Wallpaper & style -> Icons -> Minimal (themed) or Default, in English."""
     device.shell("am start -n com.google.android.apps.wallpaper/com.android.customization.picker.CustomizationPickerActivity")
-    time.sleep(8)
+    device.find({"Wallpaper & style"}, timeout=90)  # it can stay black for a while on a slow emulator
+    time.sleep(3)
     for swipe in profile["picker_swipes"]:
         device.swipe(*swipe, 600)
         time.sleep(3)
@@ -272,6 +321,10 @@ def main():
     langs = args.langs.split(",") if args.langs else sorted(
         d for d in os.listdir(LISTINGS) if d != "en-US" and os.path.exists(os.path.join(KEYWORDS, f"{d}.json")))
     device = Device(args.serial)
+    supported = set(device.shell("cmd locale list-device-locales").split())
+    unknown = [l for l in langs if DEVICE_LOCALE.get(l, l) not in supported]
+    if unknown:
+        sys.exit(f"no device locale for: {unknown}")
     original_locale = device.locale()
     original_db = device.launcher_db()
     device.demo_status_bar()
@@ -284,29 +337,27 @@ def main():
             except Exception as e:  # keep going; the language is reported at the end
                 failed.append(lang)
                 print(f"{lang}: FAILED {e}", flush=True)
-                home(device, 2)
+                device.key("BACK")
+                device.key("HOME")
         if not args.no_themed:
             device.set_locale("en-US")
-            time.sleep(6)
             set_themed_icons(device, profile, True)
             try:
                 for lang in langs:
                     print(f"{lang}: themed icons", flush=True)
                     device.set_locale(DEVICE_LOCALE.get(lang, lang))
-                    time.sleep(6)
-                    home(device, 6)
-                    png24(with_cursor(device, device.search_field()),
+                    keywords = json.load(open(os.path.join(KEYWORDS, f"{lang}.json"), encoding="utf-8"))["keywords"]
+                    field = settled_home(device, keywords[0])
+                    png24(with_cursor(device, field),
                           os.path.join(LISTINGS, lang, "graphics", profile["dir"], "06_themed_icons.png"))
             finally:
                 device.set_locale("en-US")
-                time.sleep(6)
                 set_themed_icons(device, profile, False)
     finally:
         device.shell(f"am force-stop {PKG}")
         device.put_launcher_db(original_db)
         device.set_locale(original_locale)
-        time.sleep(4)
-        home(device, 2)
+        device.key("HOME")
     if failed:
         print("failed:", ",".join(failed))
         sys.exit(1)
