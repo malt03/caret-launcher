@@ -11,4 +11,8 @@
     <string name="search_terms_add">เพิ่ม</string>
     <string name="search_terms_close">ปิด</string>
     <string name="search_terms_remove">นำออก</string>
+    <string name="share_text_title">แชร์ข้อความ</string>
+    <string name="share_text_message">เลือกแอปได้สูงสุด 3 แอปเพื่อแสดงข้างช่องค้นหา แตะแอปใดแอปหนึ่งเพื่อแชร์ข้อความที่พิมพ์</string>
+    <string name="share_text_move_up">ย้ายขึ้น</string>
+    <string name="share_text_move_down">ย้ายลง</string>
 </resources>

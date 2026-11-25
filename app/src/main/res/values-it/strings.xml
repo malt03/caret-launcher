@@ -11,4 +11,8 @@
     <string name="search_terms_add">Aggiungi</string>
     <string name="search_terms_close">Chiudi</string>
     <string name="search_terms_remove">Rimuovi</string>
+    <string name="share_text_title">Condividi testo</string>
+    <string name="share_text_message">Scegli fino a 3 app da mostrare accanto al campo di ricerca. Tocca un\'app per condividere il testo digitato.</string>
+    <string name="share_text_move_up">Sposta su</string>
+    <string name="share_text_move_down">Sposta giù</string>
 </resources>

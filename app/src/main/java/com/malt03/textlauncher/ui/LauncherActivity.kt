@@ -2,6 +2,7 @@ package com.malt03.textlauncher.ui
 
 import android.app.Activity
 import android.app.ActivityOptions
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.pm.LauncherApps
@@ -16,6 +17,7 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import android.view.WindowInsets
 import android.view.accessibility.AccessibilityEvent
+import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -31,6 +33,9 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.malt03.textlauncher.data.homeKey
 import com.malt03.textlauncher.data.AppKey
+import com.malt03.textlauncher.R
+import com.malt03.textlauncher.data.ShareTarget
+import com.malt03.textlauncher.data.ShareTargetStore
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.Launcher
 import com.android.launcher3.Utilities
@@ -104,7 +109,17 @@ class LauncherActivity :
     private lateinit var home: HomeController
 
     /** ModelCallbacks.bindAllApplications */
-    private val appsListener: (Array<AppInfo>) -> Unit = { allApps.setApps(it) }
+    private val appsListener: (Array<AppInfo>) -> Unit = {
+        allApps.setApps(it)
+        // docs/spec.md 2.7: a share button's app may be gone or updated.
+        refreshShareButtons()
+    }
+
+    /** docs/spec.md 2.7: the share buttons follow the chosen apps. */
+    private val shareTargetsListener: () -> Unit = { refreshShareButtons() }
+
+    /** The "Share text" dialog while it is open, which gets the app the system picker returns. */
+    private var shareTextDialog: ShareTextDialog? = null
 
     /**
      * The all apps list's AppInfos changed (the apps or their icons): the search results, which
@@ -209,6 +224,9 @@ class LauncherActivity :
             }
         })
         root.searchBar.onEnter = { launchTopResult() }
+        root.searchBar.onShare = ::share
+        app.shareTargets.addListener(shareTargetsListener)
+        refreshShareButtons()
         // AppsSearchContainerLayout.preDispatchKeyEvent's focus: docs/spec.md 6.5, the search in
         // the all apps list keeps the keyboard as it is.
         root.searchBar.requestFocusForKey = {
@@ -265,6 +283,8 @@ class LauncherActivity :
     override fun onDestroy() {
         rotationHelper.destroy()
         app.appRepository.removeListener(appsListener)
+        app.shareTargets.removeListener(shareTargetsListener)
+        shareTextDialog?.dismiss()
         appsStore.removeUpdateListener(appsStoreListener)
         home.destroy()
         super.onDestroy()
@@ -293,6 +313,8 @@ class LauncherActivity :
         isResumedState = true
         isLaunching = false
         home.onResume()
+        // docs/spec.md 2.7: an app may have changed what it takes while the launcher was hidden.
+        refreshShareButtons()
         focusSearch()
     }
 
@@ -315,6 +337,11 @@ class LauncherActivity :
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // docs/spec.md 2.7: the app the system's activity picker returns for "Share text".
+        if (requestCode == REQUEST_PICK_SHARE_TARGET) {
+            if (resultCode == RESULT_OK) data?.component?.let { shareTextDialog?.onPicked(it) }
+            return
+        }
         // Launcher.onActivityResult: the widget and shortcut add flow (docs/spec.md 5.2).
         home.onActivityResult(requestCode, resultCode, data)
     }
@@ -657,7 +684,64 @@ class LauncherActivity :
         // the launcher is hidden, so the home screen never flashes in between.
     }
 
+    /** docs/spec.md 2.7: the empty space's menu's "Share text". */
+    override fun editShareTargets() {
+        shareTextDialog?.dismiss()
+        // The dialog takes no text, so the keyboard goes down behind it, as in edit mode; it comes
+        // back with the field once the dialog is closed.
+        root.requestFocus()
+        WindowCompat.getInsetsController(window, root).hide(WindowInsets.Type.ime())
+        shareTextDialog = ShareTextDialog(this, app.shareTargets, ::pickShareTarget) {
+            shareTextDialog = null
+            focusSearch()
+        }.also { it.show() }
+    }
+
+    /**
+     * docs/spec.md 2.7: the system's activity picker (ACTION_PICK_ACTIVITY) lists the apps that take
+     * the text, as the share sheet does.
+     */
+    private fun pickShareTarget() {
+        val pick = Intent(Intent.ACTION_PICK_ACTIVITY)
+            .putExtra(Intent.EXTRA_INTENT, ShareTargetStore.sendIntent())
+            .putExtra(Intent.EXTRA_TITLE, getString(R.string.share_text_title))
+        try {
+            startActivityForResult(pick, REQUEST_PICK_SHARE_TARGET)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, com.android.launcher3.R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun refreshShareButtons() = root.searchBar.setShareTargets(app.shareTargets.resolve())
+
+    /**
+     * docs/spec.md 2.7: shares the query with [target] (ACTION_SEND of plain text), as a launch from
+     * the search results: the query is cleared once the app covers the launcher (onStop).
+     */
+    private fun share(target: ShareTarget, view: View) {
+        val text = currentQuery().trim()
+        if (text.isEmpty()) return
+        val intent = ShareTargetStore.sendIntent()
+            .setComponent(target.component)
+            .putExtra(Intent.EXTRA_TEXT, text)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        isLaunching = true
+        try {
+            startActivity(intent, launchOptions(view))
+        } catch (e: Exception) {
+            // ActivityNotFoundException, or a SecurityException from an activity that stopped
+            // taking it.
+            isLaunching = false
+            Toast.makeText(this, com.android.launcher3.R.string.activity_not_available, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     /** The animation an app or a shortcut opens with: it scales up from [view]. */
     private fun launchOptions(view: View) =
         ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.width, view.height).toBundle()
+
+    private companion object {
+        /** docs/spec.md 2.7: the system's activity picker, from "Share text". */
+        const val REQUEST_PICK_SHARE_TARGET = 0x5348
+    }
 }

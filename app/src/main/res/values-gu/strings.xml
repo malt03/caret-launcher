@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"ઍપ શોધો"</string>
+    <string name="share_text_title">ટેક્સ્ટ શેર કરો</string>
+    <string name="share_text_message">શોધ ફીલ્ડની બાજુમાં બતાવવા માટે 3 જેટલી ઍપ પસંદ કરો. તમે લખેલી ટેક્સ્ટ શેર કરવા માટે કોઈ એક પર ટૅપ કરો.</string>
+    <string name="share_text_move_up">ઉપર ખસેડો</string>
+    <string name="share_text_move_down">નીચે ખસેડો</string>
 </resources>

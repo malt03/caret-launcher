@@ -11,4 +11,8 @@
     <string name="search_terms_add">Ekle</string>
     <string name="search_terms_close">Kapat</string>
     <string name="search_terms_remove">Kaldır</string>
+    <string name="share_text_title">Metni paylaş</string>
+    <string name="share_text_message">Arama alanının yanında gösterilecek en fazla 3 uygulama seçin. Yazdığınız metni paylaşmak için birine dokunun.</string>
+    <string name="share_text_move_up">Yukarı taşı</string>
+    <string name="share_text_move_down">Aşağı taşı</string>
 </resources>

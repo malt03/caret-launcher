@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Претражите апликације"</string>
+    <string name="share_text_title">Дели текст</string>
+    <string name="share_text_message">Изаберите до 3 апликације које ће се приказивати поред поља за претрагу. Додирните једну да бисте делили текст који сте унели.</string>
+    <string name="share_text_move_up">Помери нагоре</string>
+    <string name="share_text_move_down">Помери надоле</string>
 </resources>

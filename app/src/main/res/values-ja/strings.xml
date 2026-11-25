@@ -11,4 +11,8 @@
     <string name="search_terms_add">追加</string>
     <string name="search_terms_close">閉じる</string>
     <string name="search_terms_remove">削除</string>
+    <string name="share_text_title">テキスト共有</string>
+    <string name="share_text_message">検索欄の右に、アプリを3つまで並べられます。タップすると、入力した文字をそのアプリに共有します。</string>
+    <string name="share_text_move_up">上に移動</string>
+    <string name="share_text_move_down">下に移動</string>
 </resources>

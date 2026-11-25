@@ -11,4 +11,8 @@
     <string name="search_terms_add">新增</string>
     <string name="search_terms_close">關閉</string>
     <string name="search_terms_remove">移除</string>
+    <string name="share_text_title">分享文字</string>
+    <string name="share_text_message">最多可選擇 3 個應用程式顯示在搜尋欄位旁邊。輕觸其中一個即可將輸入的文字分享給該應用程式。</string>
+    <string name="share_text_move_up">上移</string>
+    <string name="share_text_move_down">下移</string>
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The accessibility actions of a row in the "Share text" dialog (docs/spec.md 2.7). -->
+    <item name="share_text_move_up" type="id" />
+    <item name="share_text_move_down" type="id" />
+</resources>

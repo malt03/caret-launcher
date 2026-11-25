@@ -21,6 +21,7 @@ import com.malt03.textlauncher.data.AppRepository
 import com.malt03.textlauncher.data.LauncherAppFilter
 import com.malt03.textlauncher.data.LauncherDatabase
 import com.malt03.textlauncher.data.SearchStore
+import com.malt03.textlauncher.data.ShareTargetStore
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.icons.IconSettings
 import com.malt03.textlauncher.ui.home.HomeGridInitializer
@@ -38,6 +39,9 @@ class TextLauncherApplication : Application() {
         private set
     lateinit var appRepository: AppRepository
         private set
+    /** The apps the typed text is shared with (docs/spec.md 2.7). */
+    lateinit var shareTargets: ShareTargetStore
+        private set
     /** Launcher3's LauncherModel: the home screen's items and the all apps list. */
     lateinit var model: LauncherModel
         private set
@@ -51,6 +55,7 @@ class TextLauncherApplication : Application() {
         database = LauncherDatabase(this)
         searchStore = SearchStore(database, ioExecutor)
         ioExecutor.execute { searchStore.loadBlocking() }
+        shareTargets = ShareTargetStore(this)
         iconSettings = IconSettings(this)
         iconLoader = AppIconLoader(this, iconSettings)
         appRepository = AppRepository()

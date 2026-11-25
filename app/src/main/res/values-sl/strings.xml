@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Iskanje programov"</string>
+    <string name="share_text_title">Deli besedilo</string>
+    <string name="share_text_message">Izberite do 3 aplikacije, ki bodo prikazane ob iskalnem polju. Dotaknite se ene, da delite vneseno besedilo.</string>
+    <string name="share_text_move_up">Premakni gor</string>
+    <string name="share_text_move_down">Premakni dol</string>
 </resources>

@@ -11,4 +11,8 @@
     <string name="search_terms_add">Přidat</string>
     <string name="search_terms_close">Zavřít</string>
     <string name="search_terms_remove">Odstranit</string>
+    <string name="share_text_title">Sdílet text</string>
+    <string name="share_text_message">Vyberte až 3 aplikace, které se zobrazí vedle vyhledávacího pole. Klepnutím na jednu nasdílíte zadaný text.</string>
+    <string name="share_text_move_up">Přesunout nahoru</string>
+    <string name="share_text_move_down">Přesunout dolů</string>
 </resources>

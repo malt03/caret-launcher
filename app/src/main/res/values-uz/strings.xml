@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Ilovalarni qidirish"</string>
+    <string name="share_text_title">Matnni ulashish</string>
+    <string name="share_text_message">Qidiruv maydoni yonida chiqadigan 3 tagacha ilovani tanlang. Kiritilgan matnni ulashish uchun birortasini bosing.</string>
+    <string name="share_text_move_up">Tepaga surish</string>
+    <string name="share_text_move_down">Pastga surish</string>
 </resources>

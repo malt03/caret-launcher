@@ -11,4 +11,8 @@
     <string name="search_terms_add">Добавить</string>
     <string name="search_terms_close">Закрыть</string>
     <string name="search_terms_remove">Удалить</string>
+    <string name="share_text_title">Поделиться текстом</string>
+    <string name="share_text_message">Выберите до 3 приложений, которые будут показаны рядом с полем поиска. Нажмите на одно из них, чтобы поделиться введенным текстом.</string>
+    <string name="share_text_move_up">Переместить вверх</string>
+    <string name="share_text_move_down">Переместить вниз</string>
 </resources>

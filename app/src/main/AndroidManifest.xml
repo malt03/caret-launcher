@@ -27,6 +27,11 @@
         <intent>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
         </intent>
+        <!-- docs/spec.md 2.7: the share buttons' apps, with their labels and icons. -->
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
     </queries>
 
     <application

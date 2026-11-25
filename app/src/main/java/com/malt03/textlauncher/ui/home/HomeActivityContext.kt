@@ -28,7 +28,11 @@ import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.pm.UserCache
+import com.android.launcher3.AbstractFloatingView
+import com.android.launcher3.popup.PopupCategory
+import com.android.launcher3.popup.PopupData
 import com.android.launcher3.popup.PopupDataProvider
+import com.malt03.textlauncher.R
 import com.android.launcher3.shortcuts.ShortcutKey
 import com.android.launcher3.states.RotationHelper
 import com.android.launcher3.touch.ItemClickHandler
@@ -205,6 +209,14 @@ internal class HomeActivityContext(private val home: HomeController) :
     }
 
     override fun showNotificationAccessConfirmation() = NotificationAccessConfirmation.show(context)
+
+    /** docs/spec.md 2.7: the empty space's menu's "Share text", in place of "Home settings". */
+    override fun getShareTextOption(): PopupData =
+        PopupData(R.drawable.ic_share_text, R.string.share_text_title, PopupCategory.SYSTEM_SHORTCUT) { ac, _, _ ->
+            // Shown over the home screen, like "Notification dots"' dialog.
+            AbstractFloatingView.closeAllOpenViews(ac)
+            home.host.editShareTargets()
+        }
 
     /** Launcher.runWhenResumed: the widget picker's add waits for the home screen to be resumed. */
     override fun runWhenResumed(runnable: Runnable) = home.runWhenResumed(runnable)

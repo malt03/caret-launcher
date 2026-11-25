@@ -995,6 +995,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
      */
     public abstract void showNotificationAccessConfirmation();
 
+    /**
+     * TextLauncher: the empty space's menu's "Share text" (docs/spec.md 2.7), which the app makes
+     * with its own label, icon and dialog.
+     */
+    public abstract com.android.launcher3.popup.PopupData getShareTextOption();
+
     @Override
     public DropTargetHandler getDropTargetHandler() {
         return new DropTargetHandler(this);

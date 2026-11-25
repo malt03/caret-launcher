@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Қолданбаларды іздеу"</string>
+    <string name="share_text_title">Мәтінді бөлісу</string>
+    <string name="share_text_message">Іздеу өрісінің жанында көрсетілетін 3 қолданбаға дейін таңдаңыз. Терілген мәтінді бөлісу үшін біреуін түртіңіз.</string>
+    <string name="share_text_move_up">Жоғары жылжыту</string>
+    <string name="share_text_move_down">Төмен жылжыту</string>
 </resources>

@@ -89,6 +89,10 @@ object WorkspaceLongPressOptions {
         )
         }
 
+        // TextLauncher: in place of "Home settings", the only setting TextLauncher has: the share
+        // buttons next to the search field (docs/spec.md 2.7).
+        (ActivityContext.lookupContext(ctx) as? Launcher)?.let { add(it.shareTextOption) }
+
         // TextLauncher: no "Home settings" (docs/spec.md 8). In place of the settings'
         // "Notification dots" (NotificationDotsPreference), "Notification dots" is shown while the
         // dots are on but the launcher may not read the notifications (docs/spec.md 7.5).

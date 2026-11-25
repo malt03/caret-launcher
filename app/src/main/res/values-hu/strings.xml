@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Alkalmazások keresése"</string>
+    <string name="share_text_title">Szöveg megosztása</string>
+    <string name="share_text_message">Válasszon legfeljebb 3 alkalmazást, amelyek a keresőmező mellett jelennek meg. Koppintson az egyikre a beírt szöveg megosztásához.</string>
+    <string name="share_text_move_up">Mozgatás felfelé</string>
+    <string name="share_text_move_down">Mozgatás lefelé</string>
 </resources>

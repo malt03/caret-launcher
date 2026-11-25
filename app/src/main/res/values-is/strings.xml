@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Leita í forritum"</string>
+    <string name="share_text_title">Deila texta</string>
+    <string name="share_text_message">Veldu allt að 3 forrit til að sýna við hliðina á leitarreitnum. Ýttu á eitt til að deila textanum sem þú slóst inn.</string>
+    <string name="share_text_move_up">Færa upp</string>
+    <string name="share_text_move_down">Færa niður</string>
 </resources>

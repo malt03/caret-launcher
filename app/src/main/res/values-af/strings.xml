@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Deursoek programme"</string>
+    <string name="share_text_title">Deel teks</string>
+    <string name="share_text_message">Kies tot 3 programme om langs die soekveld te wys. Tik op een om die teks wat jy getik het, te deel.</string>
+    <string name="share_text_move_up">Skuif op</string>
+    <string name="share_text_move_down">Skuif af</string>
 </resources>

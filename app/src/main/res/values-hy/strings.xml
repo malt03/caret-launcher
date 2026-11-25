@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Որոնել հավելվածներ"</string>
+    <string name="share_text_title">Կիսվել տեքստով</string>
+    <string name="share_text_message">Ընտրեք մինչև 3 հավելված, որոնք կցուցադրվեն որոնման դաշտի կողքին։ Հպեք դրանցից մեկին՝ մուտքագրված տեքստով կիսվելու համար։</string>
+    <string name="share_text_move_up">Տեղափոխել վեր</string>
+    <string name="share_text_move_down">Տեղափոխել վար</string>
 </resources>

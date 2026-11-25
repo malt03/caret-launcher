@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Meklēt lietotnes"</string>
+    <string name="share_text_title">Kopīgot tekstu</string>
+    <string name="share_text_message">Izvēlieties līdz 3 lietotnēm, ko rādīt blakus meklēšanas laukam. Pieskarieties kādai, lai kopīgotu ievadīto tekstu.</string>
+    <string name="share_text_move_up">Pārvietot augšup</string>
+    <string name="share_text_move_down">Pārvietot lejup</string>
 </resources>

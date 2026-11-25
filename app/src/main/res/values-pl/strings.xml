@@ -11,4 +11,8 @@
     <string name="search_terms_add">Dodaj</string>
     <string name="search_terms_close">Zamknij</string>
     <string name="search_terms_remove">Usuń</string>
+    <string name="share_text_title">Udostępnij tekst</string>
+    <string name="share_text_message">Wybierz maksymalnie 3 aplikacje do wyświetlania obok pola wyszukiwania. Kliknij jedną, aby udostępnić wpisany tekst.</string>
+    <string name="share_text_move_up">Przesuń w górę</string>
+    <string name="share_text_move_down">Przesuń w dół</string>
 </resources>

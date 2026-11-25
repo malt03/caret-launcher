@@ -11,4 +11,8 @@
     <string name="search_terms_add">Toevoegen</string>
     <string name="search_terms_close">Sluiten</string>
     <string name="search_terms_remove">Verwijderen</string>
+    <string name="share_text_title">Tekst delen</string>
+    <string name="share_text_message">Kies maximaal 3 apps om naast het zoekveld te tonen. Tik op een app om de getypte tekst te delen.</string>
+    <string name="share_text_move_up">Omhoog verplaatsen</string>
+    <string name="share_text_move_down">Omlaag verplaatsen</string>
 </resources>

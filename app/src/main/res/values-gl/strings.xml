@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Buscar aplicacións"</string>
+    <string name="share_text_title">Compartir texto</string>
+    <string name="share_text_message">Escolle ata 3 aplicacións para mostralas xunto ao campo de busca. Toca unha para compartir o texto que escribiches.</string>
+    <string name="share_text_move_up">Subir</string>
+    <string name="share_text_move_down">Baixar</string>
 </resources>

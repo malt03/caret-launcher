@@ -100,6 +100,8 @@ class HomeController(
         fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)
         /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
         fun editSearchTerms(app: WorkspaceItemInfo)
+        /** The empty space's menu's "Share text" (docs/spec.md 2.7). */
+        fun editShareTargets()
         /**
          * docs/spec.md 5.4: the home screen is edited, with the keyboard down (the
          * SPRING_LOADED state, or a widget's resize frame in NORMAL), or not any more.

@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"መተግበሪያዎችን ፈልግ"</string>
+    <string name="share_text_title">ጽሑፍ አጋራ</string>
+    <string name="share_text_message">ከፍለጋ መስኩ አጠገብ የሚታዩ እስከ 3 መተግበሪያዎችን ይምረጡ። የተየቡትን ጽሑፍ ለማጋራት አንዱን መታ ያድርጉ።</string>
+    <string name="share_text_move_up">ወደ ላይ ውሰድ</string>
+    <string name="share_text_move_down">ወደ ታች ውሰድ</string>
 </resources>

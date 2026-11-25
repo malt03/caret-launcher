@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"ایپس تلاش کریں"</string>
+    <string name="share_text_title">ٹیکسٹ کا اشتراک کریں</string>
+    <string name="share_text_message">تلاش کی فیلڈ کے ساتھ دکھانے کے لیے زیادہ سے زیادہ 3 ایپس منتخب کریں۔ ٹائپ کردہ ٹیکسٹ کا اشتراک کرنے کے لیے کسی ایک پر تھپتھپائیں۔</string>
+    <string name="share_text_move_up">اوپر منتقل کریں</string>
+    <string name="share_text_move_down">نیچے منتقل کریں</string>
 </resources>

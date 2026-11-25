@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Пошук праграм"</string>
+    <string name="share_text_title">Абагуліць тэкст</string>
+    <string name="share_text_message">Выберыце да 3 праграм, якія будуць паказвацца побач з полем пошуку. Націсніце на адну, каб абагуліць уведзены тэкст.</string>
+    <string name="share_text_move_up">Перамясціць уверх</string>
+    <string name="share_text_move_down">Перамясціць уніз</string>
 </resources>

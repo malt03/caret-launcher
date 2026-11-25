@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"యాప్‌ల కోసం సెర్చ్ చేయండి"</string>
+    <string name="share_text_title">టెక్స్ట్‌ను షేర్ చేయండి</string>
+    <string name="share_text_message">సెర్చ్ ఫీల్డ్ పక్కన చూపడానికి గరిష్ఠంగా 3 యాప్‌లను ఎంచుకోండి. టైప్ చేసిన టెక్స్ట్‌ను షేర్ చేయడానికి ఒకదానిని ట్యాప్ చేయండి.</string>
+    <string name="share_text_move_up">పైకి తరలించండి</string>
+    <string name="share_text_move_down">కిందికి తరలించండి</string>
 </resources>

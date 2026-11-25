@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"جستجوی برنامه‌ها"</string>
+    <string name="share_text_title">هم‌رسانی نوشتار</string>
+    <string name="share_text_message">حداکثر ۳ برنامه برای نمایش در کنار فیلد جستجو انتخاب کنید. برای هم‌رسانی نوشتاری که تایپ کرده‌اید، روی یکی تک‌ضرب بزنید.</string>
+    <string name="share_text_move_up">انتقال به بالا</string>
+    <string name="share_text_move_down">انتقال به پایین</string>
 </resources>

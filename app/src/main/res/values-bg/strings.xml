@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Търсене в приложенията"</string>
+    <string name="share_text_title">Споделяне на текст</string>
+    <string name="share_text_message">Изберете до 3 приложения, които да се показват до полето за търсене. Докоснете някое, за да споделите въведения текст.</string>
+    <string name="share_text_move_up">Преместване нагоре</string>
+    <string name="share_text_move_down">Преместване надолу</string>
 </resources>

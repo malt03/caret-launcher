@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Maghanap ng mga app"</string>
+    <string name="share_text_title">Ibahagi ang text</string>
+    <string name="share_text_message">Pumili ng hanggang 3 app na ipapakita sa tabi ng field ng paghahanap. I-tap ang isa para ibahagi ang text na na-type mo.</string>
+    <string name="share_text_move_up">Ilipat pataas</string>
+    <string name="share_text_move_down">Ilipat pababa</string>
 </resources>

@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"अ‍ॅप्स शोधा"</string>
+    <string name="share_text_title">मजकूर शेअर करा</string>
+    <string name="share_text_message">शोध फील्डच्या बाजूला दाखवण्यासाठी जास्तीत जास्त ३ ॲप्स निवडा. टाइप केलेला मजकूर शेअर करण्यासाठी एकावर टॅप करा.</string>
+    <string name="share_text_move_up">वर हलवा</string>
+    <string name="share_text_move_down">खाली हलवा</string>
 </resources>

@@ -5,4 +5,8 @@
 -->
 <resources>
     <string name="search_hint">"Bilatu aplikazioetan"</string>
+    <string name="share_text_title">Partekatu testua</string>
+    <string name="share_text_message">Aukeratu gehienez 3 aplikazio bilaketa-eremuaren ondoan ager daitezen. Sakatu bat idatzi duzun testua partekatzeko.</string>
+    <string name="share_text_move_up">Eraman gora</string>
+    <string name="share_text_move_down">Eraman behera</string>
 </resources>

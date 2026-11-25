@@ -11,4 +11,8 @@
     <string name="search_terms_add">Legg til</string>
     <string name="search_terms_close">Lukk</string>
     <string name="search_terms_remove">Fjern</string>
+    <string name="share_text_title">Del tekst</string>
+    <string name="share_text_message">Velg opptil 3 apper som skal vises ved siden av søkefeltet. Trykk på én for å dele teksten du har skrevet.</string>
+    <string name="share_text_move_up">Flytt opp</string>
+    <string name="share_text_move_down">Flytt ned</string>
 </resources>

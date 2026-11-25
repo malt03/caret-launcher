@@ -11,4 +11,8 @@
     <string name="search_terms_add">Tambah</string>
     <string name="search_terms_close">Tutup</string>
     <string name="search_terms_remove">Alih keluar</string>
+    <string name="share_text_title">Kongsi teks</string>
+    <string name="share_text_message">Pilih sehingga 3 apl untuk dipaparkan di sebelah medan carian. Ketik salah satu untuk berkongsi teks yang anda taip.</string>
+    <string name="share_text_move_up">Alih ke atas</string>
+    <string name="share_text_move_down">Alih ke bawah</string>
 </resources>
