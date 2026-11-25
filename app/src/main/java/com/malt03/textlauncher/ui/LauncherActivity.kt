@@ -40,8 +40,9 @@ import com.android.launcher3.states.RotationHelper.REQUEST_NONE
 import com.android.launcher3.util.Themes
 import com.android.launcher3.util.WallpaperThemeManager
 import com.android.launcher3.allapps.AllAppsStore
-import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
-import com.malt03.textlauncher.ui.allapps.AllAppsTransitionController
+import com.android.launcher3.allapps.AllAppsTransitionController
+import com.android.launcher3.touch.AllAppsSwipeController
+import com.malt03.textlauncher.ui.allapps.AllAppsTransitionHost
 import com.malt03.textlauncher.ui.allapps.AllAppsView
 import com.malt03.textlauncher.ui.home.HomeController
 import com.android.launcher3.uioverrides.touchcontrollers.StatusBarTouchController
@@ -181,7 +182,7 @@ class LauncherActivity :
             registerIconContainer(allAppsResults.view)
             addUpdateListener(appsStoreListener)
         }
-        allAppsTransition = AllAppsTransitionController(root, stateManager, depthController, home.workspace)
+        allAppsTransition = AllAppsTransitionController(home.launcher, AllAppsTransitionHost(root))
         if (!isTwoPanels) {
             root.allAppsSheet.setSearchResults(allAppsResults.view)
             // ActivityAllAppsContainerView.setInsets: the list and the search results on the sheet
@@ -191,9 +192,7 @@ class LauncherActivity :
                 allApps.setBottomInset(navBottom)
                 allAppsResults.setBottomInset(maxOf(imeBottom, navBottom))
             }
-            allAppsSwipe = AllAppsSwipeController(
-                this, root, allAppsTransition, stateManager, home.activityContext, allAppsSwipeCallbacks,
-            )
+            allAppsSwipe = AllAppsSwipeController(home.launcher, allAppsTransition, allAppsSwipeCallbacks)
         }
         // DragLayer.recreateControllers; open floating views (the long-press menu, folders) are
         // asked first. TextLauncher: the drag layer is an overlay, which sees the touches first.
@@ -234,7 +233,7 @@ class LauncherActivity :
             }
             if (home.closeTopFloatingView()) return@registerOnBackInvokedCallback
             // docs/spec.md 6.6: back closes the all apps list.
-            if (allAppsTransition.isAllAppsShown) {
+            if (allAppsTransition.isAllAppsShown()) {
                 closeAllApps(animate = true)
                 return@registerOnBackInvokedCallback
             }
@@ -344,7 +343,7 @@ class LauncherActivity :
 
     private fun focusSearch() {
         // docs/spec.md 6.4: with the all apps list open, the field has no focus or keyboard.
-        if (isEditMode || allAppsTransition.isAllAppsShown) return
+        if (isEditMode || allAppsTransition.isAllAppsShown()) return
         val editText = root.searchBar.editText
         editText.requestFocus()
         WindowCompat.getInsetsController(window, editText).show(WindowInsets.Type.ime())
@@ -366,7 +365,7 @@ class LauncherActivity :
             return
         }
         // docs/spec.md 6.4: the keyboard is not watched while the all apps list is open.
-        if (isEditMode || allAppsTransition.isAllAppsShown || isLaunching ||
+        if (isEditMode || allAppsTransition.isAllAppsShown() || isLaunching ||
             !isResumedState || !hasWindowFocus()
         ) return
         // Keyboard focus moved from the field to a search result (arrow keys), which hides the
@@ -395,8 +394,6 @@ class LauncherActivity :
 
     /** The all apps swipe (docs/spec.md 6.1, 6.2, 6.6): where it may start. */
     private val allAppsSwipeCallbacks = object : AllAppsSwipeController.Callbacks {
-        override fun isDragging(): Boolean = home.isDragging
-
         override fun canOpenFrom(ev: MotionEvent): Boolean {
             if (isInSearchBar(ev)) return true
             // docs/spec.md 6.1: the home screen scrolled to its bottom, or not scrolling at all.
@@ -442,7 +439,7 @@ class LauncherActivity :
                 clearQuery()
                 // docs/spec.md 6.4: a drag from the all apps list closes it and shows the home
                 // screen.
-                if (fromState == ALL_APPS || allAppsTransition.isAllAppsShown) {
+                if (fromState == ALL_APPS || allAppsTransition.isAllAppsShown()) {
                     allApps.reset()
                     refreshResults()
                 }
@@ -521,7 +518,7 @@ class LauncherActivity :
      * the search results, the all apps list or edit mode.
      */
     override fun canShowOptions(): Boolean =
-        stateManager.state == NORMAL && !allAppsTransition.isAllAppsShown && currentQuery().isEmpty()
+        stateManager.state == NORMAL && !allAppsTransition.isAllAppsShown() && currentQuery().isEmpty()
 
     /** Opens the all apps list with the state animation (docs/spec.md 6.3, the menu's "Apps"). */
     private fun openAllApps() {

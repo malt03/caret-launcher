@@ -23,6 +23,7 @@ import com.android.launcher3.dagger.LauncherComponentProvider
 import com.android.launcher3.deviceprofile.DropTargetProfile
 import com.android.launcher3.dragndrop.DragController
 import com.android.launcher3.model.IModelWriter
+import com.android.launcher3.touch.AllAppsSwipeController
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -46,7 +47,6 @@ import com.android.launcher3.popup.SystemShortcut
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import java.util.stream.Stream
 import com.malt03.textlauncher.ui.GridSpec
-import com.malt03.textlauncher.ui.allapps.AllAppsSwipeController
 import com.android.launcher3.LauncherState
 import com.android.launcher3.statemanager.StateManager
 import com.android.launcher3.statemanager.StateManager.StateHandler
@@ -162,7 +162,7 @@ internal class HomeActivityContext(private val home: HomeController) :
         val fromState = transitionState
         transitionState = state
         // Animated unless the handlers are set to the state at once (StateManager.goToState).
-        val animated = stateManager.isInTransition || stateManager.hasUserControlledSwipe()
+        val animated = stateManager.isInTransition
         home.onStateSetStart(state)
         home.host.onStateSetStart(fromState, state, animated)
     }

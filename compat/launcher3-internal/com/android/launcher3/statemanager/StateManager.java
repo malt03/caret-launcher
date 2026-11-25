@@ -58,8 +58,9 @@ import java.util.ArrayList;
 /**
  * Stand-in for Launcher3's StateManager (android-17.0.0_r1), made from StateManager.java by
  * deleting the launcher UI state (LauncherUiState); changes are marked with "TextLauncher:".
- * TextLauncher's all apps swipe moves the states' properties itself, so it tells the state manager
- * the transition's start and end with members added at the end of the class.
+ * TextLauncher's all apps swipe changes the state when its hold gives way, or when the finger lifts
+ * toward the state it started from, rather than when the drag starts, so it tells the state
+ * manager those changes with members added at the end of the class.
  */
 public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>> {
 
@@ -265,16 +266,14 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
 
         animated &= areAnimatorsEnabled();
         if (getState() == state) {
-            // TextLauncher: nor a swipe that moves the states' properties itself.
-            if (mConfig.currentAnimation == null && mUserControlledCancel == null) {
+            if (mConfig.currentAnimation == null) {
                 // Run any queued runnable
                 if (listener != null) {
                     listener.onAnimationEnd(new AnimatorSet());
                 }
                 onRepeatStateSetAborted(state);
                 return;
-            } else if ((!mConfig.isUserControlled() && mUserControlledCancel == null && animated
-                    && mConfig.targetState == state)
+            } else if ((!mConfig.isUserControlled() && animated && mConfig.targetState == state)
                     || mState.shouldPreserveDataStateOnReapply()) {
                 // We are running the same animation as requested, and/or target state should not be
                 // reset -- allow the current animation to complete instead of canceling it.
@@ -495,12 +494,6 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
         // existing animation.
         while (mConfig.currentAnimation != null || mConfig.playbackController != null) {
             mConfig.reset();
-        }
-        // TextLauncher: also stops a swipe that moves the states' properties itself.
-        if (mUserControlledCancel != null) {
-            Runnable cancel = mUserControlledCancel;
-            mUserControlledCancel = null;
-            cancel.run();
         }
     }
 
@@ -753,51 +746,20 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
     // TextLauncher: members TextLauncher adds.
 
     /**
-     * Stops the swipe that controls the state and moves the states' properties itself (the all
-     * apps list's), or null.
-     */
-    @Nullable
-    private Runnable mUserControlledCancel;
-
-    /**
-     * createAnimationToNewWorkspace and setCurrentUserControlledAnimation for a swipe that moves the
-     * states' properties itself: the current animation is canceled, and {@code onCancel} runs when
-     * something else changes the state before {@link #clearCurrentUserControlledAnimation}.
-     */
-    public void setCurrentUserControlledAnimation(Runnable onCancel) {
-        cancelAnimation();
-        mUserControlledCancel = onCancel;
-    }
-
-    /** The swipe is done (AbstractStateChangeTouchController.clearState). */
-    public void clearCurrentUserControlledAnimation() {
-        mUserControlledCancel = null;
-    }
-
-    /** Whether a swipe that moves the states' properties itself controls the state. */
-    public boolean hasUserControlledSwipe() {
-        return mUserControlledCancel != null;
-    }
-
-    /**
-     * The swipe's transition to {@code state} starts (the animation's dispatchOnStart): at the
-     * threshold, or when the finger lifts toward another state.
+     * The all apps swipe's transition to {@code state} starts without its animation's
+     * dispatchOnStart: the finger lifts toward the state the swipe started from, after the swipe
+     * changed the state (AbstractStateChangeTouchController.onDragEnd).
      */
     public void onUserControlledTransitionStart(S state) {
         onStateTransitionStart(state);
     }
 
     /**
-     * The swipe got to {@code state} (AbstractStateChangeTouchController.goToTargetState). Unless
-     * it {@code changed} the state (it ended where it started, and caught no state animation whose
-     * end it dropped), nothing is told: "If we're already in the target state, don't jump to it".
+     * The all apps swipe ended in {@code state}, which it is in, without its animation's end: it
+     * changed the state on the way, or caught a state animation whose end it dropped
+     * (AbstractStateChangeTouchController.goToTargetState).
      */
-    public void onUserControlledTransitionEnd(S state, boolean changed) {
-        if (!changed) {
-            mCurrentStableState = state;
-            return;
-        }
-        if (mState != state) onStateTransitionStart(state);
+    public void onUserControlledTransitionEnd(S state) {
         onStateTransitionEnd(state);
     }
 }

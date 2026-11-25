@@ -1,6 +1,6 @@
 ---
 id: Tex-op7u
-status: open
+status: closed
 deps: []
 links: [Tex-44r9, Tex-iuyb]
 created: 2026-11-24T13:35:59Z
@@ -22,3 +22,9 @@ tags: [launcher3, upstream]
 
 書き写しのまま残すもの（上流の形が合わず、コピーにしても削除の印ばかりになる）: 検索まわり、LauncherRootLayout（キーボードに合わせた配置）、AllAppsSheet・AllAppsView（検索欄がシートの外）、DepthController の背景のぼかし（上流は SurfaceControl・BlurUtils などアプリに使えない仕組み）、DeviceProfile の互換クラス（セルの大きさはキーボードを下ろしたホームの高さから決まる）、GridSizeMigration（上流はグリッドごとの DB ファイルとホットシート）、LauncherDatabase の検索の表、HomeItemViews・HomeFolder（設定だけの薄いサブクラス）、HomeItemInflater（小さい）、ホームの Activity（LauncherActivity。上流の Launcher.java のコピーにしない。2026-11-25 に決定、Tex-zwo5、理由は docs/launcher3-porting.md）。
 
+
+## Notes
+
+**2026-11-25T00:27:01Z**
+
+2026-11-25: ①〜⑧ をすべて終えた（⑧-2 Tex-zwo5 はしないと決めて閉じた）。実機での確認の項目は docs/device-checklist.md
