@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -139,12 +139,12 @@ interface IModelWriter {
 
     fun deleteItemsFromDatabase(items: List<ItemInfo>, reason: String?)
 
-    // TextLauncher: FolderInfo in place of CollectionInfo.
+    // CaretLauncher: FolderInfo in place of CollectionInfo.
     fun deleteCollectionAndContentsFromDatabase(info: FolderInfo)
 
     fun deleteWidgetInfo(
         info: LauncherAppWidgetInfo,
-        // TextLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
+        // CaretLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
         holder: AppWidgetHost?,
         reason: String?,
     )
@@ -252,7 +252,7 @@ interface TransactionContext {
      *
      * @param info The [CollectionInfo] representing the collection to delete.
      */
-    // TextLauncher: FolderInfo in place of CollectionInfo.
+    // CaretLauncher: FolderInfo in place of CollectionInfo.
     fun deleteCollectionAndContentsFromDatabase(info: FolderInfo)
 
     /**
@@ -264,7 +264,7 @@ interface TransactionContext {
      */
     fun deleteWidgetInfo(
         info: LauncherAppWidgetInfo,
-        // TextLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
+        // CaretLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
         holder: AppWidgetHost?,
         reason: String?,
     )

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.touch;
@@ -49,9 +49,9 @@ import com.android.launcher3.util.TouchController;
 /**
  * Stand-in for Launcher3's AbstractStateChangeTouchController (android-17.0.0_r1), made from
  * AbstractStateChangeTouchController.java by deleting the logs, the trackpad, the mouse, the
- * desktop and the all apps overscroll; changes are marked with "TextLauncher:".
+ * desktop and the all apps overscroll; changes are marked with "CaretLauncher:".
  *
- * TextLauncher: the search field's closed position follows the keyboard, which goes down as the
+ * CaretLauncher: the search field's closed position follows the keyboard, which goes down as the
  * all apps list opens, so the progress is worked out from where the finger has taken the field
  * rather than with a fixed progress multiplier. The swipe first holds back until
  * {@link #HOLD_THRESHOLD_DP} (OverScroll.dampedScroll), then with the haptic the field catches up
@@ -79,18 +79,18 @@ public abstract class AbstractStateChangeTouchController
     protected boolean mGoingBetweenStates = true;
     // Ratio of transition process [0, 1] to drag displacement (px)
     protected float mProgressMultiplier;
-    // TextLauncher: no trackpad (mIsTrackpadReverseScroll).
+    // CaretLauncher: no trackpad (mIsTrackpadReverseScroll).
 
     private boolean mNoIntercept;
-    // TextLauncher: no logs (mIsLogContainerSet).
+    // CaretLauncher: no logs (mIsLogContainerSet).
     private float mStartProgress;
     private float mDisplacementShift;
     private boolean mCanBlockFling;
-    // TextLauncher: no all apps overscroll (mAllAppsOvershootStarted).
+    // CaretLauncher: no all apps overscroll (mAllAppsOvershootStarted).
 
     public AbstractStateChangeTouchController(Launcher l, SingleAxisSwipeDetector.Direction dir) {
         mLauncher = l;
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         mDetector = new SingleAxisSwipeDetector(l.asContext(), this, dir);
         mSwipeDirection = dir;
         mHoldThreshold = HOLD_THRESHOLD_DP
@@ -107,7 +107,7 @@ public abstract class AbstractStateChangeTouchController
                 return false;
             }
 
-            // TextLauncher: no trackpad (mIsTrackpadReverseScroll).
+            // CaretLauncher: no trackpad (mIsTrackpadReverseScroll).
 
             // Now figure out which direction scroll events the controller will start
             // calling the callbacks.
@@ -119,7 +119,7 @@ public abstract class AbstractStateChangeTouchController
                 ignoreSlopWhenSettling = true;
             } else {
                 directionsToDetectScroll = getSwipeDirection();
-                // TextLauncher: no mouse or desktop.
+                // CaretLauncher: no mouse or desktop.
                 if (directionsToDetectScroll == 0) {
                     mNoIntercept = true;
                     return false;
@@ -132,7 +132,7 @@ public abstract class AbstractStateChangeTouchController
         if (mNoIntercept) {
             return false;
         }
-        // TextLauncher: a menu or folder opened since the touch began (a long press), or a drag
+        // CaretLauncher: a menu or folder opened since the touch began (a long press), or a drag
         // started, gets the touches first, as the drag layer gives them to its controller.
         if (!mDetector.isDraggingOrSettling() && !canKeepIntercepting()) {
             mNoIntercept = true;
@@ -161,7 +161,7 @@ public abstract class AbstractStateChangeTouchController
     }
 
     protected float getShiftRange() {
-        // TextLauncher: the subclass gives the all apps transition.
+        // CaretLauncher: the subclass gives the all apps transition.
         return getAllAppsController().getShiftRange();
     }
 
@@ -193,7 +193,7 @@ public abstract class AbstractStateChangeTouchController
             mCurrentAnimation.getTarget().removeListener(mClearStateOnCancelListener);
         }
         mProgressMultiplier = initCurrentAnimation();
-        // TextLauncher: the state changes when the hold gives way, or when the finger lifts.
+        // CaretLauncher: the state changes when the hold gives way, or when the finger lifts.
         mStateChangePending = true;
         mStartBarTop = getAllAppsController().getBarTop();
         return true;
@@ -208,15 +208,15 @@ public abstract class AbstractStateChangeTouchController
     @Override
     public void onDragStart(boolean start, float startDisplacement) {
         mStartState = mLauncher.getStateManager().getState();
-        // TextLauncher: no logs (mIsLogContainerSet).
+        // CaretLauncher: no logs (mIsLogContainerSet).
 
         if (mCurrentAnimation == null) {
             mFromState = mStartState;
             mToState = null;
             cancelAnimationControllers();
-            // TextLauncher: a state animation this drag catches gives its end to the drag's.
+            // CaretLauncher: a state animation this drag catches gives its end to the drag's.
             mMustSettle = mLauncher.getStateManager().isInTransition();
-            // TextLauncher: caught in the middle of an animation, the field follows the finger at
+            // CaretLauncher: caught in the middle of an animation, the field follows the finger at
             // once.
             mHoldGaveWay = isAllAppsBetweenStates();
             reinitCurrentAnimation(false, mDetector.wasInitialTouchPositive());
@@ -224,11 +224,11 @@ public abstract class AbstractStateChangeTouchController
         } else {
             mCurrentAnimation.pause();
             mStartProgress = mCurrentAnimation.getProgressFraction();
-            // TextLauncher: the field goes on from where the animation took it.
+            // CaretLauncher: the field goes on from where the animation took it.
             mHoldGaveWay = true;
             mStartBarTop = getAllAppsController().getBarTop();
         }
-        // TextLauncher: the catch-up starts again.
+        // CaretLauncher: the catch-up starts again.
         cancelCatchUp();
         mHoldLag = 0;
         mCanBlockFling = mFromState == NORMAL;
@@ -237,7 +237,7 @@ public abstract class AbstractStateChangeTouchController
 
     @Override
     public boolean onDrag(float displacement) {
-        // TextLauncher: the progress from where the finger has taken the field, after the hold
+        // CaretLauncher: the progress from where the finger has taken the field, after the hold
         // (mProgressMultiplier and mStartProgress stand for a field whose positions do not move).
         mLastDisplacement = displacement - mDisplacementShift;
         float progress = getProgressForDisplacement(mLastDisplacement);
@@ -251,7 +251,7 @@ public abstract class AbstractStateChangeTouchController
                     mFlingBlockCheck.blockFling();
                 }
             }
-            // TextLauncher: no all apps overscroll (onPull).
+            // CaretLauncher: no all apps overscroll (onPull).
         } else if (progress >= 1) {
             if (reinitCurrentAnimation(true, isDragTowardPositive)) {
                 mDisplacementShift = displacement;
@@ -259,7 +259,7 @@ public abstract class AbstractStateChangeTouchController
                     mFlingBlockCheck.blockFling();
                 }
             }
-            // TextLauncher: no all apps overscroll (onPull).
+            // CaretLauncher: no all apps overscroll (onPull).
         } else {
             mFlingBlockCheck.onEvent();
 
@@ -268,7 +268,7 @@ public abstract class AbstractStateChangeTouchController
         return true;
     }
 
-    // TextLauncher: no logs or trackpad (onDrag(float, MotionEvent)).
+    // CaretLauncher: no logs or trackpad (onDrag(float, MotionEvent)).
 
     protected void updateProgress(float fraction) {
         if (mCurrentAnimation == null) {
@@ -293,7 +293,7 @@ public abstract class AbstractStateChangeTouchController
             return;
         }
 
-        // TextLauncher: no trackpad (mIsTrackpadReverseScroll), and the catch-up stops.
+        // CaretLauncher: no trackpad (mIsTrackpadReverseScroll), and the catch-up stops.
         cancelCatchUp();
         boolean fling = mDetector.isFling(velocity);
 
@@ -307,7 +307,7 @@ public abstract class AbstractStateChangeTouchController
         final float progressVelocity = velocity * mProgressMultiplier;
         final float interpolatedProgress = mCurrentAnimation.getInterpolatedProgress();
         if (!mHoldGaveWay) {
-            // TextLauncher: let go during the hold, it goes back.
+            // CaretLauncher: let go during the hold, it goes back.
             targetState = mFromState;
         } else if (fling) {
             targetState =
@@ -337,7 +337,7 @@ public abstract class AbstractStateChangeTouchController
                 duration = 0;
                 startProgress = 1;
             } else {
-                // TextLauncher: the Launcher stand-in is not a Context.
+                // CaretLauncher: the Launcher stand-in is not a Context.
                 startProgress = Utilities.boundToRange(progress
                         + progressVelocity * getSingleFrameMs(mLauncher.asContext()), 0f, 1f);
                 duration = BaseSwipeDetector.calculateDuration(velocity,
@@ -347,11 +347,11 @@ public abstract class AbstractStateChangeTouchController
             // Let the state manager know that the animation didn't go to the target state,
             // but don't cancel ourselves (we already clean up when the animation completes).
             mCurrentAnimation.getTarget().removeListener(mClearStateOnCancelListener);
-            // TextLauncher: only the success listeners (the state's end) are told, as the
+            // CaretLauncher: only the success listeners (the state's end) are told, as the
             // dispatchOnStart that lets the controller play again does not follow (the state does
             // not change to mToState).
             cancelSuccessListeners();
-            // TextLauncher: a swipe that changed the state changes it back as the field goes back,
+            // CaretLauncher: a swipe that changed the state changes it back as the field goes back,
             // and gives the state its end when it gets there (goToTargetState).
             if (!mStateChangePending) {
                 mLauncher.getStateManager().onUserControlledTransitionStart(mFromState);
@@ -364,7 +364,7 @@ public abstract class AbstractStateChangeTouchController
                 duration = 0;
                 startProgress = 0;
             } else {
-                // TextLauncher: the Launcher stand-in is not a Context.
+                // CaretLauncher: the Launcher stand-in is not a Context.
                 startProgress = Utilities.boundToRange(progress
                         + progressVelocity * getSingleFrameMs(mLauncher.asContext()), 0f, 1f);
                 duration = BaseSwipeDetector.calculateDuration(velocity,
@@ -375,12 +375,12 @@ public abstract class AbstractStateChangeTouchController
         ValueAnimator anim = mCurrentAnimation.getAnimationPlayer();
         anim.setFloatValues(startProgress, endProgress);
         updateSwipeCompleteAnimation(anim, duration, targetState, velocity, fling);
-        // TextLauncher: the state changes here unless it did when the hold gave way.
+        // CaretLauncher: the state changes here unless it did when the hold gave way.
         if (mStateChangePending) {
             mStateChangePending = false;
             mCurrentAnimation.dispatchOnStart();
         }
-        // TextLauncher: no all apps overscroll or spring (onRelease,
+        // CaretLauncher: no all apps overscroll or spring (onRelease,
         // addSpringFromFlingUpdateListener).
         anim.start();
     }
@@ -398,33 +398,33 @@ public abstract class AbstractStateChangeTouchController
         if (shouldGoToTargetState) {
             goToTargetState(targetState);
         }
-        // TextLauncher: no logs (logReachedState).
+        // CaretLauncher: no logs (logReachedState).
     }
 
     protected void goToTargetState(LauncherState targetState) {
         if (!mLauncher.isInState(targetState)) {
             // If we're already in the target state, don't jump to it at the end of the animation in
             // case the user started interacting with it before the animation finished.
-            // TextLauncher: no logs (logReachedState).
+            // CaretLauncher: no logs (logReachedState).
             mLauncher.getStateManager().goToState(targetState, false /* animated */);
         } else if ((mMustSettle && targetState == mFromState)
                 || mLauncher.getStateManager().getCurrentStableState() != targetState) {
-            // TextLauncher: the state the swipe went back to, or the state of the animation it
+            // CaretLauncher: the state the swipe went back to, or the state of the animation it
             // caught (or of its own animation it caught going back), gets its end, which the
             // swipe's animation did not give it.
             mLauncher.getStateManager().onUserControlledTransitionEnd(targetState);
         }
-        // TextLauncher: no system UI scrim (getSysUiScrim).
+        // CaretLauncher: no system UI scrim (getSysUiScrim).
     }
 
-    // TextLauncher: no logs (logReachedState, getContainerInfo).
+    // CaretLauncher: no logs (logReachedState, getContainerInfo).
 
     protected void clearState() {
         cancelAnimationControllers();
         mGoingBetweenStates = true;
         mDetector.finishedScrolling();
         mDetector.setDetectableScrollConditions(0, false);
-        // TextLauncher: no trackpad (mIsTrackpadReverseScroll), and the hold is done.
+        // CaretLauncher: no trackpad (mIsTrackpadReverseScroll), and the hold is done.
         cancelCatchUp();
         mStateChangePending = false;
     }
@@ -434,11 +434,11 @@ public abstract class AbstractStateChangeTouchController
     }
 
     protected boolean shouldOpenAllApps(boolean isDragTowardPositive) {
-        // TextLauncher: no trackpad (mIsTrackpadReverseScroll).
+        // CaretLauncher: no trackpad (mIsTrackpadReverseScroll).
         return isDragTowardPositive;
     }
 
-    // ---- TextLauncher ----
+    // ---- CaretLauncher ----
 
     /** How far the finger goes before the hold gives way (docs/spec.md 6.2). */
     private static final float HOLD_THRESHOLD_DP = 48f;

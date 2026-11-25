@@ -14,7 +14,7 @@
  * limitations under the License
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Extension of AbstractListeningExecutorService which executed on a provided looper.
  *
- * <p>Stand-in for Launcher3's LooperExecutor (android-17.0.0_r1). TextLauncher: an
+ * <p>Stand-in for Launcher3's LooperExecutor (android-17.0.0_r1). CaretLauncher: an
  * AbstractExecutorService (no Guava), whose thread starts when it is first used, and no priority
  * elevation.
  */

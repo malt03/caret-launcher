@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model;
@@ -82,7 +82,7 @@ import java.util.concurrent.CancellationException;
  * <p>Stand-in for Launcher3's LoaderTask (android-17.0.0_r1), made from LoaderTask.java by deleting
  * Dagger, the restore, the install sessions, the safe mode, the default layout, the home screen
  * files, the first screen broadcast, the widgets model, the folder names, the extra items, the
- * work and private profiles and the bulk icon loading; changes are marked with "TextLauncher:".
+ * work and private profiles and the bulk icon loading; changes are marked with "CaretLauncher:".
  * What the app does in Launcher3's place (the grid migration, the ghost widgets) comes through
  * {@link Hooks}.
  */
@@ -116,10 +116,10 @@ public class LoaderTask implements Runnable {
     private final Set<PackageUserKey> mPendingPackages = new HashSet<>();
     private String mDbName;
 
-    // TextLauncher: what the app does in Launcher3's place.
+    // CaretLauncher: what the app does in Launcher3's place.
     private final Hooks mHooks;
 
-    // TextLauncher: no Dagger.
+    // CaretLauncher: no Dagger.
     public LoaderTask(
             Context context,
             InvariantDeviceProfile idp,
@@ -150,7 +150,7 @@ public class LoaderTask implements Runnable {
         }
     }
 
-    // TextLauncher: no install sessions (sendFirstScreenActiveInstallsBroadcast).
+    // CaretLauncher: no install sessions (sendFirstScreenActiveInstallsBroadcast).
 
     private void loadAllSurfacesOrdered(@Nullable LoaderMemoryLogger memoryLogger) {
 
@@ -165,7 +165,7 @@ public class LoaderTask implements Runnable {
         logASplit("loadWorkspace finished");
 
         // Sanitize data re-syncs widgets/shortcuts based on the workspace loaded from db.
-        // TextLauncher: one database, which is always the main one (mIDP.dbFile).
+        // CaretLauncher: one database, which is always the main one (mIDP.dbFile).
         verifyNotStopped();
         sanitizeWidgetsShortcutsAndPackages();
         logASplit("sanitizeData finished");
@@ -174,7 +174,7 @@ public class LoaderTask implements Runnable {
         mLauncherBinder.bindWorkspace(true /* incrementBindId */, /* isBindSync= */ false);
         logASplit("bindWorkspace finished");
 
-        // TextLauncher: no home screen files, model delegate or first screen broadcast.
+        // CaretLauncher: no home screen files, model delegate or first screen broadcast.
 
         logASplit("step 1 loading workspace complete");
         verifyNotStopped();
@@ -194,7 +194,7 @@ public class LoaderTask implements Runnable {
         logASplit("bindAllApps finished");
 
         verifyNotStopped();
-        // TextLauncher: no promise icons or restored widgets to ignore (setIgnorePackages).
+        // CaretLauncher: no promise icons or restored widgets to ignore (setIgnorePackages).
         updateHandler.updateIcons(allActivityList,
                 LauncherActivityCachingLogic.INSTANCE,
                 mModel::onPackageIconsUpdated);
@@ -223,7 +223,7 @@ public class LoaderTask implements Runnable {
         logASplit("step 3 loading all shortcuts complete");
         verifyNotStopped();
 
-        // TextLauncher: no widgets model (fourth step) or folder names (fifth step).
+        // CaretLauncher: no widgets model (fourth step) or folder names (fifth step).
 
         verifyNotStopped();
         updateHandler.finish();
@@ -239,7 +239,7 @@ public class LoaderTask implements Runnable {
         }
 
         Trace.beginSection(TAG);
-        // TextLauncher: the model executor's priority is not raised (elevatePriority).
+        // CaretLauncher: the model executor's priority is not raised (elevatePriority).
         LoaderMemoryLogger memoryLogger = new LoaderMemoryLogger();
 
         try (LauncherModel.LoaderTransaction transaction = mModel.beginLoader(this)) {
@@ -247,7 +247,7 @@ public class LoaderTask implements Runnable {
 
             transaction.commit();
             memoryLogger.clearLogs();
-            // TextLauncher: no restore.
+            // CaretLauncher: no restore.
         } catch (CancellationException e) {
             // Loader stopped, ignore
             FileLog.w(TAG, "LoaderTask cancelled");
@@ -272,19 +272,19 @@ public class LoaderTask implements Runnable {
         ModelDbController dbController = mModel.getModelDbController();
 
         try {
-            // TextLauncher: the app's grid migration in the one database (attemptMigrateDb).
+            // CaretLauncher: the app's grid migration in the one database (attemptMigrateDb).
             mHooks.migrateGridIfNeeded(dbController);
         } catch (Exception e) {
             FileLog.e(TAG, "Failed to migrate grid", e);
         }
 
-        // TextLauncher: no default layout (loadDefaultFavoritesIfNecessary).
+        // CaretLauncher: no default layout (loadDefaultFavoritesIfNecessary).
 
         synchronized (mBgDataModel) {
             mBgDataModel.clear();
             mPendingPackages.clear();
 
-            // TextLauncher: no install sessions.
+            // CaretLauncher: no install sessions.
 
             mShortcutKeyToPinnedShortcuts = new HashMap<>();
             final LoaderCursor c = new LoaderCursor(
@@ -306,7 +306,7 @@ public class LoaderTask implements Runnable {
                 if (mStopped) {
                     Log.w(TAG, "loadWorkspaceImpl: Loader stopped, skipping item processing");
                 } else {
-                    // TextLauncher: no preloaded items (processPreloadedItems).
+                    // CaretLauncher: no preloaded items (processPreloadedItems).
                     while (!mStopped && c.moveToNext()) {
                         itemProcessor.processItem();
                     }
@@ -322,10 +322,10 @@ public class LoaderTask implements Runnable {
                 return;
             }
 
-            // TextLauncher: no string cache (updateStringCache).
+            // CaretLauncher: no string cache (updateStringCache).
 
             var loadedItems = itemProcessor.finalizeData(mModel.getModelDbController());
-            // TextLauncher: no restore (browser icon migration).
+            // CaretLauncher: no restore (browser icon migration).
 
             mBgDataModel.dataLoadComplete(loadedItems, name /* reason */);
         }
@@ -342,7 +342,7 @@ public class LoaderTask implements Runnable {
     @WorkerThread
     private void queryPinnedShortcutsForUnlockedUsers(Context context,
             LongSparseArray<Boolean> unlockedUsers) {
-        // TextLauncher: the personal profile only (docs/spec.md 2.1), in place of
+        // CaretLauncher: the personal profile only (docs/spec.md 2.1), in place of
         // mUserManagerState.getAllCachedInfos().
         UserHandle user = Process.myUserHandle();
         long serialNo = mUserCache.getSerialNumberForUser(user);
@@ -376,7 +376,7 @@ public class LoaderTask implements Runnable {
             List<IconRequestInfo<WorkspaceItemInfo>> iconRequestInfos) {
         Trace.beginSection("LoadWorkspaceIconsInBulk");
         try {
-            // TextLauncher: one by one, as IconCache has no bulk loading (getTitlesAndIconsInBulk).
+            // CaretLauncher: one by one, as IconCache has no bulk loading (getTitlesAndIconsInBulk).
             for (IconRequestInfo<WorkspaceItemInfo> iconRequestInfo : iconRequestInfos) {
                 mIconCache.getTitleAndIcon(iconRequestInfo.itemInfo,
                         iconRequestInfo.launcherActivityInfo, iconRequestInfo.lookupFlag);
@@ -394,11 +394,11 @@ public class LoaderTask implements Runnable {
         }
     }
 
-    // TextLauncher: no promise icons or restored widgets (setIgnorePackages).
+    // CaretLauncher: no promise icons or restored widgets (setIgnorePackages).
 
     private void sanitizeWidgetsShortcutsAndPackages() {
         // Remove any ghost widgets
-        // TextLauncher: the app's widget host (ModelDbController.removeGhostWidgets).
+        // CaretLauncher: the app's widget host (ModelDbController.removeGhostWidgets).
         IntSet validWidgets = new IntSet();
         for (ItemInfo info : mBgDataModel.itemsIdMap) {
             if (info instanceof LauncherAppWidgetInfo widget) {
@@ -410,7 +410,7 @@ public class LoaderTask implements Runnable {
         // Update pinned state of model shortcuts
         mBgDataModel.updateShortcutPinnedState(mContext);
 
-        // TextLauncher: no SD card receiver (SdCardAvailableReceiver).
+        // CaretLauncher: no SD card receiver (SdCardAvailableReceiver).
     }
 
     private List<LauncherActivityInfo> loadAllApps() {
@@ -418,7 +418,7 @@ public class LoaderTask implements Runnable {
         // Clear the list of apps
         mBgAllAppsList.clear();
 
-        // TextLauncher: the personal profile only (docs/spec.md 2.1), in place of
+        // CaretLauncher: the personal profile only (docs/spec.md 2.1), in place of
         // mUserManagerState.getAllCachedInfos(), and no bulk icon requests.
         UserHandle user = Process.myUserHandle();
 
@@ -434,14 +434,14 @@ public class LoaderTask implements Runnable {
         // Create the ApplicationInfos
         for (int i = 0; i < apps.size(); i++) {
             LauncherActivityInfo app = apps.get(i);
-            // TextLauncher: AppInfo(LauncherActivityInfo, UserHandle); no archived apps. The icon
+            // CaretLauncher: AppInfo(LauncherActivityInfo, UserHandle); no archived apps. The icon
             // is loaded as the app is added (no getTitlesAndIconsInBulk).
             AppInfo appInfo = new AppInfo(app, user);
             mBgAllAppsList.add(appInfo, app);
         }
         allActivityList.addAll(apps);
 
-        // TextLauncher: no private space.
+        // CaretLauncher: no private space.
         mBgAllAppsList.setFlags(FLAG_QUIET_MODE_ENABLED, quietMode);
         mBgAllAppsList.setFlags(FLAG_HAS_SHORTCUT_PERMISSION,
                 hasShortcutsPermission(mContext));
@@ -453,13 +453,13 @@ public class LoaderTask implements Runnable {
         return allActivityList;
     }
 
-    // TextLauncher: no archived apps (getAppInfoIconRequestInfo).
+    // CaretLauncher: no archived apps (getAppInfoIconRequestInfo).
 
     private List<ShortcutInfo> loadDeepShortcuts() {
         List<ShortcutInfo> allShortcuts = new ArrayList<>();
 
         if (mBgAllAppsList.hasShortcutHostPermission()) {
-            // TextLauncher: the personal profile only; no deep shortcut counts.
+            // CaretLauncher: the personal profile only; no deep shortcut counts.
             UserHandle user = Process.myUserHandle();
             if (mUserManagerState.isUserUnlocked(user)) {
                 List<ShortcutInfo> shortcuts =
@@ -470,7 +470,7 @@ public class LoaderTask implements Runnable {
         return allShortcuts;
     }
 
-    // TextLauncher: no folder names (loadFolderNames) or widgets (isValidProvider).
+    // CaretLauncher: no folder names (loadFolderNames) or widgets (isValidProvider).
 
     private static void logASplit(String label) {
         if (DEBUG) {
@@ -479,7 +479,7 @@ public class LoaderTask implements Runnable {
     }
 
     /**
-     * TextLauncher: PackageManagerHelper.hasShortcutsPermission, as there is no
+     * CaretLauncher: PackageManagerHelper.hasShortcutsPermission, as there is no
      * PackageManagerHelper.
      */
     private static boolean hasShortcutsPermission(Context context) {
@@ -491,14 +491,14 @@ public class LoaderTask implements Runnable {
         return false;
     }
 
-    /** TextLauncher: no Dagger. */
+    /** CaretLauncher: no Dagger. */
     public interface LoaderTaskFactory {
         LoaderTask newLoaderTask(String callerName, BaseLauncherBinder binder);
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
-    /** TextLauncher: what the app does in Launcher3's place, on the model thread. */
+    /** CaretLauncher: what the app does in Launcher3's place, on the model thread. */
     public interface Hooks {
         /**
          * ModelDbController.attemptMigrateDb: the app's grid migration (GridSizeMigration), in the

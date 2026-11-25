@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3
@@ -52,7 +52,7 @@ import java.util.concurrent.CompletionStage
  * Launcher.
  *
  * Stand-in for Launcher3's LauncherModel (android-17.0.0_r1), made from LauncherModel.kt by deleting
- * Dagger, the model delegate and initializer, the widgets model and the dump; changes are marked with "TextLauncher:". The app makes the one LauncherModel
+ * Dagger, the model delegate and initializer, the widgets model and the dump; changes are marked with "CaretLauncher:". The app makes the one LauncherModel
  * (LauncherAppState.getModel) with its LoaderTask factory.
  */
 class LauncherModel(
@@ -64,7 +64,7 @@ class LauncherModel(
     val modelDbController: ModelDbController,
 ) {
 
-    // TextLauncher: no Dagger; the model makes its task controller, binders and writers, and the
+    // CaretLauncher: no Dagger; the model makes its task controller, binders and writers, and the
     // app the install queue.
     private val installQueue: ItemInstallQueue
         get() = ItemInstallQueue.INSTANCE[context]
@@ -100,7 +100,7 @@ class LauncherModel(
     var lastLoadId: Int = -1
         private set
 
-    // TextLauncher: no model delegate (mDataValidationCheck) or initializer; the app registers
+    // CaretLauncher: no model delegate (mDataValidationCheck) or initializer; the app registers
     // the LauncherApps callback (ModelInitializer).
 
     fun newModelCallbacks() = ModelLauncherCallbacks(this::enqueueModelUpdateTask)
@@ -115,7 +115,7 @@ class LauncherModel(
     /** Called when the model is destroyed */
     fun destroy() {
         mModelDestroyed = true
-        // TextLauncher: no model delegate.
+        // CaretLauncher: no model delegate.
     }
 
     /**
@@ -204,7 +204,7 @@ class LauncherModel(
                 // For now, continue posting the binding of AllApps as there are other
                 // issues that arise from that.
                 launcherBinder.bindAllApps()
-                // TextLauncher: no widgets model (bindWidgets).
+                // CaretLauncher: no widgets model (bindWidgets).
 
                 if (Flags.simplifiedLauncherModelBinding())
                     installQueue.resumeModelPush(ItemInstallQueue.FLAG_LOADER_RUNNING)
@@ -287,7 +287,7 @@ class LauncherModel(
      * [UserCache]
      */
     fun validateModelDataOnResume() {
-        // TextLauncher: no model delegate to validate the data.
+        // CaretLauncher: no model delegate to validate the data.
     }
 
     /** Called when the icons for packages have been updated in the icon cache. */
@@ -299,7 +299,7 @@ class LauncherModel(
         )
     }
 
-    // TextLauncher: no widgets model (onWidgetLabelsUpdated).
+    // CaretLauncher: no widgets model (onWidgetLabelsUpdated).
 
     fun enqueueModelUpdateTask(task: ModelUpdateTask) {
         if (mModelDestroyed) {
@@ -335,7 +335,7 @@ class LauncherModel(
         }
     }
 
-    // TextLauncher: no widgets model (refreshAndBindWidgetsAndShortcuts) or dump.
+    // CaretLauncher: no widgets model (refreshAndBindWidgetsAndShortcuts) or dump.
 
     /** Returns an array of currently attached callbacks */
     val callbacks: Array<BgDataModel.Callbacks>

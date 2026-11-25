@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -105,7 +105,7 @@ import java.util.stream.Stream;
 /**
  * Stand-in for Launcher3's Launcher (android-17.0.0_r1). As in Launcher3, the launcher is the
  * ActivityContext of the home screen, so copied code can use {@link #getLauncher(Context)} and
- * {@code instanceof Launcher}. TextLauncher's home screen extends this; the launcher is not an
+ * {@code instanceof Launcher}. CaretLauncher's home screen extends this; the launcher is not an
  * Activity here, and only the members copied code uses are declared.
  */
 public abstract class Launcher implements StatefulContainer<LauncherState> {
@@ -116,13 +116,13 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private static final float BOUNCE_ANIMATION_TENSION = 1.3f;
 
     /**
-     * TextLauncher: a ContextTracker rather than ContextTracker.ActivityTracker, since the launcher
+     * CaretLauncher: a ContextTracker rather than ContextTracker.ActivityTracker, since the launcher
      * is not a BaseActivity; the home is started as {@link #isStarted()} says. The home screen
      * calls handleCreate, handleNewIntent and onContextDestroyed where Launcher3's Launcher does.
      */
     public static final ContextTracker<Launcher> ACTIVITY_TRACKER = new LauncherTracker();
 
-    /** TextLauncher: ContextTracker.ActivityTracker for a launcher that is not an activity. */
+    /** CaretLauncher: ContextTracker.ActivityTracker for a launcher that is not an activity. */
     private static final class LauncherTracker extends ContextTracker<Launcher> {
         @Override
         public boolean isHomeStarted(Launcher launcher) {
@@ -131,12 +131,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     private final DragLayer mDragLayer;
-    // TextLauncher: the workspace is the home screen's (getWorkspace), made once this launcher is.
+    // CaretLauncher: the workspace is the home screen's (getWorkspace), made once this launcher is.
     private final Hotseat mHotseat;
     private final ScrimView mScrimView;
     private final StatsLogManager mStatsLogManager = new StatsLogManager();
 
-    // TextLauncher: made here, as the launcher is not an Activity (Launcher.onCreate).
+    // CaretLauncher: made here, as the launcher is not an Activity (Launcher.onCreate).
     private final StateManager<LauncherState, Launcher> mStateManager =
             new StateManager<>(this, NORMAL);
 
@@ -156,7 +156,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     /**
-     * TextLauncher: the home screen's workspace, which is made with this launcher as its context
+     * CaretLauncher: the home screen's workspace, which is made with this launcher as its context
      * (Workspace's constructor looks the launcher up).
      */
     public abstract Workspace<?> getWorkspace();
@@ -167,7 +167,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     /**
-     * Creates and adds new folder to CellLayout. TextLauncher: the home screen makes the folder's
+     * Creates and adds new folder to CellLayout. CaretLauncher: the home screen makes the folder's
      * views (FolderIcon.inflateFolderAndIcon), adds them (Workspace.addInScreen) and writes the
      * folder to the model.
      */
@@ -175,33 +175,33 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             int cellX, int cellY);
 
     /**
-     * Launcher.isTouchInProgress. TextLauncher: the home screen's root view says it, as it gets the
+     * Launcher.isTouchInProgress. CaretLauncher: the home screen's root view says it, as it gets the
      * touches.
      */
     public abstract boolean isTouchInProgress();
 
     /**
      * ItemInflater.inflateItem: the view of an item dropped from elsewhere on the page.
-     * TextLauncher: the home screen inflates it (its HomeItemInflater).
+     * CaretLauncher: the home screen inflates it (its HomeItemInflater).
      */
     public abstract View inflateItem(ItemInfo info, CellLayout parent, int container);
 
     public CellLayout getCellLayout(int container, int screenId) {
-        // TextLauncher: no hotseat.
+        // CaretLauncher: no hotseat.
         return getWorkspace().getScreenWithId(screenId);
     }
 
-    /** TextLauncher: the home screen's drop target bar. */
+    /** CaretLauncher: the home screen's drop target bar. */
     public abstract DropTargetBar getDropTargetBar();
 
-    // TextLauncher: made on first use (Launcher.setupViews makes them), as the home screen makes
+    // CaretLauncher: made on first use (Launcher.setupViews makes them), as the home screen makes
     // the drag controller after this launcher.
     private PopupController<Launcher> mPopupControllerForHomeScreenItems;
     private PopupController<Launcher> mPopupControllerForAppIcons;
 
     public PopupController<Launcher> getPopupControllerForHomeScreenItems() {
         if (mPopupControllerForHomeScreenItems == null) {
-            // TextLauncher: LauncherModelModule's mappers, without Dagger.
+            // CaretLauncher: LauncherModelModule's mappers, without Dagger.
             mPopupControllerForHomeScreenItems =
                     PopupController.PopupControllerFactory.createPopupController(
                             new PopupDataRepository(Set.of(FolderSystemShortcuts.INSTANCE,
@@ -227,12 +227,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     /**
      * @return a stream of supported system shortcuts.
      */
-    // TextLauncher: the home screen gives its options (docs/spec.md 5.3): App info, and its own.
+    // CaretLauncher: the home screen gives its options (docs/spec.md 5.3): App info, and its own.
     @Override
     public abstract Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo);
 
     /**
-     * TextLauncher: the widget menu's "Settings" (AppWidgetSystemShortcuts' widget settings):
+     * CaretLauncher: the widget menu's "Settings" (AppWidgetSystemShortcuts' widget settings):
      * WidgetAddFlowHandler.startConfigActivity with REQUEST_RECONFIGURE_APPWIDGET.
      */
     public void startWidgetReconfigure(LauncherAppWidgetHostView view) {
@@ -257,19 +257,19 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     /**
-     * TextLauncher: the home screen gives the handlers (Launcher.collectStateHandlers: the all apps
+     * CaretLauncher: the home screen gives the handlers (Launcher.collectStateHandlers: the all apps
      * transition and the depth controller).
      */
     @Override
     public abstract void collectStateHandlers(List<StateHandler<LauncherState>> out);
 
-    /** TextLauncher: no overview, so the background app state is the home screen. */
+    /** CaretLauncher: no overview, so the background app state is the home screen. */
     @Override
     public LauncherState getBackgroundAppState() {
         return NORMAL;
     }
 
-    /** TextLauncher: no forced invisibility (Launcher.shouldAnimateStateChange). */
+    /** CaretLauncher: no forced invisibility (Launcher.shouldAnimateStateChange). */
     @Override
     public boolean shouldAnimateStateChange() {
         return isStarted();
@@ -277,12 +277,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
 
     /**
      * Starts the item's activity: an app or an app shortcut.
-     * TextLauncher: the home screen starts it (Launcher.startActivitySafely and
+     * CaretLauncher: the home screen starts it (Launcher.startActivitySafely and
      * ActivityContext.startActivitySafely).
      */
     public abstract RunnableList startActivitySafely(View v, Intent intent, ItemInfo item);
 
-    // TextLauncher: made on first use (Launcher.onCreate makes it), as the home screen that
+    // CaretLauncher: made on first use (Launcher.onCreate makes it), as the home screen that
     // extends this gives the context its actions' labels need.
     private LauncherAccessibilityDelegate mAccessibilityDelegate;
 
@@ -297,13 +297,13 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     /** BaseActivity.isStarted: whether the home activity is started. */
     public abstract boolean isStarted();
 
-    /** TextLauncher: no pending activity requests (mPendingRequestArgs). */
+    /** CaretLauncher: no pending activity requests (mPendingRequestArgs). */
     public boolean isWorkspaceLocked() {
         return isWorkspaceLoading();
     }
 
     /**
-     * TextLauncher: the home screen says it (ModelCallbacks.getWorkspaceLoading): from the start
+     * CaretLauncher: the home screen says it (ModelCallbacks.getWorkspaceLoading): from the start
      * of a load or rebind until its items are bound.
      */
     public abstract boolean isWorkspaceLoading();
@@ -314,21 +314,21 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         return !isWorkspaceLoading();
     }
 
-    /** TextLauncher: no logging; see {@link StatsLogManager}. */
+    /** CaretLauncher: no logging; see {@link StatsLogManager}. */
     public StatsLogManager getStatsLogManager() {
         return mStatsLogManager;
     }
 
-    /** TextLauncher: the app's LauncherModel (LauncherAppState.getModel). */
+    /** CaretLauncher: the app's LauncherModel (LauncherAppState.getModel). */
     public LauncherModel getModel() {
         return LauncherAppState.getInstance(asContext()).getModel();
     }
 
-    /** TextLauncher: the home model's writer (ActivityContext.getModelWriter). */
+    /** CaretLauncher: the home model's writer (ActivityContext.getModelWriter). */
     @Override
     public abstract IModelWriter getModelWriter();
 
-    /** TextLauncher: the home screen's widget host (LauncherWidgetHolder). */
+    /** CaretLauncher: the home screen's widget host (LauncherWidgetHolder). */
     public abstract AppWidgetHost getAppWidgetHolder();
 
     /**
@@ -360,7 +360,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                 getModelWriter().deleteItemFromDatabase(itemInfo, reason);
             }
         } else if (itemInfo instanceof FolderInfo ci) {
-            // TextLauncher: FolderInfo is the only CollectionInfo.
+            // CaretLauncher: FolderInfo is the only CollectionInfo.
             if (!removeItemFromCollectionIfNecessary(itemInfo, deleteFromDb)) {
                 getWorkspace().removeWorkspaceItem(v);
             }
@@ -396,12 +396,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             folder.removeFolderContent(true, itemInfo);
             return true;
         }
-        // TextLauncher: no app pairs.
+        // CaretLauncher: no app pairs.
         return false;
     }
 
     /**
-     * TextLauncher: WidgetManagerHelper.getLauncherAppWidgetInfo, with the spans the widget takes
+     * CaretLauncher: WidgetManagerHelper.getLauncherAppWidgetInfo, with the spans the widget takes
      * on the home grid (LauncherAppWidgetProviderInfo.initSpans), for the widget resize frame.
      */
     @Nullable
@@ -409,12 +409,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             @Nullable AppWidgetProviderInfo info);
 
     /**
-     * TextLauncher: a widget's resize frame opened or closed. While it is open the home screen is
+     * CaretLauncher: a widget's resize frame opened or closed. While it is open the home screen is
      * in edit mode (docs/spec.md 5.4).
      */
     public void onWidgetResizeFrameOpenChanged(boolean open) {}
 
-    /** TextLauncher: the home activity's RotationHelper. */
+    /** CaretLauncher: the home activity's RotationHelper. */
     public abstract RotationHelper getRotationHelper();
 
     /** Activity.getIntent of the home activity. */
@@ -424,13 +424,13 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     public abstract void setIntent(Intent intent);
 
     /**
-     * TextLauncher: StateManager.goToState(NORMAL, animated) with a success callback: the home
+     * CaretLauncher: StateManager.goToState(NORMAL, animated) with a success callback: the home
      * screen leaves the search results and the all apps list, and runs {@code onDone} once it is
      * shown (at once when it already is).
      */
     public abstract void goToNormalState(boolean animated, @Nullable Runnable onDone);
 
-    // ---- Launcher.java: adding widgets and shortcuts (TextLauncher: in upstream order) ----
+    // ---- Launcher.java: adding widgets and shortcuts (CaretLauncher: in upstream order) ----
 
     /**
      * Process any pending activity result if it was put on hold for any reason like item binding.
@@ -454,7 +454,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         }
         mPendingActivityResult = null;
 
-        // TextLauncher: no home role request (REQUEST_HOME_ROLE).
+        // CaretLauncher: no home role request (REQUEST_HOME_ROLE).
 
         // Reset the startActivity waiting flag
         final PendingRequestArgs requestArgs = mPendingRequestArgs;
@@ -465,14 +465,14 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
 
         final int pendingAddWidgetId = requestArgs.getWidgetId();
 
-        // TextLauncher: no extra empty screens (removeExtraEmptyScreenDelayed); the add waits
+        // CaretLauncher: no extra empty screens (removeExtraEmptyScreenDelayed); the add waits
         // until the home screen is resumed in the normal state (runWhenResumed).
 
         if (requestCode == REQUEST_BIND_APPWIDGET) {
             // This is called only if the user did not previously have permissions to bind widgets
             final int widgetId = data != null ?
                     data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) : -1;
-            // TextLauncher: the bind result's id falls back to the flow's too.
+            // CaretLauncher: the bind result's id falls back to the flow's too.
             final int appWidgetId = widgetId < 0 ? pendingAddWidgetId : widgetId;
             if (resultCode == RESULT_CANCELED) {
                 completeTwoStageWidgetDrop(RESULT_CANCELED, appWidgetId, requestArgs);
@@ -506,7 +506,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                 result = RESULT_CANCELED;
                 completeTwoStageWidgetDrop(result, appWidgetId, requestArgs);
             } else {
-                // TextLauncher: one page, so no drop layout to make sure of
+                // CaretLauncher: one page, so no drop layout to make sure of
                 // (ensurePendingDropLayoutExists) or to mark as drop pending.
                 completeTwoStageWidgetDrop(resultCode, appWidgetId, requestArgs);
             }
@@ -533,7 +533,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         getDragLayer().clearAnimatedView();
     }
 
-    /** TextLauncher: Activity.onActivityResult, from the home screen's activity. */
+    /** CaretLauncher: Activity.onActivityResult, from the home screen's activity. */
     public void onActivityResult(
             final int requestCode, final int resultCode, final Intent data) {
         handleActivityResult(requestCode, resultCode, data);
@@ -541,12 +541,12 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
 
     void completeTwoStageWidgetDrop(
             final int resultCode, final int appWidgetId, final PendingRequestArgs requestArgs) {
-        // TextLauncher: no drop animation (Workspace.animateWidgetDrop) or pending widget view;
+        // CaretLauncher: no drop animation (Workspace.animateWidgetDrop) or pending widget view;
         // the widget is added once its configuration activity comes back.
         if (resultCode == RESULT_OK) {
             completeAddAppWidget(appWidgetId, requestArgs, null, null, false, true, null);
         } else if (resultCode == RESULT_CANCELED) {
-            // TextLauncher: only an allocated id is given back.
+            // CaretLauncher: only an allocated id is given back.
             if (appWidgetId >= 0) getAppWidgetHolder().deleteAppWidgetId(appWidgetId);
         }
     }
@@ -558,7 +558,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private int completeAdd(
             int requestCode, Intent intent, int appWidgetId, PendingRequestArgs info) {
         CellPos cellPos = getCellPosMapper().mapModelToPresenter(info);
-        // TextLauncher: one page (ensurePendingDropLayoutExists).
+        // CaretLauncher: one page (ensurePendingDropLayoutExists).
         int screenId = cellPos.screenId;
 
         switch (requestCode) {
@@ -569,7 +569,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             case REQUEST_CREATE_APPWIDGET:
                 completeAddAppWidget(appWidgetId, info, null, null, false, true, null);
                 break;
-            // TextLauncher: no restored widgets to complete (REQUEST_RECONFIGURE_APPWIDGET only
+            // CaretLauncher: no restored widgets to complete (REQUEST_RECONFIGURE_APPWIDGET only
             // reconfigures a widget, which updates itself; REQUEST_BIND_PENDING_APPWIDGET).
         }
         return screenId;
@@ -589,7 +589,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         int[] cellXY = mTmpAddItemCellCoordinates;
         CellLayout layout = getCellLayout(container, screenId);
 
-        // TextLauncher: a result without data has no request.
+        // CaretLauncher: a result without data has no request.
         WorkspaceItemInfo info = PinRequestHelper.createWorkspaceItemFromPinItemRequest(
                     asContext(), data == null ? null : PinRequestHelper.getPinItemRequest(data), 0);
         if (info == null) {
@@ -618,7 +618,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                         dragObject, true)) {
                     return;
                 }
-                // TextLauncher: the cell may have been taken while the app's activity was in
+                // CaretLauncher: the cell may have been taken while the app's activity was in
                 // front (the home screen may have been loaded again); then the first free one.
                 if (layout.isOccupied(cellX, cellY)) {
                     foundCellSpan = layout.findCellForSpan(cellXY, 1, 1);
@@ -638,7 +638,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                     view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)));
             bindInflatedItems(Collections.singletonList(Pair.create(info, view)), anim);
         }
-        // TextLauncher: shortcuts are added to the home page only (no folder container).
+        // CaretLauncher: shortcuts are added to the home page only (no folder container).
     }
 
     /**
@@ -655,7 +655,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             appWidgetInfo = new WidgetManagerHelper(asContext()).getLauncherAppWidgetInfo(
                     appWidgetId, itemInfo.getTargetComponent());
         }
-        // TextLauncher: a widget whose provider is gone is not added, and its id given back.
+        // CaretLauncher: a widget whose provider is gone is not added, and its id given back.
         if (appWidgetInfo == null) {
             getAppWidgetHolder().deleteAppWidgetId(appWidgetId);
             return;
@@ -675,7 +675,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         launcherInfo.minSpanY = itemInfo.minSpanY;
         launcherInfo.user = appWidgetInfo.getProfile();
         CellPos presenterPos = getCellPosMapper().mapModelToPresenter(itemInfo);
-        // TextLauncher: no pending widget view (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
+        // CaretLauncher: no pending widget view (FLAG_ENABLE_ADD_APP_WIDGET_VIA_CONFIG_ACTIVITY_V2).
         // The cell may have been taken while an activity was in front; then the first free one,
         // and no room is said (Workspace.onNoCellFound) where Launcher3 would add a page.
         CellLayout layout = getCellLayout(itemInfo.container, presenterPos.screenId);
@@ -699,7 +699,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                 itemInfo.container, presenterPos.screenId, cell[0], cell[1]);
 
         hostView.setVisibility(View.VISIBLE);
-        // TextLauncher: ItemInflater.prepareAppWidget, as the home screen's widget views have it.
+        // CaretLauncher: ItemInflater.prepareAppWidget, as the home screen's widget views have it.
         hostView.setTag(launcherInfo);
         launcherInfo.updateWidgetFeatures(appWidgetInfo);
         if (hostView.getParent() == null) {
@@ -711,7 +711,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             final LauncherAppWidgetHostView launcherHostView = (LauncherAppWidgetHostView) hostView;
             showWidgetResizeFrame(launcherHostView, launcherInfo, presenterPos);
         }
-        // TextLauncher: no widget visibility tracker.
+        // CaretLauncher: no widget visibility tracker.
     }
 
     /** Show widget resize frame. */
@@ -720,7 +720,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             LauncherAppWidgetInfo launcherInfo,
             CellPos presenterPos) {
         CellLayout cellLayout = getCellLayout(launcherInfo.container, presenterPos.screenId);
-        // TextLauncher: the home page scrolls, so the widget is brought into view first, and the
+        // CaretLauncher: the home page scrolls, so the widget is brought into view first, and the
         // frame is shown once it is laid out (no state animation to wait for).
         launcherHostView.post(() -> {
             launcherHostView.requestRectangleOnScreen(
@@ -745,7 +745,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         final boolean isActivityStarted = addFlowHandler.startConfigActivity(
                 this, appWidgetId, info, REQUEST_CREATE_APPWIDGET);
 
-        // TextLauncher: a widget that is configured is added once its configuration activity
+        // CaretLauncher: a widget that is configured is added once its configuration activity
         // comes back (no pending widget view from the drop's preview).
         if (isActivityStarted) {
             getDragLayer().clearAnimatedView();
@@ -773,8 +773,8 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         info.spanX = spanX;
         info.spanY = spanY;
 
-        // TextLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
-        // permission), so it starts no activity while the picker is still in front. TextLauncher
+        // CaretLauncher: Launcher3 binds the widget itself (BIND_APPWIDGET, a privileged
+        // permission), so it starts no activity while the picker is still in front. CaretLauncher
         // may need the system's bind dialog or the widget's configuration activity, and a
         // shortcut needs its app's activity, which the home intent the picker starts as it closes
         // would clear (the launcher is singleTask), so the add waits until the home screen is
@@ -794,7 +794,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private void processShortcutFromDrop(PendingAddShortcutInfo info) {
         Intent intent = new Intent(Intent.ACTION_CREATE_SHORTCUT).setComponent(info.componentName);
         setWaitingForResult(PendingRequestArgs.forIntent(REQUEST_CREATE_SHORTCUT, intent, info));
-        // TextLauncher: no test logging; the Launcher stand-in is not an Activity.
+        // CaretLauncher: no test logging; the Launcher stand-in is not an Activity.
         Activity activity = (Activity) asContext();
         if (!info.getActivityInfo(activity).startConfigActivity(activity, REQUEST_CREATE_SHORTCUT)) {
             handleActivityResult(REQUEST_CREATE_SHORTCUT, RESULT_CANCELED, null);
@@ -807,7 +807,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private void addAppWidgetFromDrop(PendingAddWidgetInfo info) {
         final int appWidgetId;
         WidgetAddFlowHandler addFlowHandler = info.getHandler();
-        // TextLauncher: no widget bound while it was dragged (boundWidget) or custom widgets; the
+        // CaretLauncher: no widget bound while it was dragged (boundWidget) or custom widgets; the
         // size options of WidgetHostViewLoader.preloadWidget.
         // In this case, we either need to start an activity to get permission to bind
         // the widget, or we need to start an activity to configure the widget, or both.
@@ -831,7 +831,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         updatePendingWidgetIds();
     }
 
-    /** TextLauncher: the activity's saved state of the add flow (Launcher.restoreState). */
+    /** CaretLauncher: the activity's saved state of the add flow (Launcher.restoreState). */
     public void restoreAddFlowState(@Nullable Bundle savedState) {
         if (savedState == null) return;
         PendingRequestArgs requestArgs = savedState.getParcelable(
@@ -844,7 +844,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         updatePendingWidgetIds();
     }
 
-    /** TextLauncher: Launcher.onSaveInstanceState for the add flow. */
+    /** CaretLauncher: Launcher.onSaveInstanceState for the add flow. */
     public void saveAddFlowState(Bundle outState) {
         if (mPendingRequestArgs != null) {
             outState.putParcelable(RUNTIME_STATE_PENDING_REQUEST_ARGS, mPendingRequestArgs);
@@ -855,7 +855,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     /**
-     * TextLauncher: runs {@code runnable} once the home screen is resumed (at once if it is).
+     * CaretLauncher: runs {@code runnable} once the home screen is resumed (at once if it is).
      */
     public abstract void runWhenResumed(Runnable runnable);
 
@@ -870,14 +870,14 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         PopupContainer.Companion.showForMenuItems(
                 this,
                 getRootView(),
-                WorkspaceLongPressOptions.getAll(asContext()), // TextLauncher: not a Context.
+                WorkspaceLongPressOptions.getAll(asContext()), // CaretLauncher: not a Context.
                 pos
         );
     }
 
     /** Inflates the binds the provided item using animation */
     public void inflateAndBindItemWithAnimation(ItemInfo info) {
-        // TextLauncher: the home screen inflates it (inflateItem).
+        // CaretLauncher: the home screen inflates it (inflateItem).
         bindInflatedItems(
                 Collections.singletonList(Pair.create(info, inflateItem(info,
                         getWorkspace().getScreenWithId(info.screenId), info.container))),
@@ -908,7 +908,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                     Object tag = occupiedView == null ? null : occupiedView.getTag();
                     String desc = "Collision while binding workspace item: " + item
                             + ". Collides with " + tag;
-                    // TextLauncher: not a studio build (FeatureFlags.IS_STUDIO_BUILD).
+                    // CaretLauncher: not a studio build (FeatureFlags.IS_STUDIO_BUILD).
                     // b/417021465 - Avoid mutating the model in the UI layer.
                     Log.e(TAG, desc, new Exception());
                     continue;
@@ -919,7 +919,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             if (view == null) {
                 continue;
             }
-            // TextLauncher: the home screen's widget views are attached to its host as they are
+            // CaretLauncher: the home screen's widget views are attached to its host as they are
             // made (LauncherWidgetHolder.attachViewToHostAndGetAttachedView).
             workspace.addInScreenFromBind(view, item);
             lastAddedView = view;
@@ -940,7 +940,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
             // Schedule accessibility action.
             final View a11yTarget = lastAddedView;
             boundAnim.addListener(forEndCallback((success) -> {
-                // TextLauncher: isStarted for the top resumed activity (LauncherUiState).
+                // CaretLauncher: isStarted for the top resumed activity (LauncherUiState).
                 if (success
                         && isInState(NORMAL)
                         && isStarted()
@@ -950,7 +950,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
                 }
             }));
 
-            // TextLauncher: one page, which scrolls to show the new item instead of snapping to
+            // CaretLauncher: one page, which scrolls to show the new item instead of snapping to
             // its page.
             workspace.post(() -> a11yTarget.requestRectangleOnScreen(
                     new Rect(0, 0, a11yTarget.getWidth(), a11yTarget.getHeight()), false));
@@ -960,7 +960,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     }
 
     private ValueAnimator createNewAppBounceAnimation(View v, int i) {
-        // TextLauncher: ItemInstallQueue's NEW_SHORTCUT_BOUNCE_DURATION and
+        // CaretLauncher: ItemInstallQueue's NEW_SHORTCUT_BOUNCE_DURATION and
         // NEW_SHORTCUT_STAGGER_DELAY (no ItemInstallQueue).
         ValueAnimator bounceAnim = new PropertyListBuilder().alpha(1).scale(1).build(v)
                 .setDuration(450);
@@ -977,26 +977,26 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     /** Activity.getRootView: the home activity's root view, which holds the popups. */
     public abstract View getRootView();
 
-    /** TextLauncher: StateManager's isInState(NORMAL), for WorkspaceTouchListener. */
+    /** CaretLauncher: StateManager's isInState(NORMAL), for WorkspaceTouchListener. */
     public abstract boolean isInNormalState();
 
     /**
-     * TextLauncher: whether the empty space's menu has "Apps list": not with two panels, where the
+     * CaretLauncher: whether the empty space's menu has "Apps list": not with two panels, where the
      * list is always shown (docs/spec.md 5.5).
      */
     public abstract boolean canOpenAllApps();
 
-    /** TextLauncher: StateManager.goToState(ALL_APPS), the menu's "Apps list". */
+    /** CaretLauncher: StateManager.goToState(ALL_APPS), the menu's "Apps list". */
     public abstract void openAllApps();
 
     /**
-     * TextLauncher: NotificationDotsPreference.NotificationAccessConfirmation, the dialog that takes
+     * CaretLauncher: NotificationDotsPreference.NotificationAccessConfirmation, the dialog that takes
      * the user to the notification access settings (the menu's "Notification dots").
      */
     public abstract void showNotificationAccessConfirmation();
 
     /**
-     * TextLauncher: the empty space's menu's "Share text" (docs/spec.md 2.7), which the app makes
+     * CaretLauncher: the empty space's menu's "Share text" (docs/spec.md 2.7), which the app makes
      * with its own label, icon and dialog.
      */
     public abstract com.android.launcher3.popup.PopupData getShareTextOption();
@@ -1009,7 +1009,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private final RunnableList mResumedCallbacks = new RunnableList();
 
     /**
-     * BaseActivity.addEventCallback. TextLauncher: only {@link BaseActivity#EVENT_RESUMED}, which
+     * BaseActivity.addEventCallback. CaretLauncher: only {@link BaseActivity#EVENT_RESUMED}, which
      * the home screen dispatches with {@link #onResumed()}.
      */
     public void addEventCallback(int event, Runnable callback) {
@@ -1019,7 +1019,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         mResumedCallbacks.add(callback);
     }
 
-    /** TextLauncher: BaseActivity.onResume's dispatchActivityEvent(EVENT_RESUMED). */
+    /** CaretLauncher: BaseActivity.onResume's dispatchActivityEvent(EVENT_RESUMED). */
     public void onResumed() {
         mResumedCallbacks.executeAllAndClear();
     }
@@ -1036,7 +1036,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         }
     }
 
-    // ---- TextLauncher: the add flow's state (Launcher.mPendingRequestArgs and
+    // ---- CaretLauncher: the add flow's state (Launcher.mPendingRequestArgs and
     // mPendingActivityResult) ----
 
     private PendingRequestArgs mPendingRequestArgs;
@@ -1050,7 +1050,7 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
     private static final int RESULT_CANCELED = Activity.RESULT_CANCELED;
 
     /**
-     * TextLauncher: the widget ids of the add flow in progress and of its result waiting for the
+     * CaretLauncher: the widget ids of the add flow in progress and of its result waiting for the
      * load, which LoaderTask must not take for ghosts.
      */
     public Set<Integer> getPendingWidgetIds() {

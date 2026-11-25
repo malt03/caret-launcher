@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model;
@@ -39,7 +39,7 @@ import java.util.List;
  * Utility class to help find space for new workspace items.
  *
  * <p>Stand-in for Launcher3's WorkspaceItemSpaceFinder (android-17.0.0_r1), made from
- * WorkspaceItemSpaceFinder.java by deleting Dagger; changes are marked with "TextLauncher:". There is
+ * WorkspaceItemSpaceFinder.java by deleting Dagger; changes are marked with "CaretLauncher:". There is
  * one page, so when it is full there is no space (no new screen is added).
  */
 public class WorkspaceItemSpaceFinder {
@@ -48,7 +48,7 @@ public class WorkspaceItemSpaceFinder {
     private final InvariantDeviceProfile mIDP;
     private final LauncherModel mModel;
 
-    // TextLauncher: no Dagger.
+    // CaretLauncher: no Dagger.
     public WorkspaceItemSpaceFinder(
             BgDataModel dataModel, InvariantDeviceProfile idp, LauncherModel model) {
         mDataModel = dataModel;
@@ -155,7 +155,7 @@ public class WorkspaceItemSpaceFinder {
         }
 
         if (!found) {
-            // TextLauncher: one page, so no new screen; there is no space.
+            // CaretLauncher: one page, so no new screen; there is no space.
             return null;
         }
 

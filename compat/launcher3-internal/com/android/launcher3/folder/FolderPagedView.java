@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -66,9 +66,9 @@ import java.util.stream.Collectors;
 
 /**
  * Stand-in for Launcher3's FolderPagedView (android-17.0.0_r1), made from
- * FolderPagedView.java by deleting what TextLauncher does not use (the view cache, app pairs, the
+ * FolderPagedView.java by deleting what CaretLauncher does not use (the view cache, app pairs, the
  * folder name in the footer, the checks for low-res icons, accessibility descriptions of the
- * folder); changes are marked with "TextLauncher:". As in Launcher3, the folder has pages of
+ * folder); changes are marked with "CaretLauncher:". As in Launcher3, the folder has pages of
  * columns x rows that scroll sideways ({@link PagedView}), with the page indicator in the folder's
  * footer, and each page is a {@link CellLayout} that holds its icons in a
  * {@link ShortcutAndWidgetContainer}.
@@ -113,7 +113,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
     private boolean mCanAnnouncePageDescription;
 
     /**
-     * TextLauncher: made by the folder in code, with the activity context the folder has (the
+     * CaretLauncher: made by the folder in code, with the activity context the folder has (the
      * context does not lead to it here).
      */
     public FolderPagedView(Context context, ActivityContext activityContext) {
@@ -130,7 +130,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
             FolderGridOrganizer folderGridOrganizer
     ) {
         super(context, attrs);
-        // TextLauncher: no view cache, which is all the activity context was for.
+        // CaretLauncher: no view cache, which is all the activity context was for.
         mOrganizer = folderGridOrganizer;
 
         mIsRtl = Utilities.isRtl(getResources());
@@ -205,10 +205,10 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
             for (int j = container.getChildCount() - 1; j >= 0; j--) {
                 View iconView = container.getChildAt(j);
                 iconView.setVisibility(View.VISIBLE);
-                // TextLauncher: no view cache to recycle the icon in.
+                // CaretLauncher: no view cache to recycle the icon in.
             }
             page.removeAllViews();
-            // TextLauncher: no view cache to recycle the page in.
+            // CaretLauncher: no view cache to recycle the page in.
         }
         removeAllViews();
         mViewsBound = false;
@@ -255,7 +255,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         }
 
         final View icon;
-        // TextLauncher: no app pairs, and no view cache: the folder makes its icon views
+        // CaretLauncher: no app pairs, and no view cache: the folder makes its icon views
         // (R.layout.folder_application).
         {
             icon = mFolder.inflateIcon();
@@ -264,7 +264,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
 
         icon.setOnClickListener(mFolder.mActivityContext.getItemOnClickListener());
         icon.setOnLongClickListener(mFolder);
-        // TextLauncher: no custom actions listener (Flags.enableCursorDrivenWorkflows is off).
+        // CaretLauncher: no custom actions listener (Flags.enableCursorDrivenWorkflows is off).
         icon.setOnFocusChangeListener(mFocusIndicatorHelper);
 
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) icon.getLayoutParams();
@@ -292,7 +292,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
 
     private CellLayout createAndAddNewPage() {
         DeviceProfile grid = mFolder.mActivityContext.getDeviceProfile();
-        // TextLauncher: no view cache; the page is inflated each time.
+        // CaretLauncher: no view cache; the page is inflated each time.
         CellLayout page = (CellLayout) LayoutInflater.from(getContext())
                 .inflate(R.layout.folder_page, this, false);
         page.setCellDimensions(grid.getFolderProfile().getCellWidthPx(),
@@ -411,7 +411,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         // Update footer
         mPageIndicator.setVisibility(getPageCount() > 1 ? View.VISIBLE : View.GONE);
         mFolder.onIndicatorVisibilityChanged();
-        // TextLauncher: no folder name to align (its gravity follows the page count in Launcher3).
+        // CaretLauncher: no folder name to align (its gravity follows the page count in Launcher3).
     }
 
     /**
@@ -570,7 +570,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         verifyVisibleHighResIcons(getCurrentPage() + 1);
     }
 
-    // TextLauncher: no getTotalChildCount (unused).
+    // CaretLauncher: no getTotalChildCount (unused).
 
     /**
      * Ensures that all the icons on the given page are of high-res
@@ -584,7 +584,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                 if (iconView instanceof BubbleTextView btv) {
                     btv.verifyHighRes();
                 }
-                // TextLauncher: no app pairs.
+                // CaretLauncher: no app pairs.
             }
         }
     }
@@ -735,10 +735,10 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
         invalidate();
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
-     * The icons show their pressed state at once, as every ancestor of TextLauncher's icons says
+     * The icons show their pressed state at once, as every ancestor of CaretLauncher's icons says
      * (ui/NoPressDelay.kt); a ViewGroup delays it by default.
      */
     @Override

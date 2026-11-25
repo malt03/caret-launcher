@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: LauncherAppModule is TextLauncher's.
+ * Modified for CaretLauncher: LauncherAppModule is CaretLauncher's.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 

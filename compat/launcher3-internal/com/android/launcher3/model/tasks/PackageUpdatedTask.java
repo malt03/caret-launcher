@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model.tasks;
@@ -56,7 +56,7 @@ import java.util.Set;
  *
  * <p>Stand-in for Launcher3's PackageUpdatedTask (android-17.0.0_r1), made from
  * PackageUpdatedTask.java by deleting the promise and archived shortcuts, the shortcuts with a web
- * UI, the widget restore and the widgets model; changes are marked with "TextLauncher:".
+ * UI, the widget restore and the widgets model; changes are marked with "CaretLauncher:".
  */
 @SuppressWarnings("NewApi")
 public class PackageUpdatedTask implements ModelUpdateTask {
@@ -108,7 +108,7 @@ public class PackageUpdatedTask implements ModelUpdateTask {
         taskController.bindApplicationsIfNeeded();
 
         final IntSet removedShortcuts = new IntSet();
-        // TextLauncher: no shortcuts with a web UI to keep (forceKeepShortcuts).
+        // CaretLauncher: no shortcuts with a web UI to keep (forceKeepShortcuts).
 
         // Update shortcut infos
         List<ItemInfo> updatedItems = dataModel.updateAndCollectWorkspaceItemInfos(
@@ -126,12 +126,12 @@ public class PackageUpdatedTask implements ModelUpdateTask {
                     }
 
                     if (itemInfo.itemType == ITEM_TYPE_DEEP_SHORTCUT) {
-                        // Deep shortcuts are handled via shortcut update task. TextLauncher: no
+                        // Deep shortcuts are handled via shortcut update task. CaretLauncher: no
                         // promise shortcuts.
                         return false;
                     }
 
-                    // TextLauncher: no shortcuts with a web UI (FLAG_SUPPORTS_WEB_UI).
+                    // CaretLauncher: no shortcuts with a web UI (FLAG_SUPPORTS_WEB_UI).
 
                     List<LauncherActivityInfo> activityList =
                             activitiesLists.getOrDefault(packageName, emptyList());
@@ -155,9 +155,9 @@ public class PackageUpdatedTask implements ModelUpdateTask {
                         }
                     }
 
-                    // Restore if it's a promise icon. TextLauncher: no promise status.
+                    // Restore if it's a promise icon. CaretLauncher: no promise status.
                     itemInfo.runtimeStatusFlags &= ~FLAG_DISABLED_NOT_AVAILABLE;
-                    // TextLauncher: without the user info, API wrapper, package manager helper and
+                    // CaretLauncher: without the user info, API wrapper, package manager helper and
                     // automation repository.
                     AppInfo.updateRuntimeFlagsForActivityTarget(itemInfo, activityInfo);
                     iconCache.getTitleAndIcon(itemInfo, itemInfo.getMatchingLookupFlag());
@@ -166,7 +166,7 @@ public class PackageUpdatedTask implements ModelUpdateTask {
                         taskController.getModelWriter().updateItemInDatabase(itemInfo);
                     }
                     return true;
-                    // TextLauncher: no widget restore (FLAG_PROVIDER_NOT_READY).
+                    // CaretLauncher: no widget restore (FLAG_PROVIDER_NOT_READY).
                 });
 
         taskController.bindUpdatedWorkspaceItems(updatedItems);
@@ -177,6 +177,6 @@ public class PackageUpdatedTask implements ModelUpdateTask {
                             + " ids=" + removedShortcuts);
         }
 
-        // TextLauncher: no widgets model to load for a new package.
+        // CaretLauncher: no widgets model to load for a new package.
     }
 }

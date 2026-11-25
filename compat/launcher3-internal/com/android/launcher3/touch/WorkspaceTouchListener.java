@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.touch;
@@ -44,8 +44,8 @@ import com.android.launcher3.util.TouchUtil;
  * Helper class to handle touch on empty space in workspace and show options popup on long press
  *
  * <p>Stand-in for Launcher3's WorkspaceTouchListener (android-17.0.0_r1), made from
- * WorkspaceTouchListener.java by deleting what TextLauncher does not use (box selection, split
- * selection, logging); changes are marked with "TextLauncher:". The home screen scrolls
+ * WorkspaceTouchListener.java by deleting what CaretLauncher does not use (box selection, split
+ * selection, logging); changes are marked with "CaretLauncher:". The home screen scrolls
  * vertically, so the listener is on the scroll view, which stands in for the paged Workspace.
  */
 public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListener
@@ -63,7 +63,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
     private static final int STATE_COMPLETED = 3;
 
     private final Launcher mLauncher;
-    private final View mWorkspace; // TextLauncher: the scroll view of the home screen.
+    private final View mWorkspace; // CaretLauncher: the scroll view of the home screen.
     private final PointF mTouchDownPoint = new PointF();
     private final float mTouchSlop;
 
@@ -71,12 +71,12 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
 
     private final GestureDetector mGestureDetector;
 
-    public WorkspaceTouchListener(Launcher launcher, View workspace) { // TextLauncher: see above.
+    public WorkspaceTouchListener(Launcher launcher, View workspace) { // CaretLauncher: see above.
         mLauncher = launcher;
         mWorkspace = workspace;
         // Use twice the touch slop as we are looking for long press which is more
         // likely to cause movement.
-        // TextLauncher: the launcher is not a Context; its context is (asContext).
+        // CaretLauncher: the launcher is not a Context; its context is (asContext).
         mTouchSlop = 2 * ViewConfiguration.get(launcher.asContext()).getScaledTouchSlop();
         mGestureDetector = new GestureDetector(workspace.getContext(), this);
     }
@@ -90,7 +90,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
             // Check if we can handle long press.
             boolean handleLongPress = canHandleLongPress();
 
-            // TextLauncher: the home screen is laid out between the status bar and the search
+            // CaretLauncher: the home screen is laid out between the status bar and the search
             // field, so a long press is not kept off the insets and the screen's edges.
 
             if (handleLongPress) {
@@ -104,7 +104,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
             }
 
             mWorkspace.onTouchEvent(ev);
-            mDownScrollY = mWorkspace.getScrollY(); // TextLauncher: see isHandlingTouch.
+            mDownScrollY = mWorkspace.getScrollY(); // CaretLauncher: see isHandlingTouch.
             // Return true to keep receiving touch events
             return true;
         }
@@ -133,14 +133,14 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
 
             result = true;
         } else {
-            // TextLauncher: the all apps sheet covers the home screen, so no tap outside it comes
+            // CaretLauncher: the all apps sheet covers the home screen, so no tap outside it comes
             // here; let workspace handle the touch as usual.
             result = false;
         }
 
         if (action == ACTION_UP || action == ACTION_POINTER_UP) {
             if (!isHandlingTouch()) {
-                // TextLauncher: one page, which is always there.
+                // CaretLauncher: one page, which is always there.
                 mLauncher.getWorkspace().onWallpaperTap(ev);
             }
         }
@@ -154,7 +154,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
 
     private boolean canHandleLongPress() {
         return AbstractFloatingView.getTopOpenView(mLauncher) == null
-                && mLauncher.isInNormalState(); // TextLauncher: isInState(NORMAL).
+                && mLauncher.isInNormalState(); // CaretLauncher: isInState(NORMAL).
     }
 
     private void cancelLongPress() {
@@ -179,7 +179,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
 
                 mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
-                // TextLauncher: the point in the drag layer's coordinates, as the scroll view is
+                // CaretLauncher: the point in the drag layer's coordinates, as the scroll view is
                 // not at the drag layer's origin.
                 float[] point = {mTouchDownPoint.x, mTouchDownPoint.y};
                 mLauncher.getDragLayer().getDescendantCoordRelativeToSelf(mWorkspace, point);
@@ -190,7 +190,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** The scroll view's scroll position when the touch went down. */
     private int mDownScrollY;

@@ -43,6 +43,6 @@ tags: [drawer]
   - 見出しは一覧の中に行として出さず、スクロールバーのつまみを動かしたときの吹き出しにだけ出す
   - テーマアイコンと選んだ形状はホームとフォルダだけ（`BubbleTextView.shouldUseTheme` と `ItemInfoWithIcon.supportsCustomShapes`）。一覧と検索結果は通常のアイコンを OS の形で出す。エミュレータの Pixel Launcher でも、形を角丸の四角にしてもアプリ一覧は丸のままだった
 - 取り込み: RecyclerViewFastScroller・FastScrollRecyclerView・AllAppsGridAdapter などはそのままコピー、AlphabeticalAppsList・BaseAllAppsAdapter・AllAppsRecyclerView は derived=。ActivityAllAppsContainerView の役はアプリ側の AllAppsView
-- 開閉はまだ状態の切り替えだけ（アニメーションと開くジェスチャーは Tex-17s1）。それまでの確認用に、デバッグビルドでは `adb shell am start -n com.malt03.textlauncher/.ui.LauncherActivity --ez com.malt03.textlauncher.extra.SHOW_ALL_APPS true` で開く
+- 開閉はまだ状態の切り替えだけ（アニメーションと開くジェスチャーは Tex-17s1）。それまでの確認用に、デバッグビルドでは `adb shell am start -n com.malt03.caretlauncher/.ui.LauncherActivity --ez com.malt03.caretlauncher.extra.SHOW_ALL_APPS true` で開く
 - 一覧を開いている間に検索フィールドをタップすると、一覧内の検索（Tex-9cyk）ができるまでは一覧を閉じる
 - エミュレータで確認: 開く、名前順、吹き出しの見出し、タップで起動して戻ると閉じている、長押しでメニュー、動かすと閉じてホームに置ける、戻る操作で閉じる

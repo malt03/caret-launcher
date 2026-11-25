@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: the upstream enum without its Parcelable part.
+ * Modified for CaretLauncher: the upstream enum without its Parcelable part.
  * See docs/launcher3-porting.md and third_party/systemui/UPSTREAM.md.
  */
 

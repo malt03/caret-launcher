@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- TextLauncher: values from Launcher3 res/values-v28/ (dimens.xml, android-17.0.0_r1) for the resources
-     res-textlauncher/values has. -->
-<resources>
-    <dimen name="dialogCornerRadius">?android:attr/dialogCornerRadius</dimen>
-</resources>

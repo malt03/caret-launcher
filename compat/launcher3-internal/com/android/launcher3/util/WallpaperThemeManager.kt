@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.util
@@ -29,18 +29,18 @@ import com.android.launcher3.R
 /**
  * Utility class to manage activity's theme in case it is wallpaper dependent
  *
- * Stand-in for Launcher3's WallpaperThemeManager (android-17.0.0_r1). TextLauncher: the lifecycle
+ * Stand-in for Launcher3's WallpaperThemeManager (android-17.0.0_r1). CaretLauncher: the lifecycle
  * callbacks are written out (no ActivityLifecycleCallbacksAdapter), and the recreate flag is not
  * saved (Launcher3 reads it back to skip the transition).
  */
 class WallpaperThemeManager(private val activity: Activity) :
-    // TextLauncher: ActivityLifecycleCallbacks, with the callbacks written out at the end (no
+    // CaretLauncher: ActivityLifecycleCallbacks, with the callbacks written out at the end (no
     // ActivityLifecycleCallbacksAdapter).
     OnColorHintListener, ActivityLifecycleCallbacks, ComponentCallbacks {
 
     private var themeRes: Int = R.style.AppTheme
 
-    // TextLauncher: no recreateToUpdateTheme flag (see onActivitySaveInstanceState).
+    // CaretLauncher: no recreateToUpdateTheme flag (see onActivitySaveInstanceState).
 
     init {
         // Update theme
@@ -55,8 +55,8 @@ class WallpaperThemeManager(private val activity: Activity) :
         activity.registerComponentCallbacks(this)
     }
 
-    // TextLauncher: the recreate flag is not saved; Launcher3 reads it back
-    // (RUNTIME_STATE_RECREATE_TO_UPDATE_THEME) to skip the transition, TextLauncher does not.
+    // CaretLauncher: the recreate flag is not saved; Launcher3 reads it back
+    // (RUNTIME_STATE_RECREATE_TO_UPDATE_THEME) to skip the transition, CaretLauncher does not.
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
 
     override fun onActivityDestroyed(unused: Activity) =
@@ -75,7 +75,7 @@ class WallpaperThemeManager(private val activity: Activity) :
     }
 
     fun recreateToUpdateTheme() {
-        // TextLauncher: no recreate flag to set.
+        // CaretLauncher: no recreate flag to set.
         activity.recreate()
     }
 
@@ -93,7 +93,7 @@ class WallpaperThemeManager(private val activity: Activity) :
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** ActivityLifecycleCallbacksAdapter's default: nothing to do. */
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -64,7 +64,7 @@ import java.util.Objects;
  * <p>Stand-in for Launcher3's PendingItemDragHelper (android-17.0.0_r1), made from
  * PendingItemDragHelper.java: the launcher is not a Context, the widget is not preloaded while it
  * is dragged (WidgetHostViewLoader) and the home grid's icons have no labels. Changes are marked
- * with "TextLauncher:".
+ * with "CaretLauncher:".
  */
 public class PendingItemDragHelper extends DragPreviewProvider {
 
@@ -76,7 +76,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
     @Nullable private RemoteViews mRemoteViewsPreview;
     @Nullable private WidgetPreviewInfo mWidgetPreviewInfo;
     private float mRemoteViewsPreviewScale = 1f;
-    // TextLauncher: LauncherAppWidgetHostView, which has no NavigableAppWidgetHostView here.
+    // CaretLauncher: LauncherAppWidgetHostView, which has no NavigableAppWidgetHostView here.
     @Nullable private LauncherAppWidgetHostView mAppWidgetHostViewPreview;
     private final float mEnforcedRoundedCornersForWidget;
 
@@ -121,7 +121,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
     public void startDrag(Rect previewBounds, int previewBitmapWidth, int previewViewWidth,
             Point screenPos, DragSource source, DragOptions options) {
         final Launcher launcher = Launcher.getLauncher(mView.getContext());
-        // TextLauncher: the launcher is not a Context.
+        // CaretLauncher: the launcher is not a Context.
         final Context context = launcher.asContext();
         LauncherAppState app = LauncherAppState.getInstance(context);
 
@@ -152,7 +152,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                         previewSizeBeforeScale[0] = drawable.getIntrinsicWidth();
                     }
                 } else {
-                    // TextLauncher: the launcher is not a Context.
+                    // CaretLauncher: the launcher is not a Context.
                     mAppWidgetHostViewPreview = new LauncherAppWidgetHostView(context);
                     mAppWidgetHostViewPreview.setAppWidget(/* appWidgetId= */ INVALID_APPWIDGET_ID,
                             mWidgetPreviewInfo.providerInfo);
@@ -167,7 +167,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                     measureAndUpdateAppWidgetHostViewScale(widgetSizes);
                 }
             } else if (mRemoteViewsPreview != null) {
-                // TextLauncher: the launcher is not a Context.
+                // CaretLauncher: the launcher is not a Context.
                 mAppWidgetHostViewPreview = new LauncherAppWidgetHostView(context);
                 mAppWidgetHostViewPreview.setAppWidget(/* appWidgetId= */ INVALID_APPWIDGET_ID,
                         ((PendingAddWidgetInfo) mAddInfo).info);
@@ -179,7 +179,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                         MeasureSpec.makeMeasureSpec(widgetSizes.getHeight(), MeasureSpec.EXACTLY));
                 mAppWidgetHostViewPreview.setClipChildren(false);
                 mAppWidgetHostViewPreview.setClipToPadding(false);
-                // TextLauncher: NavigableAppWidgetHostView.setScaleToFit; the preview is only drawn
+                // CaretLauncher: NavigableAppWidgetHostView.setScaleToFit; the preview is only drawn
                 // in the DragView.
                 mAppWidgetHostViewPreview.setScaleX(mRemoteViewsPreviewScale);
                 mAppWidgetHostViewPreview.setScaleY(mRemoteViewsPreviewScale);
@@ -188,7 +188,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                 previewSizeBeforeScale[0] = mAppWidgetHostViewPreview.getMeasuredWidth();
             }
             if (preview == null && mAppWidgetHostViewPreview == null) {
-                // TextLauncher: the launcher is not a Context.
+                // CaretLauncher: the launcher is not a Context.
                 Drawable p = new FastBitmapDrawable(new DatabaseWidgetPreviewLoader(context,
                         launcher.getDeviceProfile()).generateWidgetPreview(createWidgetInfo.info,
                         maxWidth, previewSizeBeforeScale));
@@ -221,14 +221,14 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                 previewHeight = preview.getIntrinsicHeight();
             }
             scale = previewBounds.width() / (float) previewWidth;
-            // TextLauncher: no WidgetHostViewLoader; the widget is bound once it is dropped
+            // CaretLauncher: no WidgetHostViewLoader; the widget is bound once it is dropped
             // (Launcher.addAppWidgetFromDrop).
 
             dragRegion = null;
             draggableView = DraggableView.ofType(DraggableView.DRAGGABLE_WIDGET);
         } else {
             PendingAddShortcutInfo createShortcutInfo = (PendingAddShortcutInfo) mAddInfo;
-            // TextLauncher: the launcher is not a Context.
+            // CaretLauncher: the launcher is not a Context.
             Drawable icon = CachedObjectCachingLogic.loadFullResIcon(
                     app.getIconCache(), createShortcutInfo.getActivityInfo(context));
             LauncherIcons li = LauncherIcons.obtain(context);
@@ -245,7 +245,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
             DeviceProfile dp = launcher.getDeviceProfile();
             int iconSize = dp.getWorkspaceProfile().getIconSizePx();
 
-            // TextLauncher: the launcher is not a Context.
+            // CaretLauncher: the launcher is not a Context.
             int padding = context.getResources()
                     .getDimensionPixelSize(R.dimen.widget_preview_shortcut_padding);
             previewBounds.left += padding;
@@ -254,7 +254,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
             dragRegion = new Rect();
             dragRegion.left = (mEstimatedCellSize[0] - iconSize) / 2;
             dragRegion.right = dragRegion.left + iconSize;
-            // TextLauncher: the home grid's icons have no labels, so they are centered.
+            // CaretLauncher: the home grid's icons have no labels, so they are centered.
             dragRegion.top = (mEstimatedCellSize[1] - iconSize) / 2;
             dragRegion.bottom = dragRegion.top + iconSize;
             draggableView = DraggableView.ofType(DraggableView.DRAGGABLE_ICON);
@@ -300,7 +300,7 @@ public class PendingItemDragHelper extends DragPreviewProvider {
                 if (contentWidth > 0 && contentHeight > 0) {
                     float pWidth = widgetSizes.getWidth();
                     float pHeight = widgetSizes.getHeight();
-                    // TextLauncher: NavigableAppWidgetHostView.setScaleToFit; the preview is only
+                    // CaretLauncher: NavigableAppWidgetHostView.setScaleToFit; the preview is only
                     // drawn in the DragView.
                     float scaleToFit = Math.min(pWidth / contentWidth, pHeight / contentHeight);
                     mAppWidgetHostViewPreview.setScaleX(scaleToFit);

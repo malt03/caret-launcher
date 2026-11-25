@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.states;
@@ -58,14 +58,14 @@ public class SpringLoadedState extends LauncherState {
             return super.getWorkspaceScaleAndTranslation(launcher);
         }
 
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         float scale = grid.getWorkspaceSpringLoadScale(launcher.asContext());
 
-        // TextLauncher: centerSpringLoadedStateVertically is off in the release (and needs the
+        // CaretLauncher: centerSpringLoadedStateVertically is off in the release (and needs the
         // hotseat).
 
         float shrunkTop = grid.getCellLayoutSpringLoadShrunkTop();
-        // TextLauncher: the page grows to its keyboard-down height as editing starts, so its
+        // CaretLauncher: the page grows to its keyboard-down height as editing starts, so its
         // height is that one (getCellLayoutHeight), which the workspace's pivot follows
         // (HomeWorkspace), and the page fills the workspace.
         float halfHeight = grid.getCellLayoutHeight() / 2f;
@@ -75,7 +75,7 @@ public class SpringLoadedState extends LauncherState {
         return new ScaleAndTranslation(scale, 0, shrunkTop - actualCellTop);
     }
 
-    // TextLauncher: centerSpringLoadedStateVertically is off in the release, and the drop target bar is not
+    // CaretLauncher: centerSpringLoadedStateVertically is off in the release, and the drop target bar is not
     // moved (getDropTargetBarTranslationY, getCenteredSpringLoadedContentY need the hotseat).
 
     @Override

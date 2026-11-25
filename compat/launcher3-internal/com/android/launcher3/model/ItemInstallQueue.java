@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model;
@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  *
  * <p>Stand-in for Launcher3's ItemInstallQueue (android-17.0.0_r1), made from
  * ItemInstallQueue.java by deleting Dagger and the undo snackbar; changes are marked with
- * "TextLauncher:".
+ * "CaretLauncher:".
  */
 public class ItemInstallQueue {
 
@@ -65,7 +65,7 @@ public class ItemInstallQueue {
     public static final int NEW_SHORTCUT_BOUNCE_DURATION = 450;
     public static final int NEW_SHORTCUT_STAGGER_DELAY = 85;
 
-    // TextLauncher: in place of Dagger, one queue for the app (Instance).
+    // CaretLauncher: in place of Dagger, one queue for the app (Instance).
     public static final Instance INSTANCE = new Instance();
     private final PersistedItemArray<SerializedItemItem> mStorage =
             new PersistedItemArray<>(APPS_PENDING_INSTALL);
@@ -84,7 +84,7 @@ public class ItemInstallQueue {
 
     private WeakReference<ActivityContext> mIconUISurface = new WeakReference<>(null);
 
-    // TextLauncher: no Dagger.
+    // CaretLauncher: no Dagger.
     public ItemInstallQueue(Context context,
             Supplier<WorkspaceItemSpaceFinder> spaceFinderProvider,
             WorkspaceItemSerializer pendingItemParser,
@@ -137,7 +137,7 @@ public class ItemInstallQueue {
             // Launcher not loaded
             if (uiSurface == null) return;
 
-            // TextLauncher: no undo snackbar to complete.
+            // CaretLauncher: no undo snackbar to complete.
 
             MODEL_EXECUTOR.execute(() -> {
                 mItems.clear();
@@ -197,9 +197,9 @@ public class ItemInstallQueue {
         MODEL_EXECUTOR.post(this::flushQueueInBackground);
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
-    /** TextLauncher: in place of Dagger, the app makes the queue and sets it here. */
+    /** CaretLauncher: in place of Dagger, the app makes the queue and sets it here. */
     public static class Instance {
         private ItemInstallQueue mQueue;
 

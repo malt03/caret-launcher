@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3;
@@ -34,7 +34,7 @@ import com.android.launcher3.util.IntSet;
 
 /**
  * Stand-in for Launcher3's WorkspaceLayoutManager (android-17.0.0_r1), made from
- * WorkspaceLayoutManager.java by deleting the hotseat; changes are marked with "TextLauncher:".
+ * WorkspaceLayoutManager.java by deleting the hotseat; changes are marked with "CaretLauncher:".
  */
 public interface WorkspaceLayoutManager {
 
@@ -59,7 +59,7 @@ public interface WorkspaceLayoutManager {
         CellPos presenterPos = getCellPosMapper().mapModelToPresenter(info);
         int x = presenterPos.cellX;
         int y = presenterPos.cellY;
-        // TextLauncher: no hotseat.
+        // CaretLauncher: no hotseat.
 
         // b/388022685 adding logs to investigate why tag is sometimes null.
         if (child.getTag() == null) {
@@ -108,7 +108,7 @@ public interface WorkspaceLayoutManager {
         }
 
         final CellLayout layout;
-        // TextLauncher: no hotseat, and the folder icons have no titles (docs/spec.md 5.2).
+        // CaretLauncher: no hotseat, and the folder icons have no titles (docs/spec.md 5.2).
         layout = getScreenWithId(screenId);
 
         ViewGroup.LayoutParams genericLp = child.getLayoutParams();
@@ -161,7 +161,7 @@ public interface WorkspaceLayoutManager {
      */
     CellPosMapper getCellPosMapper();
 
-    // TextLauncher: no hotseat (getHotseat).
+    // CaretLauncher: no hotseat (getHotseat).
 
     CellLayout getScreenWithId(int screenId);
 

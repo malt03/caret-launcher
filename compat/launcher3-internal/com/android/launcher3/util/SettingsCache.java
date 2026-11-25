@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: no DaggerSingletonTracker or jsr305 annotation.
+ * Modified for CaretLauncher: no DaggerSingletonTracker or jsr305 annotation.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -62,7 +62,7 @@ import javax.inject.Named;
  *
  * Cache will also be updated if a key queried is missing (even if it has no listeners registered).
  */
-// TextLauncher: no @ThreadSafe (jsr305 is not a dependency).
+// CaretLauncher: no @ThreadSafe (jsr305 is not a dependency).
 @LauncherAppSingleton
 public class SettingsCache extends ContentObserver {
 
@@ -113,7 +113,7 @@ public class SettingsCache extends ContentObserver {
     public static final DaggerSingletonObject<SettingsCache> INSTANCE =
             new DaggerSingletonObject<>(LauncherBaseAppComponent::getSettingsCache);
 
-    // TextLauncher: no DaggerSingletonTracker; the cache lives as long as the process.
+    // CaretLauncher: no DaggerSingletonTracker; the cache lives as long as the process.
     @Inject
     SettingsCache(@ApplicationContext Context context,
             @Named("SETTINGS_ENABLED_BY_DEFAULT") Set<Uri> urisEnabledByDefault,

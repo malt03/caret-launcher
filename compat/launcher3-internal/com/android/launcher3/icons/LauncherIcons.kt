@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * Wrapper class to provide access to [BaseIconFactory] and also to provide pool of this class that
  * are threadsafe.
  *
- * Stand-in for Launcher3's LauncherIcons (android-17.0.0_r1). TextLauncher: no Dagger; the pool
+ * Stand-in for Launcher3's LauncherIcons (android-17.0.0_r1). CaretLauncher: no Dagger; the pool
  * takes the icon density, size and theme controller from the app (InvariantDeviceProfile and
  * ThemeManager in Launcher3), and the user info is the default one (personal profile only).
  */
@@ -59,7 +59,7 @@ internal constructor(
         recycle()
     }
 
-    /** TextLauncher: [params] gives the density, size and theme of the icons to make. */
+    /** CaretLauncher: [params] gives the density, size and theme of the icons to make. */
     class IconPool(private val context: Context, private val params: () -> Params) {
         private var pool = ConcurrentLinkedQueue<LauncherIcons>()
 
@@ -81,7 +81,7 @@ internal constructor(
          * Return a new LauncherIcons instance from the global pool. Allows us to avoid allocating
          * new objects in many cases.
          *
-         * TextLauncher: the pool is the icon cache's (the app's), not the Dagger component's.
+         * CaretLauncher: the pool is the icon cache's (the app's), not the Dagger component's.
          */
         @JvmStatic
         fun obtain(context: Context): LauncherIcons =
@@ -89,7 +89,7 @@ internal constructor(
                 as LauncherIcons
     }
 
-    /** TextLauncher: InvariantDeviceProfile.fillResIconDpi / iconBitmapSize and the theme. */
+    /** CaretLauncher: InvariantDeviceProfile.fillResIconDpi / iconBitmapSize and the theme. */
     data class Params(
         val fillResIconDpi: Int,
         val iconBitmapSize: Int,

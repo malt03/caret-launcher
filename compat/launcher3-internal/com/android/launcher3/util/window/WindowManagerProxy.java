@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.util.window;
@@ -65,7 +65,7 @@ import java.util.List;
 /**
  * Utility class for mocking some window manager behaviours
  *
- * TextLauncher: without Dagger and the insets normalization that needs DisplayController. The
+ * CaretLauncher: without Dagger and the insets normalization that needs DisplayController. The
  * built-in displays come from DisplayManager, and a large screen's cutout is taken at the top in
  * every rotation (see estimateWindowBounds).
  */
@@ -74,7 +74,7 @@ public class WindowManagerProxy {
     private static final String TAG = "WindowManagerProxy";
     public static final int MIN_TABLET_WIDTH = 600;
 
-    // TextLauncher: one instance instead of the Dagger singleton.
+    // CaretLauncher: one instance instead of the Dagger singleton.
     public static final WindowManagerProxy INSTANCE = new WindowManagerProxy();
 
     protected final boolean mTaskbarDrawnInProcess;
@@ -104,7 +104,7 @@ public class WindowManagerProxy {
         List<WindowBounds> bounds = estimateWindowBounds(displayInfoContext, info);
         ArrayMap<CachedDisplayInfo, List<WindowBounds>> result = new ArrayMap<>();
         result.put(info, bounds);
-        // TextLauncher: SystemWindowManagerProxy takes every state of the internal display (both
+        // CaretLauncher: SystemWindowManagerProxy takes every state of the internal display (both
         // panels of a foldable) from WindowManager.getPossibleMaximumWindowMetrics, which the
         // system answers only for the recents provider. An app gets the built-in displays,
         // including the ones not in use now, from DisplayManager (API 36.1).
@@ -143,7 +143,7 @@ public class WindowManagerProxy {
      * Returns the real bounds for the provided display after applying any insets normalization
      */
     public WindowBounds getRealBounds(Context displayInfoContext, CachedDisplayInfo info) {
-        // TextLauncher: a large screen's estimate takes the cutout at the top in every rotation
+        // CaretLauncher: a large screen's estimate takes the cutout at the top in every rotation
         // (estimateWindowBounds), so the real bounds, with the cutout where the system puts it in
         // this rotation, would replace the estimate of this rotation (LauncherDisplayInfo) and
         // the grid would depend on the rotation the launcher started in. The estimate of this
@@ -165,7 +165,7 @@ public class WindowManagerProxy {
         return new WindowBounds(windowMetrics.getBounds(), insets, info.rotation);
     }
 
-    // TextLauncher: no DisplayController (normalizeWindowInsets(Context, WindowInsets, Rect)).
+    // CaretLauncher: no DisplayController (normalizeWindowInsets(Context, WindowInsets, Rect)).
 
     WindowInsets normalizeWindowInsets(Context context, boolean taskbarShownOnHome,
             WindowInsets oldInsets, Rect outInsets) {
@@ -378,7 +378,7 @@ public class WindowManagerProxy {
 
             Rect insets;
             if (isTablet) {
-                // TextLauncher: a large screen turns, so the display info may be from any
+                // CaretLauncher: a large screen turns, so the display info may be from any
                 // rotation, and rotating the cutout's safe insets (rotateCutout) does not always
                 // give where the system puts them in another rotation: a cutout in a corner can
                 // stay on the top edge. The estimate would then depend on the rotation the
@@ -541,10 +541,10 @@ public class WindowManagerProxy {
                 cutout.getSafeInsetRight(), cutout.getSafeInsetBottom());
     }
 
-    // ---- TextLauncher ----
+    // ---- CaretLauncher ----
 
     /**
-     * TextLauncher: a built-in display too small for the smallest of Launcher3's display options
+     * CaretLauncher: a built-in display too small for the smallest of Launcher3's display options
      * (device_profiles.xml, "Shorter Stubby": 255dp by 400dp), such as the cover screen of a
      * flip phone, is not a display the home screen is shown on, so it does not shrink the grid.
      */
@@ -555,7 +555,7 @@ public class WindowManagerProxy {
     }
 
     /**
-     * TextLauncher: a CachedDisplayInfo for a display that may not be in use (its window metrics
+     * CaretLauncher: a CachedDisplayInfo for a display that may not be in use (its window metrics
      * are the ones of the display in use), from the display itself.
      */
     @SuppressWarnings("deprecation")

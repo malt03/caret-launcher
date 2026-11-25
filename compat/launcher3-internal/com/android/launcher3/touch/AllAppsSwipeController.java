@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.touch;
@@ -49,9 +49,9 @@ import com.android.launcher3.states.StateAnimationConfig;
  */
 /**
  * Stand-in for Launcher3's AllAppsSwipeController (android-17.0.0_r1), made from
- * AllAppsSwipeController.java; changes are marked with "TextLauncher:". The swipe also starts only
+ * AllAppsSwipeController.java; changes are marked with "CaretLauncher:". The swipe also starts only
  * where the app lets it ({@link Callbacks}: the search field, or the home screen at its bottom),
- * not while an item is dragged, and the list is TextLauncher's sheet under the search field.
+ * not while an item is dragged, and the list is CaretLauncher's sheet under the search field.
  */
 public class AllAppsSwipeController extends AbstractStateChangeTouchController {
 
@@ -65,7 +65,7 @@ public class AllAppsSwipeController extends AbstractStateChangeTouchController {
     // Depth to apply behind All Apps when it's presented on a sheet.
     private static final Interpolator ALL_APPS_SHEET_DEPTH = DECELERATED_EASE;
 
-    // TextLauncher: with the all apps transition and the app's callbacks.
+    // CaretLauncher: with the all apps transition and the app's callbacks.
     public AllAppsSwipeController(Launcher l, AllAppsTransitionController allAppsController,
             Callbacks callbacks) {
         super(l, SingleAxisSwipeDetector.VERTICAL);
@@ -86,15 +86,15 @@ public class AllAppsSwipeController extends AbstractStateChangeTouchController {
             // Don't listen for the swipe gesture if we are already in some other state.
             return false;
         }
-        // TextLauncher: not while an item is dragged.
+        // CaretLauncher: not while an item is dragged.
         if (mLauncher.getDragController().isDragging()) {
             return false;
         }
-        // TextLauncher: the app's sheet tells whether the list is at its top.
+        // CaretLauncher: the app's sheet tells whether the list is at its top.
         if (mLauncher.isInState(ALL_APPS) && !mCallbacks.shouldContainerScroll(ev)) {
             return false;
         }
-        // TextLauncher: a swipe up opens the list only from the search field or the home screen's
+        // CaretLauncher: a swipe up opens the list only from the search field or the home screen's
         // bottom.
         if (mLauncher.isInState(NORMAL) && !mCallbacks.canOpenFrom(ev)) {
             return false;
@@ -118,11 +118,11 @@ public class AllAppsSwipeController extends AbstractStateChangeTouchController {
         StateAnimationConfig config = getConfigForStates(mFromState, mToState);
         config.duration = (long) (2 * range);
 
-        // TextLauncher: the vertical progress the animation starts from (the field's position).
+        // CaretLauncher: the vertical progress the animation starts from (the field's position).
         mAnimationStartProgress = mAllAppsController.getProgress();
         mCurrentAnimation = mLauncher.getStateManager()
                 .createAnimationToNewWorkspace(mToState, config);
-        // TextLauncher: something else changing the state (the back gesture, the home button)
+        // CaretLauncher: something else changing the state (the back gesture, the home button)
         // ends the swipe, as in Launcher3's other state touch controllers.
         mCurrentAnimation.getTarget().addListener(mClearStateOnCancelListener);
         float startVerticalShift = mFromState.getVerticalProgress(mLauncher) * range;
@@ -175,7 +175,7 @@ public class AllAppsSwipeController extends AbstractStateChangeTouchController {
         config.setInterpolator(ANIM_DEPTH, ALL_APPS_SHEET_DEPTH);
     }
 
-    // ---- TextLauncher ----
+    // ---- CaretLauncher ----
 
     /** What the swipe asks of the app's views. */
     public interface Callbacks {

@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -35,7 +35,7 @@ import com.android.launcher3.util.ContentWriter;
 /**
  * Represents a widget (either instantiated or about to be) in the Launcher.
  *
- * <p>Stand-in for Launcher3's LauncherAppWidgetInfo (android-17.0.0_r1). TextLauncher: the home
+ * <p>Stand-in for Launcher3's LauncherAppWidgetInfo (android-17.0.0_r1). CaretLauncher: the home
  * screen's widget item (the app's WidgetItemInfo) extends it; only its id, provider, options and
  * the container it was added from, which are saved, are ported (no restore, install progress,
  * pending widgets, custom widgets or widget features).
@@ -89,7 +89,7 @@ public class LauncherAppWidgetInfo extends ItemInfo {
      * Contains a binary representation indicating which widget features are enabled. This value is
      * -1 if widget features could not be identified.
      */
-    // TextLauncher: set as the widget's view is made (the home screen's ItemInflater), where
+    // CaretLauncher: set as the widget's view is made (the home screen's ItemInflater), where
     // Launcher3 sets it as the item loads (WorkspaceItemProcessor); -1 until then.
     private int widgetFeatures = -1;
 
@@ -97,7 +97,7 @@ public class LauncherAppWidgetInfo extends ItemInfo {
         this.appWidgetId = appWidgetId;
         this.providerName = providerName;
 
-        // TextLauncher: no custom widgets.
+        // CaretLauncher: no custom widgets.
         itemType = LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET;
 
         // Since the widget isn't instantiated yet, we don't know these values. Set them to -1
@@ -168,7 +168,7 @@ public class LauncherAppWidgetInfo extends ItemInfo {
     }
 
     public final boolean isWidgetIdAllocated() {
-        // TextLauncher: no restore, so the id is always allocated.
+        // CaretLauncher: no restore, so the id is always allocated.
         return true;
     }
 }

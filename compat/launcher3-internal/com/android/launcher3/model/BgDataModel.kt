@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -49,7 +49,7 @@ import java.util.function.Predicate
  *
  * Stand-in for Launcher3's BgDataModel (android-17.0.0_r1), made from BgDataModel.kt by deleting
  * Dagger, the dump, the widgets model, the extra items, the deep shortcut counts, the string cache
- * and the repository; changes are marked with "TextLauncher:". Used on the model thread
+ * and the repository; changes are marked with "CaretLauncher:". Used on the model thread
  * (Executors.MODEL_EXECUTOR), as in Launcher3.
  */
 class BgDataModel {
@@ -114,14 +114,14 @@ class BgDataModel {
 
     @Synchronized
     fun dispatchRebind(reason: String) {
-        // TextLauncher: no repository (Flags.modelRepository is disabled in the release config).
+        // CaretLauncher: no repository (Flags.modelRepository is disabled in the release config).
     }
 
     /**
      * Updates the deep shortcuts state in system to match out internal model, pinning any missing
      * shortcuts and unpinning any extra shortcuts.
      *
-     * TextLauncher: the personal profile only (docs/spec.md 2.1).
+     * CaretLauncher: the personal profile only (docs/spec.md 2.1).
      */
     fun updateShortcutPinnedState(context: Context) {
         updateShortcutPinnedState(context, android.os.Process.myUserHandle())
@@ -133,7 +133,7 @@ class BgDataModel {
      */
     @Synchronized
     fun updateShortcutPinnedState(context: Context, user: UserHandle) {
-        // TextLauncher: BuildConfig.WIDGETS_ENABLED is true.
+        // CaretLauncher: BuildConfig.WIDGETS_ENABLED is true.
 
         // Collect all system shortcuts
         val result =
@@ -224,7 +224,7 @@ class BgDataModel {
         }
     }
 
-    // TextLauncher: no deep shortcut counts (updateDeepShortcutCounts).
+    // CaretLauncher: no deep shortcut counts (updateDeepShortcutCounts).
 
     /**
      * Calls the [workspaceItemOp] for all workspaceItems [widgetItemOp] for all widget items in the
@@ -273,7 +273,7 @@ class BgDataModel {
         // Migrated to repository
         fun bindWorkspaceComponentsRemoved(matcher: Predicate<ItemInfo?>) {}
 
-        // TextLauncher: no incremental downloads (bindIncrementalDownloadProgressUpdated), widgets
+        // CaretLauncher: no incremental downloads (bindIncrementalDownloadProgressUpdated), widgets
         // model (bindAllWidgets) or extra items (bindExtraContainerItems).
 
         // Migrated to repository
@@ -283,7 +283,7 @@ class BgDataModel {
             packageUserKeytoUidMap: Map<PackageUserKey, Int>,
         ) {}
 
-        // TextLauncher: no string cache (bindStringCache).
+        // CaretLauncher: no string cache (bindStringCache).
     }
 
     sealed class ModificationSource {

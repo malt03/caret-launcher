@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CaretLauncher: strings copied from Launcher3 res/values-tr/strings.xml (android-17.0.0_r1) that the copied code uses. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_info_drop_target_label" msgid="692894985365717661">"Uygulama bilgileri"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"Kısayol Menüsü"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"Ana ekrana ekle"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"İndirilen uygulama Güvenli modda devre dışı bırakıldı"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Kısayol kullanılamıyor"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Uygulama kullanılamıyor"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Uygulama güncellemesi gerekli"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Bu simgenin uygulaması güncellenmemiş. Simgeyi kaldırabilir ya da uygulamayı manuel olarak güncelleyerek bu kısayolu yeniden etkinleştirebilirsiniz."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Güncelle"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Kaldır"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Duvar kağıdı ve stil"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widget\'lar"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Uygulamalar listesi"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Bu ana ekranda yer yok"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Yöneticiniz tarafından devre dışı bırakıldı"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Kaldır"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Ayarlar"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Genişliği artır"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Genişliği azalt"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Sol yeniden boyutlandırma tutamacı"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Üst yeniden boyutlandırma tutamacı"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Sağ yeniden boyutlandırma tutamacı"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Alt yeniden boyutlandırma tutamacı"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Boyut düğmelerini göster"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> Widget\'ını Yeniden Boyutlandırma Çerçevesi"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Kişisel uygulamalar listesi"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"İş uygulamaları listesi"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Kişisel"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"İş"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Kişisel"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"İş"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Devam ettir"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"İş uygulamalarını duraklat"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"İş uygulamaları size bildirim gönderemez, pilinizi kullanamaz veya konum bilginize erişemez"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"İş uygulamalarınızdan bildirim almazsınız"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"İş uygulamalarınızdan telefon araması, kısa mesaj veya bildirim almazsınız"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"İş uygulamaları duraklatıldı"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"İş uygulamaları rozetle işaretlenmiş olup BT yöneticisi tarafından görülebilir"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Uygulama yüklü değil."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Görüşmeler"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Not alma"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Güvenli modda widget\'lar devre dışı"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} uygulamasının # bildirimi var}other{{app_name} uygulamasının # bildirimi var}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> devre dışı"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Bildirim noktalarını göster"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Bildirim noktaları"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Bildirim erişimi gerekli"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Bildirim Noktaları\'nı göstermek için <xliff:g id="NAME">%1$s</xliff:g> uygulamasının bildirimlerini açın"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Ayarları değiştir"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Solu sayfalandır"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Sağı sayfalandır"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Sayfa %1$d / %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Sil"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Kaldır"</string>
+    <string name="action_close" msgid="1077760267194136901">"Kapat"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"Yüksekliği azalt"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"Yüksekliği artır"</string>
+    <string name="action_move" msgid="4339390619886385032">"Öğeyi taşı"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"Öğeyi buraya taşı"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"Ana ekrana taşı"</string>
+    <string name="action_resize" msgid="1802976324781771067">"Yeniden boyutlandır"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"<xliff:g id="NAME">%1$s</xliff:g> bulunan klasöre ekleyin. <xliff:g id="STRING">%4$s</xliff:g> adlı tabloda <xliff:g id="NUMBER_0">%2$s</xliff:g>. satır, <xliff:g id="NUMBER_1">%3$s</xliff:g>. sütun"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"<xliff:g id="NAME">%1$s</xliff:g> klasörüne ekleyin <xliff:g id="STRING">%4$s</xliff:g> adlı tabloda <xliff:g id="NUMBER_0">%2$s</xliff:g>. satır, <xliff:g id="NUMBER_1">%3$s</xliff:g>. sütun"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"Uygulama listesi"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> öğe"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> öğe ve bildirimler var"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g> <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> veya daha fazla öğe"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> veya daha fazla öğe ve bildirimler var"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"<xliff:g id="NAME">%1$s</xliff:g> ile klasör oluşturun. <xliff:g id="STRING">%4$s</xliff:g> adlı tabloda <xliff:g id="NUMBER_0">%2$s</xliff:g>. satır, <xliff:g id="NUMBER_1">%3$s</xliff:g>. sütun"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"Uygulamayı önerme"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"Klasör kapatıldı"</string>
+    <string name="folder_opened" msgid="94695026776264709">"Klasör açıldı, <xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"Klasörü kapatmak için dokunun"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"Klasör"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"Widget ayarları"</string>
+    <string name="home_screen" msgid="5629429142036709174">"Ana ekran"</string>
+    <string name="item_moved" msgid="4606538322571412879">"Öğe taşındı"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"<xliff:g id="STRING">%3$s</xliff:g> sayfasında <xliff:g id="NUMBER_0">%1$s</xliff:g>. satır <xliff:g id="NUMBER_1">%2$s</xliff:g>. sütuna taşı"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"Favorilerde <xliff:g id="NUMBER">%1$s</xliff:g>. sıraya taşı"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"<xliff:g id="NUMBER">%1$s</xliff:g>. sıraya taşı"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"Adsız klasör"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"Ana ekran %1$d / %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"<xliff:g id="WIDGET_NAME">%1$s</xliff:g> widget\'ı ana ekrana eklendi"</string>
+</resources>

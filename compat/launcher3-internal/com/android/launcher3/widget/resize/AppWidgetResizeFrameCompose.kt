@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -59,7 +59,7 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView
  * - Initialize the compose UI and its necessary dependencies and clean them up when closing.
  *
  * Stand-in for Launcher3's AppWidgetResizeFrameCompose (android-17.0.0_r1); changes are marked
- * with "TextLauncher:". TextLauncher: the frame follows the widget as the home grid scrolls, and
+ * with "CaretLauncher:". CaretLauncher: the frame follows the widget as the home grid scrolls, and
  * the launcher hears when it opens and closes (the home screen's edit mode, docs/spec.md 5.4).
  */
 class AppWidgetResizeFrameCompose
@@ -86,14 +86,14 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
     override fun onNewResizeRequest(bounds: Rect) {
         // Adjust the floating view to the requested size, so frame also shows at the size.
-        // TextLauncher: the layout part is split out as setFrameBounds, for followWidget.
+        // CaretLauncher: the layout part is split out as setFrameBounds, for followWidget.
         setFrameBounds(bounds)
 
         isFocusableInTouchMode = true
         requestFocus()
     }
 
-    /** TextLauncher: onNewResizeRequest's layout part, which [followWidget] uses too. */
+    /** CaretLauncher: onNewResizeRequest's layout part, which [followWidget] uses too. */
     private fun setFrameBounds(bounds: Rect) {
         (layoutParams as BaseDragLayer.LayoutParams).apply {
             x = bounds.left - touchTargetSize
@@ -155,7 +155,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             // Mark the frame as closed before removing it from drag layer so drag layer knows not
             // to asynchronously call `close()` again (which happens with `AbstractFloatingView`s
             // that get removed without being closed).
-            // TextLauncher: the launcher hears that the frame closed (edit mode, docs/spec.md 5.4).
+            // CaretLauncher: the launcher hears that the frame closed (edit mode, docs/spec.md 5.4).
             val wasOpen = mIsOpen
             mIsOpen = false
             launcher.dragController.removeDragSessionListener(this)
@@ -178,7 +178,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
             ResizeManager(
                     widgetView = widgetView,
                     cellLayout = cellLayout,
-                    // TextLauncher: no CellPosMapper and no stats logging.
+                    // CaretLauncher: no CellPosMapper and no stats logging.
                     dragLayer = dragLayer,
                     deviceProfile = launcher.deviceProfile,
                     touchPadding = touchTargetSize,
@@ -237,7 +237,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
             val dragLayer = activityContext.dragLayer as DragLayer
             val resizeFrame =
-                // TextLauncher: no ActivityContext.getLayoutInflater.
+                // CaretLauncher: no ActivityContext.getLayoutInflater.
                 LayoutInflater.from(activityContext.asContext()).inflate(
                     R.layout.app_widget_resize_frame_compose,
                     dragLayer,
@@ -262,7 +262,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
                 setup(widgetView, cellLayout, dragLayer)
                 dragLayer.addView(this)
                 mIsOpen = true
-                // TextLauncher: the launcher hears that the frame opened (edit mode).
+                // CaretLauncher: the launcher hears that the frame opened (edit mode).
                 launcher.onWidgetResizeFrameOpenChanged(true)
                 dragLayer.post { onNewResizeRequest(resizeManager.getCurrentWidgetBounds()) }
             }
@@ -271,10 +271,10 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
-     * TextLauncher: the home grid scrolls, and moves as the keyboard comes and goes, which
+     * CaretLauncher: the home grid scrolls, and moves as the keyboard comes and goes, which
      * Launcher3's pages do not. While no edge is dragged, the frame keeps to the widget.
      */
     private val followWidget = Runnable {

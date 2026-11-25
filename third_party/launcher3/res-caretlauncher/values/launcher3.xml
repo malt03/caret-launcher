@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CaretLauncher: resources copied from Launcher3 res/values (android-17.0.0_r1) that the copied
+  folder and drag code uses: attrs.xml, colors.xml (values-v31/launcher3.xml has their
+  dynamic colors),
+  config.xml, dimens.xml and id.xml, and styles.xml (FastScrollerPopup) for the all apps fast
+  scroller, DropTargetButton and HomeScreenElementTheme for the drop target bar.
+  drawable/round_rect_folder.xml and drawable/bg_letter_list_text.xml are copied as is.
+-->
+<resources>
+    <attr name="folderPreviewColor" format="color" />
+    <attr name="folderBackgroundColor" format="color" />
+    <attr name="folderIconBorderColor" format="color" />
+    <declare-styleable name="FolderIconPreview">
+        <attr name="folderPreviewColor" />
+        <attr name="folderIconBorderColor" />
+    </declare-styleable>
+    <!-- Launcher3 attrs.xml and colors.xml: the notification dots -->
+    <attr name="notificationDotColor" format="color" />
+    <color name="notification_dot_color_light">#6DD58C</color>
+    <color name="notification_dot_color_dark">#C4EED0</color>
+
+    <color name="folder_background_light">#EFEDED</color>
+    <color name="folder_background_dark">#1F2020</color>
+    <color name="folder_preview_light">#7FCFFF</color>
+    <color name="folder_preview_dark">#1E1F20</color>
+    <integer name="config_materialFolderExpandDuration">200</integer>
+    <dimen name="bg_round_rect_radius">8dp</dimen>
+    <!-- dragndrop (util/ViewEx.kt also reads this id) -->
+    <item type="id" name="perform_a11y_action_on_launcher_state_normal_tag" />
+    <dimen name="blur_size_medium_outline">2dp</dimen>
+    <dimen name="pre_drag_view_scale">6dp</dimen>
+    <!-- WidgetDragScaleUtils -->
+    <dimen name="widget_drag_view_min_scale_down_size">70dp</dimen>
+    <integer name="config_dropAnimMinDuration">100</integer>
+    <integer name="config_dropAnimMaxDuration">500</integer>
+    <integer name="config_dropAnimMaxDist">800</integer>
+    <!-- attrs.xml: the all apps state's scrim (AllAppsState.getWorkspaceScrimColor) -->
+    <attr name="allAppsScrimColor" format="color" />
+    <!-- CellLayout: attrs.xml (containerType) and id.xml (the saved state of its children) -->
+    <declare-styleable name="CellLayout">
+        <attr name="containerType" format="integer">
+            <enum name="workspace" value="0" />
+            <enum name="hotseat" value="1" />
+            <enum name="folder" value="2" />
+        </attr>
+    </declare-styleable>
+    <item type="id" name="cell_layout_jail_id" />
+    <!-- id.xml: the QSB on the workspace, which WorkspaceLayoutManager leaves without a long click -->
+    <item type="id" name="search_container_workspace" />
+    <!-- id.xml: Workspace's drag event order check (ENFORCE_DRAG_EVENT_ORDER) -->
+    <item type="id" name="drag_event_parity" />
+    <!-- CellLayout drop location -->
+    <attr name="workspaceAccentColor" format="color" />
+    <color name="workspace_accent_color_light">#D3E3FD</color>
+    <color name="workspace_accent_color_dark">#041E49</color>
+    <dimen name="grid_visualization_rounding_radius">16dp</dimen>
+    <dimen name="grid_visualization_horizontal_cell_spacing">6dp</dimen>
+    <dimen name="grid_visualization_vertical_cell_spacing">6dp</dimen>
+    <integer name="config_dragOutlineFadeTime">500</integer>
+    <integer name="config_dragOutlineMaxAlpha">255</integer>
+    <!-- DropTargetBar, ButtonDropTarget (layout/drop_target_bar.xml, drawable/drop_target_*.xml,
+         drawable/ic_*_no_shadow.xml and color/drop_target_text.xml are copied as is) -->
+    <dimen name="drag_distanceThreshold">30dp</dimen>
+    <attr name="dropTargetHoverTextColor" format="color" />
+    <attr name="dropTargetHoverButtonColor" format="color" />
+    <color name="drop_target_hover_text_color_light">#041E49</color>
+    <color name="drop_target_hover_text_color_dark">#D3E3FD</color>
+    <color name="drop_target_hover_button_color_light">#D3E3FD</color>
+    <color name="drop_target_hover_button_color_dark">#0842A0</color>
+    <dimen name="dynamic_grid_drop_target_size">56dp</dimen>
+    <dimen name="drop_target_top_margin">32dp</dimen>
+    <dimen name="drop_target_bottom_margin">16dp</dimen>
+    <dimen name="button_drop_target_min_text_size">10sp</dimen>
+    <dimen name="button_drop_target_resize_text_increment">1sp</dimen>
+    <dimen name="drop_target_drag_padding">14dp</dimen>
+    <dimen name="drop_target_text_size">16sp</dimen>
+    <dimen name="drop_target_bar_margin_horizontal">4dp</dimen>
+    <dimen name="drop_target_button_drawable_size">20dp</dimen>
+    <dimen name="drop_target_button_drawable_padding">8dp</dimen>
+    <dimen name="drop_target_button_drawable_horizontal_padding">16dp</dimen>
+    <dimen name="drop_target_button_drawable_vertical_padding">8dp</dimen>
+    <dimen name="drop_target_button_frame_radius">80dp</dimen>
+    <dimen name="drop_target_button_gap">28dp</dimen>
+    <dimen name="drop_target_bottom_margin_wide_portrait">32dp</dimen>
+    <dimen name="drop_target_button_workspace_edge_gap">0dp</dimen>
+    <string name="delete_package_intent" translatable="false">#Intent;action=android.intent.action.DELETE;launchFlags=0x10800000;end</string>
+    <item type="id" name="action_remove" />
+    <item type="id" name="action_uninstall" />
+    <item type="id" name="action_reconfigure" />
+    <item type="id" name="action_add_to_workspace" />
+    <item type="id" name="action_move" />
+    <item type="id" name="action_move_to_workspace" />
+    <item type="id" name="action_resize" />
+    <item type="id" name="action_deep_shortcuts" />
+    <item type="id" name="action_dismiss_prediction" />
+    <item type="id" name="action_pin_prediction"/>
+    <item type="id" name="action_close"/>
+    <style name="DropTargetButtonBase" parent="@android:style/TextAppearance.DeviceDefault.Medium">
+        <item name="android:drawablePadding">@dimen/drop_target_button_drawable_padding</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/drop_target_text</item>
+        <item name="android:textSize">@dimen/drop_target_text_size</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:background">@drawable/drop_target_background</item>
+    </style>
+    <style name="DropTargetButton" parent="DropTargetButtonBase">
+        <item name="android:fontFamily">variable-title-medium</item>
+    </style>
+    <style name="HomeScreenElementTheme">
+        <item name="android:colorEdgeEffect">?attr/workspaceTextColor</item>
+        <item name="android:textColorPrimary">?attr/workspaceTextColor</item>
+        <item name="android:textColorSecondary">?attr/workspaceTextColor</item>
+    </style>
+    <!-- frameworks/libs/systemui dynamiccolors (values-night has the dark ones) -->
+    <color name="materialColorOnSurface">@android:color/system_on_surface_light</color>
+    <color name="materialColorOnSurfaceVariant">@android:color/system_on_surface_variant_light</color>
+    <color name="materialColorSurfaceContainerHigh">@android:color/system_surface_container_high_light</color>
+    <color name="materialColorSurfaceContainer">@android:color/system_surface_container_light</color>
+    <color name="materialColorSecondaryFixed">@android:color/system_secondary_fixed_light</color>
+    <color name="materialColorOnSecondaryFixedVariant">@android:color/system_on_secondary_fixed_variant_light</color>
+
+    <!-- Keyboard focus outline: keyboard/ItemFocusIndicatorHelper.java, FocusIndicatorHelper.java -->
+    <attr name="focusOutlineColor" format="color" />
+    <attr name="focusInnerOutlineColor" format="color" />
+    <color name="focused_background">#80c6c5c5</color>
+    <dimen name="focus_outline_radius">16dp</dimen>
+    <dimen name="focus_inner_outline_radius">14dp</dimen>
+    <dimen name="focus_outline_stroke_width">2dp</dimen>
+
+    <!-- Long-press menu: AbstractFloatingView, ArrowPopup, PopupContainer and the system
+         shortcut rows (layout/system_shortcut*.xml, drawable/popup_background.xml,
+         drawable/*_item_primary.xml, drawable/info_24px.xml, drawable/gm_edit_24.xml,
+         layout/deep_shortcut*.xml, drawable/ic_deepshortcut_placeholder.xml,
+         drawable/ic_add_circle_filled.xml, drawable/deep_shortcuts_text_placeholder.xml and
+         color/popup_shade_*.xml are copied as is) -->
+    <attr name="popupColorPrimary" format="color" />
+    <attr name="popupColorSecondary" format="color" />
+    <attr name="popupColorTertiary" format="color" />
+    <attr name="popupTextColor" format="color" />
+    <attr name="popupShadeFirst" format="color" />
+    <attr name="popupShadeSecond" format="color" />
+    <attr name="popupShadeThird" format="color" />
+    <declare-styleable name="BubbleTextView">
+        <attr name="layoutHorizontal" format="boolean" />
+        <attr name="iconSizeOverride" format="dimension" />
+        <attr name="iconDisplay" format="integer">
+            <enum name="workspace" value="0" />
+            <enum name="all_apps" value="1" />
+            <enum name="folder" value="2" />
+            <enum name="widget_section" value="3" />
+            <enum name="shortcut_popup" value="4" />
+            <enum name="taskbar" value="5" />
+            <enum name="search_result_tall" value="6" />
+            <enum name="search_result_small" value="7" />
+            <enum name="prediction_row" value="8" />
+            <enum name="search_result_app_row" value="9" />
+        </attr>
+        <attr name="centerVertically" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="InsettableFrameLayout_Layout">
+        <attr name="layout_ignoreInsets" format="boolean" />
+    </declare-styleable>
+    <!-- values-v31/colors.xml -->
+    <color name="popup_color_primary_light">#FFF</color>
+    <color name="popup_color_secondary_light">#F1F3F4</color>
+    <color name="popup_color_tertiary_light">#E0E0E0</color>
+    <color name="popup_color_primary_dark">#3C4043</color>
+    <color name="popup_color_secondary_dark">#202124</color>
+    <color name="popup_color_tertiary_dark">#757575</color>
+    <color name="workspace_text_color_light">#FFF</color>
+    <!-- values-v34/colors.xml -->
+    <color name="system_on_surface_light">@android:color/system_on_surface_light</color>
+    <color name="system_on_surface_dark">@android:color/system_on_surface_dark</color>
+    <!-- values/colors.xml -->
+    <color name="popup_shade_first_light">#F9F9F9</color>
+    <color name="popup_shade_second_light">#F1F1F1</color>
+    <color name="popup_shade_third_light">#E2E2E2</color>
+    <color name="popup_shade_first_dark">#303030</color>
+    <color name="popup_shade_second_dark">#262626</color>
+    <color name="popup_shade_third_dark">#1B1B1B</color>
+    <!-- values/dimens.xml -->
+    <dimen name="dialogCornerRadius">@dimen/default_dialog_corner_radius</dimen>
+    <dimen name="default_dialog_corner_radius">26dp</dimen>
+    <dimen name="popup_smaller_radius">4dp</dimen>
+    <dimen name="popup_single_item_radius">100dp</dimen>
+    <dimen name="deep_shortcuts_elevation">2dp</dimen>
+    <dimen name="popup_margin">2dp</dimen>
+    <dimen name="popup_arrow_width">12dp</dimen>
+    <dimen name="popup_arrow_height">10dp</dimen>
+    <dimen name="popup_arrow_vertical_offset">-1dp</dimen>
+    <dimen name="popup_arrow_horizontal_center_offset">26dp</dimen>
+    <dimen name="popup_arrow_corner_radius">2dp</dimen>
+    <dimen name="popup_vertical_padding">4dp</dimen>
+    <dimen name="bg_popup_item_width">216dp</dimen>
+    <dimen name="bg_popup_item_height">52dp</dimen>
+    <dimen name="deep_shortcuts_text_padding_start">54dp</dimen>
+    <dimen name="popup_padding_end">14dp</dimen>
+    <dimen name="system_shortcut_icon_size">20dp</dimen>
+    <dimen name="system_shortcut_margin_start">16dp</dimen>
+    <dimen name="system_shortcut_header_height">52dp</dimen>
+    <dimen name="deep_shortcuts_start_drag_threshold">16dp</dimen>
+    <dimen name="deep_shortcut_icon_size">35dp</dimen>
+    <dimen name="deep_shortcut_drawable_padding">16dp</dimen>
+    <dimen name="deep_shortcut_add_button_size">48dp</dimen>
+    <dimen name="popup_padding_start">10dp</dimen>
+    <dimen name="deep_shortcut_text_end_padding">48dp</dimen>
+    <dimen name="system_shortcut_header_icon_touch_size">48dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding">14dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding_outer">16dp</dimen>
+    <dimen name="system_shortcut_header_icon_padding_inner">12dp</dimen>
+    <!-- CaretLauncher: an id resource for the popup container, which Launcher3 declares with
+         @+id/popup_container in layout/longpress_options_menu.xml. -->
+    <item type="id" name="popup_container" />
+    <!-- values/config.xml -->
+    <string name="popup_container_iterate_children" translatable="false">popup_container_iterate_children</string>
+    <!-- values/styles.xml -->
+    <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
+    <style name="BaseIconUnBounded" parent="BaseIconRoot">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textColor">@color/workspace_text_color_light</item>
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+        <!-- No shadows in the base theme -->
+        <item name="android:shadowRadius">0</item>
+    </style>
+    <style name="BaseIcon" parent="BaseIconUnBounded">
+        <item name="android:lines">1</item>
+    </style>
+    <style name="PopupItemIconOnly">
+        <item name="android:colorControlHighlight">?attr/popupColorTertiary</item>
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+    </style>
+    <style name="PopupItem">
+        <item name="android:colorControlHighlight">?attr/popupColorTertiary</item>
+    </style>
+    <!-- All apps fast scroller (views/RecyclerViewFastScroller.java, allapps/). -->
+    <declare-styleable name="RecyclerViewFastScroller">
+        <attr name="canThumbDetach" format="boolean" />
+    </declare-styleable>
+    <color name="materialColorSurface">@android:color/system_surface_light</color>
+    <color name="materialColorSurfaceBright">@android:color/system_surface_bright_light</color>
+    <dimen name="fastscroll_track_min_width">6dp</dimen>
+    <dimen name="fastscroll_track_max_width">8dp</dimen>
+    <dimen name="fastscroll_thumb_padding">1dp</dimen>
+    <dimen name="fastscroll_thumb_height">52dp</dimen>
+    <dimen name="fastscroll_thumb_touch_inset">-24dp</dimen>
+    <dimen name="fastscroll_popup_width">75dp</dimen>
+    <dimen name="fastscroll_popup_height">62dp</dimen>
+    <dimen name="fastscroll_popup_padding">13dp</dimen>
+    <dimen name="fastscroll_popup_text_size">32dp</dimen>
+    <dimen name="fastscroll_popup_margin">19dp</dimen>
+    <dimen name="fastscroll_list_letter_size">5dp</dimen>
+    <dimen name="bg_letter_list_text_size">20sp</dimen>
+    <dimen name="fastscroll_width">58dp</dimen>
+    <dimen name="fastscroll_end_margin">-26dp</dimen>
+    <dimen name="all_apps_header_top_padding">36dp</dimen>
+    <dimen name="all_apps_header_bottom_padding">14dp</dimen>
+    <style name="FastScrollerPopup" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:minWidth">@dimen/fastscroll_popup_width</item>
+        <item name="android:layout_height">@dimen/fastscroll_popup_height</item>
+        <item name="android:textSize">@dimen/fastscroll_popup_text_size</item>
+        <item name="android:paddingEnd">@dimen/fastscroll_popup_padding</item>
+        <item name="android:gravity">center</item>
+        <item name="android:alpha">0</item>
+        <item name="android:elevation">3dp</item>
+        <item name="android:saveEnabled">false</item>
+        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+    <!-- All apps open and close gestures (touch/BaseSwipeDetector.java). -->
+    <dimen name="base_swift_detector_fling_release_velocity">1dp</dimen>
+    <!-- The wallpaper dependent workspace text (util/Themes.getActivityThemeRes). attrs.xml,
+         values-v31/colors.xml. The AppTheme styles are declared here for R.style and defined
+         by the app (res/values/themes.xml), which overrides them. -->
+    <attr name="isWorkspaceDarkText" format="boolean" />
+    <attr name="workspaceTextColor" format="color" />
+    <attr name="workspaceShadowColor" format="color" />
+    <color name="workspace_text_color_dark">#FF000000</color>
+    <!-- CaretLauncher: declared without a parent for R.style; the app's res/values/themes.xml
+         defines them (Launcher3's styles.xml makes them LauncherTheme). -->
+    <style name="AppTheme" />
+    <style name="AppTheme.DarkMainColor" />
+    <style name="AppTheme.DarkText" />
+    <style name="AppTheme.Dark" />
+    <style name="AppTheme.Dark.DarkMainColor" />
+    <style name="AppTheme.Dark.DarkText" />
+    <!-- The home screen while editing (states/SpringLoadedState.java, CellLayout's background,
+         DragLayer's workspace drag scrim): attrs.xml, values-v31/colors.xml, dimens.xml.
+         drawable-v28/bg_celllayout.xml is copied as is (minSdk 33 always uses it), and
+         color/cell_layout_bg_color.xml is copied as is. -->
+    <attr name="workspaceSurfaceColor" format="color" />
+    <color name="workspace_surface_color">#D3E3FD</color>
+    <color name="wallpaper_popup_scrim">?android:attr/colorAccent</color>
+    <dimen name="spring_loaded_panel_border">2dp</dimen>
+    <dimen name="spring_loaded_hotseat_top_margin">76dp</dimen>
+    <dimen name="dynamic_grid_spring_loaded_min_next_space_visible">48dp</dimen>
+    <!-- The all apps bottom sheet (layout/all_apps_bottom_sheet_background.xml,
+         drawable/bg_rounded_corner_bottom_sheet_handle.xml) and the depth's blur:
+         attrs.xml, colors.xml, dimens.xml, quickstep/res/values/config.xml. -->
+    <attr name="bottomSheetDragHandleColor" format="color" />
+    <!-- CaretLauncher: Pixel Launcher's values (the framework's shade_panel colors, which follow the
+         dark theme) instead of AOSP's #66D9E2FF and #1AFFFFFF. -->
+    <color name="blur_shade_panel_fg">@color/shade_panel_fg_color</color>
+    <color name="blur_shade_panel_bg">@color/shade_panel_bg_color</color>
+    <dimen name="bottom_sheet_handle_area_height">36dp</dimen>
+    <dimen name="bottom_sheet_handle_width">32dp</dimen>
+    <dimen name="bottom_sheet_handle_height">4dp</dimen>
+    <dimen name="bottom_sheet_handle_margin">16dp</dimen>
+    <dimen name="bottom_sheet_handle_corner_radius">2dp</dimen>
+    <dimen name="max_depth_blur_radius_enhanced">30dp</dimen>
+    <item name="workspace_content_scale" format="float" type="dimen">0.97</item>
+    <color name="materialColorOutlineVariant">@android:color/system_outline_variant_light</color>
+    <!-- CaretLauncher: dimens.xml's 0dp, for util/window/WindowManagerProxy.java's window bounds
+         estimate. quickstep/res sets the framework's taskbar_frame_height, which is private. -->
+    <dimen name="taskbar_size">0dp</dimen>
+    <dimen name="max_width_and_height_of_small_display_cutout">136px</dimen>
+    <!-- The empty space's long-press menu icons (drawable/ic_apps.xml, ic_palette.xml,
+         ic_widget.xml): values/dimens.xml -->
+    <dimen name="options_menu_icon_size">24dp</dimen>
+    <!-- The wallpaper picker the menu opens (WorkspaceLongPressOptions): values/config.xml.
+         Empty: the system picks the activity for ACTION_SET_WALLPAPER. -->
+    <string name="wallpaper_picker_package" translatable="false"></string>
+    <!-- The widget resize frame (widget/resize/ResizeFrame.kt): values/dimens.xml, and the
+         dynamiccolors colors it draws with (frameworks/libs/systemui res/values/colors.xml). -->
+    <dimen name="resize_frame_touch_target_size">48dp</dimen>
+    <color name="materialColorPrimary">@android:color/system_primary_light</color>
+    <color name="materialColorTertiaryContainer">@android:color/system_tertiary_container_light</color>
+    <color name="materialColorOnTertiaryContainer">@android:color/system_on_tertiary_container_light</color>
+    <!-- The grid options of xml/device_profiles.xml, which deviceprofile/parser/GridOption.kt
+         and DisplayOption.kt read for InvariantDeviceProfile: attrs.xml -->
+    <declare-styleable name="GridDisplayOption">
+        <attr name="name" format="string" />
+        <attr name="gridTitle" format="string" />
+        <attr name="gridIconId" format="reference"/>
+
+        <attr name="numRows" format="integer" />
+        <attr name="numColumns" format="integer" />
+        <!--  numSearchContainerColumns defaults to numColumns, if not specified -->
+        <attr name="numSearchContainerColumns" format="integer" />
+
+        <!-- Support attributes in CellStyle. defaults to CellStyleDefault -->
+        <attr name="cellStyle" format="reference" />
+
+        <!-- numFolderRows & numFolderColumns defaults to numRows & numColumns, if not specified -->
+        <attr name="numFolderRows" format="integer" />
+        <!-- defaults to numFolderRows, if not specified -->
+        <attr name="numFolderRowsLandscape" format="integer" />
+        <!-- defaults to numFolderRows, if not specified -->
+        <attr name="numFolderRowsTwoPanelLandscape" format="integer" />
+        <!-- defaults to numFolderRows, if not specified -->
+        <attr name="numFolderRowsTwoPanelPortrait" format="integer" />
+        <attr name="numFolderColumns" format="integer" />
+        <!-- defaults to numFolderColumns, if not specified -->
+        <attr name="numFolderColumnsLandscape" format="integer" />
+        <!-- defaults to numFolderColumns, if not specified -->
+        <attr name="numFolderColumnsTwoPanelLandscape" format="integer" />
+        <!-- defaults to numFolderColumns, if not specified -->
+        <attr name="numFolderColumnsTwoPanelPortrait" format="integer" />
+        <!-- Support attributes in FolderStyle -->
+        <attr name="folderStyle" format="reference" />
+
+        <!-- Support attributes in AllAppsStyle. Defaults to AllAppsStyleDefault -->
+        <attr name="allAppsStyle" format="reference" />
+
+        <!-- numAllAppsColumns defaults to numColumns, if not specified -->
+        <attr name="numAllAppsColumns" format="integer" />
+        <!-- Number of columns to use when extending the all-apps size,
+         defaults to 2 * numAllAppsColumns -->
+        <attr name="numExtendedAllAppsColumns" format="integer" />
+
+        <!-- Number of rows to calculate the cell height for all apps when it's necessary.
+          Defaults to numRows. Requires FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE to be enabled. -->
+        <attr name="numAllAppsRowsForCellHeightCalculation" format="integer" />
+
+        <!-- numHotseatIcons defaults to numColumns, if not specified -->
+        <attr name="numHotseatIcons" format="integer" />
+        <!-- Number of icons to use when extending the hotseat size,
+         defaults to 2 * numHotseatIcons -->
+        <attr name="numExtendedHotseatIcons" format="integer" />
+
+        <!-- Spacing to have at the end of the nav buttons in large screen 3 button nav,
+             defaults to @dimen/taskbar_button_margin_default -->
+        <attr name="inlineNavButtonsEndSpacing" format="reference" />
+
+        <!-- Grid flips row and column count when rotating the device -->
+        <attr name="isDualGrid" format="boolean" />
+
+        <attr name="dbFile" format="string" />
+        <attr name="defaultLayoutId" format="reference" />
+        <attr name="isScalable" format="boolean" />
+        <attr name="devicePaddingId" format="reference" />
+
+        <!-- File that contains the specs for the workspace.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="workspaceSpecsId" format="reference" />
+        <!-- defaults to workspaceSpecsId, if not specified -->
+        <attr name="workspaceSpecsTwoPanelId" format="reference" />
+        <!-- File that contains the specs for all apps.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="allAppsSpecsId" format="reference" />
+        <!-- defaults to allAppsSpecsId, if not specified -->
+        <attr name="allAppsSpecsTwoPanelId" format="reference" />
+        <!-- File that contains the specs for the workspace.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="folderSpecsId" format="reference" />
+        <!-- defaults to folderSpecsId, if not specified -->
+        <attr name="folderSpecsTwoPanelId" format="reference" />
+        <!-- File that contains the specs for hotseat bar.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="hotseatSpecsId" format="reference" />
+        <!-- defaults to hotseatSpecsId, if not specified -->
+        <attr name="hotseatSpecsTwoPanelId" format="reference" />
+        <!-- File that contains the specs for workspace icon and text size.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="workspaceCellSpecsId" format="reference" />
+        <!-- defaults to workspaceCellSpecsId, if not specified -->
+        <attr name="workspaceCellSpecsTwoPanelId" format="reference" />
+        <!-- File that contains the specs for all apps icon and text size.
+        Needs FeatureFlags.ENABLE_RESPONSIVE_WORKSPACE enabled -->
+        <attr name="allAppsCellSpecsId" format="reference" />
+        <attr name="gridSizeSpecsId" format="reference" />
+        <!-- File that contains specs describing the all apps container height. If not specified,
+        all apps container will vertically expand to fill available space. -->
+        <attr name="allAppsSizeSpecsId" format="reference" />
+        <!-- defaults to allAppsCellSpecsId, if not specified -->
+        <attr name="allAppsCellSpecsTwoPanelId" format="reference" />
+        <!-- defaults to false, if not specified -->
+        <attr name="isFixedLandscape" format="boolean" />
+        <!-- By default all grid types are enabled -->
+        <attr name="gridType" format="integer">
+            <flag name="standard" value="1" />
+            <flag name="desktop_landscape_optimized_grid" value="4" />
+            <flag name="desktop_dual_optimized_grid" value="8" />
+        </attr>
+
+        <!-- By default all categories are enabled -->
+        <attr name="deviceCategory" format="integer">
+            <!-- Enable on phone only -->
+            <flag name="phone" value="1" />
+            <!-- Enable on tablets only -->
+            <flag name="tablet" value="2" />
+            <!-- Enable on multi display devices only -->
+            <flag name="multi_display" value="4" />
+            <!-- Enable on desktop devices only -->
+            <flag name="desktop" value="8" />
+        </attr>
+
+        <!-- By default all are false -->
+        <attr name="inlineQsb" format="integer">
+            <!-- Enable on landscape only -->
+            <flag name="portrait" value="1" />
+            <!-- Enable on portrait only -->
+            <flag name="landscape" value="2" />
+            <!-- Enable on two panel portrait only -->
+            <flag name="twoPanelPortrait" value="4" />
+            <!-- Enable on two panel landscape only -->
+            <flag name="twoPanelLandscape" value="8" />
+        </attr>
+
+    </declare-styleable>
+    <declare-styleable name="ProfileDisplayOption">
+        <attr name="name" />
+        <attr name="minWidthDps" format="float" />
+        <attr name="minHeightDps" format="float" />
+
+        <!-- These min cell values are only used if GridDisplayOption#isScalable is true -->
+        <attr name="minCellHeight" format="float" />
+        <attr name="minCellWidth" format="float" />
+        <!-- defaults to minCellHeight, if not specified -->
+        <attr name="minCellHeightLandscape" format="float" />
+        <!-- defaults to minCellWidth, if not specified -->
+        <attr name="minCellWidthLandscape" format="float" />
+        <!-- defaults to minCellHeight, if not specified -->
+        <attr name="minCellHeightTwoPanelPortrait" format="float" />
+        <!-- defaults to minCellWidth, if not specified -->
+        <attr name="minCellWidthTwoPanelPortrait" format="float" />
+        <!-- defaults to minCellHeight, if not specified -->
+        <attr name="minCellHeightTwoPanelLandscape" format="float" />
+        <!-- defaults to minCellWidth, if not specified -->
+        <attr name="minCellWidthTwoPanelLandscape" format="float" />
+
+        <!-- These border spaces are only used if GridDisplayOption#isScalable is true -->
+        <!-- space to be used horizontally and vertically -->
+        <attr name="borderSpace" format="float" />
+        <!-- space to the right of the cell, defaults to borderSpace if not specified -->
+        <attr name="borderSpaceHorizontal" format="float" />
+        <!-- space below the cell, defaults to borderSpace if not specified -->
+        <attr name="borderSpaceVertical" format="float" />
+        <!-- space to be used horizontally and vertically,
+        defaults to borderSpace if not specified -->
+        <attr name="borderSpaceLandscape" format="float" />
+        <!-- space to the right of the cell, defaults to borderSpaceLandscape if not specified -->
+        <attr name="borderSpaceLandscapeHorizontal" format="float" />
+        <!-- space below the cell, defaults to borderSpaceLandscape if not specified -->
+        <attr name="borderSpaceLandscapeVertical" format="float" />
+        <!-- space to be used horizontally and vertically in two panels,
+        defaults to borderSpace if not specified -->
+        <attr name="borderSpaceTwoPanelPortrait" format="float" />
+        <!-- space to the right of the cell in two panels, defaults to
+        borderSpaceTwoPanelPortrait if not specified -->
+        <attr name="borderSpaceTwoPanelPortraitHorizontal" format="float" />
+        <!-- space below the cell in two panels, defaults to borderSpaceTwoPanelPortrait
+        if not specified -->
+        <attr name="borderSpaceTwoPanelPortraitVertical" format="float" />
+        <!-- space to be used horizontally and vertically in two panels,
+        defaults to borderSpace if not specified -->
+        <attr name="borderSpaceTwoPanelLandscape" format="float" />
+        <!-- space to the right of the cell in two panels, defaults to
+        borderSpaceTwoPanelLandscape if not specified -->
+        <attr name="borderSpaceTwoPanelLandscapeHorizontal" format="float" />
+        <!-- space below the cell in two panels, defaults to borderSpaceTwoPanelLandscape
+        if not specified -->
+        <attr name="borderSpaceTwoPanelLandscapeVertical" format="float" />
+
+        <!-- defaults to minCellHeight if not specified when GridDisplayOption#isScalable is true.
+         Must be defined when GridDisplayOption#isScalable is false. -->
+        <attr name="allAppsCellHeight" format="float" />
+        <!-- These min cell values are only used if GridDisplayOption#isScalable is true -->
+        <!-- defaults to minCellWidth, if not specified -->
+        <attr name="allAppsCellWidth" format="float" />
+        <!-- defaults to allAppsCellHeight, if not specified -->
+        <attr name="allAppsCellHeightLandscape" format="float" />
+        <!-- defaults to allAppsCellWidth, if not specified -->
+        <attr name="allAppsCellWidthLandscape" format="float" />
+        <!-- defaults to allAppsCellHeight, if not specified -->
+        <attr name="allAppsCellHeightTwoPanelPortrait" format="float" />
+        <!-- defaults to allAppsCellWidth, if not specified -->
+        <attr name="allAppsCellWidthTwoPanelPortrait" format="float" />
+        <!-- defaults to allAppsCellHeight, if not specified -->
+        <attr name="allAppsCellHeightTwoPanelLandscape" format="float" />
+        <!-- defaults to allAppsCellWidth, if not specified -->
+        <attr name="allAppsCellWidthTwoPanelLandscape" format="float" />
+        <!-- The following values are only enabled if grid is supported. -->
+        <!-- defaults to iconImageSize, if not specified -->
+        <attr name="allAppsIconSize" format="float" />
+        <!-- defaults to allAppsIconSize, if not specified -->
+        <attr name="allAppsIconSizeLandscape" format="float" />
+        <!-- defaults to allAppsIconSize, if not specified -->
+        <attr name="allAppsIconSizeTwoPanelPortrait" format="float" />
+        <!-- defaults to allAppsIconSize, if not specified -->
+        <attr name="allAppsIconSizeTwoPanelLandscape" format="float" />
+        <!-- defaults to iconTextSize, if not specified -->
+        <attr name="allAppsIconTextSize" format="float" />
+        <!-- defaults to allAppsIconTextSize, if not specified -->
+        <attr name="allAppsIconTextSizeTwoPanelPortrait" format="float" />
+        <!-- defaults to allAppsIconTextSize, if not specified -->
+        <attr name="allAppsIconTextSizeTwoPanelLandscape" format="float" />
+
+        <!-- defaults to borderSpace, if not specified -->
+        <!-- space to be used horizontally and vertically -->
+        <attr name="allAppsBorderSpace" format="float" />
+        <!-- space to the right of the cell, defaults to allAppsBorderSpace if not specified -->
+        <attr name="allAppsBorderSpaceHorizontal" format="float" />
+        <!-- space below the cell, defaults to allAppsBorderSpace if not specified -->
+        <attr name="allAppsBorderSpaceVertical" format="float" />
+        <!-- space to be used horizontally and vertically,
+        defaults to allAppsBorderSpace if not specified -->
+        <attr name="allAppsBorderSpaceLandscape" format="float" />
+        <!-- space to the right of the cell, defaults to allAppsBorderSpaceLandscape
+        if not specified -->
+        <attr name="allAppsBorderSpaceLandscapeHorizontal" format="float" />
+        <!-- space below the cell, defaults to allAppsBorderSpaceLandscape if not specified -->
+        <attr name="allAppsBorderSpaceLandscapeVertical" format="float" />
+        <!-- space to be used horizontally and vertically in two panels,
+        defaults to allAppsBorderSpace if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelPortrait" format="float" />
+        <!-- space to the right of the cell in two panels, defaults to
+        allAppsBorderSpaceTwoPanelPortrait if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelPortraitHorizontal" format="float" />
+        <!-- space below the cell in two panels, defaults to allAppsBorderSpaceTwoPanelPortrait
+        if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelPortraitVertical" format="float" />
+        <!-- space to be used horizontally and vertically in two panels,
+        defaults to allAppsBorderSpace if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelLandscape" format="float" />
+        <!-- space to the right of the cell in two panels, defaults to
+        allAppsBorderSpaceTwoPanelLandscape if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelLandscapeHorizontal" format="float" />
+        <!-- space below the cell in two panels, defaults to allAppsBorderSpaceTwoPanelLandscape
+        if not specified -->
+        <attr name="allAppsBorderSpaceTwoPanelLandscapeVertical" format="float" />
+
+        <!-- defaults to res.hotseat_bar_bottom_space_default, if not specified -->
+        <attr name="hotseatBarBottomSpace" format="float" />
+        <!-- defaults to hotseatBarBottomSpace, if not specified -->
+        <attr name="hotseatBarBottomSpaceLandscape" format="float" />
+        <!-- defaults to hotseatBarBottomSpace, if not specified -->
+        <attr name="hotseatBarBottomSpaceTwoPanelLandscape" format="float" />
+        <!-- defaults to hotseatBarBottomSpace, if not specified -->
+        <attr name="hotseatBarBottomSpaceTwoPanelPortrait" format="float" />
+
+        <!-- defaults to res.hotseat_qsb_space_default, if not specified -->
+        <attr name="hotseatQsbSpace" format="float" />
+        <!-- defaults to hotseatQsbSpace, if not specified -->
+        <attr name="hotseatQsbSpaceLandscape" format="float" />
+        <!-- defaults to hotseatQsbSpace, if not specified -->
+        <attr name="hotseatQsbSpaceTwoPanelLandscape" format="float" />
+        <!-- defaults to hotseatQsbSpace, if not specified -->
+        <attr name="hotseatQsbSpaceTwoPanelPortrait" format="float" />
+
+        <!-- defaults to res.taskbar_icon_size, if not specified -->
+        <attr name="transientTaskbarIconSize" format="float" />
+        <!-- defaults to transientTaskbarIconSize, if not specified -->
+        <attr name="transientTaskbarIconSizeLandscape" format="float" />
+        <!-- defaults to transientTaskbarIconSize, if not specified -->
+        <attr name="transientTaskbarIconSizeTwoPanelLandscape" format="float" />
+        <!-- defaults to transientTaskbarIconSize, if not specified -->
+        <attr name="transientTaskbarIconSizeTwoPanelPortrait" format="float" />
+
+        <attr name="iconImageSize" format="float" />
+        <!-- defaults to iconImageSize, if not specified -->
+        <attr name="iconSizeLandscape" format="float" />
+        <!-- defaults to iconSize, if not specified -->
+        <attr name="iconSizeTwoPanelPortrait" format="float" />
+        <!-- defaults to iconSize, if not specified -->
+        <attr name="iconSizeTwoPanelLandscape" format="float" />
+
+        <attr name="iconTextSize" format="float" />
+        <!-- defaults to iconTextSize, if not specified -->
+        <attr name="iconTextSizeLandscape" format="float" />
+        <!-- defaults to iconTextSize, if not specified -->
+        <attr name="iconTextSizeTwoPanelPortrait" format="float" />
+        <!-- defaults to iconTextSize, if not specified -->
+        <attr name="iconTextSizeTwoPanelLandscape" format="float" />
+
+        <!-- If true, used to layout taskbar in 3 button navigation mode. -->
+        <!-- defaults to false if not specified -->
+        <attr name="startAlignTaskbar" format="boolean" />
+        <!-- defaults to startAlignTaskbar, if not specified -->
+        <attr name="startAlignTaskbarLandscape" format="boolean" />
+        <!-- defaults to startAlignTaskbarLandscape, if not specified -->
+        <attr name="startAlignTaskbarTwoPanelLandscape" format="boolean" />
+        <!-- defaults to startAlignTaskbar, if not specified -->
+        <attr name="startAlignTaskbarTwoPanelPortrait" format="boolean" />
+
+        <!-- If set, this display option is used to determine the default grid -->
+        <attr name="canBeDefault" format="boolean" />
+
+        <!-- Margin on left and right of the workspace when GridDisplayOption#isScalable is true -->
+        <attr name="horizontalMargin" format="float"/>
+        <!-- defaults to horizontalMargin if not specified -->
+        <attr name="horizontalMarginLandscape" format="float"/>
+        <!-- defaults to horizontalMargin if not specified -->
+        <attr name="horizontalMarginTwoPanelLandscape" format="float"/>
+        <!-- defaults to horizontalMargin if not specified -->
+        <attr name="horizontalMarginTwoPanelPortrait" format="float"/>
+
+    </declare-styleable>
+    <!-- CaretLauncher: what xml/device_profiles.xml points to that GridSpec does not read (the
+         default layouts, the taskbar's margins, the scalable grids' paddings, the fixed landscape
+         mode's specs and folder style): declared empty instead of copied. -->
+    <item type="xml" name="default_workspace_3x3">@null</item>
+    <item type="xml" name="default_workspace_4x4">@null</item>
+    <item type="xml" name="default_workspace_5x5">@null</item>
+    <item type="xml" name="default_workspace_6x5">@null</item>
+    <item type="xml" name="default_workspace_8x3">@null</item>
+    <item type="xml" name="paddings_3_row">@null</item>
+    <item type="xml" name="paddings_6x5">@null</item>
+    <item type="xml" name="spec_all_apps_cell_match_workspace">@null</item>
+    <item type="xml" name="spec_col_count_3_row">@null</item>
+    <item type="xml" name="spec_handheld_all_apps_3_row">@null</item>
+    <item type="xml" name="spec_handheld_folder_3_row">@null</item>
+    <item type="xml" name="spec_handheld_hotseat_3_row">@null</item>
+    <item type="xml" name="spec_handheld_workspace_3_row">@null</item>
+    <item type="xml" name="spec_handheld_workspace_cell_3_row">@null</item>
+    <dimen name="taskbar_button_margin_split">0dp</dimen>
+    <dimen name="taskbar_button_margin_6_5">0dp</dimen>
+    <style name="FolderStyleDefault" />
+    <!-- deviceprofile/parser/GridOption.kt and DisplayOption.kt: attrs.xml, styles.xml,
+         dimens.xml and config.xml (quickstep/res overrides the taskbar values) -->
+    <declare-styleable name="AllAppsSize">
+        <attr name="minDeviceWidthDp" format="float" />
+        <attr name="alignWithWorkspaceRow" format="integer" />
+        <attr name="allAppsColumns" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="GridSize">
+        <attr name="minDeviceWidthPx" format="integer"/>
+        <attr name="minDeviceHeightPx" format="integer"/>
+        <attr name="numGridRows" format="integer"/>
+        <attr name="numGridColumns" format="integer"/>
+        <attr name="dbFile" />
+        <attr name="defaultLayoutId"/>
+    </declare-styleable>
+    <declare-styleable name="CellStyle">
+        <attr name="iconDrawablePadding" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="AllAppsStyle">
+        <attr name="horizontalPadding" format="dimension" />
+    </declare-styleable>
+    <style name="CellStyleDefault">
+        <item name="iconDrawablePadding">7dp</item>
+    </style>
+    <style name="AllAppsStyleDefault">
+        <item name="horizontalPadding">16dp</item>
+    </style>
+    <dimen name="hotseat_bar_bottom_space_default">48</dimen>
+    <dimen name="hotseat_qsb_space_default">0</dimen>
+    <item name="taskbar_icon_size" type="dimen" format="float">44</item>
+    <dimen name="taskbar_button_margin_default">48dp</dimen>
+    <!-- Folder pages: PagedView, pageindicators/PageIndicatorDots.java and PaginationArrow.kt, and
+         the folder footer (drawable/ic_circle.xml and drawable/ic_chevron_left_rounded_700.xml are
+         copied as is) -->
+    <declare-styleable name="PagedView">
+        <!-- The page indicator for this workspace -->
+        <attr name="pageIndicator" format="reference" />
+    </declare-styleable>
+    <attr name="pageIndicatorDotColor" format="color" />
+    <attr name="pageIndicatorArrowBgColor" format="color" />
+    <color name="page_indicator_arrow_bg_light">#000000</color>
+    <color name="page_indicator_arrow_bg_dark">#FFFFFF</color>
+    <integer name="config_pageSnapAnimationDuration">750</integer>
+    <bool name="desktop_form_factor">false</bool>
+    <dimen name="fling_threshold_velocity">500dp</dimen>
+    <dimen name="easy_fling_threshold_velocity">400dp</dimen>
+    <dimen name="min_fling_velocity">250dp</dimen>
+    <dimen name="min_page_snap_velocity">1500dp</dimen>
+    <dimen name="page_indicator_dot_size">6dp</dimen>
+    <dimen name="page_indicator_gap_width">4dp</dimen>
+    <dimen name="folder_title_min_width">100dp</dimen>
+    <dimen name="folder_footer_height_default">56dp</dimen>
+    <dimen name="folder_arrow_icon_length">24dp</dimen>
+    <dimen name="folder_footer_horiz_padding">20dp</dimen>
+    <dimen name="folder_footer_horiz_padding_minus_arrow_overlap">12dp</dimen> <!-- 20 - 8 -->
+    <dimen name="folder_arrow_touchbox_length">48dp</dimen>
+    <dimen name="folder_arrow_margin_compensation">-8dp</dimen>
+    <!-- values/config.xml: the signers LauncherCustomizationProvider accepts (the app's
+         provider/CustomizationProvider.kt and the GRID_CONTROL permission in its manifest) -->
+    <string-array name="grid_control_known_signers" translatable="false" />
+    <!-- The pin request sheet (dragndrop/AddItemActivity.kt): values/styles.xml.
+         CaretLauncher: without widgetsTheme, which only the View widget picker reads. -->
+    <style name="AddItemActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <!-- Add the dim background here, rather than in the activity layout as the window slides
+             in from the bottom, and we don't want the scrim to slide. -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
+</resources>

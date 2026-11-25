@@ -29,7 +29,7 @@ val releaseSigning = listOf("STORE_FILE", "STORE_PASSWORD", "KEY_ALIAS", "KEY_PA
     ?.mapValues { it.value!! }
 
 android {
-    namespace = "com.malt03.textlauncher"
+    namespace = "com.malt03.caretlauncher"
     compileSdk {
         version = release(37)
     }

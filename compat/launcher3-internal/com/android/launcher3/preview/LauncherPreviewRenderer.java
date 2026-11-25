@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Stand-in for Launcher3's LauncherPreviewRenderer (android-17.0.0_r1): what
- * PreviewSurfaceRenderer uses of it. The app's subclass renders TextLauncher's home screen, which
+ * PreviewSurfaceRenderer uses of it. The app's subclass renders CaretLauncher's home screen, which
  * is not Launcher3's workspace and hotseat; it is made by GridCustomizationsProxy.Delegate in
  * place of the constructor. Like Launcher3's, it is the ActivityContext of the preview's views
  * (BaseContext).

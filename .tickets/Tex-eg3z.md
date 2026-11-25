@@ -26,4 +26,4 @@ data/HomeModel.kt の loadBlocking と ui/home/HomeLoader.kt（455 行）の大�
 
 **2026-11-25T00:10:55Z**
 
-2026-11-25: Tex-ttho と一緒に移した（そちらのノートを参照）。初回は favorites を favorites_backup_textlauncher に写してから上流の読み込みを行う
+2026-11-25: Tex-ttho と一緒に移した（そちらのノートを参照）。初回は favorites を favorites_backup_caretlauncher に写してから上流の読み込みを行う

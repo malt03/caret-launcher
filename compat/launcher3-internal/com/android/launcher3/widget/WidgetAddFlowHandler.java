@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.widget;
@@ -43,7 +43,7 @@ import com.android.launcher3.util.PendingRequestArgs;
  * Utility class to handle app widget add flow.
  *
  * <p>Stand-in for Launcher3's WidgetAddFlowHandler (android-17.0.0_r1), made from
- * WidgetAddFlowHandler.java; changes are marked with "TextLauncher:". The Launcher stand-in is not
+ * WidgetAddFlowHandler.java; changes are marked with "CaretLauncher:". The Launcher stand-in is not
  * an Activity and has no LauncherWidgetHolder, so the bind and configure activities are started
  * here as LauncherWidgetHolder does.
  */
@@ -71,7 +71,7 @@ public class WidgetAddFlowHandler implements Parcelable {
 
     public void startBindFlow(Launcher launcher, int appWidgetId, ItemInfo info, int requestCode) {
         launcher.setWaitingForResult(PendingRequestArgs.forWidgetInfo(appWidgetId, this, info));
-        // TextLauncher: LauncherWidgetHolder.startBindFlow.
+        // CaretLauncher: LauncherWidgetHolder.startBindFlow.
         startBindFlow(launcher, appWidgetId, mProviderInfo, requestCode);
     }
 
@@ -111,7 +111,7 @@ public class WidgetAddFlowHandler implements Parcelable {
     private void launchConfigActivity(Launcher launcher, int appWidgetId, ItemInfo info,
             int requestCode) {
         launcher.setWaitingForResult(PendingRequestArgs.forWidgetInfo(appWidgetId, this, info));
-        // TextLauncher: LauncherWidgetHolder.startConfigActivity.
+        // CaretLauncher: LauncherWidgetHolder.startConfigActivity.
         startConfigActivity(launcher, appWidgetId, requestCode);
     }
 
@@ -157,7 +157,7 @@ public class WidgetAddFlowHandler implements Parcelable {
                 }
             };
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * LauncherWidgetHolder.startBindFlow: asks the user whether the launcher may bind widgets

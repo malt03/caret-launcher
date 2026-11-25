@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -91,16 +91,16 @@ import java.util.Locale;
  * too aggressive.
  *
  * <p>Stand-in for Launcher3's BubbleTextView (android-17.0.0_r1), made from BubbleTextView.java
- * by deleting what TextLauncher does not have (the device profile's sizes, the taskbar, two-line
+ * by deleting what CaretLauncher does not have (the device profile's sizes, the taskbar, two-line
  * labels, app title contrast tiles, archived, pending and automated icons, minimal popups, custom
- * touch handling and the long-press helper); changes are marked with "TextLauncher:".
+ * touch handling and the long-press helper); changes are marked with "CaretLauncher:".
  *
- * <p>TextLauncher: the home screen's icons (the app's AppIconView) have no label; the app says so
+ * <p>CaretLauncher: the home screen's icons (the app's AppIconView) have no label; the app says so
  * with getCellSpecMaxTextLineCount and applyLabel. The search results' icons and the long-press
  * menu's rows show their text.
  */
 public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
-        // TextLauncher: no floating icon views, Poppable or custom touch delegates.
+        // CaretLauncher: no floating icon views, Poppable or custom touch delegates.
         DraggableView, Reorderable, IconViewController {
 
     public static final int DISPLAY_WORKSPACE = 0;
@@ -220,7 +220,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         mCenterVertically = a.getBoolean(R.styleable.BubbleTextView_centerVertically, false);
 
         mDisplay = a.getInteger(R.styleable.BubbleTextView_iconDisplay, DISPLAY_WORKSPACE);
-        // TextLauncher: no device profile for the text size, the drawable padding and the
+        // CaretLauncher: no device profile for the text size, the drawable padding and the
         // default icon size; the views that draw an icon give its size (iconSizeOverride, or the
         // constructor with the icon size).
         final int defaultIconSize = 0;
@@ -234,20 +234,20 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
 
         if (mDisplay == DISPLAY_ALL_APPS) {
-            // TextLauncher: the view's icon size, which Launcher3 takes from the device profile.
+            // CaretLauncher: the view's icon size, which Launcher3 takes from the device profile.
             mDotRenderer = new DotRenderer(mIconSize);
 
             // Do not use normalized info, as we account for normalization in iconBounds
             mDotParams.shapeInfo = IconShapeInfo.DEFAULT;
         } else {
-            // TextLauncher: the view's icon size, which Launcher3 takes from the device profile.
+            // CaretLauncher: the view's icon size, which Launcher3 takes from the device profile.
             mDotRenderer = new DotRenderer(mIconSize);
-            // TextLauncher: ThemeManager gives the shape info itself (no IconState).
+            // CaretLauncher: ThemeManager gives the shape info itself (no IconState).
             mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
         }
 
         setEllipsize(TruncateAt.END);
-        // TextLauncher: no mActivity field (getActivityAccessibilityDelegate).
+        // CaretLauncher: no mActivity field (getActivityAccessibilityDelegate).
         setAccessibilityDelegate(getActivityAccessibilityDelegate(context));
 
         setContainerTextVisibility(mDisplay != DISPLAY_TASKBAR);
@@ -271,7 +271,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         mForceHideDot = false;
         setBackground(null);
         configureMinimalPopup(false);
-        // TextLauncher: no taskbar line indicators.
+        // CaretLauncher: no taskbar line indicators.
 
         setTag(null);
         if (mIconLoadRequest != null) {
@@ -327,7 +327,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         // first open.
 
         applyDotState(info, false /* animate */);
-        // TextLauncher: no download states.
+        // CaretLauncher: no download states.
     }
 
     @UiThread
@@ -339,7 +339,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         verifyHighRes();
 
         applyDotState(info, false /* animate */);
-        // TextLauncher: no download states.
+        // CaretLauncher: no download states.
     }
 
     /**
@@ -354,14 +354,14 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         // Verify high res immediately
         verifyHighRes();
 
-        // TextLauncher: no download states.
+        // CaretLauncher: no download states.
     }
 
     protected void setItemInfo(ItemInfoWithIcon itemInfo) {
         setTag(itemInfo);
     }
 
-    // TextLauncher: no automated or pending icons, so this is always setStandardIcon (for other
+    // CaretLauncher: no automated or pending icons, so this is always setStandardIcon (for other
     // icons hasPendingAnimationCompleted is true) without the automated icon's exit animation.
     @VisibleForTesting
     @UiThread
@@ -399,15 +399,15 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
      * @return The number of lines the that the cell spec associated with the BubbleTextView
      * declared it can support.
      */
-    // TextLauncher: protected, so that a view without a label (the app's AppIconView) can say 0.
+    // CaretLauncher: protected, so that a view without a label (the app's AppIconView) can say 0.
     protected int getCellSpecMaxTextLineCount() {
-        // TextLauncher: enableScalabilityForDesktopExperience is disabled in the release config.
+        // CaretLauncher: enableScalabilityForDesktopExperience is disabled in the release config.
         return 1;
     }
 
     @UiThread
     public void applyLabel(ItemInfo info) {
-        // TextLauncher: no archived apps.
+        // CaretLauncher: no archived apps.
         applyLabel(info.title, info.contentDescription,
                 false, info.isDisabled());
     }
@@ -415,7 +415,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     private void applyLabel(@Nullable CharSequence label, @Nullable CharSequence contentDescription,
             boolean isTextWithArchivingIcon, boolean isItemDisabled) {
         if (label != null) {
-            // TextLauncher: no two-line labels and no archived apps.
+            // CaretLauncher: no two-line labels and no archived apps.
             setText(label);
         }
         if (contentDescription != null) {
@@ -450,7 +450,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     @Override
     public void onDraw(Canvas canvas) {
-        // TextLauncher: no selection highlight (keyboard focus draws an outline) and no taskbar.
+        // CaretLauncher: no selection highlight (keyboard focus draws an outline) and no taskbar.
         super.onDraw(canvas);
         drawDotIfNecessary(canvas);
     }
@@ -536,7 +536,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
             setPadding(getPaddingLeft(), (height - cellHeightPx) / 2, getPaddingRight(),
                     getPaddingBottom());
         }
-        // TextLauncher: no app title contrast tiles and no two-line labels.
+        // CaretLauncher: no app title contrast tiles and no two-line labels.
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
@@ -549,7 +549,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     @Override
     public void setTextColor(ColorStateList colors) {
-        // TextLauncher: no app title contrast tiles.
+        // CaretLauncher: no app title contrast tiles.
         mTextColor = colors.getDefaultColor();
         mTextColorStateList = colors;
 
@@ -582,7 +582,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     public void applyDotState(ItemInfo itemInfo, boolean animate) {
         if (mIcon != null) {
             boolean wasDotted = mDotInfo != null;
-            // TextLauncher: no mActivity field; the ActivityContext is looked up here.
+            // CaretLauncher: no mActivity field; the ActivityContext is looked up here.
             mDotInfo = ActivityContext.lookupContext(getContext()).getDotInfoForItem(itemInfo);
             boolean isDotted = mDotInfo != null;
             float newDotScale = isDotted ? 1f : 0;
@@ -600,7 +600,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
                 if (itemInfo.isDisabled()) {
                     setContentDescription(getContext().getString(R.string.disabled_app_label,
                             itemInfo.contentDescription));
-                // TextLauncher: no archived apps.
+                // CaretLauncher: no archived apps.
                 } else if (hasDot()) {
                     int count = mDotInfo.getNotificationCount();
                     setContentDescription(
@@ -646,7 +646,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
             return;
         }
 
-        // TextLauncher: relayout is not held off while the icon is applied.
+        // CaretLauncher: relayout is not held off while the icon is applied.
 
         icon.setBounds(0, 0, mIconSize, mIconSize);
 
@@ -667,7 +667,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     public void reapplyItemInfo(ItemInfoWithIcon info) {
         if (getTag() == info) {
             mIconLoadRequest = null;
-            // TextLauncher: relayout is not held off while the icon is applied.
+            // CaretLauncher: relayout is not held off while the icon is applied.
             mHighResUpdateInProgress = true;
 
             // Optimization: Starting in N, pre-uploads the bitmap to RenderThread.
@@ -805,7 +805,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         return getTag() instanceof ItemInfo && ShortcutUtil.supportsShortcuts((ItemInfo) getTag());
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * The accessibility delegate of the view's ActivityContext (mActivity in Launcher3), or none

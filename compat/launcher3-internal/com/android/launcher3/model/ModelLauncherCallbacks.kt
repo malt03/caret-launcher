@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -39,7 +39,7 @@ import java.util.function.Consumer
  *
  * Stand-in for Launcher3's ModelLauncherCallbacks (android-17.0.0_r1), made from
  * ModelLauncherCallbacks.kt by deleting the install sessions and the incremental downloads; changes
- * are marked with "TextLauncher:".
+ * are marked with "CaretLauncher:".
  */
 class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>) :
     LauncherApps.Callback() {
@@ -53,7 +53,7 @@ class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>
         taskExecutor.accept(PackageUpdatedTask(OP_UPDATE, user, packageName))
     }
 
-    // TextLauncher: no incremental downloads (onPackageLoadingProgressChanged).
+    // CaretLauncher: no incremental downloads (onPackageLoadingProgressChanged).
 
     override fun onPackageRemoved(packageName: String, user: UserHandle) {
         FileLog.d(TAG, "onPackageRemoved triggered for packageName=$packageName, user=$user")
@@ -99,7 +99,7 @@ class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>
         taskExecutor.accept(PackageTaskFactory.appsRemoved(user, packages.toSet()))
     }
 
-    // TextLauncher: no install sessions (onSessionFailure, onPackageStateChanged,
+    // CaretLauncher: no install sessions (onSessionFailure, onPackageStateChanged,
     // onUpdateSessionDisplay, onInstallSessionCreated).
 
     companion object {

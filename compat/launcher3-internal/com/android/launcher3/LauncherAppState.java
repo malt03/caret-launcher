@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -55,12 +55,12 @@ public class LauncherAppState {
         return mModel;
     }
 
-    /** TextLauncher: the app makes the icon cache (Dagger in Launcher3) and sets it here. */
+    /** CaretLauncher: the app makes the icon cache (Dagger in Launcher3) and sets it here. */
     public void setIconCache(IconCache iconCache) {
         mIconCache = iconCache;
     }
 
-    /** TextLauncher: the app makes the model (Dagger in Launcher3) and sets it here. */
+    /** CaretLauncher: the app makes the model (Dagger in Launcher3) and sets it here. */
     public void setModel(LauncherModel model) {
         mModel = model;
     }

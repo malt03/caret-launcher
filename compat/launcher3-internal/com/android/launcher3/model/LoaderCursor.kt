@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -61,12 +61,12 @@ import com.android.launcher3.util.IntSparseArrayMap
 /**
  * Stand-in for Launcher3's LoaderCursor (android-17.0.0_r1), made from LoaderCursor.kt by deleting
  * Dagger, the restore (restored and archived items, the restore event logger), the package manager
- * helper and the automation repository; changes are marked with "TextLauncher:". The folders are
+ * helper and the automation repository; changes are marked with "CaretLauncher:". The folders are
  * FolderInfo (no CollectionInfo).
  */
 class LoaderCursor(
     cursor: Cursor,
-    // TextLauncher: the compat UserCache's UserManagerState.
+    // CaretLauncher: the compat UserCache's UserManagerState.
     private val userManagerState: UserManagerState,
     private val context: Context,
     private val iconCache: IconCache,
@@ -75,7 +75,7 @@ class LoaderCursor(
 ) : ModelCursorWrapper(cursor) {
 
     private val itemsToRemove = IntArray()
-    // TextLauncher: no restore (restoredRows).
+    // CaretLauncher: no restore (restoredRows).
     private val occupied = IntSparseArrayMap<GridOccupancy>()
 
     // CollectionInfo objects, which have not yet been loaded from the DB, but are expected to
@@ -133,19 +133,19 @@ class LoaderCursor(
         wai: WorkspaceItemInfo,
         useLowResIcon: Boolean,
     ): IconRequestInfo<WorkspaceItemInfo> {
-        // TextLauncher: no restored or archived items.
+        // CaretLauncher: no restored or archived items.
         val iconBlob = if (itemType == ITEM_TYPE_DEEP_SHORTCUT) iconBlob else null
         return IconRequestInfo(
             wai,
             launcherActivityInfo,
             iconBlob,
-            // TextLauncher: no restored items (FLAG_RESTORED_FULL_BLEED).
+            // CaretLauncher: no restored items (FLAG_RESTORED_FULL_BLEED).
             false,
             DESKTOP_ICON_FLAG.withUseLowRes(useLowResIcon),
         )
     }
 
-    // TextLauncher: no restored items (getRestoredItemInfo).
+    // CaretLauncher: no restored items (getRestoredItemInfo).
 
     /** Makes a WorkspaceItemInfo object for a shortcut that is an application. */
     @JvmOverloads
@@ -175,7 +175,7 @@ class LoaderCursor(
         info.user = user
         info.intent = newIntent
         if (launcherActivityInfo != null) {
-            // TextLauncher: without the user info, API wrapper, package manager helper and
+            // CaretLauncher: without the user info, API wrapper, package manager helper and
             // automation repository.
             AppInfo.updateRuntimeFlagsForActivityTarget(info, launcherActivityInfo)
         }
@@ -200,7 +200,7 @@ class LoaderCursor(
         loadIconFromCache: Boolean,
         info: WorkspaceItemInfo,
     ) {
-        // TextLauncher: no archived apps (isPreArchived).
+        // CaretLauncher: no archived apps (isPreArchived).
         if (loadIconFromCache) {
             iconCache.getTitleAndIcon(
                 info,
@@ -228,7 +228,7 @@ class LoaderCursor(
     fun markDeleted(reason: String?, errorType: String?) {
         FileLog.e(TAG, reason)
         itemsToRemove.add(id)
-        // TextLauncher: no restore event logger.
+        // CaretLauncher: no restore event logger.
     }
 
     /**
@@ -250,13 +250,13 @@ class LoaderCursor(
 
     /** Marks the current item as restored */
     fun markRestored() {
-        // TextLauncher: no restore (restoredRows).
+        // CaretLauncher: no restore (restoredRows).
         restoreFlag = 0
     }
 
     fun hasRestoreFlag(flagMask: Int): Boolean = (restoreFlag and flagMask) != 0
 
-    // TextLauncher: no restore (commitRestoredItems).
+    // CaretLauncher: no restore (commitRestoredItems).
 
     /** Returns true is the item is on workspace or hotseat */
     val isOnWorkspaceOrHotseat: Boolean
@@ -326,7 +326,7 @@ class LoaderCursor(
             ) {
                 findOrMakeFolder(info.container, loadedItems).add(info)
             }
-            // TextLauncher: no restore event logger.
+            // CaretLauncher: no restore event logger.
         } else if (info.id != ItemInfo.NO_ID) {
             markDeleted("Item position overlap", "overlapping_item")
         }
@@ -401,7 +401,7 @@ class LoaderCursor(
         }
     }
 
-    // TextLauncher: no Dagger (LoaderCursorFactory).
+    // CaretLauncher: no Dagger (LoaderCursorFactory).
 
     companion object {
         private const val TAG = "LoaderCursor"

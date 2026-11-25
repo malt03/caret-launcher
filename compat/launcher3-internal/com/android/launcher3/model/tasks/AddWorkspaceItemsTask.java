@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model.tasks;
@@ -52,7 +52,7 @@ import java.util.stream.StreamSupport;
  * Task to add auto-created workspace items.
  *
  * <p>Stand-in for Launcher3's AddWorkspaceItemsTask (android-17.0.0_r1), made from
- * AddWorkspaceItemsTask.java; changes are marked with "TextLauncher:". There is one page, which the
+ * AddWorkspaceItemsTask.java; changes are marked with "CaretLauncher:". There is one page, which the
  * items go to, and an item that finds no space there is not added.
  */
 public class AddWorkspaceItemsTask implements ModelUpdateTask {
@@ -84,7 +84,7 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
         }
 
         final ArrayList<ItemInfo> addedItemsFinal = new ArrayList<>();
-        // TextLauncher: one page, which is not excluded (FIRST_SCREEN_ID).
+        // CaretLauncher: one page, which is not excluded (FIRST_SCREEN_ID).
         final IntSet excludedScreens = new IntSet();
         final Context context = taskController.getContext();
 
@@ -92,7 +92,7 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
             IModelWriter writer = taskController.getModelWriter();
             for (Supplier<ItemInfo> itemProvider : mItemList) {
                 ItemInfo item = itemProvider.get();
-                // TextLauncher: AppInfo is not a WorkspaceItemFactory.
+                // CaretLauncher: AppInfo is not a WorkspaceItemFactory.
                 if (item instanceof AppInfo factory) {
                     item = factory.makeWorkspaceItem(context);
                 }
@@ -113,7 +113,7 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
                         continue;
                     }
 
-                    // TextLauncher: no archived apps.
+                    // CaretLauncher: no archived apps.
                 }
                 if (!(item instanceof WorkspaceItemInfo
                         || item instanceof FolderInfo
@@ -125,7 +125,7 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
                 // Find appropriate space for the item.
                 WorkspaceItemCoordinates coords = mItemSpaceFinder.findSpaceForItem(addedItemsFinal,
                         item.spanX, item.spanY, excludedScreens);
-                // TextLauncher: the page is full, so the item is not added.
+                // CaretLauncher: the page is full, so the item is not added.
                 if (coords == null) {
                     FileLog.d(LOG, "No space for item info on the workspace: " + item);
                     continue;

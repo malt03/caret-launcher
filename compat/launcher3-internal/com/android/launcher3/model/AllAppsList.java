@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -56,8 +56,8 @@ import java.util.stream.Collectors;
  * Stores the list of all applications for the all apps view.
  *
  * <p>Stand-in for Launcher3's AllAppsList (android-17.0.0_r1), made from AllAppsList.java by
- * deleting what TextLauncher does not have (Dagger, the apps list repository and its flags, install
- * progress, the user cache, archived apps and automation); changes are marked with "TextLauncher:".
+ * deleting what CaretLauncher does not have (Dagger, the apps list repository and its flags, install
+ * progress, the user cache, archived apps and automation); changes are marked with "CaretLauncher:".
  * Used on the model thread (Executors.MODEL_EXECUTOR), as in Launcher3.
  */
 public class AllAppsList {
@@ -105,7 +105,7 @@ public class AllAppsList {
     public boolean getAndResetChangeFlag() {
         boolean result = mDataChanged;
         mDataChanged = false;
-        // TextLauncher: no apps list repository to dispatch the change to.
+        // CaretLauncher: no apps list repository to dispatch the change to.
         return result;
     }
 
@@ -209,7 +209,7 @@ public class AllAppsList {
     /** Add and remove icons for this package which has been updated. */
     public List<LauncherActivityInfo> updatePackage(
             Context context, String packageName, UserHandle user) {
-        // TextLauncher: no user cache, package manager helper or automation repository.
+        // CaretLauncher: no user cache, package manager helper or automation repository.
         final List<LauncherActivityInfo> matches = context.getSystemService(LauncherApps.class)
                 .getActivityList(packageName, user);
 
@@ -243,7 +243,7 @@ public class AllAppsList {
         }
 
         // Add any new activities to the list
-        // TextLauncher: AppInfo(LauncherActivityInfo, UserHandle).
+        // CaretLauncher: AppInfo(LauncherActivityInfo, UserHandle).
         activityMap.values().forEach(lai -> add(new AppInfo(lai, user), lai));
         return matches;
     }

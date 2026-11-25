@@ -23,7 +23,7 @@ tags: [refactor]
 
 - [ ] Launcher の互換クラスが ActivityContext で、上流の Launcher.getLauncher / instanceof Launcher がそのまま動く
 - [ ] DeepShortcutView が third_party のコピーになり、UPSTREAM.md の derived= から path= に移っている
-- [ ] Launcher にあたるものが Launcher の互換クラスとそのサブクラスにまとまり、Launcher の互換クラスを理由にした TextLauncher: の印が減っている
+- [ ] Launcher にあたるものが Launcher の互換クラスとそのサブクラスにまとまり、Launcher の互換クラスを理由にした CaretLauncher: の印が減っている
 - [ ] 長押しメニュー（追加ボタン、ショートカットのドラッグ）、フォルダ、ドラッグが今と同じ
 
 
@@ -31,4 +31,4 @@ tags: [refactor]
 
 **2026-11-21T11:37:21Z**
 
-Launcher の互換クラスを上流と同じく ActivityContext（抽象クラス）にし、HomeActivityContext がそれを継承した。Launcher.getLauncher(context) と instanceof Launcher が上流どおり動く。DeepShortcutView が使う getAccessibilityDelegate().addToWorkspace、getStatsLogManager()（何も記録しない）、getModel().updateAndBindWorkspaceItem の代わりを置き（LauncherAccessibilityDelegate と LauncherModel はアプリが実装するインターフェース）、WorkspaceItemInfo / ItemInfoWithIcon / ItemInfo に上流のコピーコンストラクタと clone を足した。DeepShortcutView は third_party のそのままのコピーになり（上流と一致を確認）、UPSTREAM.md では path= に移した。FolderIcon のドロップも上流どおり instanceof Launcher に戻した。メニューから来る WorkspaceItemInfo は、ホームに置くときにアプリが ShortcutItemInfo に変換する（WorkspaceItemInfo の互換クラスに、元の ShortcutInfo を持たせる TextLauncher の欄を足した）。上流の Launcher にあたるもの: Launcher の互換クラスとそれを継承した HomeActivityContext。HomeController は役割のまとめ、LauncherDelegate は上流どおり Launcher を包む。エミュレータで、メニューの + での追加（バッジ付き）、メニューのショートカットのドラッグ、追加したショートカットの起動、フォルダへのドロップ、再起動後の保持を確認
+Launcher の互換クラスを上流と同じく ActivityContext（抽象クラス）にし、HomeActivityContext がそれを継承した。Launcher.getLauncher(context) と instanceof Launcher が上流どおり動く。DeepShortcutView が使う getAccessibilityDelegate().addToWorkspace、getStatsLogManager()（何も記録しない）、getModel().updateAndBindWorkspaceItem の代わりを置き（LauncherAccessibilityDelegate と LauncherModel はアプリが実装するインターフェース）、WorkspaceItemInfo / ItemInfoWithIcon / ItemInfo に上流のコピーコンストラクタと clone を足した。DeepShortcutView は third_party のそのままのコピーになり（上流と一致を確認）、UPSTREAM.md では path= に移した。FolderIcon のドロップも上流どおり instanceof Launcher に戻した。メニューから来る WorkspaceItemInfo は、ホームに置くときにアプリが ShortcutItemInfo に変換する（WorkspaceItemInfo の互換クラスに、元の ShortcutInfo を持たせる CaretLauncher の欄を足した）。上流の Launcher にあたるもの: Launcher の互換クラスとそれを継承した HomeActivityContext。HomeController は役割のまとめ、LauncherDelegate は上流どおり Launcher を包む。エミュレータで、メニューの + での追加（バッジ付き）、メニューのショートカットのドラッグ、追加したショートカットの起動、フォルダへのドロップ、再起動後の保持を確認

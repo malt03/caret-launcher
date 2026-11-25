@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model.tasks
@@ -35,7 +35,7 @@ import com.android.launcher3.util.ItemInfoMatcher
  * Factory for creating model tasks to handle various package events
  *
  * Stand-in for Launcher3's PackageTaskFactory (android-17.0.0_r1), made from PackageTaskFactory.kt
- * by deleting the shortcuts with a web UI; changes are marked with "TextLauncher:".
+ * by deleting the shortcuts with a web UI; changes are marked with "CaretLauncher:".
  */
 object PackageTaskFactory {
     private const val TAG = "PackageUpdateTaskFactory"
@@ -52,7 +52,7 @@ object PackageTaskFactory {
             taskController.bindApplicationsIfNeeded()
 
             val matcher = ItemInfoMatcher.ofPackages(packages, user)
-            // TextLauncher: no shortcuts with a web UI to keep (forceKeepShortcuts).
+            // CaretLauncher: no shortcuts with a web UI to keep (forceKeepShortcuts).
             taskController.deleteAndBindComponentsRemoved(
                 matcher,
                 "removed because the corresponding package is removed. removedPackages=$packages",

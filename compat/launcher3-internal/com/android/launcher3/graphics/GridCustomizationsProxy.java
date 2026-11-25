@@ -62,7 +62,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  *     /get_preview: Open a file stream for the grid preview
  *
- * TextLauncher: no grid options (/list_options, /default_grid) and no hidden labels (the home
+ * CaretLauncher: no grid options (/list_options, /default_grid) and no hidden labels (the home
  * screen's icons never have labels); the icon shape and themed icons are the app's settings
  * ({@link Delegate}), and the preview is the app's home screen
  * ({@link Delegate#newPreviewRenderer}).
@@ -111,11 +111,11 @@ public class GridCustomizationsProxy {
             Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final Context mContext;
-    // TextLauncher: the app's settings and home screen preview (no ThemePreference, LauncherPrefs
+    // CaretLauncher: the app's settings and home screen preview (no ThemePreference, LauncherPrefs
     // or InvariantDeviceProfile).
     private final Delegate mDelegate;
 
-    // TextLauncher: no Dagger; made by the app with its delegate. The previews live as long as the
+    // CaretLauncher: no Dagger; made by the app with its delegate. The previews live as long as the
     // process (no DaggerSingletonTracker).
     public GridCustomizationsProxy(Context context, Delegate delegate) {
         mContext = context;
@@ -136,7 +136,7 @@ public class GridCustomizationsProxy {
             case KEY_SHAPE_OPTIONS: {
                 MatrixCursor cursor = new MatrixCursor(new String[]{
                         KEY_SHAPE_KEY, KEY_SHAPE_TITLE, KEY_PATH, KEY_IS_DEFAULT});
-                // TextLauncher: the app's setting (PREF_ICON_SHAPE).
+                // CaretLauncher: the app's setting (PREF_ICON_SHAPE).
                 final String currentShape = mDelegate.getIconShape();
                 IconShapeModel[] availableShapes = ShapesProvider.INSTANCE.getIconShapes();
 
@@ -166,17 +166,17 @@ public class GridCustomizationsProxy {
                 }
                 return cursor;
             }
-            // TextLauncher: no grid options (KEY_LIST_OPTIONS).
+            // CaretLauncher: no grid options (KEY_LIST_OPTIONS).
             case GET_ICON_THEMED:
             case ICON_THEMED: {
                 MatrixCursor cursor = new MatrixCursor(new String[]{BOOLEAN_VALUE});
-                // TextLauncher: the app's setting (ThemePreference's MONO_THEME_VALUE).
+                // CaretLauncher: the app's setting (ThemePreference's MONO_THEME_VALUE).
                 boolean monoThemeEnabled = mDelegate.isIconThemed();
                 cursor.newRow().add(BOOLEAN_VALUE, monoThemeEnabled ? 1 : 0);
                 Log.d(TAG, "query: path=" + path + ", isMonoThemeEnabled=" + monoThemeEnabled);
                 return cursor;
             }
-            // TextLauncher: the home screen's icons have no labels to hide
+            // CaretLauncher: the home screen's icons have no labels to hide
             // (WORKSPACE_ITEMS_LABEL_HIDDEN).
             default: {
                 Log.d(TAG, "query: path=" + path + " not found, returning null.");
@@ -201,19 +201,19 @@ public class GridCustomizationsProxy {
 
     public int handleUpdate(@NonNull String path, ContentValues values, @Nullable Bundle extras) {
         switch (path) {
-            // TextLauncher: no grid options (KEY_DEFAULT_GRID).
+            // CaretLauncher: no grid options (KEY_DEFAULT_GRID).
             case SET_SHAPE:
-                // TextLauncher: the app's setting (PREF_ICON_SHAPE).
+                // CaretLauncher: the app's setting (PREF_ICON_SHAPE).
                 mDelegate.setIconShape(
                         requireNonNullElse(values.getAsString(KEY_SHAPE_KEY), ""));
                 return UPDATE_SETTING_SUCCESS;
             case ICON_THEMED:
             case SET_ICON_THEMED: {
-                // TextLauncher: the app's setting (ThemePreference's MONO_THEME_VALUE).
+                // CaretLauncher: the app's setting (ThemePreference's MONO_THEME_VALUE).
                 mDelegate.setIconThemed(values.getAsBoolean(BOOLEAN_VALUE));
                 return UPDATE_SETTING_SUCCESS;
             }
-            // TextLauncher: no labels to hide (SET_WORKSPACE_ITEMS_LABEL_HIDDEN).
+            // CaretLauncher: no labels to hide (SET_WORKSPACE_ITEMS_LABEL_HIDDEN).
             default:
                 return UPDATE_SETTING_FAILURE;
         }
@@ -222,7 +222,7 @@ public class GridCustomizationsProxy {
     public Bundle call(@NonNull String method, String arg, Bundle extras) {
         return switch (method) {
             case METHOD_GET_PREVIEW -> getPreview(extras);
-            // TextLauncher: no bitmap preview (METHOD_GET_PREVIEW_BITMAP), which takes the
+            // CaretLauncher: no bitmap preview (METHOD_GET_PREVIEW_BITMAP), which takes the
             // surface's snapshot with ApiWrapper.captureSnapshot.
             default -> null;
         };
@@ -233,7 +233,7 @@ public class GridCustomizationsProxy {
         try {
             PreviewSurfaceRenderer renderer = new PreviewSurfaceRenderer(
                     mContext, lifeCycleTracker, request, Binder.getCallingPid(),
-                    false /* skip animations */, this /* TextLauncher */);
+                    false /* skip animations */, this /* CaretLauncher */);
             PreviewLifecycleObserver observer =
                     new PreviewLifecycleObserver(lifeCycleTracker, renderer);
 
@@ -298,15 +298,15 @@ public class GridCustomizationsProxy {
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
-    /** TextLauncher: the app's settings and preview, which the preview's renderer is made by. */
+    /** CaretLauncher: the app's settings and preview, which the preview's renderer is made by. */
     public Delegate getDelegate() {
         return mDelegate;
     }
 
     /**
-     * TextLauncher: what the app keeps and shows in place of Launcher3's preferences and preview
+     * CaretLauncher: what the app keeps and shows in place of Launcher3's preferences and preview
      * context.
      */
     public interface Delegate {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: derived from Launcher3's states/RotationHelper.java; changes are
- * marked "TextLauncher:". See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
+ * Modified for CaretLauncher: derived from Launcher3's states/RotationHelper.java; changes are
+ * marked "CaretLauncher:". See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.states;
 
@@ -42,11 +42,11 @@ import com.android.launcher3.util.window.WindowManagerProxy;
 /**
  * Utility class to manage launcher rotation
  *
- * TextLauncher: the activity passes on its configuration changes ({@link #onConfigurationChanged})
+ * CaretLauncher: the activity passes on its configuration changes ({@link #onConfigurationChanged})
  * in place of DisplayController and the device profile listener, and whether the screen is large
  * is LauncherDisplayInfo.isLargeScreen with the display's real bounds.
  */
-// TextLauncher: not a DeviceProfile.OnDeviceProfileChangeListener (see onConfigurationChanged).
+// CaretLauncher: not a DeviceProfile.OnDeviceProfileChangeListener (see onConfigurationChanged).
 public class RotationHelper {
 
     public static final int REQUEST_NONE = 0;
@@ -55,7 +55,7 @@ public class RotationHelper {
 
     private boolean mIsFixedLandscape = false;
 
-    // TextLauncher: any Activity; LauncherActivity is not a BaseActivity.
+    // CaretLauncher: any Activity; LauncherActivity is not a BaseActivity.
     @NonNull
     private final Activity mActivity;
     private final Handler mRequestOrientationHandler;
@@ -85,7 +85,7 @@ public class RotationHelper {
     // Initialize mLastActivityFlags to a value not used by SCREEN_ORIENTATION flags
     private int mLastActivityFlags = -999;
 
-    // TextLauncher: any Activity.
+    // CaretLauncher: any Activity.
     public RotationHelper(@NonNull Activity activity) {
         mActivity = activity;
         mRequestOrientationHandler =
@@ -99,7 +99,7 @@ public class RotationHelper {
     }
 
     /**
-     * TextLauncher: in place of DisplayController's display info changes and
+     * CaretLauncher: in place of DisplayController's display info changes and
      * onDeviceProfileChanged.
      */
     public void onConfigurationChanged(Configuration config) {
@@ -154,7 +154,7 @@ public class RotationHelper {
     public void initialize() {
         if (mInitialized) return;
         mInitialized = true;
-        // TextLauncher: no DisplayController and no device profile listener; the activity passes
+        // CaretLauncher: no DisplayController and no device profile listener; the activity passes
         // on its configuration changes (onConfigurationChanged).
         setIgnoreAutoRotateSettings(isLargeScreen());
         notifyChange();
@@ -163,7 +163,7 @@ public class RotationHelper {
     public void destroy() {
         if (mDestroyed) return;
         mDestroyed = true;
-        // TextLauncher: no listeners to remove.
+        // CaretLauncher: no listeners to remove.
     }
 
     private void notifyChange() {
@@ -196,7 +196,7 @@ public class RotationHelper {
             mLastActivityFlags = activityFlags;
             mRequestOrientationHandler.sendEmptyMessage(activityFlags);
         }
-        // TextLauncher: no debug log for b/475447538.
+        // CaretLauncher: no debug log for b/475447538.
     }
 
     @WorkerThread
@@ -227,10 +227,10 @@ public class RotationHelper {
                 mDestroyed, mIsFixedLandscape);
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
-     * TextLauncher: LauncherDisplayInfo.isLargeScreen(realBounds) (whether the device is a desktop
+     * CaretLauncher: LauncherDisplayInfo.isLargeScreen(realBounds) (whether the device is a desktop
      * is not known to an app).
      */
     private boolean isLargeScreen() {

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CaretLauncher: strings copied from Launcher3 res/values-da/strings.xml (android-17.0.0_r1) that the copied code uses. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_info_drop_target_label" msgid="692894985365717661">"Appinfo"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"Genvejsmenu"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"Føj til startskærm"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"Downloadet app er deaktiveret i sikker tilstand"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"Genvejen er ikke tilgængelig"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"Appen er ikke tilgængelig"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"Appen skal opdateres"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"Appen, der tilhører dette ikon, er ikke opdateret. Du kan opdatere appen manuelt for at genaktivere denne genvej, eller du kan fjerne ikonet."</string>
+    <string name="dialog_update" msgid="2178028071796141234">"Opdater"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"Fjern"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"Baggrund og stil"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"Widgets"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"Appliste"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"Der er ikke ledig plads på startskærmen"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"Deaktiveret af din administrator"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"Fjern"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"Indstillinger"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"Øg bredden"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"Reducer bredden"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"Venstre tilpasningshåndtag"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"Øverste tilpasningshåndtag"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"Højre tilpasningshåndtag"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"Nederste tilpasningshåndtag"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"Vis justeringsknapper"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"Widget til at tilpasse størrelsen på rammen for <xliff:g id="STRING">%1$s</xliff:g>"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"Liste over personlige apps"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"Liste over apps til arbejdet"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"Personlig"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"Arbejde"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"Personlig"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"Arbejde"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"Genoptag"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"Sæt arbejdsapps på pause"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"Arbejdsapps kan ikke sende dig notifikationer, bruge dit batteri eller få adgang til din lokation"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"Du vil ikke modtage notifikationer fra dine arbejdsapps"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"Du vil ikke modtage telefonopkald, beskeder eller notifikationer fra dine arbejdsapps"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"Dine arbejdsapps er sat på pause"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"Arbejdsapps har badges og kan ses af din it-administrator"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"Appen er ikke installeret."</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"Samtaler"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"Notetagning"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"Widgets er deaktiveret i Beskyttet tilstand"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} har # notifikation}one{{app_name} har # notifikation}other{{app_name} har # notifikationer}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> er deaktiveret"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"Vis notifikationsprikker"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"Notifikationsprikker"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"Kræver adgang til notifikationer"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"Hvis du vil se notifikationsprikker, skal du aktivere appnotifikationer for <xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"Skift indstillinger"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"Sideinddeling til venstre"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"Sideinddeling til højre"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"Side %1$d ud af %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"Fjern"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"Afinstaller"</string>
+    <string name="action_close" msgid="1077760267194136901">"Luk"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"Reducer højden"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"Øg højden"</string>
+    <string name="action_move" msgid="4339390619886385032">"Flyt element"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"Flyt elementet hertil"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"Flyt til startskærm"</string>
+    <string name="action_resize" msgid="1802976324781771067">"Tilpas størrelse"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"Føj til mappe med <xliff:g id="NAME">%1$s</xliff:g>. Række <xliff:g id="NUMBER_0">%2$s</xliff:g>, kolonne <xliff:g id="NUMBER_1">%3$s</xliff:g>, i <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"Føj til mappen <xliff:g id="NAME">%1$s</xliff:g>. Række <xliff:g id="NUMBER_0">%2$s</xliff:g>, kolonne <xliff:g id="NUMBER_1">%3$s</xliff:g> i <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"Liste over apps"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> elementer"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> elementer, har notifikationer"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> eller flere elementer"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>: <xliff:g id="NAME">%2$s</xliff:g>, <xliff:g id="SIZE">%3$d</xliff:g> eller flere elementer, har notifikationer"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"Opret en mappe med <xliff:g id="NAME">%1$s</xliff:g>. Række <xliff:g id="NUMBER_0">%2$s</xliff:g>, kolonne <xliff:g id="NUMBER_1">%3$s</xliff:g>, i <xliff:g id="STRING">%4$s</xliff:g>"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"Foreslå ikke en app"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"Mappen er lukket"</string>
+    <string name="folder_opened" msgid="94695026776264709">"Mappen er åben, <xliff:g id="WIDTH">%1$d</xliff:g> gange <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"Tryk for at lukke mappen"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"Mappe"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"Widget-indstillinger"</string>
+    <string name="home_screen" msgid="5629429142036709174">"Startskærm"</string>
+    <string name="item_moved" msgid="4606538322571412879">"Elementet blev flyttet"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"Flyt til række <xliff:g id="NUMBER_0">%1$s</xliff:g> kolonne <xliff:g id="NUMBER_1">%2$s</xliff:g> i <xliff:g id="STRING">%3$s</xliff:g>"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"Flyt til foretrukne position <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"Flyt til position <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"Unavngiven mappe"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"Startskærm %1$d ud af %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"Widgetten <xliff:g id="WIDGET_NAME">%1$s</xliff:g> blev føjet til startskærmen"</string>
+</resources>

@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/intentresolver/UPSTREAM.md.
  */
 
@@ -47,14 +47,14 @@ import androidx.annotation.Nullable;
  *
  * Stand-in for IntentResolver's TargetPresentationGetter (android-17.0.0_r1), made from
  * TargetPresentationGetter.java by deleting the icon bitmap (SimpleIconFactory, which uses the
- * framework's internal resources); changes are marked with "TextLauncher:".
+ * framework's internal resources); changes are marked with "CaretLauncher:".
  */
 public abstract class TargetPresentationGetter {
     private static final String TAG = "ResolverListAdapter";
 
     /** Helper to build appropriate type-specific {@link TargetPresentationGetter} instances. */
     public static class Factory {
-        // TextLauncher: no icon factory (SimpleIconFactory).
+        // CaretLauncher: no icon factory (SimpleIconFactory).
         private final PackageManager mPackageManager;
         private final int mIconDpi;
 
@@ -97,7 +97,7 @@ public abstract class TargetPresentationGetter {
      * Retrieve the image that should be displayed as the icon when this target is presented to the
      * specified {@code userHandle}.
      *
-     * TextLauncher: the drawable itself, which an ImageView draws in the system's icon shape, in
+     * CaretLauncher: the drawable itself, which an ImageView draws in the system's icon shape, in
      * place of getIconBitmap(UserHandle)'s bitmap from SimpleIconFactory (no work profile badge).
      */
     public Drawable getIcon() {
@@ -120,7 +120,7 @@ public abstract class TargetPresentationGetter {
             drawable = mAppInfo.loadIcon(mPm);
         }
 
-        return drawable; // TextLauncher: no SimpleIconFactory.createUserBadgedIconBitmap
+        return drawable; // CaretLauncher: no SimpleIconFactory.createUserBadgedIconBitmap
     }
 
     /** Get the label to display for the target. */
@@ -176,7 +176,7 @@ public abstract class TargetPresentationGetter {
         mAppInfo = appInfo;
         mIconDpi = iconDpi;
         mHasSubstitutePermission = (PackageManager.PERMISSION_GRANTED == mPm.checkPermission(
-                // TextLauncher: the constant is a system API.
+                // CaretLauncher: the constant is a system API.
                 "android.permission.SUBSTITUTE_SHARE_TARGET_APP_NAME_AND_ICON",
                 mAppInfo.packageName));
     }
@@ -226,7 +226,7 @@ public abstract class TargetPresentationGetter {
         @Override
         protected String getAppLabelForSubstitutePermission() {
             // Will default to app name if no activity label set
-            // TextLauncher: getComponentInfo is hidden; the targets are activities.
+            // CaretLauncher: getComponentInfo is hidden; the targets are activities.
             return mResolveInfo.activityInfo.loadLabel(mPm).toString();
         }
     }

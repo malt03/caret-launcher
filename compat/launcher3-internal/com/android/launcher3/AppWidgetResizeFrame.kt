@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -59,7 +59,7 @@ abstract class AppWidgetResizeFrameBase(
 /**
  * Stand-in for Launcher3's AppWidgetResizeFrame (android-17.0.0_r1).
  *
- * TextLauncher: only [IntRange] and [showForWidget]'s Compose path are kept. The View frame is the
+ * CaretLauncher: only [IntRange] and [showForWidget]'s Compose path are kept. The View frame is the
  * one Flags.fixWidgetSinglePtrResize replaces, and the flag is enabled in the release config, so
  * Launcher3 shows [AppWidgetResizeFrameCompose].
  */
@@ -165,10 +165,10 @@ class AppWidgetResizeFrame private constructor() {
                 // If widget is not added to view hierarchy, we cannot show resize frame at correct
                 // location
                 if (widget == null || widget.parent == null) return
-                // TextLauncher: CellLayout.mActivity
+                // CaretLauncher: CellLayout.mActivity
                 val activityContext = ActivityContext.lookupContext(cellLayout.context)
 
-                // TextLauncher: Flags.fixWidgetSinglePtrResize() is enabled in the release.
+                // CaretLauncher: Flags.fixWidgetSinglePtrResize() is enabled in the release.
                 AppWidgetResizeFrameCompose.show(activityContext, widget, cellLayout)
             } finally {
                 Trace.endSection()

@@ -17,7 +17,7 @@ parent: Tex-vs8t
 
 やること:
 - ComponentKey で引ける AllAppsList 型の AppInfo の置き場を作り、検索・全アプリ一覧・ホームの引き当ての唯一の元にする（アイコンも AppInfo に持たせ、icons マップをなくす）
-- 互換の AppInfo に updateRuntimeFlagsForActivityTarget を置いて AppItemInfo から使う。AppItemInfo に本物の起動 Intent（AppInfo.makeLaunchIntent）を持たせ、TextLauncher だけの ItemInfo.getComponent() のフックをなくす
+- 互換の AppInfo に updateRuntimeFlagsForActivityTarget を置いて AppItemInfo から使う。AppItemInfo に本物の起動 Intent（AppInfo.makeLaunchIntent）を持たせ、CaretLauncher だけの ItemInfo.getComponent() のフックをなくす
 - 一覧の中の検索から BaseAllAppsAdapter / AllAppsGridAdapter に寄せる。ホームの検索結果も、AppsGridLayoutManager（GridLayoutManager）を逆向きにすれば使える。学習の記録のためのクリックの受け口は残す
 - AppEntry はキーだけにするかなくす
 - GridSpec.from() を4回作るのをやめ、互換の DeviceProfile（HomeActivityContext）を唯一の元にする。下端の余白も AllAppsView と検索結果で渡し方が違うので揃える

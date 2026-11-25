@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -44,18 +44,18 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.asCoroutineDispatcher
 
 /**
- * Stand-in for Launcher3's LauncherAppModule (android-17.0.0_r1). TextLauncher: of
+ * Stand-in for Launcher3's LauncherAppModule (android-17.0.0_r1). CaretLauncher: of
  * BootUnsafeModules only LauncherWidgetPickerModule, of BootSafeModules only [SettingsModule]; the
- * rest is [TextLauncherAppModule].
+ * rest is [CaretLauncherAppModule].
  */
 @Module(
-    includes = [LauncherWidgetPickerModule::class, SettingsModule::class, TextLauncherAppModule::class]
+    includes = [LauncherWidgetPickerModule::class, SettingsModule::class, CaretLauncherAppModule::class]
 )
 class LauncherAppModule
 
 /**
  * Stand-in for Launcher3's SettingsModule (android-17.0.0_r1): the settings that are on when they
- * have no value. TextLauncher: only notification dots (no touchpad).
+ * have no value. CaretLauncher: only notification dots (no touchpad).
  */
 @Module
 object SettingsModule {
@@ -66,14 +66,14 @@ object SettingsModule {
 }
 
 /**
- * TextLauncher: what the widget picker needs from modules that are not ported. The executors are
+ * CaretLauncher: what the widget picker needs from modules that are not ported. The executors are
  * those of LauncherExecutorsModule (@Background is Executors.ORDERED_BG_EXECUTOR, and its
  * dispatcher is the @BackgroundContext of ExecutorsModule). The rest are the objects that are
- * made without Dagger in TextLauncher: the grid and the icon cache, which the home screen sets
+ * made without Dagger in CaretLauncher: the grid and the icon cache, which the home screen sets
  * (LauncherAppState), and the users and the screen state, one per process.
  */
 @Module
-object TextLauncherAppModule {
+object CaretLauncherAppModule {
     @Provides
     @LauncherAppSingleton
     @Background

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -25,7 +25,7 @@ import android.view.WindowInsetsController;
 
 /**
  * Stand-in for Launcher3's SystemUiController (android-17.0.0_r1): sets whether the system bars
- * have light (dark-icon) or dark (light-icon) content. TextLauncher: one state, the latest.
+ * have light (dark-icon) or dark (light-icon) content. CaretLauncher: one state, the latest.
  */
 public class SystemUiController {
 

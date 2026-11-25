@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: no LauncherApplication or safe mode.
+ * Modified for CaretLauncher: no LauncherApplication or safe mode.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -34,7 +34,7 @@ object LauncherComponentProvider {
     @JvmStatic
     fun get(c: Context): LauncherAppComponent {
         val app = c.applicationContext
-        // TextLauncher: no LauncherApplication, which holds the component in Launcher3.
+        // CaretLauncher: no LauncherApplication, which holds the component in Launcher3.
 
         val inflater = LayoutInflater.from(app)
         val existingFilter = inflater.filter
@@ -42,7 +42,7 @@ object LauncherComponentProvider {
 
         // Create a new component
         return Holder(
-                // TextLauncher: no safe mode.
+                // CaretLauncher: no safe mode.
                 DaggerLauncherAppComponent.builder().appContext(app).build()
                     as LauncherAppComponent,
                 existingFilter,

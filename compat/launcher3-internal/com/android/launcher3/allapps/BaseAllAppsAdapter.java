@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.allapps;
@@ -41,8 +41,8 @@ import com.android.launcher3.views.ActivityContext;
  *
  * <p>Stand-in made from Launcher3's BaseAllAppsAdapter (android-17.0.0_r1) by deleting the work
  * profile, the private space, the section decorations, the empty search message and the custom
- * accessibility actions, which TextLauncher does not have. Changes are marked with
- * "TextLauncher:".
+ * accessibility actions, which CaretLauncher does not have. Changes are marked with
+ * "CaretLauncher:".
  */
 public abstract class BaseAllAppsAdapter
         extends RecyclerView.Adapter<BaseAllAppsAdapter.ViewHolder> {
@@ -102,7 +102,7 @@ public abstract class BaseAllAppsAdapter
         public int rowAppIndex;
         // The associated ItemInfoWithIcon for the item
         public AppInfo itemInfo = null;
-        // TextLauncher: no private app decorator.
+        // CaretLauncher: no private app decorator.
         public AdapterItem(int viewType) {
             this.viewType = viewType;
         }
@@ -157,7 +157,7 @@ public abstract class BaseAllAppsAdapter
     protected final LayoutInflater mLayoutInflater;
     protected final OnClickListener mOnIconClickListener;
     protected final OnLongClickListener mOnIconLongClickListener;
-    // TextLauncher: no custom accessibility actions.
+    // CaretLauncher: no custom accessibility actions.
     private Function<ViewGroup, BubbleTextView> mIconFactory;
     protected OnFocusChangeListener mIconFocusListener;
 
@@ -193,7 +193,7 @@ public abstract class BaseAllAppsAdapter
         return isViewType(viewType, VIEW_TYPE_MASK_PRIVATE_SPACE_SYS_APPS_DIVIDER);
     }
 
-    /** TextLauncher: makes the views of the icons (all_apps_icon.xml in Launcher3). */
+    /** CaretLauncher: makes the views of the icons (all_apps_icon.xml in Launcher3). */
     public void setIconFactory(Function<ViewGroup, BubbleTextView> iconFactory) {
         mIconFactory = iconFactory;
     }
@@ -212,7 +212,7 @@ public abstract class BaseAllAppsAdapter
         switch (viewType) {
             case VIEW_TYPE_ICON:
                 return new ViewHolder(getIconOnCreateSetup(parent));
-            // TextLauncher: no private space, work profile or empty search message.
+            // CaretLauncher: no private space, work profile or empty search message.
             case VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO:
                 return new ViewHolder(new View(mActivityContext.asContext()));
             default:
@@ -233,10 +233,10 @@ public abstract class BaseAllAppsAdapter
                 icon.reset();
                 icon.applyFromApplicationInfo(adapterItem.itemInfo);
                 icon.setOnFocusChangeListener(mIconFocusListener);
-                // TextLauncher: no private space.
+                // CaretLauncher: no private space.
                 break;
             }
-            // TextLauncher: no empty search message, private space or work profile.
+            // CaretLauncher: no empty search message, private space or work profile.
             case VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO:
                 // nothing to do
                 break;
@@ -248,7 +248,7 @@ public abstract class BaseAllAppsAdapter
     }
 
     private BubbleTextView getIconOnCreateSetup(ViewGroup parent) {
-        // TextLauncher: the app makes the icon (all_apps_icon.xml), with one line of text; the long
+        // CaretLauncher: the app makes the icon (all_apps_icon.xml), with one line of text; the long
         // press timeout is the default one.
         BubbleTextView icon = mIconFactory.apply(parent);
         icon.setOnFocusChangeListener(mIconFocusListener);

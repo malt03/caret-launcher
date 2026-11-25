@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -45,11 +45,11 @@ import com.android.launcher3.states.StateAnimationConfig;
  * Manages the animations between each of the workspace states.
  */
 /*
- * TextLauncher: derived from WorkspaceStateTransitionAnimation.java (android-17.0.0_r1) by deleting
+ * CaretLauncher: derived from WorkspaceStateTransitionAnimation.java (android-17.0.0_r1) by deleting
  * the hotseat (the search field, which the home screen moves with the keyboard), the page
  * indicator, the page alpha and translation (one page), the hint state's spring, the system UI
  * scrim and the ScrimView's colors (the all apps transition dims the home screen); changes are
- * marked with "TextLauncher:".
+ * marked with "CaretLauncher:".
  */
 public class WorkspaceStateTransitionAnimation {
 
@@ -88,9 +88,9 @@ public class WorkspaceStateTransitionAnimation {
     private void setWorkspaceProperty(LauncherState state, PropertySetter propertySetter,
             StateAnimationConfig config) {
         ScaleAndTranslation scaleAndTranslation = state.getWorkspaceScaleAndTranslation(mLauncher);
-        // TextLauncher: no hotseat (getHotseatScaleAndTranslation).
+        // CaretLauncher: no hotseat (getHotseatScaleAndTranslation).
         mNewScale = scaleAndTranslation.scale;
-        // TextLauncher: one page, which is not a child of the workspace, and no page alpha
+        // CaretLauncher: one page, which is not a child of the workspace, and no page alpha
         // (getWorkspacePageAlphaProvider).
         final int childCount = mWorkspace.getPageCount();
         for (int i = 0; i < childCount; i++) {
@@ -98,11 +98,11 @@ public class WorkspaceStateTransitionAnimation {
         }
 
         Interpolator scaleInterpolator = config.getInterpolator(ANIM_WORKSPACE_SCALE, ZOOM_OUT);
-        // TextLauncher: no hint state, so no spring (getSpringScaleAnimator).
+        // CaretLauncher: no hint state, so no spring (getSpringScaleAnimator).
         propertySetter.setFloat(mWorkspace, WORKSPACE_SCALE_PROPERTY, mNewScale,
                 scaleInterpolator);
 
-        // TextLauncher: no hotseat (its scale, alpha and accessibility) and no page indicator.
+        // CaretLauncher: no hotseat (its scale, alpha and accessibility) and no page indicator.
 
         Interpolator translationInterpolator =
                 config.getInterpolator(ANIM_WORKSPACE_TRANSLATE, ZOOM_OUT);
@@ -110,7 +110,7 @@ public class WorkspaceStateTransitionAnimation {
                 scaleAndTranslation.translationX, translationInterpolator);
         propertySetter.setFloat(mWorkspace, VIEW_TRANSLATE_Y,
                 scaleAndTranslation.translationY, translationInterpolator);
-        // TextLauncher: one page, so no page translations (getWorkspacePageTranslationProvider),
+        // CaretLauncher: one page, so no page translations (getWorkspacePageTranslationProvider),
         // no hotseat, and centerSpringLoadedStateVertically is off in the release.
 
         if (!config.hasAnimationFlag(SKIP_SCRIM)) {
@@ -120,7 +120,7 @@ public class WorkspaceStateTransitionAnimation {
 
     public void setScrim(PropertySetter propertySetter, LauncherState state,
             StateAnimationConfig config) {
-        // TextLauncher: the workspace drag scrim is a view behind the home screen (DragLayer's
+        // CaretLauncher: the workspace drag scrim is a view behind the home screen (DragLayer's
         // getWorkspaceDragScrim), faded with the state's alpha. No system UI scrim, and the
         // ScrimView's colors are the all apps transition's and the folders'.
         propertySetter.setViewAlpha(mLauncher.getDragLayer().getWorkspaceDragScrim(),
@@ -132,7 +132,7 @@ public class WorkspaceStateTransitionAnimation {
                 new StateAnimationConfig());
     }
 
-    // TextLauncher: no page alpha (PageAlphaProvider), as there is one page, and no edit mode
+    // CaretLauncher: no page alpha (PageAlphaProvider), as there is one page, and no edit mode
     // state (EditModeState).
     private void applyChildState(LauncherState state, CellLayout cl, int childIndex,
             PropertySetter propertySetter, StateAnimationConfig config) {
@@ -141,6 +141,6 @@ public class WorkspaceStateTransitionAnimation {
                 CellLayout.SPRING_LOADED_PROGRESS, springLoadedProgress, ZOOM_OUT);
     }
 
-    // TextLauncher: one page (applyPageTranslation), and no hint state's spring
+    // CaretLauncher: one page (applyPageTranslation), and no hint state's spring
     // (getWorkspaceSpringScaleAnimator, getSpringScaleAnimator).
 }

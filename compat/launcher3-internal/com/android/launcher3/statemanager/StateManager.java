@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.statemanager;
@@ -57,8 +57,8 @@ import java.util.ArrayList;
  */
 /**
  * Stand-in for Launcher3's StateManager (android-17.0.0_r1), made from StateManager.java by
- * deleting the launcher UI state (LauncherUiState); changes are marked with "TextLauncher:".
- * TextLauncher's all apps swipe changes the state when its hold gives way, or when the finger lifts
+ * deleting the launcher UI state (LauncherUiState); changes are marked with "CaretLauncher:".
+ * CaretLauncher's all apps swipe changes the state when its hold gives way, or when the finger lifts
  * toward the state it started from, rather than when the drag starts, so it tells the state
  * manager those changes with members added at the end of the class.
  */
@@ -71,7 +71,7 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
     private final T mContainer;
     private final ArrayList<StateListener<S>> mListeners = new ArrayList<>();
     private final S mBaseState;
-    // TextLauncher: no launcher UI state (LauncherUiState).
+    // CaretLauncher: no launcher UI state (LauncherUiState).
 
     // Animators which are run on properties also controlled by state animations.
     private final AtomicAnimationFactory<S> mAtomicAnimationFactory;
@@ -92,7 +92,7 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
         mAtomicAnimationFactory = container.createAtomicAnimationFactory();
     }
 
-    // TextLauncher: no launcher UI state (setLauncherUiState).
+    // CaretLauncher: no launcher UI state (setLauncherUiState).
 
     public S getState() {
         return mState;
@@ -421,7 +421,7 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
 
     private void onStateTransitionStart(S state) {
         mState = state;
-        // TextLauncher: no launcher UI state.
+        // CaretLauncher: no launcher UI state.
         mContainer.onStateSetStart(mState);
 
         StateManagerProtoLogProxy.logOnStateTransitionStart(state);
@@ -743,7 +743,7 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
                 STATE_TYPE fromState, STATE_TYPE toState, StateAnimationConfig config) { }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * The all apps swipe's transition to {@code state} starts without its animation's

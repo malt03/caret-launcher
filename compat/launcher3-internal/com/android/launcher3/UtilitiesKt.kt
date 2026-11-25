@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -24,11 +24,11 @@ import com.android.launcher3.model.data.ItemInfo
 
 /**
  * Stand-in for Launcher3's UtilitiesKt (android-17.0.0_r1), made from UtilitiesKt.kt by deleting
- * what TextLauncher does not use; changes are marked with "TextLauncher:".
+ * what CaretLauncher does not use; changes are marked with "CaretLauncher:".
  */
 object UtilitiesKt {
 
-    // TextLauncher: no view attribute modifiers (ViewGroupAttrModifier, CLIP_CHILDREN_FALSE_MODIFIER,
+    // CaretLauncher: no view attribute modifiers (ViewGroupAttrModifier, CLIP_CHILDREN_FALSE_MODIFIER,
     // CLIP_TO_PADDING_FALSE_MODIFIER, modifyAttributesOnViewTree, restoreAttributesOnViewTree).
 
     /**
@@ -39,5 +39,5 @@ object UtilitiesKt {
      */
     @JvmStatic fun ItemInfo.isPersistedModelItem() = id > ItemInfo.NO_ID && (id ushr 24) == 0
 
-    // TextLauncher: no selection highlight (drawWorkspaceItemSelectionHighlight).
+    // CaretLauncher: no selection highlight (drawWorkspaceItemSelectionHighlight).
 }

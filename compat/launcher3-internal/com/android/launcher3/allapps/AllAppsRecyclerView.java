@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.allapps;
@@ -45,17 +45,17 @@ import java.util.List;
  * <p>Stand-in made from Launcher3's AllAppsRecyclerView (android-17.0.0_r1) by deleting the
  * logging, the cursor-driven workflows (Flags.enableCursorDrivenWorkflows, disabled in the
  * release) and the letter list (Flags.letterFastScroller, disabled in the release). Changes are
- * marked with "TextLauncher:".
+ * marked with "CaretLauncher:".
  */
 public class AllAppsRecyclerView extends FastScrollRecyclerView {
     protected static final String TAG = "AllAppsRecyclerView";
     private static final boolean DEBUG = false;
-    // TextLauncher: no search latency logging.
+    // CaretLauncher: no search latency logging.
     private Consumer<View> mChildAttachedConsumer;
 
     protected final int mNumAppsPerRow;
     private final AllAppsFastScrollHelper mFastScrollHelper;
-    // TextLauncher: no scroll logging or letter list.
+    // CaretLauncher: no scroll logging or letter list.
 
     protected AlphabeticalAppsList mApps;
 
@@ -74,7 +74,7 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
     public AllAppsRecyclerView(Context context, AttributeSet attrs, int defStyleAttr,
             int defStyleRes) {
         super(context, attrs, defStyleAttr);
-        // TextLauncher: the columns of the all apps grid (InvariantDeviceProfile.numColumns).
+        // CaretLauncher: the columns of the all apps grid (InvariantDeviceProfile.numColumns).
         mNumAppsPerRow = ActivityContext.lookupContext(context).getDeviceProfile()
                 .getAllAppsProfile().getNumShownAllAppsColumns();
         mFastScrollHelper = new AllAppsFastScrollHelper(this);
@@ -115,13 +115,13 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
         scrollToTop();
     }
 
-    // TextLauncher: no cursor-driven workflows (mouse clicks and drags are not ignored).
+    // CaretLauncher: no cursor-driven workflows (mouse clicks and drags are not ignored).
 
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
 
-        // TextLauncher: no logging.
+        // CaretLauncher: no logging.
         switch (state) {
             case SCROLL_STATE_DRAGGING:
                 requestFocus();
@@ -219,7 +219,7 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
             return;
         }
 
-        // TextLauncher: no letter list.
+        // CaretLauncher: no letter list.
         // Only show the scrollbar if there is height to be scrolled
         int availableScrollBarHeight = getAvailableScrollBarHeight();
         int availableScrollHeight = getAvailableScrollHeight();
@@ -287,7 +287,7 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
 
     @Override
     public int getScrollBarTop() {
-        // TextLauncher: no header above the list (the search field is above the sheet), so the
+        // CaretLauncher: no header above the list (the search field is above the sheet), so the
         // scrollbar starts at the top of the list.
         return 0;
     }
@@ -303,6 +303,6 @@ public class AllAppsRecyclerView extends FastScrollRecyclerView {
         return false;
     }
 
-    // TextLauncher: no letter list or scroll logging.
+    // CaretLauncher: no letter list or scroll logging.
 
 }

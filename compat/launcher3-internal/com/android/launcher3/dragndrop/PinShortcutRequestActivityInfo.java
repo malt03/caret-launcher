@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  * request.
  *
  * <p>Stand-in for Launcher3's PinShortcutRequestActivityInfo (android-17.0.0_r1): what the widget
- * picker's list shows. TextLauncher: pin requests are not handled yet, so the shortcut cannot be
+ * picker's list shows. CaretLauncher: pin requests are not handled yet, so the shortcut cannot be
  * added from it (no createWorkspaceItemInfo or startConfigActivity, which take
  * PinRequestHelper and the launcher states).
  */

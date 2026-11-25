@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.util
@@ -32,7 +32,7 @@ import androidx.annotation.MainThread
  * This class caches the system's wallpaper color hints for use by other classes as a performance
  * enhancer. It also centralizes all the WallpaperManager color hint code in one location.
  *
- * Stand-in for Launcher3's WallpaperColorHints (android-17.0.0_r1). TextLauncher: no Dagger; one
+ * Stand-in for Launcher3's WallpaperColorHints (android-17.0.0_r1). CaretLauncher: no Dagger; one
  * instance for the app (INSTANCE), listening for as long as the app runs, on the main thread.
  */
 class WallpaperColorHints private constructor(private val context: Context) {
@@ -52,7 +52,7 @@ class WallpaperColorHints private constructor(private val context: Context) {
         val onColorsChangedListener = OnColorsChangedListener { colors, which ->
             onColorsChanged(colors, which)
         }
-        // TextLauncher: registered right away (UI_HELPER_EXECUTOR in Launcher3).
+        // CaretLauncher: registered right away (UI_HELPER_EXECUTOR in Launcher3).
         wallpaperManager.addOnColorsChangedListener(
             onColorsChangedListener,
             Handler(Looper.getMainLooper()),
@@ -80,7 +80,7 @@ class WallpaperColorHints private constructor(private val context: Context) {
     }
 
     companion object {
-        /** TextLauncher: in place of DaggerSingletonObject. */
+        /** CaretLauncher: in place of DaggerSingletonObject. */
         @JvmField val INSTANCE = Instance()
 
         @JvmStatic fun get(context: Context): WallpaperColorHints = INSTANCE.get(context)

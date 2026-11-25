@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -38,8 +38,8 @@ import com.android.launcher3.model.data.WorkspaceItemInfo;
  * Implementation of {@link DragAndDropAccessibilityDelegate} to support DnD on workspace.
  */
 /*
- * TextLauncher: derived from WorkspaceAccessibilityHelper.java (android-17.0.0_r1) by deleting the
- * home screen files; changes are marked with "TextLauncher:".
+ * CaretLauncher: derived from WorkspaceAccessibilityHelper.java (android-17.0.0_r1) by deleting the
+ * home screen files; changes are marked with "CaretLauncher:".
  */
 public class WorkspaceAccessibilityHelper extends DragAndDropAccessibilityDelegate {
 
@@ -108,7 +108,7 @@ public class WorkspaceAccessibilityHelper extends DragAndDropAccessibilityDelega
                     && dragInfo.dragType != DragType.FILESYSTEM_ICON) {
                 // For icons, we can consider cells that have another icon or a folder.
                 ItemInfo info = (ItemInfo) child.getTag();
-                // TextLauncher: no home screen files.
+                // CaretLauncher: no home screen files.
                 if (info instanceof AppInfo || info instanceof FolderInfo ||
                         info instanceof WorkspaceItemInfo) {
                     return id;
@@ -139,7 +139,7 @@ public class WorkspaceAccessibilityHelper extends DragAndDropAccessibilityDelega
         int row = info.cellY + 1;
         int col = info.cellX + 1;
 
-        // TextLauncher: no home screen files (file system folders).
+        // CaretLauncher: no home screen files (file system folders).
         if (info instanceof WorkspaceItemInfo) {
             return context.getString(R.string.create_folder_with_position, info.title,
                         row, col, pageDescription);

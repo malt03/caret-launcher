@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: the launcher is not a Context.
+ * Modified for CaretLauncher: the launcher is not a Context.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -43,7 +43,7 @@ import com.android.launcher3.widgetpicker.shared.model.WidgetInfo
  *   CONTAINER_WIDGETS_PREDICTION; enables the stats logs to capture the source container.
  * @param widgetInfo metadata of the widget being added
  *
- * TextLauncher: the launcher's Context is [Launcher.asContext], as the launcher is not the
+ * CaretLauncher: the launcher's Context is [Launcher.asContext], as the launcher is not the
  * activity.
  */
 class WidgetPickerAddItemListener(private val container: Int, private val widgetInfo: WidgetInfo) :
@@ -56,7 +56,7 @@ class WidgetPickerAddItemListener(private val container: Int, private val widget
                 is WidgetInfo.AppWidgetInfo -> {
                     val launcherProviderInfo =
                         LauncherAppWidgetProviderInfo.fromProviderInfo(
-                            // TextLauncher: the launcher is not a Context.
+                            // CaretLauncher: the launcher is not a Context.
                             launcher.asContext(),
                             widgetInfo.appWidgetProviderInfo,
                         )
@@ -77,7 +77,7 @@ class WidgetPickerAddItemListener(private val container: Int, private val widget
                 }
             }
 
-        // TextLauncher: the launcher is not a Context.
+        // CaretLauncher: the launcher is not a Context.
         val view = View(launcher.asContext())
         view.tag = pendingAddItemInfo
 

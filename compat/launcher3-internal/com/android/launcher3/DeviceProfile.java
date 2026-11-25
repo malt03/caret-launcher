@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -26,10 +26,10 @@ import com.android.launcher3.deviceprofile.DropTargetProfile;
 
 /**
  * Stand-in for Launcher3's DeviceProfile (android-17.0.0_r1). Only the folder, workspace, all apps
- * and device values that the copied code reads. TextLauncher sets them from its own grid.
+ * and device values that the copied code reads. CaretLauncher sets them from its own grid.
  */
 public class DeviceProfile {
-    /** TextLauncher: set by {@link InvariantDeviceProfile#setDeviceProfile}. */
+    /** CaretLauncher: set by {@link InvariantDeviceProfile#setDeviceProfile}. */
     public InvariantDeviceProfile inv;
 
     private final FolderProfile mFolderProfile;
@@ -55,7 +55,7 @@ public class DeviceProfile {
     }
 
     /**
-     * DeviceProfile.getAppWidgetScale. TextLauncher: widgets are not scaled (the scale is 1 outside
+     * DeviceProfile.getAppWidgetScale. CaretLauncher: widgets are not scaled (the scale is 1 outside
      * the multi-window and preview profiles).
      */
     public android.graphics.PointF getAppWidgetScale(
@@ -63,7 +63,7 @@ public class DeviceProfile {
         return new android.graphics.PointF(1f, 1f);
     }
 
-    /** TextLauncher: no hotseat at the side, so never a vertical bar layout. */
+    /** CaretLauncher: no hotseat at the side, so never a vertical bar layout. */
     public boolean isVerticalBarLayout() {
         return false;
     }
@@ -143,7 +143,7 @@ public class DeviceProfile {
             return mIsTwoPanels;
         }
 
-        /** TextLauncher: the home screen's profile is the same in every rotation. */
+        /** CaretLauncher: the home screen's profile is the same in every rotation. */
         public boolean isLandscape() {
             return false;
         }
@@ -203,7 +203,7 @@ public class DeviceProfile {
             return mIconCenterVertically;
         }
 
-        /** TextLauncher: the home grid's cells have no space between them. */
+        /** CaretLauncher: the home grid's cells have no space between them. */
         public Point getCellLayoutBorderSpacePx() {
             return new Point(0, 0);
         }
@@ -221,7 +221,7 @@ public class DeviceProfile {
             return new android.graphics.Rect(mWidgetPadding);
         }
 
-        /** TextLauncher: DeviceProfile works these out; the home grid sets them as it measures. */
+        /** CaretLauncher: DeviceProfile works these out; the home grid sets them as it measures. */
         public void setCellSize(int width, int height, android.graphics.Rect widgetPadding) {
             mCellSize.set(width, height);
             mWidgetPadding.set(widgetPadding);
@@ -231,7 +231,7 @@ public class DeviceProfile {
     private java.util.function.Supplier<Float> mWorkspaceSpringLoadScale = () -> 1f;
 
     /**
-     * The scale of the workspace in the spring-loaded state (WidgetDragScaleUtils). TextLauncher:
+     * The scale of the workspace in the spring-loaded state (WidgetDragScaleUtils). CaretLauncher:
      * the home screen works it out from its own layout (the drop target bar, the search field with
      * the keyboard down) and sets it with {@link #setWorkspaceSpringLoadScale}.
      */
@@ -239,7 +239,7 @@ public class DeviceProfile {
         return mWorkspaceSpringLoadScale.get();
     }
 
-    /** TextLauncher: set by the home screen; see {@link #getWorkspaceSpringLoadScale}. */
+    /** CaretLauncher: set by the home screen; see {@link #getWorkspaceSpringLoadScale}. */
     public void setWorkspaceSpringLoadScale(java.util.function.Supplier<Float> scale) {
         mWorkspaceSpringLoadScale = scale;
     }
@@ -247,14 +247,14 @@ public class DeviceProfile {
     private java.util.function.Supplier<Integer> mCellLayoutHeight = () -> 0;
 
     /**
-     * The page's height. TextLauncher: the home screen's page with the keyboard down, which it has
+     * The page's height. CaretLauncher: the home screen's page with the keyboard down, which it has
      * while editing (docs/spec.md 5.4), set with {@link #setCellLayoutHeight}.
      */
     public int getCellLayoutHeight() {
         return mCellLayoutHeight.get();
     }
 
-    /** TextLauncher: set by the home screen; see {@link #getCellLayoutHeight}. */
+    /** CaretLauncher: set by the home screen; see {@link #getCellLayoutHeight}. */
     public void setCellLayoutHeight(java.util.function.Supplier<Integer> height) {
         mCellLayoutHeight = height;
     }
@@ -263,14 +263,14 @@ public class DeviceProfile {
 
     /**
      * The top of the page in the spring-loaded state, below the drop target bar, in the coordinates
-     * of the workspace's parent (SpringLoadedState). TextLauncher: the home screen works it out from
+     * of the workspace's parent (SpringLoadedState). CaretLauncher: the home screen works it out from
      * its own layout and sets it with {@link #setCellLayoutSpringLoadShrunkTop}.
      */
     public float getCellLayoutSpringLoadShrunkTop() {
         return mCellLayoutSpringLoadShrunkTop.get();
     }
 
-    /** TextLauncher: set by the home screen; see {@link #getCellLayoutSpringLoadShrunkTop}. */
+    /** CaretLauncher: set by the home screen; see {@link #getCellLayoutSpringLoadShrunkTop}. */
     public void setCellLayoutSpringLoadShrunkTop(java.util.function.Supplier<Float> top) {
         mCellLayoutSpringLoadShrunkTop = top;
     }
@@ -360,7 +360,7 @@ public class DeviceProfile {
             return mCellHeightPx;
         }
 
-        /** TextLauncher: an open folder's cells have no space between them. */
+        /** CaretLauncher: an open folder's cells have no space between them. */
         public Point getCellLayoutBorderSpacePx() {
             return new Point(0, 0);
         }

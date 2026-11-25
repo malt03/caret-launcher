@@ -28,7 +28,7 @@
 
 ### 1.2 パッケージの可視性（`<queries>`）
 
-TextLauncher の manifest の `<queries>` は今 `MAIN`/`LAUNCHER` と `APPWIDGET_UPDATE` だけ。
+CaretLauncher の manifest の `<queries>` は今 `MAIN`/`LAUNCHER` と `APPWIDGET_UPDATE` だけ。
 
 - 暗黙の Intent を `startActivity` するだけなら、`<queries>` は要らない（システムが解決する）
 - 受け取るアプリを調べて行に出す（`queryIntentActivities`／`resolveActivity`）には、その Intent を `<queries>` に書く。今回使いそうなもの:

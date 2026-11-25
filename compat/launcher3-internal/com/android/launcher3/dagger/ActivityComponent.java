@@ -17,7 +17,7 @@ public class ActivityComponent {
     private PopupDataProvider mPopupDataProvider;
 
     /**
-     * TextLauncher: Launcher3's @ActivityContextSingleton AllAppsStore, which the all apps list and
+     * CaretLauncher: Launcher3's @ActivityContextSingleton AllAppsStore, which the all apps list and
      * the notification dots (PopupDataProvider) share.
      */
     private final AllAppsStore mAppsStore = new AllAppsStore();
@@ -26,7 +26,7 @@ public class ActivityComponent {
         return mAppsStore;
     }
 
-    /** TextLauncher: the popup data provider is made by the app, which knows the context. */
+    /** CaretLauncher: the popup data provider is made by the app, which knows the context. */
     public void setPopupDataProvider(PopupDataProvider provider) {
         mPopupDataProvider = provider;
     }

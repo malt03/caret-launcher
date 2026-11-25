@@ -31,4 +31,4 @@ android-17.0.0_r1 の流れ:
 
 **2026-11-23T06:16:03Z**
 
-ピッカーを開いて「追加」でホームに置くところまで移した（Dagger は KSP で生成、ルートは LauncherAppComponent + LauncherWidgetPickerModule + TextLauncherAppModule）。TextLauncher は BIND_APPWIDGET を持たないので OS の確認画面が出ることがあり、ピッカーが閉じるときのホームへの切り替え（singleTask）で消えないよう、追加はホームが resume してから始める。エミュレータ（Pixel9ProFold）で、ピッカーの表示・分類（会話）の名前とアイコン・確認画面・設定画面・配置・削除を確かめた。ピッカーからのドラッグ、ショートカットの作成、ピン留めの要求は別チケットに分けた。
+ピッカーを開いて「追加」でホームに置くところまで移した（Dagger は KSP で生成、ルートは LauncherAppComponent + LauncherWidgetPickerModule + CaretLauncherAppModule）。CaretLauncher は BIND_APPWIDGET を持たないので OS の確認画面が出ることがあり、ピッカーが閉じるときのホームへの切り替え（singleTask）で消えないよう、追加はホームが resume してから始める。エミュレータ（Pixel9ProFold）で、ピッカーの表示・分類（会話）の名前とアイコン・確認画面・設定画面・配置・削除を確かめた。ピッカーからのドラッグ、ショートカットの作成、ピン留めの要求は別チケットに分けた。

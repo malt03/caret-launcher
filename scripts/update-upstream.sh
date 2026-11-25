@@ -9,7 +9,7 @@
 # theirs = new tag). Files with conflicts keep conflict markers and are listed at the end.
 # With `res_dir=<dir>` in the block, upstream paths under res/ are kept under <dir>/ here.
 # `derived=<upstream path> <path from the repository root>` merges a stand-in that was made from
-# an upstream file (by deleting what TextLauncher does not use and marking changes) the same way.
+# an upstream file (by deleting what CaretLauncher does not use and marking changes) the same way.
 # After merging, scripts/check-upstream.py lists what else changed upstream for a person to
 # review: the `ref=` files (stand-ins and transcriptions), the extracted resource values and the
 # flags.

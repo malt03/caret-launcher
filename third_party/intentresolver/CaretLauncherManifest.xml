@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CaretLauncher: the library's manifest (IntentResolver's AndroidManifest-lib.xml declares the
+     share sheet's activities, which are not copied). -->
+<manifest />

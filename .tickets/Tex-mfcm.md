@@ -12,7 +12,7 @@ tags: [refactor]
 ---
 # DeepShortcutView と PopupContainer 系を上流のコピーとして扱う
 
-PopupContainer.kt と PopupContainerWithArrow.kt は上流から削っただけ。DeepShortcutView は 87% が上流と同じで、フォルダとモデルの整理の後は BubbleTextHolder と Launcher の getAccessibilityDelegate / getStatsLogManager / getModel だけが残る。third_party に置いて TextLauncher: の印で変更を示すか、削った版として git merge-file で更新できる形にする。
+PopupContainer.kt と PopupContainerWithArrow.kt は上流から削っただけ。DeepShortcutView は 87% が上流と同じで、フォルダとモデルの整理の後は BubbleTextHolder と Launcher の getAccessibilityDelegate / getStatsLogManager / getModel だけが残る。third_party に置いて CaretLauncher: の印で変更を示すか、削った版として git merge-file で更新できる形にする。
 
 ## Acceptance Criteria
 

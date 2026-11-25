@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -45,7 +45,7 @@ import java.util.function.Predicate
 
 /**
  * Stand-in for Launcher3's ModelWriter (android-17.0.0_r1), made from ModelWriter.kt; changes are
- * marked with "TextLauncher:". The folders are FolderInfo (no CollectionInfo) and the widget host
+ * marked with "CaretLauncher:". The folders are FolderInfo (no CollectionInfo) and the widget host
  * is the platform AppWidgetHost (no LauncherWidgetHolder).
  */
 open class ModelWriter(
@@ -180,7 +180,7 @@ open class ModelWriter(
             outChangeLog.itemsRemoved.add(info)
             model.modelDbController.delete(Favorites.CONTAINER + "=" + info.id, null)
             model.modelDbController.delete(Favorites._ID + "=" + info.id, null)
-            // TextLauncher: FolderInfo's contents (CollectionInfo.getContents).
+            // CaretLauncher: FolderInfo's contents (CollectionInfo.getContents).
             val itemsToDelete = info.getContents() + info
             bgDataModel.removeItems(context, itemsToDelete, modificationSource)
         }
@@ -191,7 +191,7 @@ open class ModelWriter(
             reason: String?,
         ) {
             outChangeLog.itemsRemoved.add(info)
-            // TextLauncher: no custom widgets (isCustomWidget).
+            // CaretLauncher: no custom widgets (isCustomWidget).
             if (holder != null && info.isWidgetIdAllocated) {
                 holder.deleteAppWidgetId(info.appWidgetId)
             }
@@ -295,7 +295,7 @@ open class ModelWriter(
     }
 
     private fun execute(block: (TransactionContext) -> Unit) {
-        // TextLauncher: Flags.enableTransactionalModelWriter is disabled in the release config.
+        // CaretLauncher: Flags.enableTransactionalModelWriter is disabled in the release config.
         if (isSuspended) {
             scheduleTransaction(block = block)
         } else {

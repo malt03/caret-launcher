@@ -1,4 +1,4 @@
-// TextLauncher: build file for files copied from packages/apps/Launcher3 (not copied from upstream).
+// CaretLauncher: build file for files copied from packages/apps/Launcher3 (not copied from upstream).
 plugins {
     alias(libs.plugins.android.library)
     // The widget resize frame (widget/resize/) is Compose, as in Launcher3.
@@ -22,8 +22,8 @@ android {
             java.setSrcDirs(listOf("src", "src_no_quickstep", "shared/src", "dagger/src", "../../compat/launcher3-internal"))
             kotlin.setSrcDirs(listOf("src", "modules/concurrent/src", "../../compat/launcher3-internal"))
             // Resources the copied code needs, picked out of Launcher3 res/ (see UPSTREAM.md).
-            res.setSrcDirs(listOf("res-textlauncher"))
-            manifest.srcFile("TextLauncherManifest.xml")
+            res.setSrcDirs(listOf("res-caretlauncher"))
+            manifest.srcFile("CaretLauncherManifest.xml")
         }
     }
 }

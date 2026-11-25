@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -26,7 +26,7 @@ import android.os.Process;
 /**
  * Stand-in for Launcher3's Executors. UI_HELPER_EXECUTOR, RotationHelper's thread,
  * ORDERED_BG_EXECUTOR, and MODEL_EXECUTOR: the thread of the long-press menu's shortcut lookups and of the IconCache, whose
- * handler DragView also uses for spring icons (not used in TextLauncher: drags are started with
+ * handler DragView also uses for spring icons (not used in CaretLauncher: drags are started with
  * allowSpringDrawable = false).
  */
 public class Executors {

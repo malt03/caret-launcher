@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   The all apps list's views, as Launcher3's all_apps_rv_layout.xml and all_apps_fast_scroller.xml
-  (android-17.0.0_r1) place them in ActivityAllAppsContainerView. TextLauncher: in a FrameLayout
+  (android-17.0.0_r1) place them in ActivityAllAppsContainerView. CaretLauncher: in a FrameLayout
   on the sheet below the search field, so without the header's margins above the scroller.
 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"

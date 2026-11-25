@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.testing.shared;
@@ -23,7 +23,7 @@ package com.android.launcher3.testing.shared;
  * Protocol for custom accessibility events for communication with UI Automation tests.
  *
  * <p>Stand-in for Launcher3's TestProtocol (android-17.0.0_r1). Only the message that
- * FastScrollRecyclerView sends and the state ordinals that LauncherState uses; TextLauncher does
+ * FastScrollRecyclerView sends and the state ordinals that LauncherState uses; CaretLauncher does
  * not run Launcher3's UI Automation tests.
  */
 public final class TestProtocol {

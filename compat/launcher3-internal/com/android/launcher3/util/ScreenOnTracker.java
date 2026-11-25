@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -29,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Stand-in for Launcher3's ScreenOnTracker (android-17.0.0_r1): tells listeners when the screen
- * turns on or off. TextLauncher: one per process, registered while it has listeners.
+ * turns on or off. CaretLauncher: one per process, registered while it has listeners.
  */
 public class ScreenOnTracker {
 
@@ -85,7 +85,7 @@ public class ScreenOnTracker {
         void onScreenOnChanged(boolean isOn);
     }
 
-    /** TextLauncher: stands in for DaggerSingletonObject. */
+    /** CaretLauncher: stands in for DaggerSingletonObject. */
     public static final class ScreenOnTrackerHolder {
         private ScreenOnTracker mInstance;
 

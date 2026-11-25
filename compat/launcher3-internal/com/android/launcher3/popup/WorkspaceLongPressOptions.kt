@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -44,8 +44,8 @@ import com.android.launcher3.views.ActivityContext
  * Class to create default set of long-press options.
  *
  * Stand-in for Launcher3's WorkspaceLongPressOptions (android-17.0.0_r1), made from
- * WorkspaceLongPressOptions.kt by deleting what TextLauncher does not use (edit mode, the condo
- * planner, home screen files, logging); changes are marked with "TextLauncher:".
+ * WorkspaceLongPressOptions.kt by deleting what CaretLauncher does not use (edit mode, the condo
+ * planner, home screen files, logging); changes are marked with "CaretLauncher:".
  */
 object WorkspaceLongPressOptions {
 
@@ -72,7 +72,7 @@ object WorkspaceLongPressOptions {
             )
         }
 
-        // TextLauncher: no "Apps list" with two panels, where the list is always shown
+        // CaretLauncher: no "Apps list" with two panels, where the list is always shown
         // (docs/spec.md 5.5).
         if ((ActivityContext.lookupContext(ctx) as? Launcher)?.canOpenAllApps() == true) {
         add(
@@ -82,18 +82,18 @@ object WorkspaceLongPressOptions {
                 SYSTEM_SHORTCUT,
             ) { ac, _, _ ->
                 (ac as? Launcher)?.apply {
-                    // TextLauncher: no keyboard state manager (launchedFromA11y).
-                    openAllApps() // TextLauncher: stateManager.goToState(LauncherState.ALL_APPS)
+                    // CaretLauncher: no keyboard state manager (launchedFromA11y).
+                    openAllApps() // CaretLauncher: stateManager.goToState(LauncherState.ALL_APPS)
                 }
             }
         )
         }
 
-        // TextLauncher: in place of "Home settings", the only setting TextLauncher has: the share
+        // CaretLauncher: in place of "Home settings", the only setting CaretLauncher has: the share
         // buttons next to the search field (docs/spec.md 2.7).
         (ActivityContext.lookupContext(ctx) as? Launcher)?.let { add(it.shareTextOption) }
 
-        // TextLauncher: no "Home settings" (docs/spec.md 8). In place of the settings'
+        // CaretLauncher: no "Home settings" (docs/spec.md 8). In place of the settings'
         // "Notification dots" (NotificationDotsPreference), "Notification dots" is shown while the
         // dots are on but the launcher may not read the notifications (docs/spec.md 7.5).
         if (isNotificationAccessMissing(ctx)) {
@@ -118,9 +118,9 @@ object WorkspaceLongPressOptions {
      */
     private fun startWallpaperPicker(ac: ActivityContext, v: View) {
         val launcher = ac as? Launcher ?: return
-        // TextLauncher: the launcher is not a Context; its context is (asContext).
+        // CaretLauncher: the launcher is not a Context; its context is (asContext).
         if (!Utilities.isWallpaperAllowed(launcher.asContext())) {
-            // TextLauncher: no string cache (enterprise strings).
+            // CaretLauncher: no string cache (enterprise strings).
             val message = launcher.asContext().getString(R.string.msg_disabled_by_admin)
             Toast.makeText(launcher.asContext(), message, Toast.LENGTH_SHORT).show()
             return
@@ -135,7 +135,7 @@ object WorkspaceLongPressOptions {
         if (!TextUtils.isEmpty(pickerPackage)) {
             intent.setPackage(pickerPackage)
         }
-        // TextLauncher: Launcher.startActivitySafely starts the home screen's items here; the
+        // CaretLauncher: Launcher.startActivitySafely starts the home screen's items here; the
         // picker is started as ActivityContext.startActivitySafely does, without its options.
         try {
             launcher.asContext().startActivity(intent)
@@ -169,7 +169,7 @@ object WorkspaceLongPressOptions {
     // An intent extra to indicate the launch source by launcher.
     private const val EXTRA_WALLPAPER_LAUNCH_SOURCE = "com.android.wallpaper.LAUNCH_SOURCE"
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** WorkspaceTouchListener's tag, for the wallpaper picker's error log. */
     private const val TAG = "WorkspaceTouchListener"

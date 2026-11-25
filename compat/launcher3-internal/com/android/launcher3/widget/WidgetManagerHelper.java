@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.widget;
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 /**
  * Utility class to working with {@link AppWidgetManager}
  *
- * <p>Stand-in for Launcher3's WidgetManagerHelper (android-17.0.0_r1). TextLauncher: widgets are
+ * <p>Stand-in for Launcher3's WidgetManagerHelper (android-17.0.0_r1). CaretLauncher: widgets are
  * always enabled (BuildConfig.WIDGETS_ENABLED), there are no custom widgets (CustomWidgetManager),
  * and generated previews are on (android.appwidget.flags.Flags.generatedPreviews, enabled in the
  * release).
@@ -71,11 +71,11 @@ public class WidgetManagerHelper {
     public LauncherAppWidgetProviderInfo getLauncherAppWidgetInfo(
             int appWidgetId, ComponentName componentName) {
 
-        // TextLauncher: no custom widgets.
+        // CaretLauncher: no custom widgets.
 
         AppWidgetProviderInfo info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
         if (info == null) {
-            // TextLauncher: Log rather than FileLog.
+            // CaretLauncher: Log rather than FileLog.
             Log.w(TAG,
                     "getLauncherAppWidgetInfo: AppWidgetManager returned null AppWidgetInfo for"
                             + " appWidgetId=" + appWidgetId
@@ -143,7 +143,7 @@ public class WidgetManagerHelper {
 
     private static Stream<AppWidgetProviderInfo> allWidgetsSteam(Context context) {
         AppWidgetManager awm = context.getSystemService(AppWidgetManager.class);
-        // TextLauncher: no custom widgets.
+        // CaretLauncher: no custom widgets.
         return UserCache.INSTANCE.get(context)
                 .getUserProfiles()
                 .stream()

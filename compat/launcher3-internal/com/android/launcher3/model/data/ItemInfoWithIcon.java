@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -41,9 +41,9 @@ import com.android.launcher3.icons.cache.CacheLookupFlag;
  * Represents an ItemInfo which also holds an icon.
  *
  * <p>Stand-in for Launcher3's ItemInfoWithIcon (android-17.0.0_r1), made from
- * ItemInfoWithIcon.java by deleting what TextLauncher does not have (install progress, archived
+ * ItemInfoWithIcon.java by deleting what CaretLauncher does not have (install progress, archived
  * apps, multi-instance and resize flags, App Lock, automation and home screen files); changes are
- * marked with "TextLauncher:".
+ * marked with "CaretLauncher:".
  */
 public abstract class ItemInfoWithIcon extends ItemInfo {
 
@@ -187,7 +187,7 @@ public abstract class ItemInfoWithIcon extends ItemInfo {
         String targetPackage = getTargetPackage();
 
         return targetPackage != null
-                // TextLauncher: ApiWrapper.getAppMarketActivityIntent's market intent, inline
+                // CaretLauncher: ApiWrapper.getAppMarketActivityIntent's market intent, inline
                 // (without the referrer).
                 ? new Intent(Intent.ACTION_VIEW)
                         .setData(new Uri.Builder()
@@ -209,7 +209,7 @@ public abstract class ItemInfoWithIcon extends ItemInfo {
     public FastBitmapDrawable newIcon(Context context, @DrawableCreationFlags int creationFlags) {
         ThemeManager themeManager = ThemeManager.INSTANCE.get(context);
         IconShape iconShape = null;
-        // TextLauncher: no home screen files; ThemeManager.getIconShapeData() returns the value.
+        // CaretLauncher: no home screen files; ThemeManager.getIconShapeData() returns the value.
         if (supportsCustomShapes(creationFlags)) {
             iconShape = themeManager.getIconShapeData();
         }
@@ -234,7 +234,7 @@ public abstract class ItemInfoWithIcon extends ItemInfo {
      * Returns true if item is a Promise Icon or actively downloading, and the item is not an
      * inactive archived app.
      *
-     * TextLauncher: only installed apps are shown, so nothing is pending or downloading.
+     * CaretLauncher: only installed apps are shown, so nothing is pending or downloading.
      */
     public boolean shouldShowPendingIcon() {
         return false;

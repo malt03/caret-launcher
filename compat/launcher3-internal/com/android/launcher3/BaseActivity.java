@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -46,10 +46,10 @@ import java.util.ArrayList;
  * Launcher BaseActivity
  *
  * <p>Stand-in for Launcher3's BaseActivity (android-17.0.0_r1), made from BaseActivity.java by
- * deleting what TextLauncher does not use; changes are marked with "TextLauncher:". TextLauncher's
+ * deleting what CaretLauncher does not use; changes are marked with "CaretLauncher:". CaretLauncher's
  * home screen is not a BaseActivity; the widget picker is.
  */
-// TextLauncher: ActivityContext is not a SavedStateRegistryOwner here, so this activity is one.
+// CaretLauncher: ActivityContext is not a SavedStateRegistryOwner here, so this activity is one.
 public abstract class BaseActivity extends Activity
         implements ActivityContext, SavedStateRegistryOwner {
 
@@ -120,13 +120,13 @@ public abstract class BaseActivity extends Activity
 
     @Override
     protected void onResume() {
-        addActivityFlags(ACTIVITY_STATE_RESUMED); // TextLauncher: setResumed without user activity.
+        addActivityFlags(ACTIVITY_STATE_RESUMED); // CaretLauncher: setResumed without user activity.
         super.onResume();
     }
 
     @Override
     protected void onStop() {
-        removeActivityFlags(ACTIVITY_STATE_STARTED); // TextLauncher: no ACTIVITY_STATE_USER_ACTIVE.
+        removeActivityFlags(ACTIVITY_STATE_STARTED); // CaretLauncher: no ACTIVITY_STATE_USER_ACTIVE.
         super.onStop();
 
 
@@ -137,7 +137,7 @@ public abstract class BaseActivity extends Activity
 
     @Override
     protected void onPause() {
-        removeActivityFlags(ACTIVITY_STATE_RESUMED); // TextLauncher: setPaused without deferred.
+        removeActivityFlags(ACTIVITY_STATE_RESUMED); // CaretLauncher: setPaused without deferred.
         super.onPause();
 
         // Reset the overridden sysui flags used for the task-swipe launch animation, we do this

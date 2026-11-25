@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.views;
@@ -47,13 +47,13 @@ import java.util.stream.Stream;
  * generic class to depend on Context subclass instead of an Activity.
  *
  * <p>Stand-in for Launcher3's ActivityContext (android-17.0.0_r1), made from ActivityContext.java
- * by deleting what TextLauncher does not use; changes are marked with "TextLauncher:".
+ * by deleting what CaretLauncher does not use; changes are marked with "CaretLauncher:".
  */
-// TextLauncher: not a SavedStateRegistryOwner; the home screen's Launcher is not an activity.
+// CaretLauncher: not a SavedStateRegistryOwner; the home screen's Launcher is not an activity.
 public interface ActivityContext {
 
     /** Returns the dagger graph for this UI context */
-    // TextLauncher: the ActivityComponent stand-in, not Dagger's; an empty one by default.
+    // CaretLauncher: the ActivityComponent stand-in, not Dagger's; an empty one by default.
     default ActivityComponent getActivityComponent() {
         return new ActivityComponent();
     }
@@ -121,7 +121,7 @@ public interface ActivityContext {
      * Hides the keyboard if it is visible
      */
     default void hideKeyboard() {
-        // TextLauncher: no KeyboardStateManager; a context with a keyboard to hide overrides this.
+        // CaretLauncher: no KeyboardStateManager; a context with a keyboard to hide overrides this.
     }
 
     /**
@@ -135,18 +135,18 @@ public interface ActivityContext {
      */
     default RunnableList startActivitySafely(
             View v, Intent intent, @Nullable ItemInfo item) {
-        // TextLauncher: the home screen (Launcher) starts activities; nothing else does.
+        // CaretLauncher: the home screen (Launcher) starts activities; nothing else does.
         return null;
     }
 
     default CellPosMapper getCellPosMapper() {
-        // TextLauncher: no hotseat, so the model's cells are the presenter's.
+        // CaretLauncher: no hotseat, so the model's cells are the presenter's.
         return CellPosMapper.DEFAULT;
     }
 
     /** Returns a writer for updating model properties */
     default IModelWriter getModelWriter() {
-        // TextLauncher: the home screen's Launcher returns its model's writer; nothing else
+        // CaretLauncher: the home screen's Launcher returns its model's writer; nothing else
         // changes the home model.
         return null;
     }
@@ -170,7 +170,7 @@ public interface ActivityContext {
      * Returns the ActivityContext associated with the given Context, or throws an exception if
      * the Context is not associated with any ActivityContext.
      */
-    // TextLauncher: the home screen's ActivityContext is not a Context; the activity holding it
+    // CaretLauncher: the home screen's ActivityContext is not a Context; the activity holding it
     // gives it (Provider).
     static ActivityContext lookupContext(Context context) {
         ActivityContext activityContext = lookupContextNoThrow(context);
@@ -184,7 +184,7 @@ public interface ActivityContext {
      * Returns the ActivityContext associated with the given Context, or null if
      * the Context is not associated with any ActivityContext.
      */
-    // TextLauncher: also through a Provider, as lookupContext.
+    // CaretLauncher: also through a Provider, as lookupContext.
     static ActivityContext lookupContextNoThrow(Context context) {
         if (context instanceof ActivityContext activityContext) {
             return activityContext;
@@ -197,7 +197,7 @@ public interface ActivityContext {
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * Implemented by the activity that holds an ActivityContext which is not itself a Context

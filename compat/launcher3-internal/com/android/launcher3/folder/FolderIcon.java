@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -78,13 +78,13 @@ import java.util.function.Predicate;
  * An icon that can appear on in the workspace representing an {@link Folder}.
  *
  * <p>Stand-in for Launcher3's FolderIcon (android-17.0.0_r1), made from FolderIcon.java by
- * deleting what TextLauncher does not use (the folder name and its suggestions, touch handling,
+ * deleting what CaretLauncher does not use (the folder name and its suggestions, touch handling,
  * floating icons, leave-behinds, accessibility titles); changes are marked
- * with "TextLauncher:". TextLauncher's folder icon view extends this. Folders have no names
+ * with "CaretLauncher:". CaretLauncher's folder icon view extends this. Folders have no names
  * (docs/spec.md 5.2). As in Launcher3, a {@link Folder} is bound to the icon
  * ({@link Folder#bindToIcon}).
  */
-// TextLauncher: a View with no name label, which the app's folder icon view extends; no floating
+// CaretLauncher: a View with no name label, which the app's folder icon view extends; no floating
 // icons or custom touch handling.
 public abstract class FolderIcon extends View implements DraggableView, Reorderable, Poppable,
         IconViewController {
@@ -141,7 +141,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     };
 
 
-    // TextLauncher: FolderIcon(Context, AttributeSet) and inflateIcon in one, since the app's view
+    // CaretLauncher: FolderIcon(Context, AttributeSet) and inflateIcon in one, since the app's view
     // extends this instead of being inflated. The app sets the click listener; there is no
     // custom actions listener.
     public FolderIcon(Context context, ActivityContext activity, FolderInfo folderInfo) {
@@ -151,10 +151,10 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         mPreviewItemManager = new PreviewItemManager(this);
         mDotParams = new DotRenderer.DrawParams();
         mDotParams.setDotColor(Themes.getAttrColor(context, R.attr.notificationDotColor));
-        // TextLauncher: the ThemeManager stand-in gives the shape info itself (no IconState).
+        // CaretLauncher: the ThemeManager stand-in gives the shape info itself (no IconState).
         mDotParams.shapeInfo = ThemeManager.INSTANCE.get(context).getIconShapeInfo();
 
-        // TextLauncher: from inflateIcon.
+        // CaretLauncher: from inflateIcon.
         DeviceProfile grid = activity.getDeviceProfile();
         setTag(folderInfo);
         mInfo = folderInfo;
@@ -189,7 +189,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return mFolder;
     }
 
-    // TextLauncher: not private; Folder.bindToIcon calls it (inflateFolderAndIcon in Launcher3).
+    // CaretLauncher: not private; Folder.bindToIcon calls it (inflateFolderAndIcon in Launcher3).
     public void setFolder(Folder folder) {
         mFolder = folder;
     }
@@ -202,7 +202,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return !mFolder.isDestroyed() && willAcceptItem(dragInfo);
     }
 
-    // TextLauncher: the caller passes the CellLayout (the icon's parent is the home grid, whose
+    // CaretLauncher: the caller passes the CellLayout (the icon's parent is the home grid, whose
     // parent is not a CellLayout).
     public void onDragEnter(ItemInfo dragInfo, CellLayout cl) {
         if (mFolder.isDestroyed() || !willAcceptItem(dragInfo)) return;
@@ -210,7 +210,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
         mBackground.animateToAccept(cl, lp.getCellX(), lp.getCellY());
         mOpenAlarm.setOnAlarmListener(mOnOpenListener);
-        // TextLauncher: no WorkspaceItemFactory (AppInfo); every drag carries a WorkspaceItemInfo.
+        // CaretLauncher: no WorkspaceItemFactory (AppInfo); every drag carries a WorkspaceItemInfo.
         if (SPRING_LOADING_ENABLED &&
                 ((dragInfo instanceof PendingAddShortcutInfo)
                         || Folder.willAccept(dragInfo))) {
@@ -268,7 +268,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
             Rect to = finalRect;
             if (to == null) {
                 to = new Rect();
-                // TextLauncher: the home grid has no transition transform to set.
+                // CaretLauncher: the home grid has no transition transform to set.
                 float scaleX = getScaleX();
                 float scaleY = getScaleY();
                 setScaleX(1.0f);
@@ -319,7 +319,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
             float finalScale = scale * scaleRelativeToDragLayer;
 
-            // TextLauncher: search results use the home icon size, so there is no container
+            // CaretLauncher: search results use the home icon size, so there is no container
             // scale for drags from them.
 
             final int finalIndex = index;
@@ -328,7 +328,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
                     Interpolators.DECELERATE_2,
                     () -> {
                         mPreviewItemManager.hidePreviewItem(finalIndex, false);
-                        // TextLauncher: draws the preview item again; nothing else redraws the
+                        // CaretLauncher: draws the preview item again; nothing else redraws the
                         // icon after a failed drag returns its item (Tex-9tv6).
                         invalidate();
                         mFolder.showItem(item);
@@ -338,7 +338,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
             mFolder.hideItem(item);
 
             if (!itemAdded) mPreviewItemManager.hidePreviewItem(index, true);
-            // TextLauncher: no folder name suggestions.
+            // CaretLauncher: no folder name suggestions.
 
         } else {
             getFolder().addFolderContent(item);
@@ -346,7 +346,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
     }
 
     public void onDrop(DragObject d, boolean itemReturnedOnFailedDrop) {
-        // TextLauncher: every drag carries an app's WorkspaceItemInfo; no copy is needed.
+        // CaretLauncher: every drag carries an app's WorkspaceItemInfo; no copy is needed.
         ItemInfo item = d.dragInfo;
         mFolder.notifyDrop();
         onDrop(item, d, null, 1.0f,
@@ -459,7 +459,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        // TextLauncher: no selection highlight.
+        // CaretLauncher: no selection highlight.
         super.dispatchDraw(canvas);
 
         if (!mBackgroundIsVisible) return;
@@ -506,7 +506,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
                 .getIconCenterVertically();
         if (shouldCenterIcon) {
             int iconSize = mActivity.getDeviceProfile().getWorkspaceProfile().getIconSizePx();
-            // TextLauncher: no folder name, so only the icon is centered.
+            // CaretLauncher: no folder name, so only the icon is centered.
             int cellHeightPx = iconSize;
             setPadding(getPaddingLeft(), (MeasureSpec.getSize(heightMeasureSpec)
                     - cellHeightPx) / 2, getPaddingRight(), getPaddingBottom());
@@ -592,7 +592,7 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
             title = getContext().getString(R.string.unnamed_folder);
         }
         int size = mInfo.getContents().size();
-        // TextLauncher: no home screen files (HomeScreenFilesUtils.isFeatureEnabled).
+        // CaretLauncher: no home screen files (HomeScreenFilesUtils.isFeatureEnabled).
         String folder_type = getContext().getString(R.string.folder_type_name);
         if (size < MAX_NUM_ITEMS_IN_PREVIEW) {
             return getContext().getString(hasDot()
@@ -613,16 +613,16 @@ public abstract class FolderIcon extends View implements DraggableView, Reordera
         return PoppableType.FOLDER;
     }
 
-    // TextLauncher: no folder name, so there is no text alpha to animate.
+    // CaretLauncher: no folder name, so there is no text alpha to animate.
     @Nullable
     @Override
     public MultiPropertyFactory<AnimatedFloat>.MultiProperty getFloatingViewTextAlpha() {
         return null;
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
-    /** TextLauncher: the folder's info for callers outside the package (Launcher3 reads mInfo). */
+    /** CaretLauncher: the folder's info for callers outside the package (Launcher3 reads mInfo). */
     public FolderInfo getFolderInfo() {
         return mInfo;
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -31,7 +31,7 @@ import java.util.stream.StreamSupport
  * An immutable representation of all the workspace items (shortcuts, folders, widgets and predicted
  * items)
  *
- * TextLauncher: one page and no predictions, so no screens or predicted contents to collect.
+ * CaretLauncher: one page and no predictions, so no screens or predicted contents to collect.
  */
 sealed class WorkspaceData : Iterable<ItemInfo> {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -39,14 +39,14 @@ import dagger.BindsInstance;
  * in Launcher3. Variants should extend this component and add ancillary modules.
  *
  * <p>Stand-in for Launcher3's LauncherBaseAppComponent (android-17.0.0_r1): only the objects the
- * copied code asks for. TextLauncher: no icons database name or safe mode in the builder.
+ * copied code asks for. CaretLauncher: no icons database name or safe mode in the builder.
  */
 public interface LauncherBaseAppComponent {
     SettingsCache getSettingsCache();
     ScreenOnTracker getScreenOnTracker();
     InvariantDeviceProfile getIDP();
 
-    /** TextLauncher: folders have no names (docs/spec.md 5.2), so there is no loader. */
+    /** CaretLauncher: folders have no names (docs/spec.md 5.2), so there is no loader. */
     default FolderNameSuggestionLoader getFolderNameSuggestionLoader() {
         return null;
     }

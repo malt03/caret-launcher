@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -37,12 +37,12 @@ import com.android.launcher3.model.data.ItemInfo
  * allows us to decouple drop target controllers from Launcher to enable easier testing.
  *
  * Stand-in for Launcher3's DropTargetHandler (android-17.0.0_r1), made from DropTargetHandler.kt
- * by deleting what TextLauncher does not use (undo, home screen files, widget reconfiguration);
- * changes are marked with "TextLauncher:".
+ * by deleting what CaretLauncher does not use (undo, home screen files, widget reconfiguration);
+ * changes are marked with "CaretLauncher:".
  */
 class DropTargetHandler(
     private val launcher: Launcher,
-    // TextLauncher: no undo, home screen files or main executor.
+    // CaretLauncher: no undo, home screen files or main executor.
 ) {
     fun onDropAnimationComplete() {
         launcher.stateManager.goToState(LauncherState.NORMAL)
@@ -63,19 +63,19 @@ class DropTargetHandler(
     }
 
     fun getViewUnderDrag(info: ItemInfo): View? {
-        // TextLauncher: SecondaryDropTarget has no RECONFIGURE for the widget under the drag.
+        // CaretLauncher: SecondaryDropTarget has no RECONFIGURE for the widget under the drag.
         return null
     }
 
     fun onDeleteComplete(item: ItemInfo, view: View?) {
-        // TextLauncher: no home screen files.
+        // CaretLauncher: no home screen files.
         removeItemAndStripEmptyScreens(view, item)
         AbstractFloatingView.closeOpenViews(
             launcher,
             false,
             AbstractFloatingView.TYPE_WIDGET_RESIZE_FRAME or AbstractFloatingView.TYPE_FOLDER,
         )
-        // TextLauncher: no undo, so no snackbar: the item is removed at once.
+        // CaretLauncher: no undo, so no snackbar: the item is removed at once.
     }
 
     fun getDragLayer(): DragLayer {
@@ -90,6 +90,6 @@ class DropTargetHandler(
         // Remove the item from launcher ONLY (not the db). The DB deletion is handled by
         // resuming the UndoDeleteController.
         launcher.removeItem(view, item, true /* deleteFromDb */, "removed by accessibility drop")
-        // TextLauncher: one page, so no empty screens to strip.
+        // CaretLauncher: one page, so no empty screens to strip.
     }
 }

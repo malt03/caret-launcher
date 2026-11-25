@@ -15,8 +15,8 @@
  */
 
 /*
- * Modified for TextLauncher: WidgetSizeHandler.kt (android-17.0.0_r1) without the hotseat's QSB
- * widget and its theme preference; changes are marked with "TextLauncher:".
+ * Modified for CaretLauncher: WidgetSizeHandler.kt (android-17.0.0_r1) without the hotseat's QSB
+ * widget and its theme preference; changes are marked with "CaretLauncher:".
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -43,7 +43,7 @@ open class WidgetSizeHandler
 constructor(
     @ApplicationContext private val context: Context,
     private val idp: InvariantDeviceProfile,
-    // TextLauncher: no ThemePreference, which only the hotseat's QSB widget uses.
+    // CaretLauncher: no ThemePreference, which only the hotseat's QSB widget uses.
 ) {
 
     /**
@@ -66,7 +66,7 @@ constructor(
         updateSizeRangesAsyncInternal(widgetId, executor) { getWidgetSizeOptions(spanX, spanY) }
     }
 
-    // TextLauncher: no hotseat QSB widget (updateHotseatQsbSizeRangesAsync).
+    // CaretLauncher: no hotseat QSB widget (updateHotseatQsbSizeRangesAsync).
 
     private inline fun updateSizeRangesAsyncInternal(
         widgetId: Int,
@@ -116,7 +116,7 @@ constructor(
         }
     }
 
-    // TextLauncher: no hotseat QSB widget (getHotseatQsbSizeOptions).
+    // CaretLauncher: no hotseat QSB widget (getHotseatQsbSizeOptions).
 
     companion object {
         const val MONO_THEME_ENABLED = "monoThemeEnabled"

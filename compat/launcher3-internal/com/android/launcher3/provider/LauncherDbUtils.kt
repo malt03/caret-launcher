@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.provider
@@ -27,7 +27,7 @@ import android.database.sqlite.SQLiteDatabase
  *
  * Stand-in for Launcher3's LauncherDbUtils (android-17.0.0_r1), made from LauncherDbUtils.kt by
  * deleting the workspace screen and table utilities and the migrations of the legacy shortcuts
- * and the backup icons, which TextLauncher's database (the app's LauncherDatabase) does not need.
+ * and the backup icons, which CaretLauncher's database (the app's LauncherDatabase) does not need.
  */
 object LauncherDbUtils {
     const val TAG = "LauncherDbUtils"
@@ -37,7 +37,7 @@ object LauncherDbUtils {
      */
     @JvmStatic fun itemIdMatch(itemId: Int): String = "_id=$itemId"
 
-    // TextLauncher: no workspace screens (selectionForWorkspaceScreen) or queryIntArray.
+    // CaretLauncher: no workspace screens (selectionForWorkspaceScreen) or queryIntArray.
 
     @JvmStatic
     fun tableExists(db: SQLiteDatabase, tableName: String): Boolean =
@@ -57,7 +57,7 @@ object LauncherDbUtils {
                 return c.count > 0
             }
 
-    // TextLauncher: no table copies (dropTable, copyTable, shiftWorkspaceByXCells), legacy
+    // CaretLauncher: no table copies (dropTable, copyTable, shiftWorkspaceByXCells), legacy
     // shortcuts (migrateLegacyShortcuts) or backup icons (updateBackupIcons).
 
     /** Utility class to simplify managing sqlite transactions */

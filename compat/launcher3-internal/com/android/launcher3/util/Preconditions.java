@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: no taskbar.
+ * Modified for CaretLauncher: no taskbar.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -55,7 +55,7 @@ public class Preconditions {
         }
     }
 
-    // TextLauncher: no assertTaskbarUiThread, as there is no taskbar.
+    // CaretLauncher: no assertTaskbarUiThread, as there is no taskbar.
 
     public static void assertNonUiThread() {
         if (FeatureFlags.IS_STUDIO_BUILD && isSameLooper(Looper.getMainLooper())) {

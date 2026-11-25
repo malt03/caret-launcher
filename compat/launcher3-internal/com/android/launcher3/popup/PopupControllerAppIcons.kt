@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -34,8 +34,8 @@ import java.util.stream.Collectors
  * Controller for app icons. It handles actions for the popups such as showing and dismissing
  * popups. This is used for icons and shortcuts in the workspace, hotseat, and all apps.
  */
-// TextLauncher: derived from PopupControllerAppIcons.kt (android-17.0.0_r1); T is not bound to a
-// Context, as the Launcher stand-in is not one. Changes are marked with "TextLauncher:".
+// CaretLauncher: derived from PopupControllerAppIcons.kt (android-17.0.0_r1); T is not bound to a
+// Context, as the Launcher stand-in is not one. Changes are marked with "CaretLauncher:".
 class PopupControllerForAppIcon<T> : PopupController<T> where T : ActivityContext {
 
     override fun show(view: View): Popup? {
@@ -66,22 +66,22 @@ class PopupControllerForAppIcon<T> : PopupController<T> where T : ActivityContex
 
             container =
                 PopupContainerWithArrow.create(
-                    // TextLauncher: the Launcher stand-in is not a Context.
+                    // CaretLauncher: the Launcher stand-in is not a Context.
                     context = activityContext.asContext(),
                     originalView = icon,
                     itemInfo = item,
                 )
-            // TextLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
+            // CaretLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
             // release), so no deep shortcut drag handler for it (LauncherDeepShortcutDragHandler).
             container.configureForLauncher(activityContext as Launcher, item)
             container.populateAndShowRows(
                 deepShortcutCount,
                 if (view.showingMinimalPopup) emptyList() else systemShortcuts,
             )
-            // TextLauncher: no widgets in the menu (refreshAndBindWidgetsForPackageUser).
+            // CaretLauncher: no widgets in the menu (refreshAndBindWidgetsForPackageUser).
             container.requestFocus()
         } finally {
-            // TextLauncher: no logging (logEvent).
+            // CaretLauncher: no logging (logEvent).
             Trace.endSection()
         }
         return container

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.pm;
@@ -62,7 +62,7 @@ public class UserCache {
     private final LauncherApps mLauncherApps;
 
     /**
-     * TextLauncher: the users as of the last change, to tell what a broadcast changed
+     * CaretLauncher: the users as of the last change, to tell what a broadcast changed
      * (UserCache.kt's cached UserManagerState).
      */
     private Map<UserHandle, CachedUserInfo> mUserInfoMap;
@@ -72,7 +72,7 @@ public class UserCache {
         mLauncherApps = context.getSystemService(LauncherApps.class);
 
         // UserCache.kt: the receiver of the profile changes, on a lightweight background thread.
-        // TextLauncher: UI_HELPER_EXECUTOR's, and the cache is built there first.
+        // CaretLauncher: UI_HELPER_EXECUTOR's, and the cache is built there first.
         UI_HELPER_EXECUTOR.execute(() -> mUserInfoMap = rebuildUserCache());
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
@@ -141,7 +141,7 @@ public class UserCache {
     }
 
     /**
-     * The user's type and serial number. TextLauncher: only main and work profiles are told
+     * The user's type and serial number. CaretLauncher: only main and work profiles are told
      * apart (from LauncherApps.getLauncherUserInfo, as ApiWrapper.getUserInfo does).
      */
     public UserIconInfo getUserInfo(UserHandle user) {
@@ -205,7 +205,7 @@ public class UserCache {
 
     /**
      * UserCache.CachedUserInfo: information about a UserHandle cached in the platform.
-     * TextLauncher: no pre-installed apps.
+     * CaretLauncher: no pre-installed apps.
      */
     public static class CachedUserInfo {
         private final UserIconInfo mIconInfo;
@@ -231,7 +231,7 @@ public class UserCache {
             return mIsQuietModeEnabled;
         }
 
-        // TextLauncher: a Kotlin data class upstream.
+        // CaretLauncher: a Kotlin data class upstream.
         @Override
         public boolean equals(@Nullable Object o) {
             if (this == o) return true;
@@ -266,7 +266,7 @@ public class UserCache {
         }
     }
 
-    /** TextLauncher: in place of Dagger, one UserCache for the app. */
+    /** CaretLauncher: in place of Dagger, one UserCache for the app. */
     public static class Instance {
         private UserCache mCache;
 

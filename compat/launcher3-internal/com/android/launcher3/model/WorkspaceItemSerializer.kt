@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -94,7 +94,7 @@ class SerializedItemItem(itemType: Int, user: UserHandle, private val intent: In
  *
  * Stand-in for Launcher3's WorkspaceItemSerializer (android-17.0.0_r1), made from
  * WorkspaceItemSerializer.kt by deleting Dagger and the install sessions (pending icons); changes
- * are marked with "TextLauncher:".
+ * are marked with "CaretLauncher:".
  */
 class WorkspaceItemSerializer(
     private val context: Context,
@@ -108,13 +108,13 @@ class WorkspaceItemSerializer(
 
         val lai = laiList.getOrNull(0)
         if (lai != null) {
-            // TextLauncher: AppInfo(LauncherActivityInfo, UserHandle).
+            // CaretLauncher: AppInfo(LauncherActivityInfo, UserHandle).
             val si = AppInfo(lai, user).makeWorkspaceItem(context)
             iconCache.getTitleAndIcon(si, DESKTOP_ICON_FLAG)
             return si
         }
 
-        // TextLauncher: no install sessions to make a pending icon for.
+        // CaretLauncher: no install sessions to make a pending icon for.
         return null
     }
 
@@ -141,7 +141,7 @@ class WorkspaceItemSerializer(
                 val info = LauncherAppWidgetProviderInfo.fromProviderInfo(context, providerInfo)
                 if (info.provider != item.intent.component || info.profile != item.user) return null
 
-                // TextLauncher: LauncherAppWidgetInfo(int, ComponentName).
+                // CaretLauncher: LauncherAppWidgetInfo(int, ComponentName).
                 val widgetInfo = LauncherAppWidgetInfo(widgetId, info.provider)
                 widgetInfo.minSpanX = info.minSpanX
                 widgetInfo.minSpanY = info.minSpanY

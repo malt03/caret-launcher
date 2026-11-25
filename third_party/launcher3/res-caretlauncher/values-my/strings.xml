@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CaretLauncher: strings copied from Launcher3 res/values-my/strings.xml (android-17.0.0_r1) that the copied code uses. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_info_drop_target_label" msgid="692894985365717661">"အက်ပ်အချက်အလက်"</string>
+    <string name="action_deep_shortcut" msgid="4766835855579976045">"ဖြတ်လမ်းလင့်ခ် မီနူး"</string>
+    <string name="action_add_to_workspace" msgid="215894119683164916">"ပင်မစာမျက်နှာတွင် ထည့်ရန်"</string>
+    <string name="safemode_shortcut_error" msgid="9160126848219158407">"ဒေါင်းလုဒ် အက်ပ်ကို လုံခြုံရေး မုဒ်ထဲမှာ ပိတ်ထား"</string>
+    <string name="shortcut_not_available" msgid="2536503539825726397">"ဖြတ်လမ်း မရနိုင်ပါ"</string>
+    <string name="activity_not_available" msgid="7456344436509528827">"အက်ပ်လက်လှမ်း မမှီပါ"</string>
+    <string name="dialog_update_title" msgid="114234265740994042">"အက်ပ်ကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်"</string>
+    <string name="dialog_update_message" msgid="4176784553982226114">"ဤသင်္ကေတအတွက် အက်ပ်ကို အပ်ဒိတ်လုပ်မထားပါ။ ဤဖြတ်လမ်းလင့်ခ်ကို ပြန်ဖွင့်ရန် ကိုယ်တိုင်အပ်ဒိတ်လုပ်နိုင်သည် (သို့) သင်္ကေတကို ဖယ်ရှားနိုင်သည်။"</string>
+    <string name="dialog_update" msgid="2178028071796141234">"အပ်ဒိတ်လုပ်ရန်"</string>
+    <string name="dialog_remove" msgid="6510806469849709407">"ဖယ်ရှားရန်"</string>
+    <string name="styles_wallpaper_button_text" msgid="8216961355289236794">"နောက်ခံနှင့် ပုံစံ"</string>
+    <string name="widget_button_text" msgid="2880537293434387943">"ဝိဂျက်များ"</string>
+    <string name="all_apps_button_label" msgid="8130441508702294465">"အက်ပ်စာရင်း"</string>
+    <string name="out_of_space" msgid="6455557115204099579">"ဤပင်မစာမျက်နှာတွင် နေရာလွတ် မရှိတော့ပါ"</string>
+    <string name="msg_disabled_by_admin" msgid="6898038085516271325">"သင့်စီမံခန့်ခွဲသူက ပိတ်လိုက်ပါသည်"</string>
+    <string name="remove_system_shortcut_label" msgid="3991201411148073972">"ဖယ်ရှားရန်"</string>
+    <string name="widget_settings" msgid="5280157748464495511">"ဆက်တင်များ"</string>
+    <string name="action_increase_width" msgid="8773715375078513326">"အကျယ်အား တိုးပါ"</string>
+    <string name="action_decrease_width" msgid="1374549771083094654">"အကျယ်အား လျှော့ပါ"</string>
+    <string name="resize_handle_start" msgid="431073846880883794">"ဘယ်ဘက် ဇယားကွက် အရွယ်ပြောင်း"</string>
+    <string name="resize_handle_top" msgid="280799523356834542">"ထိပ်ဆုံး ဇယားကွက် အရွယ်ပြောင်း"</string>
+    <string name="resize_handle_end" msgid="8411240534474246075">"ညာဘက် ဇယားကွက် အရွယ်ပြောင်း"</string>
+    <string name="resize_handle_bottom" msgid="4217171801060928429">"အောက်ခြေ ဇယားကွက် အရွယ်ပြောင်း"</string>
+    <string name="tap_to_show_resize_buttons" msgid="964815552123289232">"အရွယ်ပြင်ခလုတ်များ ပြပါ"</string>
+    <string name="widget_frame_name" msgid="8782828448471444270">"<xliff:g id="STRING">%1$s</xliff:g> အတွက် ဝိဂျက်အရွယ်ပြင်ဖရိမ်"</string>
+    <string name="all_apps_button_personal_label" msgid="1315764287305224468">"တစ်ကိုယ်ရေသုံး အက်ပ်စာရင်း"</string>
+    <string name="all_apps_button_work_label" msgid="7270707118948892488">"အလုပ်သုံး အက်ပ်စာရင်း"</string>
+    <string name="all_apps_personal_tab" msgid="4190252696685155002">"ကိုယ်ပိုင်"</string>
+    <string name="all_apps_work_tab" msgid="4884822796154055118">"အလုပ်"</string>
+    <string name="widgets_full_sheet_personal_tab" msgid="2743540105607120182">"ကိုယ်ပိုင်"</string>
+    <string name="widgets_full_sheet_work_tab" msgid="3767150027110633765">"အလုပ်"</string>
+    <string name="work_apps_enable_btn_text" msgid="1736198302467317371">"ပြန်ဖွင့်ရန်"</string>
+    <string name="work_apps_pause_btn_text" msgid="4669288269140620646">"အလုပ်သုံးအက်ပ်များကို ခဏရပ်ရန်"</string>
+    <string name="work_apps_paused_body" msgid="261634750995824906">"သင်၏ အလုပ်သုံးအက်ပ်များက အကြောင်းကြားချက်များ ပို့ခြင်း၊ သင့်ဘက်ထရီ သုံးခြင်း (သို့) သင့်တည်နေရာ သုံးခြင်းတို့ မပြုလုပ်နိုင်ပါ"</string>
+    <string name="work_apps_paused_info_body" msgid="1687828929959237477">"သင်၏ အလုပ်သုံးအက်ပ်များမှ အကြောင်းကြားချက်များကို ရရှိမည်မဟုတ်ပါ"</string>
+    <string name="work_apps_paused_telephony_unavailable_body" msgid="8358872357502756790">"သင်၏ အလုပ်သုံးအက်ပ်များမှ ဖုန်းခေါ်ဆိုမှု၊ မိုဘိုင်းမက်ဆေ့ဂျ် (သို့) အကြောင်းကြားချက်များ ရရှိမည်မဟုတ်ပါ"</string>
+    <string name="work_apps_paused_title" msgid="3040901117349444598">"အလုပ်သုံးအက်ပ်များကို ခေတ္တရပ်ထားသည်"</string>
+    <string name="work_profile_edu_work_apps" msgid="7895468576497746520">"အလုပ်သုံးအက်ပ်များကို တံဆိပ်တပ်ထားပြီး သင်၏ IT စီမံခန့်ခွဲသူက မြင်နိုင်ပါသည်"</string>
+    <string name="activity_not_found" msgid="8071924732094499514">"အက်ပ်မထည့်သွင်းထားပါ"</string>
+    <string name="widget_category_conversations" msgid="8894438636213590446">"စကားဝိုင်းများ"</string>
+    <string name="widget_category_note_taking" msgid="3469689394504266039">"မှတ်စုလိုက်ခြင်း"</string>
+    <string name="safemode_widget_error" msgid="4863470563535682004">"လုံခြုံရေး မုဒ်ထဲမှာ ဝီဂျက်များကို ပိတ်ထား"</string>
+    <string name="dotted_app_label" msgid="1865617679843363410">"{count,plural, =1{{app_name} တွင် အကြောင်းကြားချက် # ခု ရှိသည်}other{{app_name} တွင် အကြောင်းကြားချက် # ခု ရှိသည်}}"</string>
+    <string name="disabled_app_label" msgid="6673129024321402780">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို ပိတ်ထားသည်"</string>
+    <string name="notification_dots_service_title" msgid="4284221181793592871">"အကြောင်းကြားချက် အစက်များ ပြရန်"</string>
+    <string name="notification_dots_title" msgid="9062440428204120317">"သတိပေးချက် အစက်များ"</string>
+    <string name="title_missing_notification_access" msgid="7503287056163941064">"အကြောင်းကြားချက် အသုံးပြုခွင့် လိုအပ်သည်"</string>
+    <string name="msg_missing_notification_access" msgid="281113995110910548">"အကြောင်းကြားချက် အစက်များကို ပြသရန် <xliff:g id="NAME">%1$s</xliff:g> အတွက် အက်ပ်အကြောင်းကြားချက်များကို ဖွင့်ပါ"</string>
+    <string name="title_change_settings" msgid="1376365968844349552">"ဆက်တင်များ ပြောင်းရန်"</string>
+    <string name="paginate_left" msgid="7915437358451360433">"ဘယ်ဘက်သို့ စာမျက်နှာများအဖြစ် ခွဲထုတ်ရန်"</string>
+    <string name="paginate_right" msgid="6701038155201975878">"ညာဘက်သို့ စာမျက်နှာများအဖြစ် ခွဲထုတ်ရန်"</string>
+    <string name="default_scroll_format" msgid="7475544710230993317">"စာမျက်နှာ %1$d မှ %2$d"</string>
+    <string name="remove_drop_target_label" msgid="7812859488053230776">"ဖယ်ရှားရန်"</string>
+    <string name="uninstall_drop_target_label" msgid="4722034217958379417">"ဖြုတ်ရန်"</string>
+    <string name="action_close" msgid="1077760267194136901">"ပိတ်ရန်"</string>
+    <string name="action_decrease_height" msgid="282377193880900022">"အမြင့်အား လျှော့ပါ"</string>
+    <string name="action_increase_height" msgid="459390020612501122">"အမြင့်အား တိုးပါ"</string>
+    <string name="action_move" msgid="4339390619886385032">"၎င်းအား ရွှေ့ပါ"</string>
+    <string name="action_move_here" msgid="2170188780612570250">"၎င်းအား ဤသို့ ရွှေ့ပါ"</string>
+    <string name="action_move_to_workspace" msgid="39528912300293768">"ပင်မစာမျက်နှာသို့ ရွှေ့ရန်"</string>
+    <string name="action_resize" msgid="1802976324781771067">"အရွယ်အစားပြောင်းပါ"</string>
+    <string name="add_to_folder_with_app_with_position" msgid="6670979489897093325">"<xliff:g id="NAME">%1$s</xliff:g> နှင့် ဖိုင်တွဲတွင် ထည့်ရန်။ <xliff:g id="STRING">%4$s</xliff:g> ရှိ အတန်း <xliff:g id="NUMBER_0">%2$s</xliff:g>၊ ကော်လံ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="add_to_folder_with_position" msgid="4457486890869662">"<xliff:g id="NAME">%1$s</xliff:g> ဖိုင်တွဲသို့ ပေါင်းထည့်မည် <xliff:g id="STRING">%4$s</xliff:g> ရှိ အတန်း <xliff:g id="NUMBER_0">%2$s</xliff:g>၊ ကော်လံ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="all_apps_list_label" msgid="5106226764073070906">"အက်ပ်စာရင်း"</string>
+    <string name="apps_folder_name_format_exact" msgid="891345161390366700">"<xliff:g id="TYPE">%1$s</xliff:g>- <xliff:g id="NAME">%2$s</xliff:g>၊ <xliff:g id="SIZE">%3$d</xliff:g> ခု"</string>
+    <string name="apps_folder_name_format_exact_with_dot" msgid="7729062268048931718">"<xliff:g id="TYPE">%1$s</xliff:g>- <xliff:g id="NAME">%2$s</xliff:g>၊ <xliff:g id="SIZE">%3$d</xliff:g> ခု၊ အကြောင်းကြားချက်များရှိသည်"</string>
+    <string name="apps_folder_name_format_overflow" msgid="4614729357510054194">"<xliff:g id="TYPE">%1$s</xliff:g> <xliff:g id="NAME">%2$s</xliff:g>၊ <xliff:g id="SIZE">%3$d</xliff:g> ခုနှင့်အထက်"</string>
+    <string name="apps_folder_name_format_overflow_with_dot" msgid="4738681518782744688">"<xliff:g id="TYPE">%1$s</xliff:g>- <xliff:g id="NAME">%2$s</xliff:g>၊ <xliff:g id="SIZE">%3$d</xliff:g> ခုနှင့်အထက်၊ အကြောင်းကြားချက်များရှိသည်"</string>
+    <string name="create_folder_with_position" msgid="3093164349445159115">"<xliff:g id="NAME">%1$s</xliff:g> ဖြင့် ဖိုင်တွဲပြုလုပ်ပါ။ <xliff:g id="STRING">%4$s</xliff:g> ရှိ အတန်း <xliff:g id="NUMBER_0">%2$s</xliff:g>၊ ကော်လံ <xliff:g id="NUMBER_1">%3$s</xliff:g>"</string>
+    <string name="dismiss_prediction_label" msgid="3357562989568808658">"အက်ပ်အကြံမပြုပါနှင့်"</string>
+    <string name="folder_closed" msgid="4100806530910930934">"ပိတ်ထားသောအကန့်"</string>
+    <string name="folder_opened" msgid="94695026776264709">"ဖွင့်ထားသောအကန့်, <xliff:g id="WIDTH">%1$d</xliff:g> နှင့် <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="folder_tap_to_close" msgid="4625795376335528256">"ဖိုင်တွဲကို ပိတ်ရန် တို့ပါ"</string>
+    <string name="folder_type_name" msgid="506043307348675355">"ဖိုင်တွဲ"</string>
+    <string name="gadget_setup_text" msgid="8348374825537681407">"ဝိဂျက်ဆက်တင်များ"</string>
+    <string name="home_screen" msgid="5629429142036709174">"ပင်မစာမျက်နှာ"</string>
+    <string name="item_moved" msgid="4606538322571412879">"၎င်းအားရွှေ့ပြီး"</string>
+    <string name="move_to_empty_cell_description" msgid="5254852678218206889">"<xliff:g id="STRING">%3$s</xliff:g> တွင် အတန်း <xliff:g id="NUMBER_0">%1$s</xliff:g> ကော်လံ <xliff:g id="NUMBER_1">%2$s</xliff:g> သို့ ရွှေ့နိုင်သည်"</string>
+    <string name="move_to_hotseat_position" msgid="6295412897075147808">"စိတ်ကြိုက်နေရာ <xliff:g id="NUMBER">%1$s</xliff:g> သို့ ရွှေ့ပါ"</string>
+    <string name="move_to_position" msgid="6750008980455459790">"<xliff:g id="NUMBER">%1$s</xliff:g> သို့ နေရာရွှေ့ပါ"</string>
+    <string name="unnamed_folder" msgid="2420192029474044442">"အမည်ပေးမထားသောဖိုင်တွဲ"</string>
+    <string name="workspace_scroll_format" msgid="8458889198184077399">"ပင်မစာမျက်နှာ %1$d မှ %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"<xliff:g id="WIDGET_NAME">%1$s</xliff:g> ဝိဂျက်ကို ပင်မစာမျက်နှာတွင် ထည့်လိုက်ပြီ"</string>
+</resources>

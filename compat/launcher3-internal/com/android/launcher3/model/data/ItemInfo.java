@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -39,8 +39,8 @@ import java.util.Optional;
  * Represents an item in the launcher.
  *
  * <p>Stand-in for Launcher3's ItemInfo (android-17.0.0_r1), made from ItemInfo.java by deleting
- * what TextLauncher does not have (animation types, logging protos,
- * extended containers and activity aliases); changes are marked with "TextLauncher:".
+ * what CaretLauncher does not have (animation types, logging protos,
+ * extended containers and activity aliases); changes are marked with "CaretLauncher:".
  */
 public class ItemInfo {
 
@@ -79,7 +79,7 @@ public class ItemInfo {
      * Indicates the screen in which the shortcut appears if the container types is
      * {@link Favorites#CONTAINER_DESKTOP}. (i.e., ignore if the container type is
      * {@link Favorites#CONTAINER_HOTSEAT})
-     * TextLauncher: the home screen has one page, screen 0.
+     * CaretLauncher: the home screen has one page, screen 0.
      */
     public int screenId = -1;
 
@@ -230,7 +230,7 @@ public class ItemInfo {
      * Write the fields of this item to the DB
      */
     public void onAddToDatabase(@NonNull final ContentWriter writer) {
-        // TextLauncher: no extra empty screen (one page).
+        // CaretLauncher: no extra empty screen (one page).
 
         writeToValues(writer);
         writer.put(LauncherSettings.Favorites.PROFILE_ID, user);
@@ -239,7 +239,7 @@ public class ItemInfo {
     @NonNull
     protected String dumpProperties() {
         return "id=" + id
-                // TextLauncher: no item type names, container infos or resolved targets.
+                // CaretLauncher: no item type names, container infos or resolved targets.
                 + " type=" + itemType
                 + " container=" + container
                 + " targetComponent=" + getTargetComponent()

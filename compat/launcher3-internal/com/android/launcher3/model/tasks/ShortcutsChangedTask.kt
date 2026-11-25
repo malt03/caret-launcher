@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model.tasks
@@ -37,7 +37,7 @@ import com.android.launcher3.util.ItemInfoMatcher
  *
  * Stand-in for Launcher3's ShortcutsChangedTask (android-17.0.0_r1), made from
  * ShortcutsChangedTask.kt by deleting the deep shortcut counts; changes are marked with
- * "TextLauncher:".
+ * "CaretLauncher:".
  */
 class ShortcutsChangedTask(
     private val packageName: String,
@@ -82,7 +82,7 @@ class ShortcutsChangedTask(
                 ShortcutRequest(context, user)
                     .forPackage(packageName, matchingShortcutIds.filterNotNullTo(mutableListOf()))
                     .query(ShortcutRequest.ALL)
-            // TextLauncher: when the system could not be asked (the launcher is not the default
+            // CaretLauncher: when the system could not be asked (the launcher is not the default
             // home app), nothing is known to be gone, as LoaderTask treats a failed query.
             if (!result.wasSuccess()) return
             val pinnedShortcuts: Map<String, ShortcutInfo> = result.associateBy { it.id }
@@ -116,7 +116,7 @@ class ShortcutsChangedTask(
             }
         }
 
-        // TextLauncher: no deep shortcut counts (updateDeepShortcutCounts); the long-press menu
+        // CaretLauncher: no deep shortcut counts (updateDeepShortcutCounts); the long-press menu
         // asks the system itself.
     }
 }

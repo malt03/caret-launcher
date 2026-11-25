@@ -1,4 +1,4 @@
-// TextLauncher: build file for frameworks/libs/systemui/msdllib (not copied from upstream).
+// CaretLauncher: build file for frameworks/libs/systemui/msdllib (not copied from upstream).
 plugins {
     alias(libs.plugins.android.library)
 }
@@ -15,7 +15,7 @@ android {
         named("main") {
             java.setSrcDirs(listOf("src"))
             kotlin.setSrcDirs(listOf("src"))
-            manifest.srcFile("TextLauncherManifest.xml")
+            manifest.srcFile("CaretLauncherManifest.xml")
         }
     }
 }

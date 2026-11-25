@@ -10,5 +10,5 @@ Caret Launcher contains code copied or adapted from the Android Open Source Proj
 Copyright (C) The Android Open Source Project
 
 Licensed under the Apache License, Version 2.0 (see LICENSE in this directory).
-Files that TextLauncher has modified are listed in the UPSTREAM.md of each directory
-and carry a "TextLauncher:" comment at each change.
+Files that CaretLauncher has modified are listed in the UPSTREAM.md of each directory
+and carry a "CaretLauncher:" comment at each change.

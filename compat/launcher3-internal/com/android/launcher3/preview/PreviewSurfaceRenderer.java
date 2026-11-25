@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Render preview using surface view.
  *
- * TextLauncher: the preview shows the app's model in a window context of the display (no Dagger
+ * CaretLauncher: the preview shows the app's model in a window context of the display (no Dagger
  * PreviewContext, grid options, custom layouts or widget host of its own), and the colors it is
  * asked for are only the dark mode (no LocalColorExtractor).
  */
@@ -78,7 +78,7 @@ public class PreviewSurfaceRenderer {
     private final Context mContext;
     private final int mWorkspacePageId;
 
-    // TextLauncher: a window context of the display (PreviewContext), for the window metrics.
+    // CaretLauncher: a window context of the display (PreviewContext), for the window metrics.
     private final Context mPreviewContext;
 
     @Nullable private Boolean mDarkMode;
@@ -101,7 +101,7 @@ public class PreviewSurfaceRenderer {
 
     public PreviewSurfaceRenderer(Context context, RunnableList lifecycleTracker, Bundle bundle,
             int callingPid, boolean skipAnimations,
-            GridCustomizationsProxy customizationDelegate /* TextLauncher */) throws Exception {
+            GridCustomizationsProxy customizationDelegate /* CaretLauncher */) throws Exception {
         mContext = context;
         mLifeCycleTracker = lifecycleTracker;
         mCustomizationDelegate = customizationDelegate;
@@ -132,7 +132,7 @@ public class PreviewSurfaceRenderer {
         mLifeCycleTracker.add(this::destroy);
 
         // Create the preview context
-        // TextLauncher: a window context of the display, which the app's grid reads the window
+        // CaretLauncher: a window context of the display, which the app's grid reads the window
         // metrics from; no grid options or custom layout (PreviewContext).
         mPreviewContext = context.createWindowContext(
                 display, WindowManager.LayoutParams.TYPE_APPLICATION, null);
@@ -143,7 +143,7 @@ public class PreviewSurfaceRenderer {
             mSurfaceControlViewHost.setView(mViewRoot, mWidth, mHeight);
             if (!skipAnimations) mViewRoot.setAlpha(0);
 
-            // TextLauncher: no grid options to follow (InvariantDeviceProfile's change listener).
+            // CaretLauncher: no grid options to follow (InvariantDeviceProfile's change listener).
             recreatePreviewRenderer();
         }).get();
     }
@@ -221,7 +221,7 @@ public class PreviewSurfaceRenderer {
         mDarkMode =
                 bundle.containsKey(KEY_DARK_MODE) ? bundle.getBoolean(KEY_DARK_MODE) : null;
 
-        // TextLauncher: no seed colors, theme style or color overrides (LocalColorExtractor).
+        // CaretLauncher: no seed colors, theme style or color overrides (LocalColorExtractor).
         return  !Objects.equals(oldDarkMode, mDarkMode);
     }
 
@@ -251,10 +251,10 @@ public class PreviewSurfaceRenderer {
                 ? Themes.getActivityThemeRes(context)
                 : Themes.getActivityThemeRes(context, mWallpaperColors.getColorHints());
 
-        // TextLauncher: no color overrides (LocalColorExtractor).
+        // CaretLauncher: no color overrides (LocalColorExtractor).
 
         final LauncherPreviewRenderer oldRenderer = mCurrentRenderer;
-        // TextLauncher: the app's renderer, with the app's model (PreviewAppComponent.getModel).
+        // CaretLauncher: the app's renderer, with the app's model (PreviewAppComponent.getModel).
         LauncherPreviewRenderer renderer = mCustomizationDelegate.getDelegate().newPreviewRenderer(
                 context, mWorkspacePageId,
                 LauncherAppState.getInstance(mContext).getModel(), themeRes);
@@ -311,8 +311,8 @@ public class PreviewSurfaceRenderer {
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
-    /** TextLauncher: the proxy that made this preview (PreviewAppComponent's). */
+    /** CaretLauncher: the proxy that made this preview (PreviewAppComponent's). */
     private final GridCustomizationsProxy mCustomizationDelegate;
 }

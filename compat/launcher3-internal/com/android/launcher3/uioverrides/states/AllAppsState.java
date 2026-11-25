@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.uioverrides.states;
@@ -59,13 +59,13 @@ public class AllAppsState extends LauncherState {
                 : context.getDeviceProfile().getAllAppsProfile().getCloseDuration();
     }
 
-    // TextLauncher: no jank monitor (onBackStarted, onBackInvoked, onBackCancelled,
+    // CaretLauncher: no jank monitor (onBackStarted, onBackInvoked, onBackCancelled,
     // onBackAnimationCompleted).
 
     @Override
     public String getDescription(Launcher launcher) {
-        // TextLauncher: ActivityAllAppsContainerView.getDescription without tabs or the search
-        // results (TextLauncher's search results are not the all apps list's).
+        // CaretLauncher: ActivityAllAppsContainerView.getDescription without tabs or the search
+        // results (CaretLauncher's search results are not the all apps list's).
         return launcher.asContext().getString(R.string.all_apps_button_label);
     }
 
@@ -81,7 +81,7 @@ public class AllAppsState extends LauncherState {
 
     @Override
     public ScaleAndTranslation getWorkspaceScaleAndTranslation(Launcher launcher) {
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         final float scale = shouldReduceWorkspaceBlurUsage(launcher.asContext())
                 ? NO_SCALE
                 : launcher.getDeviceProfile().getWorkspaceProfile().getWorkspaceContentScale();
@@ -97,12 +97,12 @@ public class AllAppsState extends LauncherState {
 
     @Override
     public boolean shouldBlurWorkspace(Launcher launcher, LauncherState targetState) {
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         return !shouldReduceWorkspaceBlurUsage(launcher.asContext()) && (targetState == ALL_APPS
                 || targetState == NORMAL);
     }
 
-    // TextLauncher: no launcher UI state (getVisibleElements) or floating search bar
+    // CaretLauncher: no launcher UI state (getVisibleElements) or floating search bar
     // (getFloatingSearchBarRestingMargin*, shouldFloatingSearchBarUsePillWhenUnfocused).
 
     @Override
@@ -111,7 +111,7 @@ public class AllAppsState extends LauncherState {
             // No scrim.
             return super.getWorkspaceScrimColor(launcher);
         }
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         int backgroundColor = Themes.getAttrColor(launcher.asContext(), R.attr.allAppsScrimColor);
         return new ScrimColors(backgroundColor, /* foregroundColor */ Color.TRANSPARENT);
     }

@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.popup
@@ -28,7 +28,7 @@ import com.android.launcher3.views.ActivityContext
  * Controller interface for popups. It handles actions for the popups such as showing and dismissing
  * popups.
  */
-// TextLauncher: T is not bound to a Context, as the Launcher stand-in is not one
+// CaretLauncher: T is not bound to a Context, as the Launcher stand-in is not one
 // (Launcher.getPopupControllerForAppIcons gives a PopupController<Launcher>).
 interface PopupController<T> {
     /**

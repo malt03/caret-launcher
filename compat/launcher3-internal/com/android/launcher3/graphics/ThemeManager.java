@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -27,7 +27,7 @@ import com.android.launcher3.icons.IconShape;
 
 /**
  * Stand-in for Launcher3's ThemeManager. Holds the icon state (theme on/off and shape) and the
- * icon and folder shapes, which TextLauncher derives from the selected icon shape the same way
+ * icon and folder shapes, which CaretLauncher derives from the selected icon shape the same way
  * ThemeManager.parseIconState does (pickBestShape, folderRadiusRatio).
  */
 public class ThemeManager {
@@ -60,7 +60,7 @@ public class ThemeManager {
 
     /**
      * IconState.iconShapeInfo: where the notification dot goes on the icon shape.
-     * TextLauncher: from the selected shape's path (IconShape), as Launcher3 does with the shape's
+     * CaretLauncher: from the selected shape's path (IconShape), as Launcher3 does with the shape's
      * ShapeDelegate path.
      */
     public IconShapeInfo getIconShapeInfo() {
@@ -70,7 +70,7 @@ public class ThemeManager {
     }
 
     /**
-     * TextLauncher: the icon state comes from Wallpaper & style (docs/spec.md 7.3) through the
+     * CaretLauncher: the icon state comes from Wallpaper & style (docs/spec.md 7.3) through the
      * app's icon loader, which sets it here.
      */
     public void setIconState(boolean iconThemeEnabled,
@@ -80,7 +80,7 @@ public class ThemeManager {
     }
 
     /**
-     * TextLauncher: ThemeManager.parseIconState's icon and folder shapes for the selected shape
+     * CaretLauncher: ThemeManager.parseIconState's icon and folder shapes for the selected shape
      * (IconShapeModel.pathString and folderRadiusRatio), which the app reads from Wallpaper &
      * style instead of LauncherPrefs.
      */

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.malt03.textlauncher.compat.launcher3"
+    namespace = "com.malt03.caretlauncher.compat.launcher3"
     compileSdk { version = release(37) }
     defaultConfig { minSdk = 37 }
     sourceSets {

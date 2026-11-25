@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.widget;
@@ -32,7 +32,7 @@ import com.android.launcher3.dagger.LauncherComponentProvider;
  *
  * @see {@link PendingAddItemInfo}
  *
- * <p>Stand-in for Launcher3's PendingAddWidgetInfo (android-17.0.0_r1). TextLauncher: no logging
+ * <p>Stand-in for Launcher3's PendingAddWidgetInfo (android-17.0.0_r1). CaretLauncher: no logging
  * proto.
  */
 public class PendingAddWidgetInfo extends PendingAddItemInfo {

@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -33,10 +33,10 @@ import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 
-// TextLauncher: derived from PopupDataSource.kt (android-17.0.0_r1), keeping the remove action and
+// CaretLauncher: derived from PopupDataSource.kt (android-17.0.0_r1), keeping the remove action and
 // the folders' and widgets' mappers; no app pairs (AppPairSystemShortcuts), home screen files
 // (FileSystemShortcuts), custom widgets, or the app shortcuts' actions. Changes are marked with
-// "TextLauncher:".
+// "CaretLauncher:".
 
 object PopupDataSource {
 
@@ -49,7 +49,7 @@ object PopupDataSource {
         ) { activityContext: ActivityContext, itemInfo: ItemInfo, view: View ->
             AbstractFloatingView.closeAllOpenViews(activityContext)
             val dropTargetHandler: DropTargetHandler = activityContext.dropTargetHandler
-            // TextLauncher: no undo (prepareToUndoDelete).
+            // CaretLauncher: no undo (prepareToUndoDelete).
             dropTargetHandler.onDeleteComplete(itemInfo, view)
         }
 }
@@ -60,10 +60,10 @@ object FolderSystemShortcuts : PopupDataMapper {
         if (itemInfo.itemType == ITEM_TYPE_FOLDER) listOf(PopupDataSource.removePopupData) else null
 }
 
-// TextLauncher: no app pairs (AppPairSystemShortcuts).
+// CaretLauncher: no app pairs (AppPairSystemShortcuts).
 
 object AppWidgetSystemShortcuts : PopupDataMapper {
-    // TextLauncher: no TAG, as nothing is logged here.
+    // CaretLauncher: no TAG, as nothing is logged here.
 
     // Popup data for widget settings shortcut.
     private val widgetSettingsPopupData =
@@ -73,7 +73,7 @@ object AppWidgetSystemShortcuts : PopupDataMapper {
             category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
         ) { activityContext: ActivityContext, itemInfo: ItemInfo, view: View ->
             if (view is LauncherAppWidgetHostView) {
-                // TextLauncher: the home screen starts the widget's configuration and waits for
+                // CaretLauncher: the home screen starts the widget's configuration and waits for
                 // its result (Launcher.setWaitingForResult, LauncherWidgetHolder
                 // .startConfigActivity with REQUEST_RECONFIGURE_APPWIDGET).
                 (activityContext as Launcher).startWidgetReconfigure(view)
@@ -90,5 +90,5 @@ object AppWidgetSystemShortcuts : PopupDataMapper {
     }
 }
 
-// TextLauncher: no home screen files, custom widgets or the app shortcuts' actions (the rest of
+// CaretLauncher: no home screen files, custom widgets or the app shortcuts' actions (the rest of
 // the file).

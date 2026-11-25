@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.dragndrop;
@@ -53,7 +53,7 @@ import com.android.launcher3.widget.WidgetAddFlowHandler;
  * in the source window and is passed on to the Launcher activity as an Intent extra.
  *
  * <p>Stand-in for Launcher3's PinItemDragListener (android-17.0.0_r1), made from
- * PinItemDragListener.java; changes are marked with "TextLauncher:".
+ * PinItemDragListener.java; changes are marked with "CaretLauncher:".
  */
 @TargetApi(Build.VERSION_CODES.O)
 public class PinItemDragListener extends BaseItemDragListener<Launcher> {
@@ -122,13 +122,13 @@ public class PinItemDragListener extends BaseItemDragListener<Launcher> {
         final PendingAddItemInfo item;
         if (mRequest.getRequestType() == PinItemRequest.REQUEST_TYPE_SHORTCUT) {
             item = new PendingAddShortcutInfo(
-                    // TextLauncher: the Launcher stand-in is not a Context.
+                    // CaretLauncher: the Launcher stand-in is not a Context.
                     new PinShortcutRequestActivityInfo(mRequest, mContext.asContext()));
         } else {
             // mRequest.getRequestType() == PinItemRequestCompat.REQUEST_TYPE_APPWIDGET
             LauncherAppWidgetProviderInfo providerInfo =
                     LauncherAppWidgetProviderInfo.fromProviderInfo(
-                            // TextLauncher: the Launcher stand-in is not a Context.
+                            // CaretLauncher: the Launcher stand-in is not a Context.
                             mContext.asContext(),
                             mRequest.getAppWidgetProviderInfo(mContext.asContext()));
             final PinWidgetFlowHandler flowHandler =
@@ -140,7 +140,7 @@ public class PinItemDragListener extends BaseItemDragListener<Launcher> {
                 }
             };
         }
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         View view = new View(mContext.asContext());
         view.setTag(item);
 

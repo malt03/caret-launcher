@@ -32,7 +32,7 @@ tags: [launcher3, upstream, model]
 (2) LauncherModel は互換モジュールの derived（Kotlin）にする。アプリに1つ（LauncherAppState.getModel）で、Activity ごとではない。コールバックは HomeController が BgDataModel.Callbacks（ModelCallbacks の役）として実装する。
 (3) BgDataModel・ModelWriter・ModelTaskController・ModelLauncherCallbacks・PackageUpdatedTask・PackageTaskFactory・CacheDataUpdatedTask・ShortcutsChangedTask・LoaderTask・LoaderCursor・WorkspaceItemProcessor・BaseLauncherBinder を上流から削ったコピーにする。全アプリ一覧の読み込み（AllAppsList）も LoaderTask.loadAllApps に移し、AppRepository は bindAllApplications を受ける側だけにする。
 (4) GridSizeMigration は attemptMigrateDb の場所でモデルのスレッドから呼ぶ。
-(5) 安全策: 上流の読み込みは解決できない行を消す（markDeleted/commitDeleted）ので、初回だけ favorites の表を同じ DB の favorites_backup_textlauncher に写してから読む（設定の印で1回だけ）。
+(5) 安全策: 上流の読み込みは解決できない行を消す（markDeleted/commitDeleted）ので、初回だけ favorites の表を同じ DB の favorites_backup_caretlauncher に写してから読む（設定の印で1回だけ）。
 (6) ドラッグの取り消し（Tex-a8os）: 上流と同じく裏でモデルを変え、ModelTaskController.deleteAndBindComponentsRemoved の後に UI 側で bindWorkspaceComponentsRemoved の頭でドラッグを取り消す（DragController.onAppsRemoved）。フォルダから出したアイテムを先に戻す扱いは、bindWorkspaceComponentsRemoved で取り消しを先に行うことで保つ。
 
 **2026-11-24T23:47:50Z**

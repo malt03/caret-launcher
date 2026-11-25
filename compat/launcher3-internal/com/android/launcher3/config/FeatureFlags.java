@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -37,7 +37,7 @@ public final class FeatureFlags {
 
     /**
      * True when the build has come from Android Studio and is being used for local debugging.
-     * TextLauncher: false, as in a platform build (BuildConfig.IS_STUDIO_BUILD), so the checks
+     * CaretLauncher: false, as in a platform build (BuildConfig.IS_STUDIO_BUILD), so the checks
      * that only debug builds of Launcher3 make are not made.
      */
     public static final boolean IS_STUDIO_BUILD = false;

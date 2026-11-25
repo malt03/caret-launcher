@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -26,7 +26,7 @@ import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 
 /**
- * Stand-in for Launcher3's PreloadIconDelegate. TextLauncher shows installed apps only, so no
+ * Stand-in for Launcher3's PreloadIconDelegate. CaretLauncher shows installed apps only, so no
  * item is pending (ItemInfoWithIcon.shouldShowPendingIcon is always false).
  */
 public class PreloadIconDelegate {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -40,11 +40,11 @@ import java.util.Comparator;
  * Represents an app in AllAppsView.
  *
  * <p>Stand-in for Launcher3's AppInfo (android-17.0.0_r1), made from AppInfo.java by deleting what
- * TextLauncher does not have (copies, the user cache, quiet mode, archived apps,
- * install progress, automation and App Lock); changes are marked with "TextLauncher:".
+ * CaretLauncher does not have (copies, the user cache, quiet mode, archived apps,
+ * install progress, automation and App Lock); changes are marked with "CaretLauncher:".
  */
 @SuppressWarnings("NewApi")
-// TextLauncher: not a WorkspaceItemFactory.
+// CaretLauncher: not a WorkspaceItemFactory.
 public class AppInfo extends ItemInfoWithIcon {
 
     public static final AppInfo[] EMPTY_ARRAY = new AppInfo[0];
@@ -83,7 +83,7 @@ public class AppInfo extends ItemInfoWithIcon {
     }
 
     /**
-     * TextLauncher: AppInfo(LauncherActivityInfo, CachedUserInfo, ...) with the user from the
+     * CaretLauncher: AppInfo(LauncherActivityInfo, CachedUserInfo, ...) with the user from the
      * caller (no UserCache, so no quiet mode); see updateRuntimeFlagsForActivityTarget.
      */
     public AppInfo(LauncherActivityInfo info, UserHandle user) {
@@ -99,7 +99,7 @@ public class AppInfo extends ItemInfoWithIcon {
     public WorkspaceItemInfo makeWorkspaceItem(Context context) {
         WorkspaceItemInfo workspaceItemInfo = new WorkspaceItemInfo(this);
 
-        // TextLauncher: no install sessions (FLAG_INSTALL_SESSION_ACTIVE) or automation.
+        // CaretLauncher: no install sessions (FLAG_INSTALL_SESSION_ACTIVE) or automation.
         return workspaceItemInfo;
     }
 
@@ -107,7 +107,7 @@ public class AppInfo extends ItemInfoWithIcon {
      * Updates the runtime status flags for the given info based on the state of the specified
      * activity.
      *
-     * TextLauncher: the suspended and system states only (no archived apps, automation, private
+     * CaretLauncher: the suspended and system states only (no archived apps, automation, private
      * space, App Lock, install progress or activity aliases).
      *
      * @return true if the flags were changed

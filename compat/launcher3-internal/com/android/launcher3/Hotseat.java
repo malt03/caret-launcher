@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -25,7 +25,7 @@ import android.widget.FrameLayout;
 
 /**
  * Stand-in for Launcher3's Hotseat: the view the folder animation scales together with the
- * workspace. In TextLauncher it holds the search field.
+ * workspace. In CaretLauncher it holds the search field.
  */
 public class Hotseat extends FrameLayout {
     public Hotseat(Context context) {

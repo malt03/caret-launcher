@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -69,7 +69,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     }
 
     /**
-     * TextLauncher: in Launcher3 every view is inside the DragLayer. Here the drag layer is an
+     * CaretLauncher: in Launcher3 every view is inside the DragLayer. Here the drag layer is an
      * overlay over the home screen, at the origin of its parent and as large; views outside it are
      * mapped through the parent, whose coordinates are the same as this layer's.
      */
@@ -88,7 +88,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         super(context, attrs);
     }
 
-    /** TextLauncher: set where Launcher3's DragLayer.recreateControllers builds its controllers. */
+    /** CaretLauncher: set where Launcher3's DragLayer.recreateControllers builds its controllers. */
     public void setControllers(TouchController... controllers) {
         mControllers = controllers;
     }
@@ -122,7 +122,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     // ---- Touch controllers (BaseDragLayer.onInterceptTouchEvent / onTouchEvent) ----
     //
-    // TextLauncher: this layer is an overlay over the home screen, not the parent of everything,
+    // CaretLauncher: this layer is an overlay over the home screen, not the parent of everything,
     // so it does not see touches that go to the views below it. The parent passes every touch here
     // first, with ViewGroup's interception rules (interceptTouchEventFromParent until it returns
     // true, then touchEventFromParent); touches on this layer's own children still reach them as
@@ -130,7 +130,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     private boolean mInterceptingFromParent;
 
-    /** TextLauncher: called by the parent for every touch; returns true while it takes them. */
+    /** CaretLauncher: called by the parent for every touch; returns true while it takes them. */
     public boolean dispatchTouchEventFromParent(MotionEvent ev) {
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
             mInterceptingFromParent = false;
@@ -150,7 +150,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         if (action == MotionEvent.ACTION_DOWN) {
             ActivityContext.lookupContext(getContext()).finishAutoCancelActionMode();
         }
-        // TextLauncher: no touch complete listener.
+        // CaretLauncher: no touch complete listener.
         return findActiveController(ev);
     }
 
@@ -182,7 +182,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     protected boolean findActiveController(MotionEvent ev) {
         mActiveController = null;
-        // TextLauncher: no gesture region or proxy dispatching, so a controller is always looked for.
+        // CaretLauncher: no gesture region or proxy dispatching, so a controller is always looked for.
         mActiveController = findControllerToHandleTouch(ev);
         return mActiveController != null;
     }
@@ -202,7 +202,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     @Override
     public boolean onRequestSendAccessibilityEvent(View child, AccessibilityEvent event) {
-        // TextLauncher: a layer outside the launcher (the widget picker's) has no container.
+        // CaretLauncher: a layer outside the launcher (the widget picker's) has no container.
         if (getContainer() == null) {
             return super.onRequestSendAccessibilityEvent(child, event);
         }
@@ -222,7 +222,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     @Override
     public void addChildrenForAccessibility(ArrayList<View> childrenForAccessibility) {
-        // TextLauncher: a layer outside the launcher (the widget picker's) has no container.
+        // CaretLauncher: a layer outside the launcher (the widget picker's) has no container.
         if (getContainer() == null) {
             super.addChildrenForAccessibility(childrenForAccessibility);
             return;
@@ -278,7 +278,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
 
     /**
      * Given a coordinate relative to the descendant, find the coordinate in this DragLayer's
-     * coordinates. TextLauncher: through the mapping root, as the other overloads.
+     * coordinates. CaretLauncher: through the mapping root, as the other overloads.
      */
     public float getDescendantCoordRelativeToSelf(View descendant, float[] coord,
             boolean includeRootScroll) {
@@ -355,7 +355,7 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
     }
 
     /**
-     * TextLauncher: mContainer, looked up when needed, as this layer is made before the home
+     * CaretLauncher: mContainer, looked up when needed, as this layer is made before the home
      * screen's Launcher it belongs to; null outside the launcher (the widget picker).
      */
     @androidx.annotation.Nullable

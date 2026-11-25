@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -50,10 +50,10 @@ import kotlin.math.max
  * A container for shortcuts to deep links associated with an app.
  *
  * <p>Stand-in for Launcher3's PopupContainerWithArrow (android-17.0.0_r1), made from
- * PopupContainerWithArrow.kt by deleting what TextLauncher does not use (the Compose version, which
+ * PopupContainerWithArrow.kt by deleting what CaretLauncher does not use (the Compose version, which
  * Flags.expandableLongPressMenu turns on and the release config disables; live updates of the
  * shortcuts; the widget shortcut; the private space popup); changes are marked with
- * "TextLauncher:".
+ * "CaretLauncher:".
  *
  * @param <T> The activity on with the popup shows </T>
  */
@@ -103,7 +103,7 @@ private constructor(
     }
 
     fun configureForLauncher(launcher: Launcher, itemInfo: ItemInfo) {
-        // TextLauncher: no live updates of the menu (LauncherPopupLiveUpdateHandler).
+        // CaretLauncher: no live updates of the menu (LauncherPopupLiveUpdateHandler).
         if (
             (itemInfo !is ItemInfoWithIcon) ||
                 (itemInfo.runtimeStatusFlags and ItemInfoWithIcon.FLAG_NOT_PINNABLE) == 0
@@ -169,7 +169,7 @@ private constructor(
         // All views are added. Animate layout from now on.
         layoutTransition = LayoutTransition()
 
-        // TextLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
+        // CaretLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
         // release config), so only upstream's else branch is kept.
         // Load the shortcuts on a background thread and update the container as it animates.
         Executors.MODEL_EXECUTOR.handler.postAtFrontOfQueue(

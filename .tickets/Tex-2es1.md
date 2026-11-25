@@ -17,7 +17,7 @@ Workspace の役割が、互換の Workspace（HomeController の匿名サブク
 
 案:
 - HomeWorkspace に互換の Workspace（スクロールの入れ物を包む FrameLayout）を継承させ、addInScreen、removeWorkspaceItem、removeItemsByMatcher、persistRemoveItemsByMatcher を持たせる
-- 互換の Launcher に addFolder、removeItem、getModelWriter、getItemInflater を足して HomeActivityContext が実装する。HomeWorkspace.Host をなくし、LauncherDelegate.replaceFolderWithFinalItem（LauncherDelegateImpl）をほぼそのまま互換に移す（newIcon.requestFocus() を落とすなら TextLauncher: の印を付ける）
+- 互換の Launcher に addFolder、removeItem、getModelWriter、getItemInflater を足して HomeActivityContext が実装する。HomeWorkspace.Host をなくし、LauncherDelegate.replaceFolderWithFinalItem（LauncherDelegateImpl）をほぼそのまま互換に移す（newIcon.requestFocus() を落とすなら CaretLauncher: の印を付ける）
 - HomeModel に ModelWriter 型の操作（addOrMove、delete、modify）を持たせ、操作の終わりに1回保存する
 - commitTempPlacement を上流の本体（modifyItemInDatabase）に戻す
 - Tex-a8os、Tex-536b の根本対応を兼ねる

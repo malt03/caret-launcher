@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -50,8 +50,8 @@ import com.android.launcher3.views.ActivityContext;
  * Example system shortcuts, defined as inner classes, include Widgets and AppInfo.
  *
  * <p>Stand-in for Launcher3's SystemShortcut (android-17.0.0_r1), made from SystemShortcut.java by
- * deleting what TextLauncher does not use (every factory and option but App info); changes
- * are marked with "TextLauncher:".
+ * deleting what CaretLauncher does not use (every factory and option but App info); changes
+ * are marked with "CaretLauncher:".
  *
  * @param <T> extends {@link ActivityContext}
  */
@@ -123,7 +123,7 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         SystemShortcut<T> getShortcut(T context, ItemInfo itemInfo, @NonNull View originalView);
     }
 
-    // TextLauncher: App info is the only factory TextLauncher uses (no WIDGETS, INSTALL,
+    // CaretLauncher: App info is the only factory CaretLauncher uses (no WIDGETS, INSTALL,
     // DONT_SUGGEST_APP, ...); the launcher adds its own options (Launcher.getSupportedShortcuts).
 
     public static final Factory<ActivityContext> APP_INFO = AppInfo::new;
@@ -145,10 +145,10 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         @Override
         public void onClick(View view) {
             Rect sourceBounds = Utilities.getViewBounds(view);
-            // TextLauncher: no launch animation to wait for; the menu is dismissed right away.
+            // CaretLauncher: no launch animation to wait for; the menu is dismissed right away.
             dismissTaskMenuView();
             startDetailsActivityForInfo(view.getContext(), mItemInfo,
-                    sourceBounds); // TextLauncher: see startDetailsActivityForInfo below; no log.
+                    sourceBounds); // CaretLauncher: see startDetailsActivityForInfo below; no log.
         }
     }
 
@@ -157,10 +157,10 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
                 AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
-     * PackageManagerHelper.startDetailsActivityForInfo, which TextLauncher does not have: opens the
+     * PackageManagerHelper.startDetailsActivityForInfo, which CaretLauncher does not have: opens the
      * app's details in Settings. Every item here is an installed app, so there is no install
      * session or widget case, and no launch options.
      */

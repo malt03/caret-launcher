@@ -1,4 +1,4 @@
-// TextLauncher: build file for frameworks/libs/systemui/iconloaderlib (not copied from upstream).
+// CaretLauncher: build file for frameworks/libs/systemui/iconloaderlib (not copied from upstream).
 // Only src/ (iconloader_base) is used; src_full_lib/ needs system APIs.
 plugins {
     alias(libs.plugins.android.library)
@@ -17,7 +17,7 @@ android {
             java.setSrcDirs(listOf("src"))
             kotlin.setSrcDirs(listOf("src"))
             res.setSrcDirs(listOf("res"))
-            manifest.srcFile("TextLauncherManifest.xml")
+            manifest.srcFile("CaretLauncherManifest.xml")
         }
     }
 }

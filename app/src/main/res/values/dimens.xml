@@ -1,5 +1,5 @@
 <resources>
-    <!-- TextLauncher's own sizes. The grid's sizes (columns, icon and text sizes) come from
+    <!-- CaretLauncher's own sizes. The grid's sizes (columns, icon and text sizes) come from
          Launcher3's res/xml/device_profiles.xml through GridSpec. -->
     <dimen name="icon_bitmap_size">64dp</dimen>
     <dimen name="search_bar_height">56dp</dimen>

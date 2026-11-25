@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3;
@@ -54,14 +54,14 @@ import java.util.stream.Collectors;
  * Stand-in for Launcher3's InvariantDeviceProfile (android-17.0.0_r1), made from
  * InvariantDeviceProfile.java by deleting Dagger, the preferences (the grid name, the fixed
  * landscape mode, the two line all apps labels), the change listeners, the partner overrides and
- * the device profiles of the supported bounds; changes are marked with "TextLauncher:". The app
+ * the device profiles of the supported bounds; changes are marked with "CaretLauncher:". The app
  * works its grid out with {@link #initGrid} (GridSpec) and sets the home screen's one profile
  * ({@link #setDeviceProfile}).
  */
 public class InvariantDeviceProfile {
 
     public static final String TAG = "IDP";
-    // TextLauncher: no Dagger singleton (LauncherAppState.getIDP).
+    // CaretLauncher: no Dagger singleton (LauncherAppState.getIDP).
 
     public static final String GRID_NAME_PREFS_KEY = "idp_grid_name";
     public static final String NON_FIXED_LANDSCAPE_GRID_NAME_PREFS_KEY =
@@ -87,7 +87,7 @@ public class InvariantDeviceProfile {
     // used to offset float not being able to express extremely small weights in extreme cases.
     private static final float WEIGHT_EFFICIENT = 100000f;
 
-    // TextLauncher: no partner overrides (RES_GRID_*), DisplayController, preferences or theme.
+    // CaretLauncher: no partner overrides (RES_GRID_*), DisplayController, preferences or theme.
 
     /**
      * Number of icons per row and column in the workspace.
@@ -207,14 +207,14 @@ public class InvariantDeviceProfile {
 
     public Point defaultWallpaperSize;
 
-    // TextLauncher: no change listeners (mChangeListeners) or taskbar (taskbarModeUtil).
+    // CaretLauncher: no change listeners (mChangeListeners) or taskbar (taskbarModeUtil).
 
-    // TextLauncher: no Dagger; the app inits the grid (initGrid).
+    // CaretLauncher: no Dagger; the app inits the grid (initGrid).
     public InvariantDeviceProfile() {
     }
 
     /**
-     * TextLauncher: initGrid(String) with the display info and the columns of the grid the items
+     * CaretLauncher: initGrid(String) with the display info and the columns of the grid the items
      * are in (DeviceGridState) from the app, and no grid name (GRID_NAME), fixed landscape mode or
      * logs.
      */
@@ -245,12 +245,12 @@ public class InvariantDeviceProfile {
                 .collect(Collectors.toList());
     }
 
-    // TextLauncher: no backup and restore (reset).
+    // CaretLauncher: no backup and restore (reset).
 
     private void initGridForDisplayOption(
             LauncherDisplayInfo displayInfo, DisplayOption displayOption) {
         Context context = displayInfo.context;
-        // TextLauncher: no ENABLE_TWOLINE_ALLAPPS_TOGGLE preference (enableTwoLinesInAllApps).
+        // CaretLauncher: no ENABLE_TWOLINE_ALLAPPS_TOGGLE preference (enableTwoLinesInAllApps).
         mLocale = context.getResources().getConfiguration().locale.toString();
 
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
@@ -335,9 +335,9 @@ public class InvariantDeviceProfile {
         // Fixed Landscape mode
         isFixedLandscape = closestProfile.isFixedLandscape;
 
-        // TextLauncher: no partner overrides (applyPartnerDeviceProfileOverrides).
+        // CaretLauncher: no partner overrides (applyPartnerDeviceProfileOverrides).
 
-        // TextLauncher: no device profiles of the supported bounds; the home screen sets its one
+        // CaretLauncher: no device profiles of the supported bounds; the home screen sets its one
         // profile (setDeviceProfile).
         defaultWallpaperSize = new Point(displayInfo.currentSize);
         for (WindowBounds bounds : displayInfo.supportedBounds) {
@@ -359,7 +359,7 @@ public class InvariantDeviceProfile {
         }
     }
 
-    // TextLauncher: no DeviceProfile.Builder (newDPBuilder), change listeners
+    // CaretLauncher: no DeviceProfile.Builder (newDPBuilder), change listeners
     // (add/removeOnChangeListener, setCurrentGrid, toModelState, onConfigChanged).
 
     private static List<DisplayOption> getPredefinedDeviceProfiles(
@@ -427,7 +427,7 @@ public class InvariantDeviceProfile {
         return density;
     }
 
-    // TextLauncher: no partner overrides (applyPartnerDeviceProfileOverrides).
+    // CaretLauncher: no partner overrides (applyPartnerDeviceProfileOverrides).
 
     private static float dist(float x0, float y0, float x1, float y1) {
         return (float) Math.hypot(x1 - x0, y1 - y0);
@@ -494,7 +494,7 @@ public class InvariantDeviceProfile {
         return out;
     }
 
-    // TextLauncher: no secondary displays (createDeviceProfileForSecondaryDisplay), and one
+    // CaretLauncher: no secondary displays (createDeviceProfileForSecondaryDisplay), and one
     // device profile (getDeviceProfile and getBestMatch are at the end).
 
     private static float weight(float x0, float y0, float x1, float y1, float pow) {
@@ -543,15 +543,15 @@ public class InvariantDeviceProfile {
         void onIdpChanged(boolean modelPropertiesChanged);
     }
 
-    // TextLauncher: no DisplayOptionSpec (createDisplayOptionSpec), which only the external
+    // CaretLauncher: no DisplayOptionSpec (createDisplayOptionSpec), which only the external
     // displays and the DeviceProfile.Builder use.
 
-    // ---- TextLauncher ----
+    // ---- CaretLauncher ----
 
     private DeviceProfile mDeviceProfile;
 
     /**
-     * TextLauncher: getDeviceProfile with the home screen's one profile, or until the home screen
+     * CaretLauncher: getDeviceProfile with the home screen's one profile, or until the home screen
      * sets it (the widget picker can be made again before the home screen, after the process
      * ended), the profile the app's {@link GridInitializer} works out from the device.
      */
@@ -562,7 +562,7 @@ public class InvariantDeviceProfile {
         return mDeviceProfile;
     }
 
-    /** TextLauncher: set by the home screen with its grid. */
+    /** CaretLauncher: set by the home screen with its grid. */
     public void setDeviceProfile(int numColumns, int numRows, DeviceProfile deviceProfile) {
         this.numColumns = numColumns;
         this.numRows = numRows;
@@ -574,13 +574,13 @@ public class InvariantDeviceProfile {
     @Nullable
     private static GridInitializer sGridInitializer;
 
-    /** TextLauncher: set by the app as it starts. */
+    /** CaretLauncher: set by the app as it starts. */
     public static void setGridInitializer(@Nullable GridInitializer initializer) {
         sGridInitializer = initializer;
     }
 
     /**
-     * TextLauncher: the app's grid for the context's display, which it sets with
+     * CaretLauncher: the app's grid for the context's display, which it sets with
      * {@link #setDeviceProfile}.
      */
     public interface GridInitializer {

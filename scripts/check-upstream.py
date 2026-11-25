@@ -17,7 +17,7 @@ Reads the ```upstream block of <dir>/UPSTREAM.md:
       earlier one, as quickstep/res overrides res in the Launcher3QuickStep build). Every name there is compared
       with the upstream value in every qualifier (values, values-v31, values-night, ...): a value
       that differs, or an upstream qualifier that is missing here, is reported unless the comment
-      just before it (or a comment inside a style) says "TextLauncher:". With --to, names whose
+      just before it (or a comment inside a style) says "CaretLauncher:". With --to, names whose
       upstream value changed are listed.
   release_repo=<repo url>, release_config=<name>
       build/release and the release whose flag values the code uses (its `inherits` are followed).
@@ -42,7 +42,7 @@ ROOT = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=Tr
                       check=True).stdout.strip()
 os.chdir(ROOT)
 CACHE = os.environ.get('UPSTREAM_CACHE') or os.path.join(tempfile.gettempdir(),
-                                                         'textlauncher-upstream')
+                                                         'caretlauncher-upstream')
 LANG = re.compile(r'^(b\+.*|[a-z]{2,3}(-r[A-Z]{2})?)$')
 
 
@@ -98,8 +98,8 @@ def parse_values(path):
             t = re.search(r'type="(\w+)"', body)
             typ = t.group(1) if t else 'item'
         typ = {'string-array': 'array', 'integer-array': 'array'}.get(typ, typ)
-        marked = 'TextLauncher:' in last_comment or (
-            typ in ('style', 'declare-styleable') and 'TextLauncher:' in body)
+        marked = 'CaretLauncher:' in last_comment or (
+            typ in ('style', 'declare-styleable') and 'CaretLauncher:' in body)
         flag = re.search(r'android:featureFlag="([^"]+)"', body[:body.find('>') + 1])
         key = (typ, name)
         if flag:
@@ -140,7 +140,7 @@ def color_files(res_root):
         for f in glob.glob(os.path.join(d, '*.xml')):
             text = open(f, encoding='utf-8').read()
             tree.setdefault(q, {})[('color', os.path.splitext(os.path.basename(f))[0])] = (
-                normalize(text), 'TextLauncher:' in text)
+                normalize(text), 'CaretLauncher:' in text)
     return tree
 
 
@@ -195,11 +195,11 @@ def check_values(dir_, entries, tag):
         up_qs = {q for q, vals in up.items() if key in vals}
         if not up_qs:
             if key not in marked:
-                problems.append(f'{key[0]}/{key[1]}: not upstream (mark it "TextLauncher:")')
+                problems.append(f'{key[0]}/{key[1]}: not upstream (mark it "CaretLauncher:")')
             continue
         our_qs = {q for q, vals in ours.items() if key in vals}
         for q in sorted(up_qs - our_qs):
-            # Strings are copied for the locales TextLauncher has; other locales are not checked.
+            # Strings are copied for the locales CaretLauncher has; other locales are not checked.
             if LANG.match(q.split('-')[0]) or key in marked:
                 continue
             problems.append(f'{key[0]}/{key[1]}: upstream has values-{q}, missing here')

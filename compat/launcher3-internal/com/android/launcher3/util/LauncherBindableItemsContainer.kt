@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -34,7 +34,7 @@ import java.util.function.Predicate
 /**
  * Interface representing a container which can bind Launcher items with some utility methods
  *
- * Stand-in for Launcher3's LauncherBindableItemsContainer (android-17.0.0_r1). TextLauncher: no app
+ * Stand-in for Launcher3's LauncherBindableItemsContainer (android-17.0.0_r1). CaretLauncher: no app
  * pairs and no pending widgets; the model's updates never move an item, so there is nothing to
  * rebind ([updateContainerItems] returns an empty set; no getCellInfoForView).
  */
@@ -55,7 +55,7 @@ fun interface LauncherBindableItemsContainer {
                     if (updates.contains(info)) {
                         v.onItemsChanged(false)
                         v.folder.apply {
-                            // TextLauncher: no folder titles to apply again (reapplyItemInfo).
+                            // CaretLauncher: no folder titles to apply again (reapplyItemInfo).
                             if (isOpen()) close(false)
                         }
                     }
@@ -69,7 +69,7 @@ fun interface LauncherBindableItemsContainer {
         mapOverItems(op)
         Folder.getOpen(context)?.mapOverItems(op)
 
-        // TextLauncher: no moved items to check.
+        // CaretLauncher: no moved items to check.
         return emptySet()
     }
 

@@ -17,7 +17,7 @@ parent: Tex-mdus
 Launcher3（android-17.0.0_r1）の GridCustomizationsProxy.getPreview と preview/（PreviewSurfaceRenderer、LauncherPreviewRenderer、PreviewLifecycleObserver）にならい、SurfaceControlViewHost にホーム画面を描いて SurfacePackage と Messenger を返す。グリッド・形状・テーマアイコンの選び直しの通知で描き直す。
 
 - 描くもの：ホームのアイコン・フォルダ・ウィジェット、検索欄（壁紙は「壁紙とスタイル」側が描く。キーボードは IME なので描けない）
-- 上流は dagger のプレビュー用 Context でモデルを読み直す。TextLauncher には dagger がないので、derived= で削る
+- 上流は dagger のプレビュー用 Context でモデルを読み直す。CaretLauncher には dagger がないので、derived= で削る
 
 ## Notes
 

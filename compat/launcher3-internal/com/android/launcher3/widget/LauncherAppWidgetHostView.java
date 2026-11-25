@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -43,13 +43,13 @@ import com.android.launcher3.views.ActivityContext;
  * <p>Stand-in for Launcher3's LauncherAppWidgetHostView (android-17.0.0_r1): the view of a widget
  * on the home screen. A long press anywhere on it (CheckLongPressHelper, intercepting the widget's
  * own touches) is its long click, which starts the drag. Made from LauncherAppWidgetHostView.java
- * by deleting what TextLauncher does not have (scroll handling for scrollable widgets
+ * by deleting what CaretLauncher does not have (scroll handling for scrollable widgets
  * (docs/spec.md 5.2), deferred updates, auto advance, the focus outline, custom events, the
- * pre-layout listener, tracing); changes are marked with "TextLauncher:". What it needs from
+ * pre-layout listener, tracing); changes are marked with "CaretLauncher:". What it needs from
  * NavigableAppWidgetHostView, its superclass in Launcher3, is at the end: no default padding, and
  * the drag type and bounds (widgets are not scaled, so getScaleToFit is always 1).
  */
-// TextLauncher: extends AppWidgetHostView instead of BaseLauncherAppWidgetHostView and
+// CaretLauncher: extends AppWidgetHostView instead of BaseLauncherAppWidgetHostView and
 // NavigableAppWidgetHostView, and has no touch complete listener, deferred updates or custom
 // events.
 public class LauncherAppWidgetHostView extends AppWidgetHostView
@@ -60,7 +60,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
     public LauncherAppWidgetHostView(Context context) {
         super(context);
         mLongPressHelper = new CheckLongPressHelper(this, this);
-        // TextLauncher: no custom events (Flags.enableCursorDrivenWorkflows is disabled in the
+        // CaretLauncher: no custom events (Flags.enableCursorDrivenWorkflows is disabled in the
         // release) or focus outline. No mActivityContext field; a view made outside a launcher
         // context (the widget picker's preview) has no accessibility delegate.
         ActivityContext activityContext = ActivityContext.lookupContextNoThrow(context);
@@ -75,14 +75,14 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
 
     @Override
     public boolean onLongClick(View view) {
-        // TextLauncher: no scroll handling for scrollable widgets, so nothing to undo first.
+        // CaretLauncher: no scroll handling for scrollable widgets, so nothing to undo first.
         view.performLongClick();
         return true;
     }
 
     @Override
     public void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
-        // TextLauncher: NavigableAppWidgetHostView.setAppWidget, which this view takes the place
+        // CaretLauncher: NavigableAppWidgetHostView.setAppWidget, which this view takes the place
         // of; no tracing.
         // Prevent default padding being set on the view based on provider info. Launcher manages
         // its own widget spacing
@@ -93,7 +93,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        // TextLauncher: no scroll handling for scrollable widgets (docs/spec.md 5.2) and no touch
+        // CaretLauncher: no scroll handling for scrollable widgets (docs/spec.md 5.2) and no touch
         // complete listener; Flags.enableCursorDrivenWorkflows is disabled in the release.
         mLongPressHelper.onTouchEvent(ev);
         return mLongPressHelper.hasPerformedLongPress();
@@ -101,7 +101,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        // TextLauncher: Flags.enableCursorDrivenWorkflows is disabled in the release.
+        // CaretLauncher: Flags.enableCursorDrivenWorkflows is disabled in the release.
         mLongPressHelper.onTouchEvent(ev);
         // We want to keep receiving though events to be able to cancel long press on ACTION_UP
         return true;
@@ -110,7 +110,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
     @Override
     public void cancelLongPress() {
         super.cancelLongPress();
-        // TextLauncher: Flags.enableCursorDrivenWorkflows is disabled in the release.
+        // CaretLauncher: Flags.enableCursorDrivenWorkflows is disabled in the release.
         mLongPressHelper.cancelLongPress();
     }
 
@@ -120,7 +120,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
         return PoppableType.WIDGET;
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** NavigableAppWidgetHostView.mDisableSetPadding: set while the widget is being set. */
     private boolean mDisableSetPadding = false;
@@ -137,7 +137,7 @@ public class LauncherAppWidgetHostView extends AppWidgetHostView
     }
 
     /**
-     * NavigableAppWidgetHostView.getScaleToFit: always 1, since TextLauncher does not scale
+     * NavigableAppWidgetHostView.getScaleToFit: always 1, since CaretLauncher does not scale
      * widgets to fit their cells (DeviceProfile.getAppWidgetScale is 1 outside multi-window).
      */
     public float getScaleToFit() {

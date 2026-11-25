@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -38,9 +38,9 @@ import com.android.launcher3.util.ContentWriter;
  * Represents a launchable icon on the workspaces and in folders.
  *
  * <p>Stand-in for Launcher3's WorkspaceItemInfo (android-17.0.0_r1), made from
- * WorkspaceItemInfo.java by deleting what TextLauncher does not have (restore and
+ * WorkspaceItemInfo.java by deleting what CaretLauncher does not have (restore and
  * install status, promise icons, archived apps, bubbles and private space); changes are marked
- * with "TextLauncher:".
+ * with "CaretLauncher:".
  */
 public class WorkspaceItemInfo extends ItemInfoWithIcon {
 
@@ -48,7 +48,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
      * The intent used to start the application.
      */
     @NonNull
-    // TextLauncher: never null, for the items the app makes before their intents are known.
+    // CaretLauncher: never null, for the items the app makes before their intents are known.
     public Intent intent = new Intent();
 
     /**
@@ -71,7 +71,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         super(info);
         title = info.title;
         intent = new Intent(info.intent);
-        // TextLauncher: no status.
+        // CaretLauncher: no status.
         personKeys = info.personKeys.clone();
     }
 
@@ -88,7 +88,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
     public WorkspaceItemInfo(ShortcutInfo shortcutInfo, Context context) {
         user = shortcutInfo.getUserHandle();
         itemType = Favorites.ITEM_TYPE_DEEP_SHORTCUT;
-        // TextLauncher: no private space (docs/spec.md), so nothing is marked not pinnable here.
+        // CaretLauncher: no private space (docs/spec.md), so nothing is marked not pinnable here.
         updateFromDeepShortcutInfo(shortcutInfo, context);
     }
 
@@ -97,7 +97,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         super.onAddToDatabase(writer);
         writer.put(Favorites.TITLE, title)
                 .put(Favorites.INTENT, getIntent());
-        // TextLauncher: no options or status (RESTORED); the columns keep their defaults.
+        // CaretLauncher: no options or status (RESTORED); the columns keep their defaults.
 
         if (!getMatchingLookupFlag().useLowRes()) {
             writer.putIcon(bitmap, user);
@@ -117,7 +117,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
      * 2. Icons added as an auto-install app.
      * 3. Icons added due to it being an active install session created by the user.
      * 4. Icons for archived apps.
-     * TextLauncher: only installed apps are shown, so there are no promise icons.
+     * CaretLauncher: only installed apps are shown, so there are no promise icons.
      */
     public boolean hasPromiseIconUi() {
         return false;
@@ -155,7 +155,7 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
             runtimeStatusFlags &= ~FLAG_DISABLED_VERSION_LOWER;
         }
 
-        // TextLauncher: no person keys; ApiWrapper.getPersons is empty outside the system image
+        // CaretLauncher: no person keys; ApiWrapper.getPersons is empty outside the system image
         // (ShortcutInfo.getPersons is not public).
     }
 

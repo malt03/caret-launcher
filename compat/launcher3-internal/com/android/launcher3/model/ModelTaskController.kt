@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -35,7 +35,7 @@ import java.util.function.Predicate
  *
  * Stand-in for Launcher3's ModelTaskController (android-17.0.0_r1), made from
  * ModelTaskController.kt by deleting Dagger, the extra items, the widgets model and the incremental
- * downloads; changes are marked with "TextLauncher:".
+ * downloads; changes are marked with "CaretLauncher:".
  */
 class ModelTaskController(
     val context: Context,
@@ -76,7 +76,7 @@ class ModelTaskController(
         }
     }
 
-    // TextLauncher: no extra items (bindExtraContainerItems) or widgets model
+    // CaretLauncher: no extra items (bindExtraContainerItems) or widgets model
     // (bindUpdatedWidgets).
 
     fun deleteAndBindComponentsRemoved(matcher: Predicate<ItemInfo?>, reason: String?) {
@@ -96,5 +96,5 @@ class ModelTaskController(
         }
     }
 
-    // TextLauncher: no incremental downloads (bindIncrementalUpdates).
+    // CaretLauncher: no incremental downloads (bindIncrementalUpdates).
 }

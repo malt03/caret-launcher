@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.allapps;
@@ -47,13 +47,13 @@ import java.util.stream.Stream;
  * The alphabetically sorted list of applications.
  *
  * <p>Stand-in made from Launcher3's AlphabeticalAppsList (android-17.0.0_r1) by deleting the work
- * profile and the private space, which TextLauncher does not have. Changes are marked with
- * "TextLauncher:".
+ * profile and the private space, which CaretLauncher does not have. Changes are marked with
+ * "CaretLauncher:".
  */
 public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
 
     public static final String TAG = "AlphabeticalAppsList";
-    // TextLauncher: no work profile or private space.
+    // CaretLauncher: no work profile or private space.
 
     /**
      * Info about a fast scroller section, depending if sections are merged, the fast scroller
@@ -110,7 +110,7 @@ public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
         if (mAllAppsStore != null) {
             mAllAppsStore.addUpdateListener(this);
         }
-        // TextLauncher: no private space badges.
+        // CaretLauncher: no private space badges.
     }
 
     public void setNumAppsPerRowAllApps(int numAppsPerRow) {
@@ -206,14 +206,14 @@ public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
      */
     @Override
     public void onAppsUpdated() {
-        // TextLauncher: no private profile animations.
+        // CaretLauncher: no private profile animations.
         if (mAllAppsStore == null) {
             return;
         }
         // Sort the list of apps
         mApps.clear();
 
-        // TextLauncher: no private space.
+        // CaretLauncher: no private space.
         Stream<AppInfo> appSteam = Stream.of(mAllAppsStore.getApps());
 
         if (!hasSearchResults() && mItemFilter != null) {
@@ -262,7 +262,7 @@ public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
             mAdapterItems.addAll(mSearchResults);
         } else {
             int position = 0;
-            // TextLauncher: no work profile or private space.
+            // CaretLauncher: no work profile or private space.
             position = addAppsWithSections(mApps, position);
             if (!mFastScrollerSections.isEmpty()) {
                 // After all the adapterItems are added, add a view to the bottom so that user can
@@ -285,7 +285,7 @@ public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
             int rowIndex = -1;
             for (AdapterItem item : mAdapterItems) {
                 item.rowIndex = 0;
-                // TextLauncher: no private space.
+                // CaretLauncher: no private space.
                 if (BaseAllAppsAdapter.isDividerViewType(item.viewType)) {
                     numAppsInSection = 0;
                 } else if (BaseAllAppsAdapter.isIconViewType(item.viewType)) {
@@ -311,7 +311,7 @@ public class AlphabeticalAppsList implements AllAppsStore.OnUpdateListener {
     private int addAppsWithSections(List<AppInfo> appList, int startPosition) {
         String lastSectionName = null;
         int position = startPosition;
-        // TextLauncher: no private apps.
+        // CaretLauncher: no private apps.
         Log.d(TAG, "Adding apps with sections.");
         for (int i = 0; i < appList.size(); i++) {
             AppInfo info = appList.get(i);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -69,12 +69,12 @@ import com.android.launcher3.widget.WidgetManagerHelper
  * WorkspaceItemProcessor.kt by deleting the restore (restored, archived and installing items and
  * widgets), the install sessions, the app pairs, the home screen files, the custom and pending
  * widgets, the automation indicator, the safe mode and the bulk icon requests' preloaded items;
- * changes are marked with "TextLauncher:".
+ * changes are marked with "CaretLauncher:".
  */
 class WorkspaceItemProcessor(
     private val c: LoaderCursor,
     private val memoryLogger: LoaderMemoryLogger?,
-    // TextLauncher: the compat UserCache's UserManagerState.
+    // CaretLauncher: the compat UserCache's UserManagerState.
     private val userManagerState: UserManagerState,
     private val launcherApps: LauncherApps,
     private val pendingPackages: MutableSet<PackageUserKey>,
@@ -85,7 +85,7 @@ class WorkspaceItemProcessor(
     private val isSdCardReady: Boolean,
     private val iconRequestInfos: MutableList<IconRequestInfo<WorkspaceItemInfo>>,
     private val unlockedUsers: LongSparseArray<Boolean>,
-    // TextLauncher: no safe mode, install sessions, widget inflater, package manager helper, deep
+    // CaretLauncher: no safe mode, install sessions, widget inflater, package manager helper, deep
     // shortcuts to cache, widget size handler, space finder, home screen files or automation.
 ) {
 
@@ -106,7 +106,7 @@ class WorkspaceItemProcessor(
             when (c.itemType) {
                 Favorites.ITEM_TYPE_APPLICATION,
                 Favorites.ITEM_TYPE_DEEP_SHORTCUT -> processAppOrDeepShortcut()
-                // TextLauncher: no app pairs, custom widgets or home screen files.
+                // CaretLauncher: no app pairs, custom widgets or home screen files.
                 Favorites.ITEM_TYPE_FOLDER -> processFolderOrAppPair()
                 Favorites.ITEM_TYPE_APPWIDGET -> processWidget()
             }
@@ -145,7 +145,7 @@ class WorkspaceItemProcessor(
             return
         }
         var disabledState =
-            // TextLauncher: the compat UserManagerState asks by user.
+            // CaretLauncher: the compat UserManagerState asks by user.
             if (userManagerState.isUserQuiet(c.user))
                 WorkspaceItemInfo.FLAG_DISABLED_QUIET_USER
             else 0
@@ -181,7 +181,7 @@ class WorkspaceItemProcessor(
                         " Will attempt to find fallback Activity for targetPkg=$targetPkg.",
                 )
                 tempPackageKey.update(targetPkg, c.user)
-                // TextLauncher: PackageManagerHelper.getAppLaunchIntent, the package's first
+                // CaretLauncher: PackageManagerHelper.getAppLaunchIntent, the package's first
                 // launchable activity.
                 val newIntent =
                     launcherApps.getActivityList(targetPkg, c.user).firstOrNull()?.let {
@@ -192,7 +192,7 @@ class WorkspaceItemProcessor(
                     c.restoreFlag = 0
                     c.updater().put(Favorites.INTENT, intent.toUri(0)).commit()
                 } else {
-                    // TextLauncher: no install sessions to keep a promise icon for.
+                    // CaretLauncher: no install sessions to keep a promise icon for.
                     c.markDeleted(
                         "No Activities or install sessions found for id=${c.id}," +
                             " targetPkg=$targetPkg, component=$cn." +
@@ -207,7 +207,7 @@ class WorkspaceItemProcessor(
             intent.`package` = targetPkg
         }
 
-        // TextLauncher: no archived apps (isPreArchivedShortcut).
+        // CaretLauncher: no archived apps (isPreArchivedShortcut).
 
         // else if cn == null => can't infer much, leave it
         // else if !validPkg => could be restored icon or missing sd-card
@@ -216,7 +216,7 @@ class WorkspaceItemProcessor(
                 // Points to a valid app (superset of cn != null) but the apk
                 // is not available.
                 when {
-                    // TextLauncher: no restored items (restoreFlag), which wait for their package.
+                    // CaretLauncher: no restored items (restoreFlag), which wait for their package.
                     appInfoWrapper.isOnSdCard() -> {
                         // Package is present but not available.
                         disabledState =
@@ -240,7 +240,7 @@ class WorkspaceItemProcessor(
                 }
             }
         }
-        // TextLauncher: no shortcuts with a web UI (FLAG_SUPPORTS_WEB_UI).
+        // CaretLauncher: no shortcuts with a web UI (FLAG_SUPPORTS_WEB_UI).
         if (validTarget) {
             FileLog.d(
                 TAG,
@@ -254,7 +254,7 @@ class WorkspaceItemProcessor(
         val useLowResIcon = !c.isOnWorkspaceOrHotseat
         val info: WorkspaceItemInfo?
         when {
-            // TextLauncher: no restored items (getRestoredItemInfo).
+            // CaretLauncher: no restored items (getRestoredItemInfo).
             c.itemType == Favorites.ITEM_TYPE_APPLICATION ->
                 info = c.getAppShortcutInfo(intent, allowMissingTarget, useLowResIcon, false)
             c.itemType == Favorites.ITEM_TYPE_DEEP_SHORTCUT -> {
@@ -273,7 +273,7 @@ class WorkspaceItemProcessor(
                     info = WorkspaceItemInfo(pinnedShortcut, context)
                     // If the pinned deep shortcut is no longer published,
                     // use the last saved icon instead of the default.
-                    // TextLauncher: IconCache.getShortcutIcon with the ShortcutInfo (no
+                    // CaretLauncher: IconCache.getShortcutIcon with the ShortcutInfo (no
                     // CacheableShortcutInfo), and the saved icon when it gives the default one.
                     iconCache.getShortcutIcon(info, pinnedShortcut, appInfoWrapper, DEFAULT_LOOKUP_FLAG.withThemeIcon())
                     if (iconCache.isDefaultIcon(info.bitmap, info.user)) {
@@ -284,7 +284,7 @@ class WorkspaceItemProcessor(
                             info.runtimeStatusFlags or ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
                     }
                     intent = info.getIntent()
-                    // TextLauncher: no deep shortcuts to cache (allDeepShortcuts).
+                    // CaretLauncher: no deep shortcuts to cache (allDeepShortcuts).
                 } else {
                     // Create a shortcut info in disabled mode for now.
                     info = c.loadSimpleWorkspaceItem()
@@ -299,7 +299,7 @@ class WorkspaceItemProcessor(
                 if (appInfoWrapper.isSuspended()) {
                     disabledState = disabledState or ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
                 }
-                // TextLauncher: WorkspaceItemInfo has no options.
+                // CaretLauncher: WorkspaceItemInfo has no options.
 
                 // App shortcuts that used to be automatically added to Launcher
                 // didn't always have the correct intent flags set, so do that here
@@ -327,14 +327,14 @@ class WorkspaceItemProcessor(
             info.spanX = 1
             info.spanY = 1
             info.runtimeStatusFlags = info.runtimeStatusFlags or disabledState
-            // TextLauncher: no safe mode or automation indicator.
+            // CaretLauncher: no safe mode or automation indicator.
             val activityInfo = c.launcherActivityInfo
             if (activityInfo != null) {
-                // TextLauncher: without the user info, API wrapper, package manager helper and
+                // CaretLauncher: without the user info, API wrapper, package manager helper and
                 // automation repository.
                 AppInfo.updateRuntimeFlagsForActivityTarget(info, activityInfo)
             }
-            // TextLauncher: no install sessions (FLAG_INSTALL_SESSION_ACTIVE, progress).
+            // CaretLauncher: no install sessions (FLAG_INSTALL_SESSION_ACTIVE, progress).
             c.checkAndAddItem(info, loadedItems, memoryLogger)
         } else {
             throw RuntimeException("Unexpected null WorkspaceItemInfo")
@@ -368,14 +368,14 @@ class WorkspaceItemProcessor(
      */
     private fun processFolderOrAppPair() {
         val collection = c.findOrMakeFolder(c.id, loadedItems)
-        // TextLauncher: no app pairs.
+        // CaretLauncher: no app pairs.
 
         c.applyCommonProperties(collection)
         // Do not trim the folder label, as is was set by the user.
         collection.title = c.title
         collection.spanX = 1
         collection.spanY = 1
-        // TextLauncher: no app pairs, which keep their rank.
+        // CaretLauncher: no app pairs, which keep their rank.
         collection.options = c.options
 
         c.markRestored()
@@ -430,7 +430,7 @@ class WorkspaceItemProcessor(
             )
             return
         }
-        // TextLauncher: no restored widgets (FLAG_DIRECT_CONFIG) or WidgetInflater; a widget whose
+        // CaretLauncher: no restored widgets (FLAG_DIRECT_CONFIG) or WidgetInflater; a widget whose
         // provider is not found is deleted (WidgetInflater.TYPE_DELETE), and its size ranges are
         // updated when its view is made.
         val lapi = WidgetManagerHelper(context).getLauncherAppWidgetInfo(appWidgetInfo.appWidgetId, component)
@@ -464,7 +464,7 @@ class WorkspaceItemProcessor(
         c.checkAndAddItem(appWidgetInfo, loadedItems, memoryLogger)
     }
 
-    // TextLauncher: no home screen files (processFileSystemItem).
+    // CaretLauncher: no home screen files (processFileSystemItem).
 
     private fun processFolderItems() {
         // Sort the folder items, update ranks, and make sure all preview items are high res.
@@ -503,7 +503,7 @@ class WorkspaceItemProcessor(
      * 3) Committing any persistent modifications and deletions to the storage
      */
     fun finalizeData(
-        // TextLauncher: no model delegate.
+        // CaretLauncher: no model delegate.
         modelDbController: ModelDbController,
     ): IntSparseArrayMap<ItemInfo> {
 
@@ -511,12 +511,12 @@ class WorkspaceItemProcessor(
         val itemsDeleted = c.commitDeleted()
 
         processFolderItems()
-        // TextLauncher: no app pairs or restored items (commitRestoredItems).
+        // CaretLauncher: no app pairs or restored items (commitRestoredItems).
         if (itemsDeleted) {
             // Remove any empty folder
             modelDbController.deleteItemsBasedOnItemIdQuery(EMPTY_FOLDER_QUERY)
         }
-        // TextLauncher: no app pairs (BAD_APP_PAIR_QUERY).
+        // CaretLauncher: no app pairs (BAD_APP_PAIR_QUERY).
 
         // Deletes any app with a container id that doesn't exist.
         modelDbController.deleteItemsBasedOnItemIdQuery(ORPHAN_APPS_QUERY)
@@ -540,7 +540,7 @@ class WorkspaceItemProcessor(
         }
     }
 
-    // TextLauncher: no preloaded items (processPreloadedItems).
+    // CaretLauncher: no preloaded items (processPreloadedItems).
 
     companion object {
         private const val TAG = "WorkspaceItemProcessor"
@@ -550,8 +550,8 @@ class WorkspaceItemProcessor(
             "$ITEM_TYPE = $ITEM_TYPE_FOLDER AND $_ID NOT IN (SELECT $CONTAINER FROM $TABLE_NAME)"
         private const val ORPHAN_APPS_QUERY =
             "$CONTAINER >= 0 AND $CONTAINER NOT IN (SELECT $_ID FROM $TABLE_NAME )"
-        // TextLauncher: no app pairs (BAD_APP_PAIR_QUERY).
+        // CaretLauncher: no app pairs (BAD_APP_PAIR_QUERY).
 
-        // TextLauncher: no widget size logging (logWidgetInfo).
+        // CaretLauncher: no widget size logging (logWidgetInfo).
     }
 }

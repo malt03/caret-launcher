@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.allapps;
@@ -47,8 +47,8 @@ import java.util.function.Predicate;
  * A utility class to maintain the collection of all apps.
  *
  * <p>Stand-in for Launcher3's AllAppsStore (android-17.0.0_r1), made from AllAppsStore.java by
- * deleting what TextLauncher does not have (Dagger, deferred updates, uids, model flags, download
- * progress and the dump); changes are marked with "TextLauncher:".
+ * deleting what CaretLauncher does not have (Dagger, deferred updates, uids, model flags, download
+ * progress and the dump); changes are marked with "CaretLauncher:".
  */
 public class AllAppsStore {
 
@@ -66,7 +66,7 @@ public class AllAppsStore {
         return mApps;
     }
 
-    // TextLauncher: ActivityComponent makes it, and the app sets the apps (setApps) instead of
+    // CaretLauncher: ActivityComponent makes it, and the app sets the apps (setApps) instead of
     // AppsListRepository.
     public AllAppsStore() {
     }
@@ -77,7 +77,7 @@ public class AllAppsStore {
      *
      * <p>Param: apps are required to be sorted using the comparator COMPONENT_KEY_COMPARATOR
      * in order to enable binary search on the mApps store
-     * TextLauncher: without the model flags and the uid map.
+     * CaretLauncher: without the model flags and the uid map.
      */
     public void setApps(@Nullable AppInfo[] apps) {
         mApps = apps == null ? EMPTY_ARRAY : apps;
@@ -108,7 +108,7 @@ public class AllAppsStore {
     }
 
     private void notifyUpdate() {
-        // TextLauncher: no deferred updates.
+        // CaretLauncher: no deferred updates.
         Log.d(TAG, "notifyUpdate: notifying listeners");
         for (OnUpdateListener listener : mUpdateListeners) {
             listener.onAppsUpdated();

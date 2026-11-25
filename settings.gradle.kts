@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Text Launcher"
+rootProject.name = "Caret Launcher"
 include(":app")
 
 // Code copied from AOSP (docs/launcher3-porting.md)
@@ -31,7 +31,7 @@ project(":launcher3").projectDir = file("third_party/launcher3")
 include(":iconloaderlib")
 project(":iconloaderlib").projectDir = file("third_party/systemui/iconloaderlib")
 include(":msdllib")
-// TextLauncher: Launcher3's own Gradle module for the widget picker.
+// CaretLauncher: Launcher3's own Gradle module for the widget picker.
 include(":widgetpicker")
 project(":widgetpicker").projectDir = file("third_party/launcher3/modules/widgetpicker")
 project(":msdllib").projectDir = file("third_party/systemui/msdllib")

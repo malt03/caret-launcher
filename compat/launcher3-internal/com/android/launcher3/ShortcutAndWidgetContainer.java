@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -36,11 +36,11 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView;
  * Stand-in for Launcher3's ShortcutAndWidgetContainer (android-17.0.0_r1): the view that holds
  * and lays out the items of a {@link CellLayout}, which holds one as in Launcher3 (the home
  * screen's page and an open folder's pages). Made from ShortcutAndWidgetContainer.java by deleting
- * what TextLauncher does not have (the cell padding from the device profile, the QSB, widget
+ * what CaretLauncher does not have (the cell padding from the device profile, the QSB, widget
  * scaling and centering, the translation provider, the wallpaper drop command, folder
- * leave-behinds); changes are marked with "TextLauncher:".
+ * leave-behinds); changes are marked with "CaretLauncher:".
  */
-// TextLauncher: not a FolderIconParent (no folder leave-behind).
+// CaretLauncher: not a FolderIconParent (no folder leave-behind).
 public class ShortcutAndWidgetContainer extends ViewGroup {
 
     private int mCellWidth;
@@ -57,7 +57,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
 
     public ShortcutAndWidgetContainer(Context context, @ContainerType int containerType) {
         super(context);
-        // TextLauncher: no activity or wallpaper manager (the device profile's cell padding and
+        // CaretLauncher: no activity or wallpaper manager (the device profile's cell padding and
         // the wallpaper drop command are not used).
         mContainerType = containerType;
         setClipChildren(false);
@@ -104,7 +104,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
 
     public void setupLp(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
-        // TextLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
+        // CaretLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
         // multi-window) and get the workspace's widget padding from getWidgetPadding.
         if (child instanceof LauncherAppWidgetHostView) {
             lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
@@ -124,7 +124,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
     public void measureChild(View child) {
         CellLayoutLayoutParams lp = (CellLayoutLayoutParams) child.getLayoutParams();
 
-        // TextLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
+        // CaretLauncher: widgets are not scaled (DeviceProfile.getAppWidgetScale is 1 outside
         // multi-window) and get the workspace's widget padding from getWidgetPadding.
         if (child instanceof LauncherAppWidgetHostView) {
             lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
@@ -133,7 +133,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
         } else {
             lp.setup(mCellWidth, mCellHeight, invertLayoutHorizontally(), mCountX, mCountY,
                     mBorderSpace);
-            // TextLauncher: no cell padding; the icons center themselves in their cells
+            // CaretLauncher: no cell padding; the icons center themselves in their cells
             // (iconCenterVertically).
         }
         int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(lp.width, MeasureSpec.EXACTLY);
@@ -169,7 +169,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
 
         child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
 
-        // TextLauncher: no wallpaper drop command.
+        // CaretLauncher: no wallpaper drop command.
     }
 
     @Override
@@ -199,7 +199,7 @@ public class ShortcutAndWidgetContainer extends ViewGroup {
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** WorkspaceProfile.MIN_WIDGET_PADDING_DP */
     private static final float MIN_WIDGET_PADDING_DP = 6f;

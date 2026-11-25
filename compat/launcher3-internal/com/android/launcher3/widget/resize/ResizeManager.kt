@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -41,7 +41,7 @@ import kotlin.math.abs
  * Responsible for managing widget's size, evaluating and performing the resize operations.
  *
  * Stand-in for Launcher3's ResizeManager (android-17.0.0_r1); changes are marked with
- * "TextLauncher:". TextLauncher: the two panels are the all apps list and the home screen, so
+ * "CaretLauncher:". CaretLauncher: the two panels are the all apps list and the home screen, so
  * there is no paired CellLayout to dim (handleInvalidResizeForTwoPanelUi); there are no pending
  * widget views and no stats logging. The widget's spans come from the home screen
  * ([Launcher.getLauncherAppWidgetInfo]), and so do its size updates.
@@ -60,13 +60,13 @@ class ResizeManager(
 
     private val resizeSession: ResizeSession = ResizeSession()
 
-    // TextLauncher: the launcher, for the widget's spans.
+    // CaretLauncher: the launcher, for the widget's spans.
     private val launcher: Launcher = Launcher.getLauncher(cellLayout.context)
 
     init {
         val itemInfo = widgetView.tag as LauncherAppWidgetInfo
 
-        // TextLauncher: no custom widgets.
+        // CaretLauncher: no custom widgets.
         val widgetProviderInfo = launcher.getLauncherAppWidgetInfo(widgetView.appWidgetInfo)
 
         val resizeMode = widgetProviderInfo?.resizeMode ?: 0
@@ -76,7 +76,7 @@ class ResizeManager(
                 minVSpan = widgetProviderInfo?.minSpanY ?: itemInfo.spanY,
                 maxHSpan = widgetProviderInfo?.maxSpanX ?: itemInfo.spanX,
                 maxVSpan = widgetProviderInfo?.maxSpanY ?: itemInfo.spanY,
-                // TextLauncher: InvariantDeviceProfile's numRows and numColumns, as Launcher3
+                // CaretLauncher: InvariantDeviceProfile's numRows and numColumns, as Launcher3
                 // passes them.
                 cellCountX = cellLayout.countY,
                 cellCountY = cellLayout.countX,
@@ -90,7 +90,7 @@ class ResizeManager(
     }
 
     private fun initializeWidgetViewForResize(widgetInfo: ItemInfo) {
-        // TextLauncher: the model's cells are the presenter's (no CellPosMapper).
+        // CaretLauncher: the model's cells are the presenter's (no CellPosMapper).
         (this.widgetView.layoutParams as CellLayoutLayoutParams).apply {
             cellX = widgetInfo.cellX
             tmpCellX = widgetInfo.cellX
@@ -233,7 +233,7 @@ class ResizeManager(
                     /*right=*/ newFrameX + newFrameWidth,
                     /*bottom=*/ newFrameY + newFrameHeight,
                 )
-            // TextLauncher: no paired CellLayout (handleInvalidResizeForTwoPanelUi).
+            // CaretLauncher: no paired CellLayout (handleInvalidResizeForTwoPanelUi).
 
             // Publish the resize request to frame UI, so it can adapt itself.
             resizeListener?.onNewResizeRequest(newFrameBounds)
@@ -259,13 +259,13 @@ class ResizeManager(
         // User stopped resizing, so snap the frame to widget.
         widgetView.post { resizeListener?.onNewResizeRequest(getCurrentWidgetBounds()) }
 
-        // TextLauncher: no two-panel drag effect to reset.
+        // CaretLauncher: no two-panel drag effect to reset.
     }
 
     /** To be called before destroying the resize manager. */
     fun finish() {
         if (!cellLayout.isAttachedToWindow) return
-        // TextLauncher: no PendingAppWidgetHostView. The widget is on the page unless it is being
+        // CaretLauncher: no PendingAppWidgetHostView. The widget is on the page unless it is being
         // dragged (in the DragView) or was removed.
         if (widgetView.parent !is ShortcutAndWidgetContainer) return
         if (widgetView.layoutParams !is CellLayoutLayoutParams) return
@@ -281,7 +281,7 @@ class ResizeManager(
             /* commit= */ true,
         )
 
-        // TextLauncher: no stats logging.
+        // CaretLauncher: no stats logging.
     }
 
     private fun resizeWidgetIfNeeded(
@@ -366,7 +366,7 @@ class ResizeManager(
                 resizeSession.directionVector[DIRECTION_VERTICAL]
         }
 
-        // TextLauncher: no pending widget views (PendingAppWidgetHostView).
+        // CaretLauncher: no pending widget views (PendingAppWidgetHostView).
         if (
             cellLayout.createAreaForResize(
                 cellX,

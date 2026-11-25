@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model.tasks;
@@ -41,7 +41,7 @@ import java.util.List;
  *
  * <p>Stand-in for Launcher3's CacheDataUpdatedTask (android-17.0.0_r1), made from
  * CacheDataUpdatedTask.java by deleting the pending widgets; changes are marked with
- * "TextLauncher:".
+ * "CaretLauncher:".
  */
 public class CacheDataUpdatedTask implements ModelUpdateTask {
 
@@ -82,7 +82,7 @@ public class CacheDataUpdatedTask implements ModelUpdateTask {
                         }
                         return false;
                     }
-                    // TextLauncher: no pending widgets (pendingItemInfo).
+                    // CaretLauncher: no pending widgets (pendingItemInfo).
                     );
 
             apps.updateIconsAndLabels(mPackages, mUser);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -57,8 +57,8 @@ import java.util.Collections;
  * Class for handling clicks on workspace and all-apps items
  *
  * <p>Stand-in for Launcher3's ItemClickHandler (android-17.0.0_r1), made from ItemClickHandler.java
- * by deleting what TextLauncher does not have (app pairs, widgets, promise icons, install
- * sessions, private space); changes are marked with "TextLauncher:".
+ * by deleting what CaretLauncher does not have (app pairs, widgets, promise icons, install
+ * sessions, private space); changes are marked with "CaretLauncher:".
  */
 public class ItemClickHandler {
 
@@ -84,10 +84,10 @@ public class ItemClickHandler {
             onClickAppShortcut(v, (WorkspaceItemInfo) tag, launcher);
         } else if (tag instanceof FolderInfo) {
             onClickFolderIcon(v);
-        // TextLauncher: no app pairs.
+        // CaretLauncher: no app pairs.
         } else if (tag instanceof AppInfo) {
             startAppShortcutOrInfoActivity(v, (AppInfo) tag, launcher);
-        // TextLauncher: no widgets.
+        // CaretLauncher: no widgets.
         } else if (tag instanceof ItemClickProxy) {
             ((ItemClickProxy) tag).onItemClicked(v);
         }
@@ -196,12 +196,12 @@ public class ItemClickHandler {
      * @param v The view that was clicked. Must be a tagged with a {@link WorkspaceItemInfo}.
      */
     public static void onClickAppShortcut(View v, WorkspaceItemInfo shortcut, Launcher launcher) {
-        // TextLauncher: the launcher is not an Activity; its context is.
+        // CaretLauncher: the launcher is not an Activity; its context is.
         if (shortcut.isDisabled() && handleDisabledItemClicked(shortcut, launcher.asContext())) {
             return;
         }
 
-        // TextLauncher: only installed apps are shown, so there are no promise icons.
+        // CaretLauncher: only installed apps are shown, so there are no promise icons.
 
         // Start activities
         startAppShortcutOrInfoActivity(v, shortcut, launcher);
@@ -209,11 +209,11 @@ public class ItemClickHandler {
 
     private static void startAppShortcutOrInfoActivity(View v, ItemInfo item, Launcher launcher) {
         Intent intent = item.getIntent();
-        // TextLauncher: no install sessions or private space install button.
+        // CaretLauncher: no install sessions or private space install button.
         if (intent == null) {
             throw new IllegalArgumentException("Input must have a valid intent");
         }
-        // TextLauncher: no instant app web UI, start-for-result items or floating icon view.
+        // CaretLauncher: no instant app web UI, start-for-result items or floating icon view.
         launcher.startActivitySafely(v, intent, item);
     }
 

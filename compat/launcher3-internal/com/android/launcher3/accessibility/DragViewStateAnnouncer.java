@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -33,8 +33,8 @@ import com.android.launcher3.Launcher;
  * implementation in ProgressBar.
  */
 /*
- * TextLauncher: derived from DragViewStateAnnouncer.java (android-17.0.0_r1); changes are marked
- * with "TextLauncher:".
+ * CaretLauncher: derived from DragViewStateAnnouncer.java (android-17.0.0_r1); changes are marked
+ * with "CaretLauncher:".
  */
 public class DragViewStateAnnouncer implements Runnable {
 
@@ -64,7 +64,7 @@ public class DragViewStateAnnouncer implements Runnable {
     public void completeAction(int announceResId) {
         cancel();
         Launcher launcher = Launcher.getLauncher(mTargetView.getContext());
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         launcher.getDragLayer().announceForAccessibility(
                 launcher.asContext().getText(announceResId));
     }

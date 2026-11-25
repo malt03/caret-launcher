@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -35,7 +35,7 @@ enum class PopupCategory {
 }
 
 /** Data class which stores all the values we need to create a long press menu shortcut. */
-// TextLauncher: no eventId, as TextLauncher logs no stats (StatsLogManager has no
+// CaretLauncher: no eventId, as CaretLauncher logs no stats (StatsLogManager has no
 // LauncherEvent.IGNORE).
 data class PopupData(
     val iconResId: Int,

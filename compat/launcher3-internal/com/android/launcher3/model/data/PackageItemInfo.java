@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -26,7 +26,7 @@ import android.os.UserHandle;
  * Represents a {@link Package} in the widget tray section.
  *
  * <p>Stand-in for Launcher3's PackageItemInfo (android-17.0.0_r1): a package's icon and label for
- * IconCache (the shortcut badge). TextLauncher: no widget categories.
+ * IconCache (the shortcut badge). CaretLauncher: no widget categories.
  */
 public class PackageItemInfo extends ItemInfoWithIcon {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -24,9 +24,9 @@ import android.graphics.drawable.Drawable;
 
 import com.android.launcher3.model.data.AppPairInfo;
 
-/** Stand-in for Launcher3's AppPairIconGraphic. TextLauncher has no app pairs; never reached. */
+/** Stand-in for Launcher3's AppPairIconGraphic. CaretLauncher has no app pairs; never reached. */
 public class AppPairIconGraphic {
     public static Drawable composeDrawable(AppPairInfo info, AppPairIconDrawingParams params) {
-        throw new UnsupportedOperationException("No app pairs in TextLauncher");
+        throw new UnsupportedOperationException("No app pairs in CaretLauncher");
     }
 }

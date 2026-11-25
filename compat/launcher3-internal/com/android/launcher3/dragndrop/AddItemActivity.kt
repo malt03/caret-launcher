@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.dragndrop
@@ -60,7 +60,7 @@ import kotlin.math.min
  * Activity to show pin widget dialog.
  *
  * Stand-in for Launcher3's AddItemActivity (android-17.0.0_r1), made from AddItemActivity.kt by
- * deleting the logging; changes are marked with "TextLauncher:". The widget host is the platform
+ * deleting the logging; changes are marked with "CaretLauncher:". The widget host is the platform
  * AppWidgetHost with the home screen's id (no LauncherWidgetHolder), which starts the bind dialog
  * as LauncherWidgetHolder does.
  */
@@ -74,7 +74,7 @@ open class AddItemActivity :
     private lateinit var accessibilityManager: AccessibilityManager
 
     // Widget request specific options.
-    // TextLauncher: the platform AppWidgetHost (LauncherWidgetHolder).
+    // CaretLauncher: the platform AppWidgetHost (LauncherWidgetHolder).
     private var appWidgetHolder: AppWidgetHost? = null
     private var appWidgetManager: WidgetManagerHelper? = null
     private var pendingBindWidgetId = 0
@@ -112,7 +112,7 @@ open class AddItemActivity :
         accessibilityManager =
             checkNotNull(applicationContext.getSystemService(AccessibilityManager::class.java))
         appWidgetManager = WidgetManagerHelper(this)
-        // TextLauncher: LauncherWidgetHolder.newInstance, with the home screen's host id.
+        // CaretLauncher: LauncherWidgetHolder.newInstance, with the home screen's host id.
         appWidgetHolder = AppWidgetHost(applicationContext, APPWIDGET_HOST_ID)
 
         val targetApp =
@@ -191,7 +191,7 @@ open class AddItemActivity :
         if (pinItemRequest.requestType == LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT) {
             val shortcutInfo = checkNotNull(pinItemRequest.shortcutInfo)
             ItemInstallQueue.INSTANCE[this].queueItem(SerializedItemItem(shortcutInfo))
-            // TextLauncher: no logging.
+            // CaretLauncher: no logging.
             pinItemRequest.accept()
             var label = shortcutInfo.longLabel
             if (TextUtils.isEmpty(label)) {
@@ -219,7 +219,7 @@ open class AddItemActivity :
             }
 
             // request bind widget
-            // TextLauncher: LauncherWidgetHolder.startBindFlow.
+            // CaretLauncher: LauncherWidgetHolder.startBindFlow.
             val intent =
                 Intent(AppWidgetManager.ACTION_APPWIDGET_BIND)
                     .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, pendingBindWidgetId)
@@ -248,20 +248,20 @@ open class AddItemActivity :
         }
         widgetOptions?.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
         pinItemRequest.accept(widgetOptions)
-        // TextLauncher: no logging.
+        // CaretLauncher: no logging.
         finish()
     }
 
     public override fun onDestroy() {
         super.onDestroy()
         // Necessary to destroy the holder to free up possible activity context
-        // TextLauncher: the platform AppWidgetHost has nothing to destroy.
+        // CaretLauncher: the platform AppWidgetHost has nothing to destroy.
         appWidgetHolder = null
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // TextLauncher: no logging.
+        // CaretLauncher: no logging.
         finish()
     }
 
@@ -309,7 +309,7 @@ open class AddItemActivity :
         }
     }
 
-    // TextLauncher: no logging (logCommand).
+    // CaretLauncher: no logging (logCommand).
 
     override val onBackPressedDispatcher: OnBackPressedDispatcher
         get() =
@@ -337,7 +337,7 @@ open class AddItemActivity :
         private const val REQUEST_BIND_APPWIDGET = 1
         private const val STATE_EXTRA_WIDGET_ID = "state.widget.id"
 
-        /** TextLauncher: LauncherWidgetHolder.APPWIDGET_HOST_ID, the home screen's host. */
+        /** CaretLauncher: LauncherWidgetHolder.APPWIDGET_HOST_ID, the home screen's host. */
         private const val APPWIDGET_HOST_ID = 1024
 
         private fun PackageItemInfo.toPackageUserKey() =

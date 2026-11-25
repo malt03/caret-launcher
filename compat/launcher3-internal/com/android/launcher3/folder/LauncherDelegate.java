@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -30,7 +30,7 @@ import com.android.launcher3.views.BaseDragLayer;
 
 /**
  * Stand-in for Launcher3's folder.LauncherDelegate (android-17.0.0_r1): what a folder asks of the
- * launcher. TextLauncher: the workspace and model work is the app's, which overrides
+ * launcher. CaretLauncher: the workspace and model work is the app's, which overrides
  * {@link #beginDragShared} and {@link #replaceFolderWithFinalItem} (package-private in Launcher3).
  */
 public class LauncherDelegate {

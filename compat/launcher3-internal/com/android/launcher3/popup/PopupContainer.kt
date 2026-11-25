@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -44,10 +44,10 @@ import com.android.launcher3.views.ActivityContext
  * Base popup container for shortcuts associated with the item {@code originalView}
  *
  * <p>Stand-in for Launcher3's PopupContainer (android-17.0.0_r1), made from PopupContainer.kt by
- * deleting what TextLauncher does not use (the Compose version of the menu, which
+ * deleting what CaretLauncher does not use (the Compose version of the menu, which
  * Flags.expandableLongPressMenu turns on and the release config disables; deep shortcut clicks
  * and the add button, which only the Compose version has; stats logging);
- * changes are marked with "TextLauncher:". [PopupData] and [PopupCategory] are from
+ * changes are marked with "CaretLauncher:". [PopupData] and [PopupCategory] are from
  * PopupDataMapper.kt, at the end of this file.
  *
  * @param <T> The activity on which the popup shows </T>
@@ -79,7 +79,7 @@ open class PopupContainer<T : ActivityContext>(
         activityContext: ActivityContext,
         itemView: View,
     ) {
-        // TextLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
+        // CaretLauncher: no Compose version (Flags.expandableLongPressMenu is disabled in the
         // release config), so only upstream's else branch is kept.
         run {
             systemShortcutContainer = inflateAndAdd(R.layout.system_shortcut_rows_container, this)
@@ -92,7 +92,7 @@ open class PopupContainer<T : ActivityContext>(
 
                 view.tag = systemShortcut
                 view.setOnClickListener {
-                    // TextLauncher: no stats logging (PopupData has no eventId).
+                    // CaretLauncher: no stats logging (PopupData has no eventId).
                     systemShortcut.popupAction.invoke(activityContext, itemInfo, itemView)
                 }
             }
@@ -115,7 +115,7 @@ open class PopupContainer<T : ActivityContext>(
             iconViewController?.getFloatingViewTextAlpha()?.value = 1f
             iconViewController?.setForceHideDot(false)
         }
-        // TextLauncher: no stats logging.
+        // CaretLauncher: no stats logging.
         Trace.endAsyncSection("dismissPopupMenu", hashCode())
     }
 
@@ -174,7 +174,7 @@ open class PopupContainer<T : ActivityContext>(
         handleClose(/* animate */ true)
     }
 
-    // TextLauncher: `View?`, since DragController.cancelDrag passes a null target, and the Gradle
+    // CaretLauncher: `View?`, since DragController.cancelDrag passes a null target, and the Gradle
     // Kotlin build's parameter null check would throw on it for a non-null `View`.
     override fun onDropCompleted(target: View?, d: DragObject, success: Boolean) {}
 
@@ -304,7 +304,7 @@ open class PopupContainer<T : ActivityContext>(
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * The drag layer ends above the keyboard (LauncherRootLayout), so it grows and shrinks when the

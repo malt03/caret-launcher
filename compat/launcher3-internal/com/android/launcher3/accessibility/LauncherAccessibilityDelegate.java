@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -89,11 +89,11 @@ import java.util.function.Consumer;
 /**
  * Stand-in for Launcher3's LauncherAccessibilityDelegate (android-17.0.0_r1), made from
  * LauncherAccessibilityDelegate.java by deleting app pairs, home screen files, automation and the
- * keyboard drag; changes are marked with "TextLauncher:".
+ * keyboard drag; changes are marked with "CaretLauncher:".
  */
 public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Launcher> {
 
-    // TextLauncher: no TAG, as nothing is logged (findSpaceOnWorkspace).
+    // CaretLauncher: no TAG, as nothing is logged (findSpaceOnWorkspace).
 
     public static final int REMOVE = R.id.action_remove;
     public static final int UNINSTALL = R.id.action_uninstall;
@@ -217,7 +217,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
                 popupController = ShortcutUtil.supportsShortcuts(item)
                         ? mContext.getPopupControllerForAppIcons()
                         : mContext.getPopupControllerForHomeScreenItems();
-            // TextLauncher: no app pairs, and the widgets' view is LauncherAppWidgetHostView.
+            // CaretLauncher: no app pairs, and the widgets' view is LauncherAppWidgetHostView.
             } else if (host instanceof FolderIcon || host instanceof LauncherAppWidgetHostView) {
                 popupController = mContext.getPopupControllerForHomeScreenItems();
             }
@@ -325,7 +325,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
     }
 
     @Thunk void announceConfirmation(int resId) {
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         announceConfirmation(mContext.asContext().getResources().getString(resId));
     }
 
@@ -341,7 +341,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
         mDragInfo.dragType = DragType.ICON;
         if (info instanceof FolderInfo) {
             mDragInfo.dragType = DragType.FOLDER;
-        // TextLauncher: no app pairs or home screen files.
+        // CaretLauncher: no app pairs or home screen files.
         } else if (info instanceof LauncherAppWidgetInfo) {
             mDragInfo.dragType = DragType.WIDGET;
         }
@@ -355,7 +355,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
         options.isKeyboardDrag = fromKeyboard;
         options.simulatedDndStartPoint = new Point(pos.centerX(), pos.centerY());
 
-        // TextLauncher: no keyboard drag (KeyboardDragAndDropView), as the actions are not invoked
+        // CaretLauncher: no keyboard drag (KeyboardDragAndDropView), as the actions are not invoked
         // from the keyboard (Launcher.onKeyShortcut).
         ItemLongClickListener.beginDrag(item, mContext, info, options);
         return true;
@@ -387,7 +387,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
             return screenId;
         }
 
-        // TextLauncher: one page, so there are no extra empty screens to add: no space, as when
+        // CaretLauncher: one page, so there are no extra empty screens to add: no space, as when
         // they cannot be made.
         return -1;
     }
@@ -404,7 +404,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
      */
     public boolean addToWorkspace(ItemInfo item, boolean accessibility,
             @Nullable Consumer<Boolean> finishCallback) {
-        // TextLauncher: nothing is added while the home screen loads (Launcher3's menu cannot be
+        // CaretLauncher: nothing is added while the home screen loads (Launcher3's menu cannot be
         // opened then, as no drag or long press starts); the search results' can (Tex-twu9).
         if (mContext.isWorkspaceLoading()) {
             if (finishCallback != null) {
@@ -421,7 +421,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
         final int screenId = findSpaceOnWorkspace(item, coordinates);
         final CellLayout layout = mContext.getWorkspace().getScreenWithId(screenId);
         if (screenId == -1 || layout == null) {
-            // TextLauncher: one page, so where Launcher3 adds a page there is no room; it says so
+            // CaretLauncher: one page, so where Launcher3 adds a page there is no room; it says so
             // as Workspace.onNoCellFound does for a drop (Tex-8w0r).
             Toast.makeText(mContext.asContext(), R.string.out_of_space, Toast.LENGTH_SHORT).show();
             if (finishCallback != null) {
@@ -437,9 +437,9 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
             }
         };
 
-        // TextLauncher: if-else in place of the switch's type patterns, which need Java 21.
+        // CaretLauncher: if-else in place of the switch's type patterns, which need Java 21.
         Runnable itemBindLogic = () -> {
-            // TextLauncher: AppInfo is not a WorkspaceItemFactory (AppInfo.makeWorkspaceItem).
+            // CaretLauncher: AppInfo is not a WorkspaceItemFactory (AppInfo.makeWorkspaceItem).
             // No automation.
             if (item instanceof AppInfo appInfo) {
                 WorkspaceItemInfo info = appInfo.makeWorkspaceItem(mContext.asContext());
@@ -450,7 +450,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
             } else if (item instanceof PendingAddItemInfo info) {
                 if (info instanceof PendingAddWidgetInfo widgetInfo
                         && widgetInfo.bindOptions == null) {
-                    // TextLauncher: the Launcher stand-in is not a Context.
+                    // CaretLauncher: the Launcher stand-in is not a Context.
                     widgetInfo.bindOptions =
                             widgetInfo.getDefaultSizeOptions(mContext.asContext());
                 }
@@ -461,12 +461,12 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
                 wrappedDropCallback.accept(/* success= */ true);
             } else if (item instanceof WorkspaceItemInfo workspaceItemInfo) {
                 WorkspaceItemInfo info = workspaceItemInfo.clone();
-                // TextLauncher: no automation.
+                // CaretLauncher: no automation.
                 mContext.getModelWriter().addItemToDatabase(info,
                         LauncherSettings.Favorites.CONTAINER_DESKTOP,
                         screenId, coordinates[0], coordinates[1]);
                 bindItem(info, accessibility, wrappedDropCallback);
-            // TextLauncher: FolderInfo is the only CollectionInfo. No automation.
+            // CaretLauncher: FolderInfo is the only CollectionInfo. No automation.
             } else if (item instanceof FolderInfo ci) {
                 mContext.getModelWriter().addItemToDatabase(ci,
                         LauncherSettings.Favorites.CONTAINER_DESKTOP, screenId, coordinates[0],
@@ -478,7 +478,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
             }
         };
 
-        // TextLauncher: the home screen also leaves the search results (Launcher.goToNormalState),
+        // CaretLauncher: the home screen also leaves the search results (Launcher.goToNormalState),
         // and has one page, so the item is bound once it is shown.
         mContext.goToNormalState(true, () -> {
             Workspace<?> workspace = mContext.getWorkspace();
@@ -489,7 +489,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
 
     private void bindItem(ItemInfo item, boolean focusForAccessibility,
             @Nullable Consumer<Boolean> finishCallback) {
-        // TextLauncher: the home screen inflates it (Launcher.inflateItem).
+        // CaretLauncher: the home screen inflates it (Launcher.inflateItem).
         View view = mContext.inflateItem(item, mContext.getWorkspace().getScreenWithId(
                 item.screenId), item.container);
         if (view == null) {
@@ -517,7 +517,7 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
      * @return true if the item could be successfully added
      */
     public boolean moveToWorkspace(ItemInfo item) {
-        // TextLauncher: the space is found first, as there may be none (one page); the item then
+        // CaretLauncher: the space is found first, as there may be none (one page); the item then
         // stays in its folder, and the home screen says so (Workspace.onNoCellFound).
         final int[] coordinates = new int[2];
         final int screenId = findSpaceOnWorkspace(item, coordinates);

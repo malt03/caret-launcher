@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.dragndrop;
@@ -46,13 +46,13 @@ import java.util.function.Consumer;
 /**
  * Stand-in for Launcher3's LauncherDragController (android-17.0.0_r1), made from
  * LauncherDragController.java by deleting fling to delete (FlingToDeleteHelper); changes are
- * marked with "TextLauncher:".
+ * marked with "CaretLauncher:".
  */
 public class LauncherDragController extends DragController {
 
     public static final String TAG = "LauncherDragController";
 
-    // TextLauncher: no fling to delete (FlingToDeleteHelper).
+    // CaretLauncher: no fling to delete (FlingToDeleteHelper).
     private final Launcher mLauncher;
 
     public LauncherDragController(Launcher launcher) {
@@ -68,7 +68,7 @@ public class LauncherDragController extends DragController {
         final int registrationX = mMotionDown.x - dragLayerX;
         final int registrationY = mMotionDown.y - dragLayerY;
 
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         final Resources res = mLauncher.asContext().getResources();
         final float scalePx;
         if (originalView.getViewType() == DraggableView.DRAGGABLE_WIDGET) {
@@ -76,8 +76,8 @@ public class LauncherDragController extends DragController {
         } else {
             scalePx = mIsInPreDrag ? res.getDimensionPixelSize(R.dimen.pre_drag_view_scale) : 0f;
         }
-        // TextLauncher: DragView in place of LauncherDragView, which hides the drag view in the
-        // launcher states that TextLauncher does not have while dragging.
+        // CaretLauncher: DragView in place of LauncherDragView, which hides the drag view in the
+        // launcher states that CaretLauncher does not have while dragging.
         return drawable != null
                 ? new DragView(
                 mLauncher,
@@ -128,7 +128,7 @@ public class LauncherDragController extends DragController {
             draggedViewHeightPx = drawable.getIntrinsicHeight();
         }
 
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         return WidgetDragScaleUtils.getWidgetDragScalePx(mLauncher.asContext(),
                 mLauncher.getDeviceProfile(),
                 draggedViewWidthPx, draggedViewHeightPx, dragInfo);
@@ -141,13 +141,13 @@ public class LauncherDragController extends DragController {
 
     @Override
     protected void exitDrag() {
-        // TextLauncher: no edit mode state (EDIT_MODE).
+        // CaretLauncher: no edit mode state (EDIT_MODE).
         if (!mIsInPreDrag) {
             mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
         }
     }
 
-    // TextLauncher: no fling to delete (endWithFlingAnimation, endDrag).
+    // CaretLauncher: no fling to delete (endWithFlingAnimation, endDrag).
 
     @Override
     protected DropTarget getDefaultDropTarget(int[] dropCoordinates) {

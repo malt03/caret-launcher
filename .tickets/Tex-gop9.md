@@ -24,4 +24,4 @@ ShortcutAndWidgetContainer.java（実行時に使われていない）と CellLa
 
 **2026-11-21T09:40:24Z**
 
-CellLayout.Children をなくし、ShortcutAndWidgetContainer の互換クラスを ViewGroup にして上流のメソッド（setCellDimensions、getChildAt(cellX, cellY)、setupLp、measureChild、layoutChild、onLayout、shouldDelayChildPressedState、requestChildFocus、cancelLongPress）を移した。HomeGridView がそれを継承し、CellLayout.getShortcutsAndWidgets() が返す。canCreateFolder は上流どおり CellLayout に戻した。グリッドの padding を CellLayout の padding として扱う差分だけが layoutChild と DragLayer.animateViewIntoPosition に残る（TextLauncher: 印）。エミュレータでフォルダの作成、押しのけての並び替え、キーフォーカスを確認
+CellLayout.Children をなくし、ShortcutAndWidgetContainer の互換クラスを ViewGroup にして上流のメソッド（setCellDimensions、getChildAt(cellX, cellY)、setupLp、measureChild、layoutChild、onLayout、shouldDelayChildPressedState、requestChildFocus、cancelLongPress）を移した。HomeGridView がそれを継承し、CellLayout.getShortcutsAndWidgets() が返す。canCreateFolder は上流どおり CellLayout に戻した。グリッドの padding を CellLayout の padding として扱う差分だけが layoutChild と DragLayer.animateViewIntoPosition に残る（CaretLauncher: 印）。エミュレータでフォルダの作成、押しのけての並び替え、キーフォーカスを確認

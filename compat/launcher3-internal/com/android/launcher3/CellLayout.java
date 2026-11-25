@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3;
@@ -92,8 +92,8 @@ import java.util.Stack;
 
 /**
  * Stand-in for Launcher3's CellLayout (android-17.0.0_r1), made from CellLayout.java by deleting
- * what TextLauncher does not have (the hotseat's profile, the cell position mapper, accessible
- * drag and drop); changes are marked with "TextLauncher:". The home screen's page and an open
+ * what CaretLauncher does not have (the hotseat's profile, the cell position mapper, accessible
+ * drag and drop); changes are marked with "CaretLauncher:". The home screen's page and an open
  * folder's pages are CellLayouts, as in Launcher3.
  */
 public class CellLayout extends ViewGroup {
@@ -406,7 +406,7 @@ public class CellLayout extends ViewGroup {
                 mBorderSpace = new Point(
                         deviceProfile.getFolderProfile().getCellLayoutBorderSpacePx());
                 break;
-            // TextLauncher: no hotseat (DeviceProfile.getHotseatProfile).
+            // CaretLauncher: no hotseat (DeviceProfile.getHotseatProfile).
             case WORKSPACE:
             default:
                 mBorderSpace = new Point(
@@ -1178,7 +1178,7 @@ public class CellLayout extends ViewGroup {
         return false;
     }
 
-    // TextLauncher: public, called by the home drop target (Workspace in Launcher3).
+    // CaretLauncher: public, called by the home drop target (Workspace in Launcher3).
     public void visualizeDropLocation(int cellX, int cellY, int spanX, int spanY,
             DropTarget.DragObject dragObject) {
         if (mDragCell[0] != cellX || mDragCell[1] != cellY || mDragCellSpan[0] != spanX
@@ -1480,7 +1480,7 @@ public class CellLayout extends ViewGroup {
         int screenId = mCellLayoutContainer.getCellLayoutId(this);
         int container = Favorites.CONTAINER_DESKTOP;
 
-        // TextLauncher: no hotseat (Favorites.CONTAINER_HOTSEAT).
+        // CaretLauncher: no hotseat (Favorites.CONTAINER_HOTSEAT).
 
         int childCount = mShortcutsAndWidgets.getChildCount();
         for (int i = 0; i < childCount; i++) {
@@ -1490,7 +1490,7 @@ public class CellLayout extends ViewGroup {
             // We do a null check here because the item info can be null in the case of the
             // AllApps button in the hotseat.
             if (info != null && child != dragView) {
-                // TextLauncher: no cell position mapper (the model's cells are the presenter's).
+                // CaretLauncher: no cell position mapper (the model's cells are the presenter's).
                 final boolean requiresDbUpdate = (info.cellX != lp.getTmpCellX()
                         || info.cellY != lp.getTmpCellY() || info.spanX != lp.cellHSpan
                         || info.spanY != lp.cellVSpan || info.screenId != screenId);
@@ -1552,7 +1552,7 @@ public class CellLayout extends ViewGroup {
     /**
      * Clear state variables to be ready for a new reorder.
      */
-    // TextLauncher: public, called by the home drop target.
+    // CaretLauncher: public, called by the home drop target.
     public void revertTempState() {
         completeAndClearReorderPreviewAnimations();
         if (isItemPlacementDirty() && !DESTRUCTIVE_REORDER) {
@@ -1668,7 +1668,7 @@ public class CellLayout extends ViewGroup {
         );
     }
 
-    // TextLauncher: public, called by the home drop target (Workspace in Launcher3).
+    // CaretLauncher: public, called by the home drop target (Workspace in Launcher3).
     public int[] performReorder(int pixelX, int pixelY, int minSpanX, int minSpanY, int spanX, int spanY,
             View dragView, int[] result, int[] resultSpan, int mode) {
         if (resultSpan == null) {
@@ -1810,7 +1810,7 @@ public class CellLayout extends ViewGroup {
      * It may have begun over this layout (in which case onDragChild is called first),
      * or it may have begun on another layout.
      */
-    // TextLauncher: public, called by the home drop target.
+    // CaretLauncher: public, called by the home drop target.
     public void onDragEnter() {
         mDragging = true;
         mPreviousSolution = null;
@@ -1819,7 +1819,7 @@ public class CellLayout extends ViewGroup {
     /**
      * Called when drag has left this CellLayout or has been completed (successfully or not)
      */
-    // TextLauncher: public, called by the home drop target.
+    // CaretLauncher: public, called by the home drop target.
     public void onDragExit() {
         // This can actually be called when we aren't in a drag, e.g. when adding a new
         // item to this layout via the customize drawer.
@@ -1845,7 +1845,7 @@ public class CellLayout extends ViewGroup {
      *
      * @param child The child that is being dropped
      */
-    // TextLauncher: public, called by the home drop target.
+    // CaretLauncher: public, called by the home drop target.
     public void onDropChild(View child) {
         mPlayDragHaptics = false;
         if (child != null) {
@@ -1891,7 +1891,7 @@ public class CellLayout extends ViewGroup {
     }
 
     public void markCellsAsOccupiedForView(View view) {
-        // TextLauncher: no cell position mapper; widgets are marked from their layout params like
+        // CaretLauncher: no cell position mapper; widgets are marked from their layout params like
         // other items (the model's cells are the presenter's).
         if (view == null || view.getParent() != mShortcutsAndWidgets) return;
         CellLayoutLayoutParams
@@ -1900,7 +1900,7 @@ public class CellLayout extends ViewGroup {
     }
 
     public void markCellsAsUnoccupiedForView(View view) {
-        // TextLauncher: no cell position mapper; widgets are marked from their layout params like
+        // CaretLauncher: no cell position mapper; widgets are marked from their layout params like
         // other items (the model's cells are the presenter's).
         if (view == null || view.getParent() != mShortcutsAndWidgets) return;
         CellLayoutLayoutParams
@@ -1963,7 +1963,7 @@ public class CellLayout extends ViewGroup {
         return false;
     }
 
-    // TextLauncher: no hotseat (makeSpaceForHotseatMigration).
+    // CaretLauncher: no hotseat (makeSpaceForHotseatMigration).
 
     public boolean isRegionVacant(int x, int y, int spanX, int spanY) {
         return mOccupied.isRegionVacant(x, y, spanX, spanY);
@@ -1987,7 +1987,7 @@ public class CellLayout extends ViewGroup {
         return null;
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * Marks every child, except {@code ignore}, as occupied, after clearing the occupancy. The

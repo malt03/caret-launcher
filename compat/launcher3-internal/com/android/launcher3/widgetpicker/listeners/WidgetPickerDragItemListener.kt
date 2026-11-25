@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: the launcher is not a Context and has no StateManager.
+ * Modified for CaretLauncher: the launcher is not a Context and has no StateManager.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -55,7 +55,7 @@ import com.android.launcher3.widgetpicker.shared.model.isAppWidget
  * @param previewRect the bounds of widget's preview offset by the point of long press
  * @param previewWidth width of the preview as it appears in the widget picker.
  *
- * TextLauncher: the launcher's Context is [Launcher.asContext], as the launcher is not the
+ * CaretLauncher: the launcher's Context is [Launcher.asContext], as the launcher is not the
  * activity, and [Launcher.goToNormalState] stands in for its StateManager.
  */
 class WidgetPickerDragItemListener(
@@ -73,7 +73,7 @@ class WidgetPickerDragItemListener(
 
     override fun init(context: Launcher, isHomeStarted: Boolean): Boolean =
         super.init(context, isHomeStarted).also {
-            // TextLauncher: no StateManager.
+            // CaretLauncher: no StateManager.
             context.goToNormalState(/* animated= */ isHomeStarted, /* onDone= */ null)
         }
 
@@ -92,7 +92,7 @@ class WidgetPickerDragItemListener(
                 is WidgetInfo.AppWidgetInfo -> {
                     val launcherProviderInfo =
                         LauncherAppWidgetProviderInfo.fromProviderInfo(
-                            // TextLauncher: the launcher is not a Context.
+                            // CaretLauncher: the launcher is not a Context.
                             mContext.asContext(),
                             widgetInfo.appWidgetProviderInfo,
                         )
@@ -120,7 +120,7 @@ class WidgetPickerDragItemListener(
             }
             dragStarted = true
 
-            // TextLauncher: the launcher is not a Context.
+            // CaretLauncher: the launcher is not a Context.
             val view = View(mContext.asContext())
             view.tag = pendingAddItemInfo
 
@@ -139,7 +139,7 @@ class WidgetPickerDragItemListener(
                 options,
             )
         }
-        // TextLauncher: no StateManager; the drag starts once the home screen is in its normal
+        // CaretLauncher: no StateManager; the drag starts once the home screen is in its normal
         // state, at once when it already is.
         mContext.goToNormalState(/* animated= */ true, dragRunnable)
     }

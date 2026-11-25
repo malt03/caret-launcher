@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.allapps;
@@ -61,7 +61,7 @@ import com.google.android.msdl.data.model.MSDLToken;
  * Stand-in for Launcher3's AllAppsTransitionController (android-17.0.0_r1), made from
  * AllAppsTransitionController.java by deleting the scrim, the alphas, the device profile changes,
  * the system UI, the header scale and the all apps search's back animation; changes are marked
- * with "TextLauncher:". The progress places TextLauncher's search field and the all apps sheet
+ * with "CaretLauncher:". The progress places CaretLauncher's search field and the all apps sheet
  * right under it ({@link Host}): the field goes from its closed position, above the keyboard, to
  * the top of the screen, and the sheet comes out from behind the keyboard (docs/spec.md 6.4).
  */
@@ -72,7 +72,7 @@ public class AllAppsTransitionController
     public static final float INTERP_COEFF = 1.7f;
     public static final int REVERT_SWIPE_ALL_APPS_TO_HOME_ANIMATION_DURATION_MS = 200;
 
-    // TextLauncher: no system UI (NAV_BAR_COLOR_FORCE_UPDATE_THRESHOLD).
+    // CaretLauncher: no system UI (NAV_BAR_COLOR_FORCE_UPDATE_THRESHOLD).
 
     public static final FloatProperty<AllAppsTransitionController> ALL_APPS_PROGRESS =
             new FloatProperty<>("allAppsProgress") {
@@ -87,12 +87,12 @@ public class AllAppsTransitionController
                 }
             };
 
-    // TextLauncher: no apps view properties (INDEX_APPS_VIEW_PROGRESS, APPS_VIEW_INDEX_COUNT,
+    // CaretLauncher: no apps view properties (INDEX_APPS_VIEW_PROGRESS, APPS_VIEW_INDEX_COUNT,
     // mAppsView); the host places the sheet.
 
     private final Launcher mLauncher;
     private final AnimatedFloat mAllAppScale = new AnimatedFloat(this::onScaleProgressChanged);
-    // TextLauncher: no system UI (mNavScrimFlag), all apps search's back animation
+    // CaretLauncher: no system UI (mNavScrimFlag), all apps search's back animation
     // (mAllAppsSearchBackAnimationListener) or vertical bar layout (mIsVerticalLayout).
 
     // Animation in this class is controlled by a single variable {@link mProgress}.
@@ -101,34 +101,34 @@ public class AllAppsTransitionController
 
     // When {@link mProgress} is 0, all apps container is pulled up.
     // When {@link mProgress} is 1, all apps container is pulled down.
-    // TextLauncher: the shift range is the field's (getShiftRange).
+    // CaretLauncher: the shift range is the field's (getShiftRange).
     private float mProgress;        // [0, 1], mShiftRange * mProgress = shiftCurrent
 
-    // TextLauncher: no scrim (mScrimView), apps view properties (mAppsViewAlpha,
+    // CaretLauncher: no scrim (mScrimView), apps view properties (mAppsViewAlpha,
     // mAppsViewTranslationY) or clipping during the scale (mHasScaleEffect).
 
     private final MSDLPlayerWrapper mMSDLPlayerWrapper;
-    // TextLauncher: no header scale (mShouldScaleHeader).
+    // CaretLauncher: no header scale (mShouldScaleHeader).
 
-    // TextLauncher: with the host that places the field and the sheet.
+    // CaretLauncher: with the host that places the field and the sheet.
     public AllAppsTransitionController(Launcher l, Host host) {
         mLauncher = l;
         mHost = host;
         mProgress = 1f;
-        // TextLauncher: no device profile changes (the field's positions are the host's).
+        // CaretLauncher: no device profile changes (the field's positions are the host's).
         mAllAppScale.value = 1;
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(
                 mLauncher.asContext().getApplicationContext());
     }
 
     public float getShiftRange() {
-        // TextLauncher: from the field's open position to its closed one, which follows the
+        // CaretLauncher: from the field's open position to its closed one, which follows the
         // keyboard.
         return mHost.getClosedBarTop() - mHost.getOpenBarTop();
     }
 
-    // TextLauncher: no device profile changes (onDeviceProfileChanged).
+    // CaretLauncher: no device profile changes (onDeviceProfileChanged).
 
     /**
      * Note this method should not be called outside this class. This is public because it is used
@@ -143,7 +143,7 @@ public class AllAppsTransitionController
             return;
         }
         mProgress = progress;
-        // TextLauncher: the host places the field and the sheet under it (no background app,
+        // CaretLauncher: the host places the field and the sheet under it (no background app,
         // onAllAppsTransition or system UI).
         mHost.onAllAppsProgressChanged(mProgress);
     }
@@ -152,7 +152,7 @@ public class AllAppsTransitionController
         return mProgress;
     }
 
-    // TextLauncher: no apps view properties (getAppsViewProgressTranslationY,
+    // CaretLauncher: no apps view properties (getAppsViewProgressTranslationY,
     // getAppsViewProgressAlpha).
 
     /**
@@ -162,10 +162,10 @@ public class AllAppsTransitionController
     @Override
     public void setState(LauncherState state) {
         setProgress(state.getVerticalProgress(mLauncher));
-        // TextLauncher: no alphas (setAlphas).
+        // CaretLauncher: no alphas (setAlphas).
     }
 
-    // TextLauncher: no header scale (onBackStarted).
+    // CaretLauncher: no header scale (onBackStarted).
 
     @Override
     public void onBackProgressed(
@@ -183,7 +183,7 @@ public class AllAppsTransitionController
 
     private void onScaleProgressChanged() {
         final float scaleProgress = mAllAppScale.value;
-        // TextLauncher: the host's sheet; no header scale or clipping during the scale.
+        // CaretLauncher: the host's sheet; no header scale or clipping during the scale.
         SCALE_PROPERTY.set(mHost.getAppsView(), scaleProgress);
     }
 
@@ -195,7 +195,7 @@ public class AllAppsTransitionController
         return mAllAppScale;
     }
 
-    // TextLauncher: no header scale (setShouldScaleHeader) or all apps search's back animation
+    // CaretLauncher: no header scale (setShouldScaleHeader) or all apps search's back animation
     // (setAllAppsSearchBackAnimationListener, animateAllAppsToNoScale).
 
     /**
@@ -217,7 +217,7 @@ public class AllAppsTransitionController
 
         float targetProgress = toState.getVerticalProgress(mLauncher);
         if (Float.compare(mProgress, targetProgress) == 0) {
-            // TextLauncher: no alphas (setAlphas).
+            // CaretLauncher: no alphas (setAlphas).
             // Fail fast
             return;
         }
@@ -226,14 +226,14 @@ public class AllAppsTransitionController
         Interpolator verticalProgressInterpolator = config.getInterpolator(ANIM_VERTICAL_PROGRESS,
                 config.isUserControlled() ? LINEAR : DECELERATE_1_7);
         Animator anim = createSpringAnimation(mProgress, targetProgress);
-        // TextLauncher: no cancel listener that sets the target progress; a swipe that catches the
+        // CaretLauncher: no cancel listener that sets the target progress; a swipe that catches the
         // animation takes the list from where it is.
         anim.setInterpolator(verticalProgressInterpolator);
         builder.add(anim);
 
-        // TextLauncher: no alphas (setAlphas).
+        // CaretLauncher: no alphas (setAlphas).
         // This controls both haptics for tapping on QSB and going to all apps.
-        // TextLauncher: a swipe plays its haptic when its hold gives way
+        // CaretLauncher: a swipe plays its haptic when its hold gives way
         // (performSwipeThresholdHaptic).
         if (ALL_APPS.equals(toState) && mLauncher.isInState(NORMAL)
                 && !config.isUserControlled()) {
@@ -244,7 +244,7 @@ public class AllAppsTransitionController
                     mMSDLPlayerWrapper.playToken(MSDLToken.TAP_HIGH_EMPHASIS);
                 }
             } else {
-                // TextLauncher: the host's sheet.
+                // CaretLauncher: the host's sheet.
                 mHost.getAppsView().performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY,
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
             }
@@ -255,12 +255,12 @@ public class AllAppsTransitionController
         return ObjectAnimator.ofFloat(this, ALL_APPS_PROGRESS, progressValues);
     }
 
-    // TextLauncher: no alphas (setAlphas), and the host has the views (setupViews,
+    // CaretLauncher: no alphas (setAlphas), and the host has the views (setupViews,
     // isAllAppsRenderedByLauncher).
 
-    // TextLauncher: the shift range is the field's (setShiftRange).
+    // CaretLauncher: the shift range is the field's (setShiftRange).
 
-    // ---- TextLauncher ----
+    // ---- CaretLauncher ----
 
     /** The app's views the transition moves. */
     public interface Host {

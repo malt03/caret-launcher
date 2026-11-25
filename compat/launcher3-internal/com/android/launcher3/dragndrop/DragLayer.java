@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -62,11 +62,11 @@ import java.util.ArrayList;
  * A ViewGroup that coordinates dragging across its descendants
  *
  * <p>Stand-in for Launcher3's DragLayer (android-17.0.0_r1), made from DragLayer.java by deleting
- * what TextLauncher does not use (everything but the drop animations and accessibility: setup,
- * touch handling, child drawing order, the focus outline, the scrim and the overlay callbacks); changes are marked with "TextLauncher:". TextLauncher's drag layer sits over the
+ * what CaretLauncher does not use (everything but the drop animations and accessibility: setup,
+ * touch handling, child drawing order, the focus outline, the scrim and the overlay callbacks); changes are marked with "CaretLauncher:". CaretLauncher's drag layer sits over the
  * home screen instead of holding it; see {@link BaseDragLayer}.
  */
-// TextLauncher: not a LauncherOverlayCallbacks (no -1 screen overlay).
+// CaretLauncher: not a LauncherOverlayCallbacks (no -1 screen overlay).
 public class DragLayer extends BaseDragLayer<Launcher> {
 
     public static final int ANIMATION_END_DISAPPEAR = 0;
@@ -85,7 +85,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
     private boolean mHoverPointClosesFolder = false;
 
     /**
-     * TextLauncher: created in code, over the home screen. No alpha channels, multitouch is not
+     * CaretLauncher: created in code, over the home screen. No alpha channels, multitouch is not
      * kept from splitting, and the home grid draws the focus outline.
      *
      * @param context The application's context.
@@ -102,7 +102,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
 
     @Override
     public boolean onInterceptHoverEvent(MotionEvent ev) {
-        // TextLauncher: no mContainer field (getLauncher).
+        // CaretLauncher: no mContainer field (getLauncher).
         Launcher container = getLauncher();
         if (container == null || container.getWorkspace() == null) {
             return false;
@@ -144,7 +144,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         return false;
     }
 
-    // TextLauncher: folders have no name to edit (folder_tap_to_rename).
+    // CaretLauncher: folders have no name to edit (folder_tap_to_rename).
     private void sendTapOutsideFolderAccessibilityEvent() {
         int stringId = R.string.folder_tap_to_close;
         sendCustomAccessibilityEvent(
@@ -160,7 +160,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
 
 
     private boolean isInAccessibleDrag() {
-        // TextLauncher: the launcher may not be made yet (getLauncher).
+        // CaretLauncher: the launcher may not be made yet (getLauncher).
         Launcher launcher = getLauncher();
         return launcher != null && launcher.getAccessibilityDelegate().isInAccessibleDrag();
     }
@@ -175,7 +175,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
 
     @Override
     public void addChildrenForAccessibility(ArrayList<View> childrenForAccessibility) {
-        // TextLauncher: the launcher may not be made yet (getLauncher).
+        // CaretLauncher: the launcher may not be made yet (getLauncher).
         if (getLauncher() == null) {
             super.addChildrenForAccessibility(childrenForAccessibility);
             return;
@@ -217,7 +217,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
 
         coord[0] = lp.x + (child.getMeasuredWidth() * (1 - childScale) / 2);
         coord[1] = lp.y + (child.getMeasuredHeight() * (1 - childScale) / 2);
-        // TextLauncher: no translation provider. The home grid's padding is CellLayout's, so its
+        // CaretLauncher: no translation provider. The home grid's padding is CellLayout's, so its
         // cells start inside it.
         coord[0] += childParent.getPaddingLeft();
         coord[1] += childParent.getPaddingTop();
@@ -319,7 +319,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
                 motionInterpolator == null ? DECELERATE_1_5 : motionInterpolator;
 
         // Animate the view
-        // TextLauncher: no PendingAnimation. The same animators are played together in an
+        // CaretLauncher: no PendingAnimation. The same animators are played together in an
         // AnimatorSet, which gives each of them the duration and the interpolator; the alpha is
         // animated even when it does not change, and the view's visibility is not updated.
         AnimatorSet anim = new AnimatorSet();
@@ -335,7 +335,7 @@ public class DragLayer extends BaseDragLayer<Launcher> {
                     + (anchorView.getScaleX() * (startScroll - anchorView.getScrollX()));
             xMotion.setEvaluator(evaluator);
         }
-        // TextLauncher: an AnimatorSet (see above).
+        // CaretLauncher: an AnimatorSet (see above).
         anim.play(xMotion);
         anim.setDuration(duration);
         anim.setInterpolator(interpolator);
@@ -387,14 +387,14 @@ public class DragLayer extends BaseDragLayer<Launcher> {
     public void onViewAdded(View child) {
         super.onViewAdded(child);
         updateChildIndices();
-        // TextLauncher: no ActivityContext.onDragLayerHierarchyChanged.
+        // CaretLauncher: no ActivityContext.onDragLayerHierarchyChanged.
     }
 
     @Override
     public void onViewRemoved(View child) {
         super.onViewRemoved(child);
         updateChildIndices();
-        // TextLauncher: no ActivityContext.onDragLayerHierarchyChanged.
+        // CaretLauncher: no ActivityContext.onDragLayerHierarchyChanged.
     }
 
     @Override
@@ -440,18 +440,18 @@ public class DragLayer extends BaseDragLayer<Launcher> {
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * Sets the drag controller, which Launcher3 passes to {@code setup} together with the
-     * workspace; TextLauncher's drag layer has no touch controllers or scrim to set up.
+     * workspace; CaretLauncher's drag layer has no touch controllers or scrim to set up.
      */
     public void setDragController(DragController dragController) {
         mDragController = dragController;
     }
 
     /**
-     * AnimatorListeners.forEndCallback(Runnable), which TextLauncher does not have: runs the
+     * AnimatorListeners.forEndCallback(Runnable), which CaretLauncher does not have: runs the
      * callback when the animation ends, also after a cancel.
      */
     private static Animator.AnimatorListener forEndCallback(Runnable callback) {

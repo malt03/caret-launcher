@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -59,8 +59,8 @@ import android.text.TextUtils;
  * Various utilities shared amongst the Launcher's classes.
  *
  * <p>Stand-in for Launcher3's Utilities (android-17.0.0_r1), made from Utilities.java by deleting
- * what TextLauncher does not use. Nothing else is changed; a change would be marked with
- * "TextLauncher:".
+ * what CaretLauncher does not use. Nothing else is changed; a change would be marked with
+ * "CaretLauncher:".
  */
 public final class Utilities {
 
@@ -85,7 +85,7 @@ public final class Utilities {
      * @deprecated Use {@link BuildConfig#IS_DEBUG_DEVICE} directly
      */
     @Deprecated
-    // TextLauncher: false, as for a user build (BuildConfig.IS_DEBUG_DEVICE).
+    // CaretLauncher: false, as for a user build (BuildConfig.IS_DEBUG_DEVICE).
     public static final boolean IS_DEBUG_DEVICE = false;
 
     public static String createDbSelectionQuery(String columnName, IntArray values) {

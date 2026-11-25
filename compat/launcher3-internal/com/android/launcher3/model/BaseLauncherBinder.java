@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model;
@@ -41,7 +41,7 @@ import java.util.concurrent.Executor;
  *
  * <p>Stand-in for Launcher3's BaseLauncherBinder (android-17.0.0_r1), made from
  * BaseLauncherBinder.java by deleting Dagger, the extra items, the string cache and the widgets;
- * changes are marked with "TextLauncher:".
+ * changes are marked with "CaretLauncher:".
  */
 public class BaseLauncherBinder {
 
@@ -58,7 +58,7 @@ public class BaseLauncherBinder {
 
     private int mMyBindingId;
 
-    // TextLauncher: no Dagger.
+    // CaretLauncher: no Dagger.
     public BaseLauncherBinder(
             Context context,
             LauncherModel model,
@@ -81,7 +81,7 @@ public class BaseLauncherBinder {
         try {
             // Save a copy of all the bg-thread collections
             WorkspaceData itemsIdMap;
-            // TextLauncher: no extra items or string cache.
+            // CaretLauncher: no extra items or string cache.
 
             synchronized (mBgDataModel) {
                 itemsIdMap = mBgDataModel.itemsIdMap.copy();
@@ -96,7 +96,7 @@ public class BaseLauncherBinder {
                 cb.bindCompleteModelAsync(itemsIdMap, isBindSync);
             }
 
-            // TextLauncher: no string cache or extra items.
+            // CaretLauncher: no string cache or extra items.
         } finally {
             Trace.endSection();
         }
@@ -113,7 +113,7 @@ public class BaseLauncherBinder {
                 mUiExecutor);
     }
 
-    // TextLauncher: no widgets model (bindWidgets).
+    // CaretLauncher: no widgets model (bindWidgets).
 
     protected void executeCallbacksTask(CallbackTask task, Executor executor) {
         executor.execute(() -> {
@@ -127,5 +127,5 @@ public class BaseLauncherBinder {
         });
     }
 
-    // TextLauncher: no Dagger (BaseLauncherBinderFactory).
+    // CaretLauncher: no Dagger (BaseLauncherBinderFactory).
 }

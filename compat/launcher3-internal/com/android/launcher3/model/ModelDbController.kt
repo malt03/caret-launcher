@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -45,22 +45,22 @@ import java.util.concurrent.atomic.AtomicInteger
  * Stand-in for Launcher3's ModelDbController (android-17.0.0_r1), made from ModelDbController.kt by
  * deleting Dagger, the restore, the empty database flag, the default layout, the database for each
  * grid and its migration (attemptMigrateDb), and the ghost widget cleanup; changes are marked with
- * "TextLauncher:". The app's database ([openHelper]) holds the favorites table among its other
+ * "CaretLauncher:". The app's database ([openHelper]) holds the favorites table among its other
  * tables and creates and upgrades it; the item ids are DatabaseHelper's (at the end of the class).
  * The grid migration is the app's GridSizeMigration.
  */
 class ModelDbController(
     context: Context,
-    // TextLauncher: the app's database in place of DatabaseHelper (createDatabaseHelper).
+    // CaretLauncher: the app's database in place of DatabaseHelper (createDatabaseHelper).
     private val openHelper: SQLiteOpenHelper,
 ) {
 
-    // TextLauncher: no Dagger.
+    // CaretLauncher: no Dagger.
     private val userCache: UserCache = UserCache.INSTANCE.get(context)
 
     @Synchronized
     private fun createDbIfNotExists() {
-        // TextLauncher: the app's database is opened once; no restore task or empty database flag.
+        // CaretLauncher: the app's database is opened once; no restore task or empty database flag.
         if (maxItemId.get() < 0) {
             // Table creation sometimes fails silently, which leads to a crash loop.
             // This way, we will try to create a table every time after crash, so the device
@@ -107,10 +107,10 @@ class ModelDbController(
     fun update(values: ContentValues, selection: String?, selectionArgs: Array<String>?): Int =
         getTable().update(values, selection, selectionArgs)
 
-    // TextLauncher: no empty database flag (clearEmptyDbFlag) or test ids (updateMaxIdForTest).
+    // CaretLauncher: no empty database flag (clearEmptyDbFlag) or test ids (updateMaxIdForTest).
 
     /**
-     * Generates an id to be used for new item in the favorites table. TextLauncher: called on the
+     * Generates an id to be used for new item in the favorites table. CaretLauncher: called on the
      * main thread, where the home model is changed; the ids were read when the model was loaded.
      */
     fun generateNewItemId(): Int {
@@ -121,19 +121,19 @@ class ModelDbController(
         return maxItemId.incrementAndGet()
     }
 
-    // TextLauncher: one page (newScreenId).
+    // CaretLauncher: one page (newScreenId).
 
     /** Creates an empty DB clearing all existing data */
     @WorkerThread
     fun createEmptyDB() {
         createDbIfNotExists()
-        // TextLauncher: DatabaseHelper.createEmptyDB, in the app's database whose other tables
+        // CaretLauncher: DatabaseHelper.createEmptyDB, in the app's database whose other tables
         // stay; no empty database flag.
         openHelper.writableDatabase.delete(Favorites.TABLE_NAME, null, null)
         maxItemId.set(initializeMaxItemId(openHelper.writableDatabase))
     }
 
-    // TextLauncher: the app's HomeWidgetHost removes the ghost widgets (removeGhostWidgets).
+    // CaretLauncher: the app's HomeWidgetHost removes the ghost widgets (removeGhostWidgets).
 
     /** Returns a new [SQLiteTransaction] */
     @WorkerThread
@@ -142,7 +142,7 @@ class ModelDbController(
         return SQLiteTransaction(openHelper.writableDatabase)
     }
 
-    // TextLauncher: the app's GridSizeMigration migrates the grid in the one database
+    // CaretLauncher: the app's GridSizeMigration migrates the grid in the one database
     // (resetLauncherDb, shouldResetDb, attemptMigrateDb).
 
     /** Returns the underlying model database */
@@ -159,7 +159,7 @@ class ModelDbController(
         return WriteProtectedSQLiteTable(openHelper.writableDatabase, TABLE_NAME)
     }
 
-    // TextLauncher: no default layout (loadDefaultFavoritesIfNecessary, getDefaultLayoutParser) or
+    // CaretLauncher: no default layout (loadDefaultFavoritesIfNecessary, getDefaultLayoutParser) or
     // empty database flag (emptyDbCreatedKey, getEmptyDbCreatedKey).
 
     /** Returns the serial number for the provided user */
@@ -167,7 +167,7 @@ class ModelDbController(
         return userCache.getSerialNumberForUser(user)
     }
 
-    // ---- TextLauncher: DatabaseHelper's item ids ----
+    // ---- CaretLauncher: DatabaseHelper's item ids ----
 
     /** DatabaseHelper.mMaxItemId */
     private val maxItemId = AtomicInteger(-1)
@@ -210,6 +210,6 @@ class ModelDbController(
 
         const val EXTRA_DB_NAME: String = "db_name"
 
-        // TextLauncher: no layout provider (getLayoutUri).
+        // CaretLauncher: no layout provider (getLayoutUri).
     }
 }

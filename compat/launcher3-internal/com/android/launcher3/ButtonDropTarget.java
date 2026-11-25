@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -50,8 +50,8 @@ import com.google.android.msdl.data.model.MSDLToken;
  * Implements a DropTarget.
  *
  * <p>Stand-in for Launcher3's ButtonDropTarget (android-17.0.0_r1), made from
- * ButtonDropTarget.java by deleting what TextLauncher does not use (the tooltip);
- * changes are marked with "TextLauncher:".
+ * ButtonDropTarget.java by deleting what CaretLauncher does not use (the tooltip);
+ * changes are marked with "CaretLauncher:".
  */
 public abstract class ButtonDropTarget extends TextView
         implements DropTarget, DragController.DragListener, OnClickListener {
@@ -141,7 +141,7 @@ public abstract class ButtonDropTarget extends TextView
         if (Flags.msdlFeedback()) {
             mMSDLPlayerWrapper.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR);
         }
-        // TextLauncher: the text is always visible (DropTargetBar.onMeasure), so there is no
+        // CaretLauncher: the text is always visible (DropTargetBar.onMeasure), so there is no
         // tooltip.
 
         d.dragView.setAlpha(DRAG_VIEW_HOVER_OVER_OPACITY);

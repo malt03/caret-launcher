@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -59,8 +59,8 @@ import java.net.URISyntaxException;
  *    For predicted app icons: don't suggest app
  *
  * <p>Stand-in for Launcher3's SecondaryDropTarget (android-17.0.0_r1), made from
- * SecondaryDropTarget.java by deleting what TextLauncher does not use; changes are marked with
- * "TextLauncher:". The button is only UNINSTALL: there is no RECONFIGURE (a widget's settings are
+ * SecondaryDropTarget.java by deleting what CaretLauncher does not use; changes are marked with
+ * "CaretLauncher:". The button is only UNINSTALL: there is no RECONFIGURE (a widget's settings are
  * in its long-press menu) and no DISMISS_PREDICTION (no predicted apps).
  */
 public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmListener {
@@ -150,7 +150,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
     }
 
     private int getButtonType(ItemInfo info, View view) {
-        // TextLauncher: no RECONFIGURE for a widget (its settings are in its long-press menu; a
+        // CaretLauncher: no RECONFIGURE for a widget (its settings are in its long-press menu; a
         // widget has no uninstall target below), and no predicted items.
 
         Boolean uninstallDisabled = mUninstallDisabledCache.get(info.user);
@@ -168,7 +168,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
         if (uninstallDisabled) {
             return INVALID;
         }
-        // TextLauncher: no private space (Flags.enablePrivateSpace).
+        // CaretLauncher: no private space (Flags.enablePrivateSpace).
 
         if (info instanceof ItemInfoWithIcon) {
             ItemInfoWithIcon iconInfo = (ItemInfoWithIcon) info;
@@ -232,7 +232,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
     }
 
     private ComponentName performDropAction(View view, ItemInfo info, int action) {
-        // TextLauncher: no RECONFIGURE.
+        // CaretLauncher: no RECONFIGURE.
         return performUninstall(getContext(), getUninstallTarget(getContext(), info), info);
     }
 
@@ -243,7 +243,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
     public static ComponentName performUninstall(Context context, @Nullable ComponentName cn,
             ItemInfo info) {
         if (cn == null) {
-            // TextLauncher: no toast (uninstall_system_app_text), as the button is only shown for
+            // CaretLauncher: no toast (uninstall_system_app_text), as the button is only shown for
             // the items with an uninstall target (getButtonType).
             return null;
         }
@@ -263,7 +263,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
 
     @Override
     public void onAccessibilityDrop(View view, ItemInfo item, int action) {
-        // TextLauncher: no logging (doLog).
+        // CaretLauncher: no logging (doLog).
         performDropAction(view, item, action);
     }
 
@@ -291,7 +291,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
         }
 
         public void onLauncherResume() {
-            // TextLauncher: ApplicationInfoWrapper.getInfo is not limited to the installed apps
+            // CaretLauncher: ApplicationInfoWrapper.getInfo is not limited to the installed apps
             // here (it keeps an app uninstalled with its data), so isInstalled says whether the
             // uninstall went through.
             if (!new ApplicationInfoWrapper(mContext, mPackageName, mDragObject.dragInfo.user)

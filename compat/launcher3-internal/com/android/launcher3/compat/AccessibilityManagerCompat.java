@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -57,8 +57,8 @@ public class AccessibilityManagerCompat {
     }
 
     /**
-     * TextLauncher: does nothing. Launcher3 sends this only under its UI Automation tests
-     * (Utilities.isRunningInTestHarness), which TextLauncher does not run.
+     * CaretLauncher: does nothing. Launcher3 sends this only under its UI Automation tests
+     * (Utilities.isRunningInTestHarness), which CaretLauncher does not run.
      */
     public static void sendTestProtocolEventToTest(Context context, String testProtocolEvent) {
     }

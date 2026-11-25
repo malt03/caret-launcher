@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<!-- Modified for TextLauncher: the framework's private ids (androidprv:id/listContainer and
+<!-- Modified for CaretLauncher: the framework's private ids (androidprv:id/listContainer and
      androidprv:id/text) are the module's own. See third_party/intentresolver/UPSTREAM.md. -->
 
 <LinearLayout

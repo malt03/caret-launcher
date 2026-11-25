@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3;
@@ -58,9 +58,9 @@ import java.util.Arrays;
  */
 /**
  * Stand-in for Launcher3's LauncherState (android-17.0.0_r1), made from LauncherState.java by
- * deleting the states TextLauncher does not have (overview, hints, edit mode, the desktop drag
+ * deleting the states CaretLauncher does not have (overview, hints, edit mode, the desktop drag
  * mode, the background app) and what only they, the hotseat, the floating search bar, the taskbar
- * and split screen use; changes are marked with "TextLauncher:". TextLauncher has the home screen
+ * and split screen use; changes are marked with "CaretLauncher:". CaretLauncher has the home screen
  * (NORMAL), edit mode (SPRING_LOADED, docs/spec.md 5.4) and the all apps list (ALL_APPS).
  */
 public abstract class LauncherState implements BaseState<LauncherState> {
@@ -147,7 +147,7 @@ public abstract class LauncherState implements BaseState<LauncherState> {
     public static final LauncherState SPRING_LOADED = new SpringLoadedState(
             SPRING_LOADED_STATE_ORDINAL);
     public static final LauncherState ALL_APPS = new AllAppsState(ALL_APPS_STATE_ORDINAL);
-    // TextLauncher: no desktop drag mode, edit mode, hints, overview or background app states.
+    // CaretLauncher: no desktop drag mode, edit mode, hints, overview or background app states.
     public final int ordinal;
 
     /**
@@ -198,13 +198,13 @@ public abstract class LauncherState implements BaseState<LauncherState> {
         return 0;
     }
 
-    // TextLauncher: no overview (getOverviewScaleAndOffset, getOverviewFullscreenProgress).
+    // CaretLauncher: no overview (getOverviewScaleAndOffset, getOverviewFullscreenProgress).
 
-    // TextLauncher: no floating search bar (getFloatingSearchBarRestingMargin*, shouldFloatingSearchBarUsePillWhenUnfocused).
+    // CaretLauncher: no floating search bar (getFloatingSearchBarRestingMargin*, shouldFloatingSearchBarUsePillWhenUnfocused).
 
-    // TextLauncher: no launcher UI state (getVisibleElements, areElementsVisible).
+    // CaretLauncher: no launcher UI state (getVisibleElements, areElementsVisible).
 
-    // TextLauncher: no taskbar or split screen selection.
+    // CaretLauncher: no taskbar or split screen selection.
 
     /**
      * Fraction shift in the vertical translation UI and related properties
@@ -228,7 +228,7 @@ public abstract class LauncherState implements BaseState<LauncherState> {
                 /* foregroundColor */ Color.TRANSPARENT);
     }
 
-    // TextLauncher: no overview or split screen selection (getOverviewModalness, getSplitSelectTranslation).
+    // CaretLauncher: no overview or split screen selection (getOverviewModalness, getSplitSelectTranslation).
 
     @Override
     public final float getDepth(ActivityContext context) {
@@ -247,7 +247,7 @@ public abstract class LauncherState implements BaseState<LauncherState> {
      * @return {@code true} if the workspace should be blurred alongside wallpaper depth.
      */
     public boolean shouldBlurWorkspace(Launcher launcher, LauncherState targetState) {
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         return !Utilities.shouldReduceWorkspaceBlurUsage(launcher.asContext())
                 && targetState == ALL_APPS;
     }
@@ -260,7 +260,7 @@ public abstract class LauncherState implements BaseState<LauncherState> {
         return R.string.home_screen;
     }
 
-    // TextLauncher: one page (getWorkspacePageAlphaProvider, getWorkspacePageTranslationProvider).
+    // CaretLauncher: one page (getWorkspacePageAlphaProvider, getWorkspacePageTranslationProvider).
 
     /**
      * Called when leaving this LauncherState

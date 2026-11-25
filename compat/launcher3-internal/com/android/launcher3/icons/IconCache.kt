@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -64,14 +64,14 @@ import java.util.function.Supplier
  * Cache of application icons. Icons can be made from any thread.
  *
  * Stand-in for Launcher3's IconCache (android-17.0.0_r1), made from IconCache.kt by deleting what
- * TextLauncher does not have: Dagger, bulk loading for LoaderTask, home screen files, install
+ * CaretLauncher does not have: Dagger, bulk loading for LoaderTask, home screen files, install
  * sessions, archived apps and instant apps. Changes are marked with
- * "TextLauncher:".
+ * "CaretLauncher:".
  */
 class IconCache(
     context: Context,
     dbFileName: String?,
-    // TextLauncher: Executors.MODEL_EXECUTOR's looper, InvariantDeviceProfile's sizes and the
+    // CaretLauncher: Executors.MODEL_EXECUTOR's looper, InvariantDeviceProfile's sizes and the
     // LauncherIcons pool come from the app.
     bgLooper: Looper,
     iconDpi: Int,
@@ -92,19 +92,19 @@ class IconCache(
     private val launcherApps: LauncherApps = context.getSystemService(LauncherApps::class.java)!!
 
     private val cancelledTask =
-        // TextLauncher: the main executor of the context (Executors.MAIN_EXECUTOR).
+        // CaretLauncher: the main executor of the context (Executors.MAIN_EXECUTOR).
         CancellableTask<Any?>({ null }, context.mainExecutor, {}).apply { cancel() }
 
-    // TextLauncher: the platform UserManager instead of the injected UserCache.
+    // CaretLauncher: the platform UserManager instead of the injected UserCache.
     private val userManager: UserManager = context.getSystemService(UserManager::class.java)!!
 
     private val widgetCategoryBitmapInfos = SparseArray<BitmapInfo>()
 
-    // TextLauncher: UserCache.getSerialNumberForUser, without the cache.
+    // CaretLauncher: UserCache.getSerialNumberForUser, without the cache.
     override fun getSerialNumberForUser(user: UserHandle): Long =
         userManager.getSerialNumberForUser(user)
 
-    // TextLauncher: InstantAppResolver's default; instant apps are not shown.
+    // CaretLauncher: InstantAppResolver's default; instant apps are not shown.
     override fun isInstantApp(info: ApplicationInfo): Boolean = false
 
     override val iconFactory: BaseIconFactory
@@ -115,7 +115,7 @@ class IconCache(
     fun updateIconsForPkg(packageName: String, user: UserHandle) {
         val apps = launcherApps.getActivityList(packageName, user)
 
-        // TextLauncher: no archived apps.
+        // CaretLauncher: no archived apps.
         removeIconsForPkg(packageName, user)
         val userSerial = userManager.getSerialNumberForUser(user)
         apps.forEach { addIconToDBAndMemCache(it, LauncherActivityCachingLogic, userSerial) }
@@ -162,7 +162,7 @@ class IconCache(
                 }
             }
 
-        // TextLauncher: the icon thread's priority is not raised while requests are pending.
+        // CaretLauncher: the icon thread's priority is not raised while requests are pending.
         val endRunnable = Runnable {}
 
         val request = CancellableTask(task, uiExecutor, { caller.reapplyItemInfo(it) }, endRunnable)
@@ -191,7 +191,7 @@ class IconCache(
         activityInfo: LauncherActivityInfo?,
         lookupFlag: CacheLookupFlag,
     ) {
-        // TextLauncher: no archived apps.
+        // CaretLauncher: no archived apps.
         // If we already have activity info, no need to use package icon
         getTitleAndIcon(info, lookupFlag.withUsePackageIcon(false)) { activityInfo }
     }
@@ -248,7 +248,7 @@ class IconCache(
     ): ItemInfoWithIcon {
         // Check for badge override first.
         var pkg = shortcutInfo.getPackage()
-        // TextLauncher: the badge override is not read (InstallSessionHelper.isTrustedPackage).
+        // CaretLauncher: the badge override is not read (InstallSessionHelper.isTrustedPackage).
         run {
             // Try component based badge before trying the normal package badge
             val cn = shortcutInfo.activity
@@ -276,7 +276,7 @@ class IconCache(
      */
     @Synchronized
     fun getTitleAndIcon(info: ItemInfoWithIcon, lookupFlag: CacheLookupFlag) {
-        // TextLauncher: no home screen files.
+        // CaretLauncher: no home screen files.
         if (info.itemType == Favorites.ITEM_TYPE_DEEP_SHORTCUT) {
             val sk = ShortcutKey.fromItemInfo(info)
             val si: ShortcutInfo =
@@ -333,7 +333,7 @@ class IconCache(
         applyCacheEntry(entry, infoInOut)
     }
 
-    // TextLauncher: no bulk loading (getTitlesAndIconsInBulk) for LoaderTask.
+    // CaretLauncher: no bulk loading (getTitlesAndIconsInBulk) for LoaderTask.
 
     /** Fill in {@param infoInOut} with the corresponding icon and label. */
     @Synchronized
@@ -370,16 +370,16 @@ class IconCache(
 
     private fun applyCacheEntry(entry: CacheEntry, info: ItemInfoWithIcon) {
         info.title = Utilities.trim(entry.title)
-        // TextLauncher: no home screen files.
+        // CaretLauncher: no home screen files.
         info.contentDescription = entry.contentDescription
         info.bitmap = entry.bitmap
-        // TextLauncher: no app title override for archived apps.
+        // CaretLauncher: no app title override for archived apps.
         if (entry.bitmap == null) {
             // TODO: entry.bitmap can never be null, so this should not happen at all.
             Log.wtf(TAG, "Cannot find bitmap from the cache, default icon was loaded.")
             info.bitmap = getDefaultIcon(info.user)
         }
-        // TextLauncher: no archived apps, so no package override.
+        // CaretLauncher: no archived apps, so no package override.
     }
 
     @VisibleForTesting

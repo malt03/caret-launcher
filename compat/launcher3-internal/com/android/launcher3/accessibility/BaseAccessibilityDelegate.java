@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -43,9 +43,9 @@ import java.util.List;
 
 /**
  * Stand-in for Launcher3's BaseAccessibilityDelegate (android-17.0.0_r1), made from
- * BaseAccessibilityDelegate.java; changes are marked with "TextLauncher:".
+ * BaseAccessibilityDelegate.java; changes are marked with "CaretLauncher:".
  */
-// TextLauncher: T is not a Context, as the Launcher stand-in is not one (asContext).
+// CaretLauncher: T is not a Context, as the Launcher stand-in is not one (asContext).
 public abstract class BaseAccessibilityDelegate<T extends ActivityContext>
         extends View.AccessibilityDelegate implements DragController.DragListener {
 
@@ -183,7 +183,7 @@ public abstract class BaseAccessibilityDelegate<T extends ActivityContext>
         public LauncherAction(int id, int labelRes, int keyCode) {
             this.keyCode = keyCode;
             accessibilityAction = new AccessibilityNodeInfo.AccessibilityAction(
-                    id, mContext.asContext().getString(labelRes)); // TextLauncher: asContext.
+                    id, mContext.asContext().getString(labelRes)); // CaretLauncher: asContext.
             mDelegate = BaseAccessibilityDelegate.this;
         }
 

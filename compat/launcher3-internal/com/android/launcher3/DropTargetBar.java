@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -41,7 +41,7 @@ import com.android.launcher3.dragndrop.DragOptions;
  * The top bar containing various drop targets: Delete/App Info/Uninstall.
  *
  * Stand-in for Launcher3's DropTargetBar (android-17.0.0_r1), made from DropTargetBar.java by
- * deleting what TextLauncher does not use; changes are marked with "TextLauncher:". The home screen
+ * deleting what CaretLauncher does not use; changes are marked with "CaretLauncher:". The home screen
  * places the bar (LauncherRootLayout.attachDropTargetBar): over the home screen, the width of its
  * panel, below the status bar.
  */
@@ -94,7 +94,7 @@ public class DropTargetBar extends FrameLayout
         DeviceProfile deviceProfile = mLauncher.getDeviceProfile();
         mIsVertical = deviceProfile.isVerticalBarLayout();
 
-        // TextLauncher: the home screen places the bar (LauncherRootLayout.attachDropTargetBar),
+        // CaretLauncher: the home screen places the bar (LauncherRootLayout.attachDropTargetBar),
         // so its layout params are not changed here; the text is always visible, so there is no
         // tooltip.
         DeviceProfile dp = mLauncher.getDeviceProfile();
@@ -159,7 +159,7 @@ public class DropTargetBar extends FrameLayout
                     verticalPadding);
 
             int availableWidth;
-            // TextLauncher: the bar spans the home screen's panel, also with two panels, so both
+            // CaretLauncher: the bar spans the home screen's panel, also with two panels, so both
             // buttons plus the button gap fit in the bar's width.
             availableWidth = width - dp.getDropTargetProfile().getGapPx();
 
@@ -176,7 +176,7 @@ public class DropTargetBar extends FrameLayout
                 }
             }
 
-            // TextLauncher: one panel (see above).
+            // CaretLauncher: one panel (see above).
             availableWidth -= firstButton.getMeasuredWidth()
                     + dp.getDropTargetProfile().getGapPx();
             widthSpec = MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.AT_MOST);
@@ -212,7 +212,7 @@ public class DropTargetBar extends FrameLayout
         }
 
         DeviceProfile dp = mLauncher.getDeviceProfile();
-        // TextLauncher: the home grid shrinks about its horizontal center while dragging
+        // CaretLauncher: the home grid shrinks about its horizontal center while dragging
         // (WorkspaceStateTransitionAnimation) and is centered under the bar, so the bar's center
         // stands for the scaled cell layout's, and the bar's width for the scaled panel width.
         int barCenter;
@@ -227,8 +227,8 @@ public class DropTargetBar extends FrameLayout
 
             ButtonDropTarget leftButton = mTempTargets[0];
             ButtonDropTarget rightButton = mTempTargets[1];
-            // TextLauncher: one panel (see onMeasure).
-            int scaledPanelWidth = right - left; // TextLauncher: see above.
+            // CaretLauncher: one panel (see onMeasure).
+            int scaledPanelWidth = right - left; // CaretLauncher: see above.
 
             int leftButtonWidth = leftButton.getMeasuredWidth();
             int rightButtonWidth = rightButton.getMeasuredWidth();

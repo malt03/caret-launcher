@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3;
@@ -164,13 +164,13 @@ import java.util.function.Predicate;
  * reorder while dragging, the drops from elsewhere (the all apps list, the search results, the
  * widget picker) and the item removal. Pages, the hotseat, the overlay, the wallpaper offsets,
  * state transitions, the touch handling, the saved state and the system drags are deleted;
- * changes are marked with "TextLauncher:".
+ * changes are marked with "CaretLauncher:".
  *
- * <p>TextLauncher has one page, in a vertical scroll container (the home screen's HomeScrollView),
+ * <p>CaretLauncher has one page, in a vertical scroll container (the home screen's HomeScrollView),
  * so the workspace is not a PagedView: it holds the scroll container, and members for the one
  * page are added at the end of the class.
  */
-// TextLauncher: a FrameLayout that holds the page's scroll container instead of a PagedView of
+// CaretLauncher: a FrameLayout that holds the page's scroll container instead of a PagedView of
 // CellLayouts; not a touch listener, Insettable, state handler or overlay callback. Abstract: the
 // home screen's subclass gives the long-click listener, the page and its scroll container.
 public abstract class Workspace<T> extends FrameLayout
@@ -351,18 +351,18 @@ public abstract class Workspace<T> extends FrameLayout
     public Workspace(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mLauncher = Launcher.getLauncher(context);
-        // TextLauncher: no launcher UI state.
+        // CaretLauncher: no launcher UI state.
         mStateTransitionAnimation = new WorkspaceStateTransitionAnimation(mLauncher, this);
         mWallpaperManager = WallpaperManager.getInstance(context);
         mAllAppsIconSize = mLauncher.getDeviceProfile().getAllAppsProfile().getIconSizePx();
-        // TextLauncher: one page, so no wallpaper offsets (WallpaperOffsetInterpolator).
+        // CaretLauncher: one page, so no wallpaper offsets (WallpaperOffsetInterpolator).
 
         setHapticFeedbackEnabled(false);
-        // TextLauncher: no pages to initialize (initWorkspace); the app adds the page.
+        // CaretLauncher: no pages to initialize (initWorkspace); the app adds the page.
 
         // Disable multitouch across the workspace/all apps/customize tray
         setMotionEventSplittingEnabled(true);
-        // TextLauncher: the page's scroll container has the touch listener (WorkspaceTouchListener).
+        // CaretLauncher: the page's scroll container has the touch listener (WorkspaceTouchListener).
         mStatsLogManager = StatsLogManager.newInstance(context);
         mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context);
     }
@@ -374,7 +374,7 @@ public abstract class Workspace<T> extends FrameLayout
      */
     public int[] estimateItemSize(ItemInfo itemInfo) {
         int[] size = new int[2];
-        // TextLauncher: the page is not a child of the workspace (getPageAt).
+        // CaretLauncher: the page is not a child of the workspace (getPageAt).
         if (getPageCount() > 0) {
             // Use the first page to estimate the child position
             CellLayout cl = getPageAt(0);
@@ -404,7 +404,7 @@ public abstract class Workspace<T> extends FrameLayout
     }
 
     public float getWallpaperOffsetForCenterPage() {
-        // TextLauncher: one page, so the wallpaper is not scrolled.
+        // CaretLauncher: one page, so the wallpaper is not scrolled.
         return 0;
     }
 
@@ -420,7 +420,7 @@ public abstract class Workspace<T> extends FrameLayout
             enforceDragParity("onDragStart", 0, 0);
         }
 
-        // TextLauncher: the occupancy is rebuilt from the page's views first, as a safeguard;
+        // CaretLauncher: the occupancy is rebuilt from the page's views first, as a safeguard;
         // Launcher3 relies on addInScreen and removeView alone to keep it.
         getPageAt(0).rebuildOccupied(null);
         if (mDragInfo != null && mDragInfo.cell != null) {
@@ -430,7 +430,7 @@ public abstract class Workspace<T> extends FrameLayout
             layout.markCellsAsUnoccupiedForView(mDragInfo.cell);
         }
 
-        // TextLauncher: no page layers (updateChildrenLayersEnabled).
+        // CaretLauncher: no page layers (updateChildrenLayersEnabled).
 
         // Do not add a new page if it is a accessible drag which was not started by the workspace.
         // We do not support accessibility drag from other sources and instead provide a direct
@@ -439,7 +439,7 @@ public abstract class Workspace<T> extends FrameLayout
         // folder.
         boolean addNewPage = !(options.isAccessibleDrag && dragObject.dragSource != this);
         if (addNewPage) {
-            // TextLauncher: one page, so no extra empty screen (addExtraEmptyScreenOnDrag).
+            // CaretLauncher: one page, so no extra empty screen (addExtraEmptyScreenOnDrag).
 
             if (dragObject.dragInfo.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET
                     && dragObject.dragSource != this) {
@@ -462,7 +462,7 @@ public abstract class Workspace<T> extends FrameLayout
         if (mAccessibilityDragListener != null) {
             mAccessibilityDragListener.onDragStart(dragObject, options);
         }
-        // TextLauncher: no edit mode state (EDIT_MODE), and no mouse drags
+        // CaretLauncher: no edit mode state (EDIT_MODE), and no mouse drags
         // (enableCursorDrivenWorkflows is off in the release).
         mLauncher.getStateManager().goToState(SPRING_LOADED);
         mStatsLogManager.logger().withItemInfo(dragObject.dragInfo)
@@ -476,7 +476,7 @@ public abstract class Workspace<T> extends FrameLayout
             enforceDragParity("onDragEnd", 0, 0);
         }
 
-        // TextLauncher: no page layers (updateChildrenLayersEnabled), and one page, so no extra
+        // CaretLauncher: no page layers (updateChildrenLayersEnabled), and one page, so no extra
         // empty screen to remove once the state is NORMAL again.
 
         if (mAccessibilityDragListener != null) {
@@ -510,19 +510,19 @@ public abstract class Workspace<T> extends FrameLayout
     }
 
     public int getPageIndexForScreenId(int screenId) {
-        // TextLauncher: one page, which is not a child of the workspace.
+        // CaretLauncher: one page, which is not a child of the workspace.
         return mWorkspaceScreens.get(screenId) != null ? 0 : -1;
     }
 
     @Override
     public int getCellLayoutIndex(CellLayout cellLayout) {
-        // TextLauncher: one page, which is not a child of the workspace.
+        // CaretLauncher: one page, which is not a child of the workspace.
         return getPageIndexForScreenId(getCellLayoutId(cellLayout));
     }
 
     @Override
     public int getPanelCount() {
-        // TextLauncher: one page, also with two panels (the second shows the all apps list).
+        // CaretLauncher: one page, also with two panels (the second shows the all apps list).
         return 1;
     }
 
@@ -568,12 +568,12 @@ public abstract class Workspace<T> extends FrameLayout
         mIsSwitchingState = true;
         mTransitionProgress = 0;
 
-        // TextLauncher: no page layers (updateChildrenLayersEnabled).
+        // CaretLauncher: no page layers (updateChildrenLayersEnabled).
     }
 
     private void onEndStateTransition() {
         mIsSwitchingState = false;
-        // TextLauncher: one page, so no adjacent pages to draw (mForceDrawAdjacentPages), and no
+        // CaretLauncher: one page, so no adjacent pages to draw (mForceDrawAdjacentPages), and no
         // page layers (updateChildrenLayersEnabled).
         mTransitionProgress = 1;
 
@@ -601,7 +601,7 @@ public abstract class Workspace<T> extends FrameLayout
         mLauncher.getStateManager().getState().onLeavingState(mLauncher, toState);
         mStateTransitionAnimation.setStateWithAnimation(toState, config, animation);
 
-        // TextLauncher: one page, so no adjacent pages to draw (FLAG_MULTI_PAGE,
+        // CaretLauncher: one page, so no adjacent pages to draw (FLAG_MULTI_PAGE,
         // mForceDrawAdjacentPages).
         invalidate(); // This will call dispatchDraw(), which calls getVisiblePages().
 
@@ -664,7 +664,7 @@ public abstract class Workspace<T> extends FrameLayout
         child.setVisibility(INVISIBLE);
 
         if (options.isAccessibleDrag) {
-            // TextLauncher: the page is the child of its scroll container, not of this workspace,
+            // CaretLauncher: the page is the child of its scroll container, not of this workspace,
             // and there is no hotseat.
             mAccessibilityDragListener = new AccessibleDragListenerAdapter(
                     (ViewGroup) getPageScrollContainer(), WorkspaceAccessibilityHelper::new);
@@ -739,7 +739,7 @@ public abstract class Workspace<T> extends FrameLayout
         }
 
         if (child.getTag() instanceof ItemInfo item) {
-            // TextLauncher: no home screen files (HomeScreenFilesUtilsKt.isFileSystemItem).
+            // CaretLauncher: no home screen files (HomeScreenFilesUtilsKt.isFileSystemItem).
             if (child instanceof BubbleTextView) {
                 BubbleTextView btv = (BubbleTextView) child;
                 if (!dragOptions.isAccessibleDrag && !dragOptions.isMouseDrag) {
@@ -769,7 +769,7 @@ public abstract class Workspace<T> extends FrameLayout
         }
 
         DragView dv = null;
-        // TextLauncher: no system drags (getClipDataForSystemDrag).
+        // CaretLauncher: no system drags (getClipDataForSystemDrag).
         if (dv == null) {
             if (contentView != null) {
                 if (Flags.homeScreenEditImprovements()
@@ -836,7 +836,7 @@ public abstract class Workspace<T> extends FrameLayout
             }
             if (!transitionStateShouldAllowDrop()) return false;
 
-            // TextLauncher: no system drags (SystemDragItemInfo).
+            // CaretLauncher: no system drags (SystemDragItemInfo).
 
             mDragViewVisualCenter = d.getVisualCenter(mDragViewVisualCenter);
 
@@ -889,7 +889,7 @@ public abstract class Workspace<T> extends FrameLayout
             }
         }
 
-        // TextLauncher: one page, so no extra empty screen to commit (commitExtraEmptyScreens).
+        // CaretLauncher: one page, so no extra empty screen to commit (commitExtraEmptyScreens).
 
         return true;
     }
@@ -949,7 +949,7 @@ public abstract class Workspace<T> extends FrameLayout
             }
         }
 
-        // TextLauncher: no home screen files (file system folders).
+        // CaretLauncher: no home screen files (file system folders).
 
         return false;
     }
@@ -1037,7 +1037,7 @@ public abstract class Workspace<T> extends FrameLayout
             }
         }
 
-        // TextLauncher: no home screen files (file system folders).
+        // CaretLauncher: no home screen files (file system folders).
 
         return false;
     }
@@ -1070,7 +1070,7 @@ public abstract class Workspace<T> extends FrameLayout
                 int sourceScreenId = mDragInfo.screenId;
                 int sourcePageIndex = getPageIndexForScreenId(sourceScreenId);
                 // Now you have the source page index
-                // TextLauncher: one page, which is never removed (willPageBeEmptyAfterItemRemoval).
+                // CaretLauncher: one page, which is never removed (willPageBeEmptyAfterItemRemoval).
                 boolean deferAccessibilityFocus = false;
                 View movedItemCell = cell;
                 mMoveItemA11yState = new MoveItemA11yState(
@@ -1101,7 +1101,7 @@ public abstract class Workspace<T> extends FrameLayout
                         distance, false, d)
                         || addToExistingFolderIfNecessary(cell, dropTargetLayout, mTargetCell,
                         distance, d, false)) {
-                    // TextLauncher: no edit mode state (EDIT_MODE).
+                    // CaretLauncher: no edit mode state (EDIT_MODE).
                     mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
                     return;
                 }
@@ -1234,7 +1234,7 @@ public abstract class Workspace<T> extends FrameLayout
                     mLauncher.getDragController().animateDragViewToOriginalPosition(
                             /* onComplete= */ callbackList::executeAllAndDestroy, cell,
                             currentState.getTransitionDuration(mLauncher, true /* isToState */));
-                    // TextLauncher: no edit mode state (EDIT_MODE).
+                    // CaretLauncher: no edit mode state (EDIT_MODE).
                     mLauncher.getStateManager().goToState(NORMAL, /* delay= */ 0,
                             onCompleteCallback == null
                                     ? null
@@ -1263,7 +1263,7 @@ public abstract class Workspace<T> extends FrameLayout
             }
             parent.onDropChild(cell);
 
-            // TextLauncher: no edit mode state (EDIT_MODE).
+            // CaretLauncher: no edit mode state (EDIT_MODE).
             mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY,
                     onCompleteRunnable == null ? null : forSuccessCallback(onCompleteRunnable));
             mStatsLogManager.logger().withItemInfo(d.dragInfo).withInstanceId(d.logInstanceId)
@@ -1291,7 +1291,7 @@ public abstract class Workspace<T> extends FrameLayout
 
     public void onNoCellFound(
             View dropTargetLayout, ItemInfo itemInfo, @Nullable InstanceId logInstanceId) {
-        // TextLauncher: no hotseat (hotseat_out_of_space), and the Launcher stand-in is not a
+        // CaretLauncher: no hotseat (hotseat_out_of_space), and the Launcher stand-in is not a
         // Context.
         int strId = R.string.out_of_space;
         Toast.makeText(mLauncher.asContext(), mLauncher.asContext().getString(strId),
@@ -1336,7 +1336,7 @@ public abstract class Workspace<T> extends FrameLayout
         setCurrentDropLayout(null);
         setCurrentDragOverlappingLayout(null);
 
-        // TextLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
+        // CaretLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
     }
 
     private void enforceDragParity(String event, int update, int expectedValue) {
@@ -1416,7 +1416,7 @@ public abstract class Workspace<T> extends FrameLayout
             mFolderCreateBg.animateToRest();
         }
 
-        // TextLauncher: no app pairs (AppPairIcon).
+        // CaretLauncher: no app pairs (AppPairIcon).
     }
 
     private void cleanupAddToFolder() {
@@ -1455,7 +1455,7 @@ public abstract class Workspace<T> extends FrameLayout
      * @param xy     the point location in workspace co-ordinate space
      */
     private void mapPointFromDropLayout(CellLayout layout, float[] xy) {
-        // TextLauncher: the page is in a scroll container, so the point is mapped through the drag
+        // CaretLauncher: the page is in a scroll container, so the point is mapped through the drag
         // layer as for the hotseat, which accounts for the scroll (mapPointFromSelfToChild does
         // not).
         mLauncher.getDragLayer().getDescendantCoordRelativeToSelf(this, xy, true);
@@ -1463,7 +1463,7 @@ public abstract class Workspace<T> extends FrameLayout
     }
 
     public void onDragOver(DragObject d) {
-        // TextLauncher: no desktop drag mode (handleLauncherStateForDrag).
+        // CaretLauncher: no desktop drag mode (handleLauncherStateForDrag).
 
         // Skip drag over events while we are dragging over side pages
         if (!transitionStateShouldAllowDrop()) return;
@@ -1481,7 +1481,7 @@ public abstract class Workspace<T> extends FrameLayout
         mDragViewVisualCenter = d.getVisualCenter(mDragViewVisualCenter);
 
         final View child = (mDragInfo == null) ? null : mDragInfo.cell;
-        // TextLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
+        // CaretLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
         setDropLayoutForDragObject(d, mDragViewVisualCenter[0], mDragViewVisualCenter[1]);
 
         // Handle the drag over
@@ -1572,7 +1572,7 @@ public abstract class Workspace<T> extends FrameLayout
      */
     private boolean setDropLayoutForDragObject(DragObject d, float centerX, float centerY) {
         CellLayout layout = null;
-        // TextLauncher: no hotseat or neighbour pages; the drag is over the one page while it is
+        // CaretLauncher: no hotseat or neighbour pages; the drag is over the one page while it is
         // over the page's visible part, its scroll container (verifyInsidePage).
         View visiblePage = getPageScrollContainer();
         if (d.x >= visiblePage.getLeft() && d.x <= visiblePage.getRight()
@@ -1606,14 +1606,14 @@ public abstract class Workspace<T> extends FrameLayout
                 mMSDLPlayerWrapper.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE);
             }
             mFolderCreateBg = new PreviewBackground(getContext());
-            // TextLauncher: the Launcher stand-in is not a Context.
+            // CaretLauncher: the Launcher stand-in is not a Context.
             mFolderCreateBg.setup(mLauncher.asContext(), mLauncher, null,
                     mDragOverView.getMeasuredWidth(), mDragOverView.getPaddingTop());
 
             // The full preview background should appear behind the icon
             mFolderCreateBg.isClipping = false;
 
-            // TextLauncher: no app pairs (AppPairIcon).
+            // CaretLauncher: no app pairs (AppPairIcon).
 
             mFolderCreateBg.animateToAccept(mDragTargetLayout, mTargetCell[0], mTargetCell[1]);
             mDragTargetLayout.clearDragOutlines();
@@ -1632,11 +1632,11 @@ public abstract class Workspace<T> extends FrameLayout
         if (willAddToFolder && mDragMode == DRAG_MODE_NONE) {
             if (mDragOverView instanceof FolderIcon) {
                 mDragOverFolderIcon = ((FolderIcon) mDragOverView);
-                // TextLauncher: the FolderIcon stand-in takes the page, whose drawing shows the
+                // CaretLauncher: the FolderIcon stand-in takes the page, whose drawing shows the
                 // folder's accept animation.
                 mDragOverFolderIcon.onDragEnter(info, mDragTargetLayout);
             }
-            // TextLauncher: no home screen files (file system folders).
+            // CaretLauncher: no home screen files (file system folders).
 
             if (mDragTargetLayout != null) {
                 mDragTargetLayout.clearDragOutlines();
@@ -1718,10 +1718,10 @@ public abstract class Workspace<T> extends FrameLayout
                 ? CONTAINER_HOTSEAT
                 : CONTAINER_DESKTOP;
 
-        // TextLauncher: no system drags (SystemDragItemInfo).
+        // CaretLauncher: no system drags (SystemDragItemInfo).
 
         if (d.dragInfo instanceof PendingAddShortcutInfo) {
-            // TextLauncher: the Launcher stand-in is not a Context.
+            // CaretLauncher: the Launcher stand-in is not a Context.
             WorkspaceItemInfo si = ((PendingAddShortcutInfo) d.dragInfo)
                     .getActivityInfo(mLauncher.asContext()).createWorkspaceItemInfo();
             if (si != null) {
@@ -1731,7 +1731,7 @@ public abstract class Workspace<T> extends FrameLayout
         }
 
         ItemInfo info = d.dragInfo;
-        // TextLauncher: no automation flags (AutomationRepository).
+        // CaretLauncher: no automation flags (AutomationRepository).
         int spanX = info.spanX;
         int spanY = info.spanY;
         if (mDragInfo != null) {
@@ -1739,7 +1739,7 @@ public abstract class Workspace<T> extends FrameLayout
             spanY = mDragInfo.spanY;
         }
         final int screenId = getCellLayoutId(cellLayout);
-        // TextLauncher: one page, so no snapping to the drop's page.
+        // CaretLauncher: one page, so no snapping to the drop's page.
 
         if (info instanceof PendingAddItemInfo) {
             final PendingAddItemInfo pendingInfo = (PendingAddItemInfo) info;
@@ -1784,13 +1784,13 @@ public abstract class Workspace<T> extends FrameLayout
                     // Normally removeExtraEmptyScreen is called in Workspace#onDrop, but when
                     // adding an item that may not be dropped right away (due to a config activity)
                     // we defer the removal until the activity returns.
-                    // TextLauncher: one page, so no extra empty screen (deferRemoveExtraEmptyScreen).
+                    // CaretLauncher: one page, so no extra empty screen (deferRemoveExtraEmptyScreen).
 
                     // When dragging and dropping from customization tray, we deal with creating
                     // widgets/shortcuts/folders in a slightly different way
                     mLauncher.addPendingItem(pendingInfo, container, screenId, mTargetCell,
                             item.spanX, item.spanY);
-                    // TextLauncher: the home screen leaves the spring-loaded state here, where
+                    // CaretLauncher: the home screen leaves the spring-loaded state here, where
                     // Launcher3 leaves it as its add flow completes (Launcher.onActivityResult,
                     // completeTwoStageWidgetDrop); the home screen's add flow waits until it is
                     // resumed and may show the system's bind dialog.
@@ -1811,9 +1811,9 @@ public abstract class Workspace<T> extends FrameLayout
             }
 
             int animationStyle = ANIMATE_INTO_POSITION_AND_DISAPPEAR;
-            // TextLauncher: the drag view always disappears; Launcher3 keeps it for a widget's
+            // CaretLauncher: the drag view always disappears; Launcher3 keeps it for a widget's
             // configuration activity (ANIMATE_INTO_POSITION_AND_REMAIN) until the result comes,
-            // and TextLauncher has no WidgetAddFlowHandler (getHandler).
+            // and CaretLauncher has no WidgetAddFlowHandler (getHandler).
             animateWidgetDrop(info, cellLayout, d.dragView, onAnimationCompleteRunnable,
                     animationStyle, finalView, true);
         } else {
@@ -1821,7 +1821,7 @@ public abstract class Workspace<T> extends FrameLayout
             mLauncher.getStateManager().goToState(NORMAL, SPRING_LOADED_EXIT_DELAY);
             // TODO(b/414409465) We could just create a new info making a copy with all the new
             //  needed values instead of choosing on each case what to modify.
-            // TextLauncher: the home screen inflates the item (its HomeItemInflater is
+            // CaretLauncher: the home screen inflates the item (its HomeItemInflater is
             // Launcher3's ItemInflater).
             View view = mLauncher.inflateItem(info, cellLayout, container);
             d.dragInfo = info = (ItemInfo) view.getTag();
@@ -1870,7 +1870,7 @@ public abstract class Workspace<T> extends FrameLayout
                 resetTransitionTransform();
             }
 
-            // TextLauncher: no system drags, so no dropped URIs to move (HomeScreenFilesProvider).
+            // CaretLauncher: no system drags, so no dropped URIs to move (HomeScreenFilesProvider).
 
             mStatsLogManager.logger().withItemInfo(d.dragInfo).withInstanceId(d.logInstanceId)
                     .log(LauncherEvent.LAUNCHER_ITEM_DROP_COMPLETED);
@@ -1904,7 +1904,7 @@ public abstract class Workspace<T> extends FrameLayout
         Rect r = estimateItemPosition(layout, targetCell[0], targetCell[1], spanX, spanY);
         if (info.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET) {
             DeviceProfile profile = mLauncher.getDeviceProfile();
-            // TextLauncher: LauncherAppWidgetHostView is the navigable widget view
+            // CaretLauncher: LauncherAppWidgetHostView is the navigable widget view
             // (NavigableAppWidgetHostView).
             if (finalView instanceof LauncherAppWidgetHostView) {
                 Rect widgetPadding = profile.getWorkspaceProfile().getWidgetPadding();
@@ -1962,7 +1962,7 @@ public abstract class Workspace<T> extends FrameLayout
         getFinalPositionForDropAnimation(finalPos, scaleXY, dragView, cellLayout, info, mTargetCell,
                 scalePreview, finalView);
 
-        // TextLauncher: the Launcher stand-in is not a Context.
+        // CaretLauncher: the Launcher stand-in is not a Context.
         Resources res = mLauncher.asContext().getResources();
         final int duration = res.getInteger(R.integer.config_dropAnimMaxDuration) - 200;
 
@@ -2007,12 +2007,12 @@ public abstract class Workspace<T> extends FrameLayout
     }
 
     public void setFinalTransitionTransform() {
-        // TextLauncher: the workspace does not switch states while dropping (isSwitchingState is
+        // CaretLauncher: the workspace does not switch states while dropping (isSwitchingState is
         // always false: the states' look is the home screen's).
     }
 
     public void resetTransitionTransform() {
-        // TextLauncher: see setFinalTransitionTransform.
+        // CaretLauncher: see setFinalTransitionTransform.
     }
 
     /**
@@ -2036,12 +2036,12 @@ public abstract class Workspace<T> extends FrameLayout
                 pixelX, pixelY, spanX, spanY, recycle);
     }
 
-    // TextLauncher: public, called by the home screen (Launcher.setupViews in Launcher3).
+    // CaretLauncher: public, called by the home screen (Launcher.setupViews in Launcher3).
     public void setup(DragController dragController) {
-        // TextLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
+        // CaretLauncher: one page, so no page switching while dragging (SpringLoadedDragController).
         mDragController = dragController;
 
-        // TextLauncher: no page layers (updateChildrenLayersEnabled).
+        // CaretLauncher: no page layers (updateChildrenLayersEnabled).
     }
 
     /**
@@ -2070,7 +2070,7 @@ public abstract class Workspace<T> extends FrameLayout
         View cell = getViewByItemId(d.originalDragInfo.id);
         if (d.cancelled && cell != null) {
             cell.setVisibility(VISIBLE);
-            // TextLauncher: a result that comes after the drag ended (the uninstall drop
+            // CaretLauncher: a result that comes after the drag ended (the uninstall drop
             // target's, on resume) marks the item's cells as occupied again; Launcher3 leaves them
             // free until the next drag or binding.
             if (mDragInfo == null) {
@@ -2109,7 +2109,7 @@ public abstract class Workspace<T> extends FrameLayout
     /**
      * Returns a specific CellLayout
      */
-    // TextLauncher: public, called by the home screen (Launcher.addFolder in Launcher3).
+    // CaretLauncher: public, called by the home screen (Launcher.addFolder in Launcher3).
     public CellLayout getParentCellLayoutForView(View v) {
         for (CellLayout layout : getWorkspaceAndHotseatCellLayouts()) {
             if (layout.getShortcutsAndWidgets().indexOfChild(v) > -1) {
@@ -2160,9 +2160,9 @@ public abstract class Workspace<T> extends FrameLayout
         }
 
         if (persistChanges) {
-            // TextLauncher: one page, so no empty screens to strip (stripEmptyScreens).
+            // CaretLauncher: one page, so no empty screens to strip (stripEmptyScreens).
         }
-        // TextLauncher: the page is laid out again, as the views were removed in layout.
+        // CaretLauncher: the page is laid out again, as the views were removed in layout.
         for (CellLayout layout : getWorkspaceAndHotseatCellLayouts()) {
             layout.requestLayout();
         }
@@ -2208,7 +2208,7 @@ public abstract class Workspace<T> extends FrameLayout
                 - sibling.getLeft() - sibling.getTranslationX());
     }
 
-    // TextLauncher: not a PagedView, and one page (mNextPage).
+    // CaretLauncher: not a PagedView, and one page (mNextPage).
     protected String getCurrentPageDescription() {
         return getPageDescription(mCurrentPage);
     }
@@ -2219,7 +2219,7 @@ public abstract class Workspace<T> extends FrameLayout
      */
     @Override
     public String getPageDescription(int page) {
-        // TextLauncher: the pages are not children of this workspace (getPageCount), and there is
+        // CaretLauncher: the pages are not children of this workspace (getPageCount), and there is
         // no extra empty screen (one page).
         int nScreens = getPageCount();
         if (nScreens == 0) {
@@ -2257,7 +2257,7 @@ public abstract class Workspace<T> extends FrameLayout
         }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /** PagedView.mCurrentPage: the one page. */
     protected int mCurrentPage = 0;
@@ -2334,7 +2334,7 @@ public abstract class Workspace<T> extends FrameLayout
     }
 
     /**
-     * Workspace.getWorkspaceAndHotseatCellLayouts. TextLauncher: the one page, and no hotseat.
+     * Workspace.getWorkspaceAndHotseatCellLayouts. CaretLauncher: the one page, and no hotseat.
      */
     CellLayout[] getWorkspaceAndHotseatCellLayouts() {
         return getPageCount() > 0 ? new CellLayout[] { getPageAt(0) } : new CellLayout[0];

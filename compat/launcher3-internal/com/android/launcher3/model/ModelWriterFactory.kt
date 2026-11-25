@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.model
@@ -62,7 +62,7 @@ interface ModelWriterFactory {
 /**
  * Default implementation of [ModelWriterFactory].
  *
- * TextLauncher: no Dagger; the LauncherModel makes it with itself, and the UI executor is
+ * CaretLauncher: no Dagger; the LauncherModel makes it with itself, and the UI executor is
  * Executors.MAIN_EXECUTOR.
  */
 class ModelWriterFactoryImpl(

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -75,8 +75,8 @@ import java.util.function.Consumer;
  * sequential list of "pages"
  *
  * <p>Stand-in for Launcher3's PagedView (android-17.0.0_r1), made from PagedView.java by deleting
- * what TextLauncher does not have (the window animation scale of Studio builds); changes are
- * marked with "TextLauncher:". The open folder's content (folder/FolderPagedView.java) is the
+ * what CaretLauncher does not have (the window animation scale of Studio builds); changes are
+ * marked with "CaretLauncher:". The open folder's content (folder/FolderPagedView.java) is the
  * only PagedView: the home grid scrolls vertically and is not one.
  */
 public abstract class PagedView<T extends View & PageIndicator> extends ViewGroup {
@@ -1796,7 +1796,7 @@ public abstract class PagedView<T extends View & PageIndicator> extends ViewGrou
             return false;
         }
 
-        // TextLauncher: no scaling by the window animation scale, which only Studio builds of
+        // CaretLauncher: no scaling by the window animation scale, which only Studio builds of
         // Launcher3 do (FeatureFlags.IS_STUDIO_BUILD is false; no RemoveAnimationSettingsTracker).
 
         whichPage = validateNewPage(whichPage);

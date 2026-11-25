@@ -15,7 +15,7 @@
  */
 
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -35,8 +35,8 @@ import com.android.launcher3.widget.LauncherAppWidgetHostView
  * controller does not handle apps or app shortcuts. This controller handles actions for the popups
  * such as showing and dismissing them.
  */
-// TextLauncher: derived from PopupControllerForExtraHomeScreenItems.kt (android-17.0.0_r1); T is not
-// bound to a Context, as the Launcher stand-in is not one. Changes are marked with "TextLauncher:".
+// CaretLauncher: derived from PopupControllerForExtraHomeScreenItems.kt (android-17.0.0_r1); T is not
+// bound to a Context, as the Launcher stand-in is not one. Changes are marked with "CaretLauncher:".
 class PopupControllerForExtraHomeScreenItems<T>(
     private val popupDataRepository: PopupDataRepository,
     private val dragController: LauncherDragController,
@@ -59,7 +59,7 @@ class PopupControllerForExtraHomeScreenItems<T>(
             }
             showResizeFrameIfNeeded(activityContext, itemInfo, view)
         } finally {
-            // TextLauncher: no logging (logEvent).
+            // CaretLauncher: no logging (logEvent).
             Trace.endSection()
         }
         return container
@@ -70,7 +70,7 @@ class PopupControllerForExtraHomeScreenItems<T>(
         itemInfo: ItemInfo,
         view: View,
     ) {
-        // TextLauncher: the home screen's Launcher has the cell layouts (ActivityContext.getCellLayout).
+        // CaretLauncher: the home screen's Launcher has the cell layouts (ActivityContext.getCellLayout).
         val cellLayout =
             (activityContext as Launcher).getCellLayout(itemInfo.container, itemInfo.screenId)
         val resizeStrategy = DefaultPopupResizeStrategy()

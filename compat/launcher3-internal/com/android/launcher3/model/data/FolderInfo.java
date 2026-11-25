@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * Stand-in for Launcher3's FolderInfo. Only the contents, as FolderGridOrganizer and the folder
  * icon read them, and the options the open folder reads (FLAG_MULTI_PAGE_ANIMATION). Folders have
- * no titles in TextLauncher (docs/spec.md 5.2).
+ * no titles in CaretLauncher (docs/spec.md 5.2).
  */
 public class FolderInfo extends ItemInfo {
 
@@ -53,7 +53,7 @@ public class FolderInfo extends ItemInfo {
 
     /**
      * Convenience function. Checks contents to see if any match a given predicate.
-     * TextLauncher: CollectionInfo.anyMatch (no CollectionInfo).
+     * CaretLauncher: CollectionInfo.anyMatch (no CollectionInfo).
      */
     public boolean anyMatch(java.util.function.Predicate<ItemInfo> matcher) {
         return getContents().stream().anyMatch(matcher);
@@ -76,7 +76,7 @@ public class FolderInfo extends ItemInfo {
     @Override
     public void onAddToDatabase(@NonNull ContentWriter writer) {
         super.onAddToDatabase(writer);
-        // TextLauncher: CollectionInfo.onAddToDatabase; folders have no title.
+        // CaretLauncher: CollectionInfo.onAddToDatabase; folders have no title.
         writer.put(LauncherSettings.Favorites.TITLE, title);
         writer.put(LauncherSettings.Favorites.OPTIONS, options);
     }

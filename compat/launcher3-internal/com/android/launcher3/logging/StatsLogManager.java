@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -25,7 +25,7 @@ import android.content.Context;
 import com.android.launcher3.model.data.ItemInfo;
 
 /**
- * Stand-in for Launcher3's StatsLogManager (android-17.0.0_r1). TextLauncher logs nothing: the
+ * Stand-in for Launcher3's StatsLogManager (android-17.0.0_r1). CaretLauncher logs nothing: the
  * logger takes the same calls as Launcher3's and drops them. Only the events copied code logs are
  * declared.
  */
@@ -66,7 +66,7 @@ public class StatsLogManager {
         }
     }
 
-    /** Builds and logs an event; TextLauncher's logs nothing. */
+    /** Builds and logs an event; CaretLauncher's logs nothing. */
     public interface StatsLogger {
         default StatsLogger withItemInfo(ItemInfo itemInfo) {
             return this;
@@ -83,7 +83,7 @@ public class StatsLogManager {
         }
     }
 
-    /** Returns the logger of the context; TextLauncher's logs nothing. */
+    /** Returns the logger of the context; CaretLauncher's logs nothing. */
     public static StatsLogManager newInstance(Context context) {
         return new StatsLogManager();
     }

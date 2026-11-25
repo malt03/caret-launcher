@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 package com.android.launcher3.uioverrides.touchcontrollers;
@@ -59,24 +59,24 @@ import java.util.function.Predicate;
  * - For touch events (not trackpad scrolls or mouse input if specific features are enabled),
  *   the initial touch occurs above the navigation bar area.
  * <p>
- * TextLauncher: SystemUiProxy is only bound by the launcher that is the system's Recents, so the
+ * CaretLauncher: SystemUiProxy is only bound by the launcher that is the system's Recents, so the
  * touches cannot be forwarded to the System UI. Once the swipe is detected, the notification
  * shade is opened with StatusBarManager.expandNotificationsPanel (EXPAND_STATUS_BAR) instead, and
  * it opens with its own animation rather than following the finger. As the shade does not move
- * with the finger, a haptic marks the moment it opens (TextLauncher's own; Launcher3 has none).
+ * with the finger, a haptic marks the moment it opens (CaretLauncher's own; Launcher3 has none).
  */
 public class StatusBarTouchController implements TouchController {
 
     private static final String TAG = "StatusBarController";
 
-    // TextLauncher: the launcher stand-in, which is not a BaseActivity.
+    // CaretLauncher: the launcher stand-in, which is not a BaseActivity.
     private final Launcher mLauncher;
-    // TextLauncher: no SystemUiProxy; see expandNotificationsPanel.
+    // CaretLauncher: no SystemUiProxy; see expandNotificationsPanel.
     private final float mTouchSlop;
     private final PointF mDownEvent = new PointF();
-    // TextLauncher: the check gets the ACTION_DOWN event (the home screen scrolls vertically).
+    // CaretLauncher: the check gets the ACTION_DOWN event (the home screen scrolls vertically).
     private final Predicate<MotionEvent> mIsEnabledCheck;
-    // TextLauncher: no CachedEventDispatcher; nothing is forwarded.
+    // CaretLauncher: no CachedEventDispatcher; nothing is forwarded.
 
     /* If {@code false}, this controller should not handle the input {@link MotionEvent}.*/
     private boolean mCanIntercept;
@@ -93,7 +93,7 @@ public class StatusBarTouchController implements TouchController {
                 + " , expandNotificationsPanel available:" + (EXPAND_NOTIFICATIONS_PANEL != null);
     }
 
-    // TextLauncher: no dispatchTouchEvent; the shade is opened once (expandNotificationsPanel).
+    // CaretLauncher: no dispatchTouchEvent; the shade is opened once (expandNotificationsPanel).
 
     @Override
     public final boolean onControllerInterceptTouchEvent(MotionEvent ev) {
@@ -110,13 +110,13 @@ public class StatusBarTouchController implements TouchController {
             return false;
         }
 
-        // TextLauncher: no events are cached to be forwarded.
+        // CaretLauncher: no events are cached to be forwarded.
 
         if (action == ACTION_MOVE) {
             float dy = ev.getY() - mDownEvent.y;
             float dx = ev.getX() - mDownEvent.x;
             if (dy > mTouchSlop && dy > Math.abs(dx)) {
-                // TextLauncher: in place of forwarding the touches from here on, the shade is
+                // CaretLauncher: in place of forwarding the touches from here on, the shade is
                 // opened once.
                 expandNotificationsPanel();
                 return true;
@@ -133,7 +133,7 @@ public class StatusBarTouchController implements TouchController {
     @Override
     public final boolean onControllerTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
-        // TextLauncher: the rest of the gesture is taken and not forwarded.
+        // CaretLauncher: the rest of the gesture is taken and not forwarded.
         if (action == ACTION_UP || action == ACTION_CANCEL) {
             mLauncher.getStatsLogManager().logger()
                     .log(LAUNCHER_SWIPE_DOWN_WORKSPACE_NOTISHADE_OPEN);
@@ -143,7 +143,7 @@ public class StatusBarTouchController implements TouchController {
     }
 
     private void cleanupAfterGesture() {
-        // TextLauncher: no CachedEventDispatcher to clear.
+        // CaretLauncher: no CachedEventDispatcher to clear.
     }
 
     private boolean canInterceptTouch(MotionEvent ev) {
@@ -158,19 +158,19 @@ public class StatusBarTouchController implements TouchController {
                 AbstractFloatingView.TYPE_STATUS_BAR_SWIPE_DOWN_DISALLOW) != null) {
             return false;
         }
-        // TextLauncher: phones only (R.bool.desktop_form_factor is false), so mouse input is not
+        // CaretLauncher: phones only (R.bool.desktop_form_factor is false), so mouse input is not
         // left out (Utilities.shouldEnableMouseInteractionChanges).
         // For NORMAL state, only listen if the event originated above the navbar height
-        // TextLauncher: the drag layer's insets are the device profile's (DeviceProfile.getInsets).
+        // CaretLauncher: the drag layer's insets are the device profile's (DeviceProfile.getInsets).
         if (ev.getY() > (mLauncher.getDragLayer().getHeight()
                 - mLauncher.getDragLayer().getInsets().bottom)) {
             return false;
         }
-        // TextLauncher: in place of SystemUiProxy.isActive.
+        // CaretLauncher: in place of SystemUiProxy.isActive.
         return EXPAND_NOTIFICATIONS_PANEL != null;
     }
 
-    // TextLauncher: members TextLauncher adds.
+    // CaretLauncher: members CaretLauncher adds.
 
     /**
      * StatusBarManager.expandNotificationsPanel, which is hidden but not restricted: it is

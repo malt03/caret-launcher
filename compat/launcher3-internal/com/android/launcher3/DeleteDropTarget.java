@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
+ * Modified for CaretLauncher: a stand-in that keeps only what CaretLauncher uses.
  * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
  */
 
@@ -33,8 +33,8 @@ import com.android.launcher3.util.Preconditions;
 
 /**
  * Stand-in for Launcher3's DeleteDropTarget (android-17.0.0_r1), made from DeleteDropTarget.java
- * by deleting what TextLauncher does not use (home screen files, undo, logging);
- * changes are marked with "TextLauncher:".
+ * by deleting what CaretLauncher does not use (home screen files, undo, logging);
+ * changes are marked with "CaretLauncher:".
  */
 public class DeleteDropTarget extends ButtonDropTarget {
 
@@ -98,7 +98,7 @@ public class DeleteDropTarget extends ButtonDropTarget {
         if (!TextUtils.isEmpty(mText)) {
             int resId;
             if (canRemove(item)) {
-                // TextLauncher: no home screen files.
+                // CaretLauncher: no home screen files.
                 resId = R.string.remove_drop_target_label;
             } else {
                 resId = android.R.string.cancel;
@@ -115,7 +115,7 @@ public class DeleteDropTarget extends ButtonDropTarget {
 
     @Override
     public void onDrop(DragObject d, DragOptions options) {
-        // TextLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
+        // CaretLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
         super.onDrop(d, options);
     }
 
@@ -141,7 +141,7 @@ public class DeleteDropTarget extends ButtonDropTarget {
         // because we already remove the drag view from the folder (if the drag originated from
         // a folder) in Folder.beginDrag()
         if (canRemove(item)) {
-            // TextLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
+            // CaretLauncher: no undo (DropTargetHandler.prepareToUndoDelete).
             mDropTargetHandler.onDeleteComplete(item, view);
         }
     }

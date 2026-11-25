@@ -1,7 +1,7 @@
 <resources>
     <!-- docs/spec.md 7.1, 7.2: show the wallpaper and follow the system dynamic colors. -->
     <!-- Launcher3 BaseLauncherTheme (res/values-v30/styles.xml): the framework's theme, no AppCompat. -->
-    <style name="Theme.TextLauncher" parent="@android:style/Theme.DeviceDefault.DayNight">
+    <style name="Theme.CaretLauncher" parent="@android:style/Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowShowWallpaper">true</item>
@@ -41,11 +41,11 @@
     <!--
       The home screen's themes, picked by the wallpaper's color hints (Launcher3's
       Themes.getActivityThemeRes and WallpaperThemeManager). They override the AppTheme styles that
-      third_party/launcher3 declares. Theme.TextLauncher already follows the system dark theme, so
+      third_party/launcher3 declares. Theme.CaretLauncher already follows the system dark theme, so
       the Dark ones are the same as the others here. Values from Launcher3 res/values/styles.xml
       (android-17.0.0_r1): LauncherTheme, LauncherTheme.DarkText, LauncherTheme.Dark.DarkText.
     -->
-    <style name="AppTheme" parent="Theme.TextLauncher">
+    <style name="AppTheme" parent="Theme.CaretLauncher">
         <item name="isWorkspaceDarkText">false</item>
         <item name="workspaceTextColor">@color/workspace_text_color_light</item>
         <item name="workspaceShadowColor">#B0000000</item>
