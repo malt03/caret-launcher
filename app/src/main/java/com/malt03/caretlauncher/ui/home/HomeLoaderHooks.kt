@@ -25,7 +25,6 @@ import com.malt03.caretlauncher.ui.GridSpec
 internal class HomeLoaderHooks(private val context: Context) : LoaderTask.Hooks {
 
     override fun migrateGridIfNeeded(dbController: ModelDbController) {
-        backUpFavoritesOnce(dbController)
         // LoaderCursor.checkItemPlacement reads the grid from InvariantDeviceProfile, which the
         // home screen sets; until then, the grid from the device (HomeGridInitializer).
         LauncherAppState.getIDP(context).getDeviceProfile(context)
@@ -67,19 +66,6 @@ internal class HomeLoaderHooks(private val context: Context) : LoaderTask.Hooks 
     }
 
     /**
-     * CaretLauncher: before Launcher3's loader first reads the favorites (it deletes the rows it
-     * cannot resolve, LoaderCursor.markDeleted), they are copied to [BACKUP_TABLE] once.
-     */
-    private fun backUpFavoritesOnce(dbController: ModelDbController) {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        if (prefs.getBoolean(KEY_BACKED_UP, false)) return
-        dbController.getTable().execSQL(
-            "CREATE TABLE IF NOT EXISTS $BACKUP_TABLE AS SELECT * FROM ${Favorites.TABLE_NAME}",
-        )
-        prefs.edit().putBoolean(KEY_BACKED_UP, true).apply()
-    }
-
-    /**
      * DbReader.loadAllEntries: the items on the home page (CONTAINER_DESKTOP) with their cells and
      * spans, widgets as LauncherAppWidgetInfo (GridSizeMigration reads their providers' min spans).
      */
@@ -118,8 +104,5 @@ internal class HomeLoaderHooks(private val context: Context) : LoaderTask.Hooks 
 
     private companion object {
         const val TAG = "HomeLoaderHooks"
-        const val PREFS = "home_loader"
-        const val KEY_BACKED_UP = "favorites_backed_up"
-        const val BACKUP_TABLE = "favorites_backup_caretlauncher"
     }
 }
