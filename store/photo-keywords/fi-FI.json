@@ -1,0 +1,8 @@
+{
+  "keywords": [
+    "galleria",
+    "photos"
+  ],
+  "appName": "Kuvat",
+  "reason": "Puhelimessa, jonka kieleksi on asetettu suomi, Google Kuvat näkyy nimellä \"Kuvat\", joten haku löytää jo sanat \"kuva\" ja \"kuvat\". Samsungin ja monen muun valmistajan kuvasovellus on suomeksi \"Galleria\", joten puhelinta vaihtanut suomalainen kirjoittaa juuri sen. Sana \"photos\" toimii kuten japanin \"photo\": moni suomalainen on tottunut sovellusten englanninkielisiin nimiin ja kirjoittaa ensimmäiseksi Google Photos. Kumpikin sana on lyhyt, oikeasti käytössä ja kirjoitettavissa suoraan tavallisella suomalaisella näppäimistöllä."
+}

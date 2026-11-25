@@ -1,0 +1,8 @@
+{
+  "keywords": [
+    "galeria",
+    "álbum"
+  ],
+  "appName": "Fotos (Google Fotos)",
+  "reason": "Em Portugal, a aplicação aparece no telemóvel como \"Fotos\", por isso escrever \"fo\" já a encontra e \"fotografias\" não acrescentaria nada. \"Galeria\" é o nome da aplicação de fotos na maioria dos Android vendidos cá (Samsung, Xiaomi), e quem muda de telemóvel escreve mesmo isso por hábito. \"Álbum\" é a palavra do dia a dia para \"o sítio onde estão as fotos\". Também se escreve diretamente no teclado português, com o acento por pressão longa, ou simplesmente \"album\". As duas são curtas, reais e credíveis, tal como \"しゃしん\" é para um japonês."
+}

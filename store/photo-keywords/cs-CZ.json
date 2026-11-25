@@ -1,0 +1,8 @@
+{
+  "keywords": [
+    "galerie",
+    "obrázky"
+  ],
+  "appName": "Fotky",
+  "reason": "Na většině telefonů s Androidem (Samsung, Xiaomi a další) se aplikace s fotkami v češtině jmenuje „Galerie“, takže Čech, který přešel z jiného telefonu, napíše instinktivně právě tohle. „Obrázky“ je běžné hovorové slovo pro fotky a obrázky v telefonu („pošli mi ty obrázky“), a přitom nezačíná jako „Fotky“, takže ho vyhledávání samo nenajde. Obě slova jdou napsat přímo na standardní české klávesnici („á“ na ní má vlastní klávesu) a jsou krátká a uvěřitelná."
+}

@@ -1,0 +1,8 @@
+{
+  "keywords": [
+    "galeri",
+    "album"
+  ],
+  "appName": "Foto",
+  "reason": "Di ponsel berbahasa Indonesia, Google Foto tampil sebagai \"Foto\", jadi \"foto\" sudah ditemukan oleh pencarian biasa. Banyak orang Indonesia terbiasa membuka foto lewat aplikasi bawaan bernama \"Galeri\" (Samsung, Xiaomi, Oppo, Vivo), jadi \"galeri\" adalah kata yang paling mungkin langsung mereka ketik. \"Album\" juga kata sehari-hari untuk kumpulan foto, dan Google Foto sendiri memakai istilah itu. Keduanya pendek, nyata, dan bisa diketik langsung dengan keyboard standar."
+}
