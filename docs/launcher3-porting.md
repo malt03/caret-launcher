@@ -162,7 +162,7 @@ Launcher3 と `frameworks/libs/systemui` は Apache License 2.0 である。
 
 - 取り込んだファイルのライセンスヘッダーは残す
 - `third_party/` 以下に LICENSE と NOTICE を置く
-- APK にも LICENSE と NOTICE を入れる（`assets/licenses/`。Apache License 2.0 の4節。画面は作らない）。ビルドが `third_party/LICENSE` と `third_party/NOTICE` を写し、NOTICE の後ろにその版に入るライブラリの一覧（`runtimeConfiguration` から）を付ける（`app/build.gradle.kts` の `LicenseAssetsTask`）
+- APK にも LICENSE と NOTICE を入れる（`assets/licenses/`。Apache License 2.0 の4節。画面は作らない）。ビルドが最上位の `LICENSE` を写し、NOTICE は最上位の `NOTICE`（TextLauncher 自身。Apache License 2.0）と `third_party/NOTICE` をつなげ、その後ろにその版に入るライブラリの一覧（`runtimeConfiguration` から）を付ける（`app/build.gradle.kts` の `LicenseAssetsTask`）
   - 同梱のライブラリはどれも Apache License 2.0（2026-11-25 に確認）。ライブラリを足すときは、ライセンスと、jar に NOTICE があるかを確かめ、NOTICE があれば `third_party/NOTICE` に写す（今は kotlinx.coroutines と Jakarta Inject）
 - 書き換えたファイルには、変更したことを示す記載を入れる（Apache License 2.0 の条件）
 - 互換層のクラスのうち、上流に同じ名前のファイルがあるものは、上流のライセンスヘッダーをそのまま付け、その下に「TextLauncher のために変更した」旨のコメントを置く。中身が上流のコードか、名前とシグネチャだけかは問わない
