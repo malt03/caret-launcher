@@ -12,7 +12,7 @@
     <string name="search_terms_hint">Kulcsszó hozzáadása</string>
     <string name="search_terms_add">Hozzáadás</string>
     <string name="search_terms_close">Bezárás</string>
-    <string name="search_terms_remove">Eltávolítás</string>
+    <string name="search_terms_remove">Törlés</string>
     <string name="share_text_title">Szöveg megosztása</string>
     <string name="share_text_message">Válasszon legfeljebb 3 alkalmazást, amelyek a keresőmező mellett jelennek meg. Koppintson az egyikre a beírt szöveg megosztásához.</string>
     <string name="share_text_move_up">Mozgatás felfelé</string>

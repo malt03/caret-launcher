@@ -9,8 +9,8 @@
     <string name="search_hint_share">"সন্ধান কৰক"</string>
     <string name="menu_search_terms">সন্ধানৰ মূল শব্দ সম্পাদনা কৰক</string>
     <string name="search_terms_title">%1$sৰ বাবে সন্ধানৰ মূল শব্দ</string>
-    <string name="search_terms_hint">এটা মূল শব্দ যোগ কৰক</string>
-    <string name="search_terms_add">যোগ কৰক</string>
+    <string name="search_terms_hint">এটা মূল শব্দ যোগ দিয়ক</string>
+    <string name="search_terms_add">যোগ দিয়ক</string>
     <string name="search_terms_close">বন্ধ কৰক</string>
     <string name="search_terms_remove">আঁতৰাওক</string>
     <string name="share_text_title">পাঠ শ্বেয়াৰ কৰক</string>

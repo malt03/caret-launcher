@@ -12,7 +12,7 @@
     <string name="search_terms_hint">ເພີ່ມຄໍາສໍາຄັນ</string>
     <string name="search_terms_add">ເພີ່ມ</string>
     <string name="search_terms_close">ປິດ</string>
-    <string name="search_terms_remove">ລຶບອອກ</string>
+    <string name="search_terms_remove">ເອົາ​ອອກ</string>
     <string name="share_text_title">ແບ່ງປັນຂໍ້ຄວາມ</string>
     <string name="share_text_message">ເລືອກແອັບໄດ້ສູງສຸດ 3 ແອັບເພື່ອສະແດງຢູ່ຂ້າງຊ່ອງຊອກຫາ. ແຕະໃສ່ແອັບໃດໜຶ່ງເພື່ອແບ່ງປັນຂໍ້ຄວາມທີ່ທ່ານພິມ.</string>
     <string name="share_text_move_up">ຍ້າຍຂຶ້ນ</string>

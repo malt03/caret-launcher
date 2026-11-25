@@ -12,7 +12,7 @@
     <string name="search_terms_hint">Түлхүүр үг нэмэх</string>
     <string name="search_terms_add">Нэмэх</string>
     <string name="search_terms_close">Хаах</string>
-    <string name="search_terms_remove">Хасах</string>
+    <string name="search_terms_remove">Арилгах</string>
     <string name="share_text_title">Текст хуваалцах</string>
     <string name="share_text_message">Хайлтын талбарын хажууд харуулах 3 хүртэлх аппыг сонгоно уу. Бичсэн текстээ хуваалцахын тулд аль нэгийг нь товшино уу.</string>
     <string name="share_text_move_up">Дээш зөөх</string>

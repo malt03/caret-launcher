@@ -12,7 +12,7 @@
     <string name="search_terms_hint">បញ្ចូលពាក្យគន្លឹះ</string>
     <string name="search_terms_add">បញ្ចូល</string>
     <string name="search_terms_close">បិទ</string>
-    <string name="search_terms_remove">ដកចេញ</string>
+    <string name="search_terms_remove">យកចេញ</string>
     <string name="share_text_title">ចែករំលែកអត្ថបទ</string>
     <string name="share_text_message">ជ្រើសរើសកម្មវិធីរហូតដល់ 3 ដើម្បីបង្ហាញនៅជាប់កន្លែងស្វែងរក។ ចុចលើកម្មវិធីណាមួយ ដើម្បីចែករំលែកអត្ថបទដែលអ្នកបានវាយ។</string>
     <string name="share_text_move_up">ផ្លាស់ទីឡើងលើ</string>

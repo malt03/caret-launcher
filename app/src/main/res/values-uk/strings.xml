@@ -12,7 +12,7 @@
     <string name="search_terms_hint">Додати ключове слово</string>
     <string name="search_terms_add">Додати</string>
     <string name="search_terms_close">Закрити</string>
-    <string name="search_terms_remove">Видалити</string>
+    <string name="search_terms_remove">Вилучити</string>
     <string name="share_text_title">Поділитися текстом</string>
     <string name="share_text_message">Виберіть до 3 додатків, які показуватимуться поруч із полем пошуку. Торкніться одного, щоб поділитися введеним текстом.</string>
     <string name="share_text_move_up">Перемістити вгору</string>

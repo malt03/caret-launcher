@@ -9,8 +9,8 @@
     <string name="search_hint_share">"खोजी गर्नुहोस्"</string>
     <string name="menu_search_terms">खोज कीवर्डहरू सम्पादन गर्नुहोस्</string>
     <string name="search_terms_title">%1$s का खोज कीवर्डहरू</string>
-    <string name="search_terms_hint">कीवर्ड थप्नुहोस्</string>
-    <string name="search_terms_add">थप्नुहोस्</string>
+    <string name="search_terms_hint">कीवर्ड हाल्नुहोस्</string>
+    <string name="search_terms_add">हाल्नुहोस्</string>
     <string name="search_terms_close">बन्द गर्नुहोस्</string>
     <string name="search_terms_remove">हटाउनुहोस्</string>
     <string name="share_text_title">टेक्स्ट सेयर गर्नुहोस्</string>

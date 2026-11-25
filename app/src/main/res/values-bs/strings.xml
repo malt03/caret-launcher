@@ -9,8 +9,8 @@
     <string name="search_hint_share">"Pretraži"</string>
     <string name="menu_search_terms">Uredi ključne riječi za pretraživanje</string>
     <string name="search_terms_title">Ključne riječi za %1$s</string>
-    <string name="search_terms_hint">Dodaj ključnu riječ</string>
-    <string name="search_terms_add">Dodaj</string>
+    <string name="search_terms_hint">Dodajte ključnu riječ</string>
+    <string name="search_terms_add">Dodajte</string>
     <string name="search_terms_close">Zatvori</string>
     <string name="search_terms_remove">Ukloni</string>
     <string name="share_text_title">Dijeli tekst</string>

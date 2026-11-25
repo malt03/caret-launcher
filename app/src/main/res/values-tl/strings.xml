@@ -10,7 +10,7 @@
     <string name="menu_search_terms">I-edit ang mga keyword sa paghahanap</string>
     <string name="search_terms_title">Mga keyword sa paghahanap para sa %1$s</string>
     <string name="search_terms_hint">Magdagdag ng keyword</string>
-    <string name="search_terms_add">Idagdag</string>
+    <string name="search_terms_add">Magdagdag</string>
     <string name="search_terms_close">Isara</string>
     <string name="search_terms_remove">Alisin</string>
     <string name="share_text_title">Ibahagi ang text</string>

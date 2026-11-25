@@ -7,9 +7,9 @@
 <resources>
     <string name="search_hint">"Caută aplicații"</string>
     <string name="search_hint_share">"Caută"</string>
-    <string name="menu_search_terms">Editează cuvintele cheie</string>
-    <string name="search_terms_title">Cuvinte cheie pentru %1$s</string>
-    <string name="search_terms_hint">Adaugă un cuvânt cheie</string>
+    <string name="menu_search_terms">Editează cuvintele-cheie</string>
+    <string name="search_terms_title">Cuvinte-cheie pentru %1$s</string>
+    <string name="search_terms_hint">Adaugă un cuvânt-cheie</string>
     <string name="search_terms_add">Adaugă</string>
     <string name="search_terms_close">Închide</string>
     <string name="search_terms_remove">Elimină</string>
