@@ -16,7 +16,7 @@ https://github.com/malt03/caret-launcher
 ・Pick themed icons and an icon shape in Wallpaper & style.
 ・On a foldable, unfold it to get two panes: all your apps on the left and your home screen on the right.
 
-■ Send what you typed
+■ Search straight from what you typed
 ・Choose up to three apps, and their buttons appear at the right end of the search field. A browser or an AI app works well.
 ・Type some text and tap a button to hand it to that app.
 
