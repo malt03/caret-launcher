@@ -499,5 +499,5 @@ Launcher3 と同じく、通知があるアプリのアイコンの右上にド�
     - `/shape`：`shape_key` を保存する
     - `/default_grid`：0 を返す（グリッドは変えさせない）
   - **形状の選択肢**（`ShapesProvider.kt`）：`circle`（初期値）、`square`、`four_sided_cookie`、`seven_sided_cookie`、`arch` の5つ。SVG パスは取り込み時にそのまま移植する
-  - **プレビュー**（`call` の `get_preview`）：Launcher3 はホームのプレビューを描いて返す。まずは null を返し、「壁紙とスタイル」側の表示に問題が出るかを実機で確かめる
+  - **プレビュー**（`call` の `get_preview`）：Launcher3 と同じく、ホームのプレビューを `SurfaceControlViewHost` に描き、`SurfacePackage` と、選び直しの通知を受ける `Messenger` を返す。描くのはキーボードを下ろしたときのホーム（ホームのページと検索欄）で、キーボードは描かない。壁紙は「壁紙とスタイル」が下に描く。形やテーマアイコンを選び直すと、上流と同じく選んだ時点で設定が変わり、プレビューも描き直される。静止画の `get_preview_bitmap` は返さない
   - 既知の問題（サードパーティのランチャーの実装例 [pie-launcher-remake #28](https://github.com/jgoedde/pie-launcher-remake/issues/28) より）：「壁紙とスタイル」は接続先のランチャーをキャッシュする。ホームアプリを切り替えた直後は、そのプロセスが終わるまで前のランチャーにつながることがある

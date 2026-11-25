@@ -6,6 +6,7 @@ import android.content.pm.LauncherApps
 import com.android.launcher3.InvariantDeviceProfile
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
+import com.android.launcher3.graphics.GridCustomizationsProxy
 import com.android.launcher3.model.AllAppsList
 import com.android.launcher3.model.BgDataModel
 import com.android.launcher3.model.ItemInstallQueue
@@ -24,6 +25,7 @@ import com.malt03.textlauncher.data.SearchStore
 import com.malt03.textlauncher.data.ShareTargetStore
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.icons.IconSettings
+import com.malt03.textlauncher.provider.HomeCustomizations
 import com.malt03.textlauncher.ui.home.HomeGridInitializer
 import com.malt03.textlauncher.ui.home.HomeLoaderHooks
 import java.util.concurrent.ExecutorService
@@ -49,6 +51,15 @@ class TextLauncherApplication : Application() {
         private set
     lateinit var iconLoader: AppIconLoader
         private set
+
+    /**
+     * GridCustomizationsProxy (a Dagger singleton in Launcher3): the "Wallpaper & style" app's
+     * icon settings and home screen preview (docs/spec.md 7.3), which CustomizationProvider hands
+     * the requests to.
+     */
+    val customizationsProxy: GridCustomizationsProxy by lazy {
+        GridCustomizationsProxy(this, HomeCustomizations(iconSettings))
+    }
 
     override fun onCreate() {
         super.onCreate()
