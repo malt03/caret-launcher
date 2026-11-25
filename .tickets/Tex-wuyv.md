@@ -1,6 +1,6 @@
 ---
 id: Tex-wuyv
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-23T04:37:46Z
@@ -18,3 +18,9 @@ tags: [home, device]
 - 縦に折るフリップ端末の外側の小さい画面（255×400dp 未満は数えない処理）
 - タブレット：グリッドの選び方の変更（9cb531f）で 6×5・アイコン 60dp になるはず。Launcher3 の isScalable の伸縮は持ってきていない
 
+
+## Notes
+
+**2026-11-25T02:00:12Z**
+
+2026-11-25: ユーザーが実機で確認し、すべて問題なし

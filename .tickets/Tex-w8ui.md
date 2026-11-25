@@ -1,6 +1,6 @@
 ---
 id: Tex-w8ui
-status: open
+status: closed
 deps: [Tex-6b20]
 links: []
 created: 2026-11-20T11:16:26Z
@@ -21,7 +21,7 @@ tags: [icons, spike]
 ## Acceptance Criteria
 
 - [x] ソースで確認した取り決めの内容を記録した（docs/spec.md の付録）
-- [ ] Pixel（Android 17）で項目が出るかどうかを確認し、結果を記録した
+- [x] Pixel（Android 17）で項目が出るかどうかを確認し、結果を記録した
 
 
 ## Notes
@@ -33,3 +33,7 @@ android-17.0.0_r1 の Launcher3（graphics/LauncherCustomizationProvider.kt、gr
 **2026-11-20T12:11:12Z**
 
 エミュレータ（Android 17 google_apis_playstore）の Google 製「壁紙とスタイル」で、テーマアイコンと形状の項目が出て動くことを確認。実機の Pixel での確認は未実施
+
+**2026-11-25T02:00:12Z**
+
+2026-11-25: ユーザーが実機で確認し、すべて問題なし
