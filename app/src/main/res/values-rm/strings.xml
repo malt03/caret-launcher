@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Romansh (Rumantsch Grischun). Launcher3 has no Romansh, so search_hint and search_hint_share are
+  CaretLauncher's own here; the Launcher3 strings the app shows stay in English.
+-->
+<resources>
+    <string name="search_hint">Tschertgar applicaziuns</string>
+    <string name="search_hint_share">Tschertgar</string>
+    <string name="menu_search_terms">Modifitgar ils pleds-clav da tschertga</string>
+    <string name="search_terms_title">Pleds-clav da tschertga per %1$s</string>
+    <string name="search_terms_hint">Agiuntar in pled-clav</string>
+    <string name="search_terms_add">Agiuntar</string>
+    <string name="search_terms_close">Serrar</string>
+    <string name="search_terms_remove">Allontanar</string>
+    <string name="share_text_title">Cundivider il text</string>
+    <string name="share_text_message">Tscherna fin a 3 applicaziuns che vegnan mussadas sper il champ da tschertga. Tutga ina per cundivider il text che ti has endatà.</string>
+    <string name="share_text_move_up">Spustar ensi</string>
+    <string name="share_text_move_down">Spustar engiu</string>
+    <string name="licenses">Licenzas</string>
+</resources>

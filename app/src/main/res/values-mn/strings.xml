@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Апп хайх"</string>
     <string name="search_hint_share">"Хайх"</string>
+    <string name="menu_search_terms">Хайлтын түлхүүр үгсийг засах</string>
+    <string name="search_terms_title">%1$s-н хайлтын түлхүүр үгс</string>
+    <string name="search_terms_hint">Түлхүүр үг нэмэх</string>
+    <string name="search_terms_add">Нэмэх</string>
+    <string name="search_terms_close">Хаах</string>
+    <string name="search_terms_remove">Хасах</string>
     <string name="share_text_title">Текст хуваалцах</string>
     <string name="share_text_message">Хайлтын талбарын хажууд харуулах 3 хүртэлх аппыг сонгоно уу. Бичсэн текстээ хуваалцахын тулд аль нэгийг нь товшино уу.</string>
     <string name="share_text_move_up">Дээш зөөх</string>

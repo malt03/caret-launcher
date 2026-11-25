@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Пребарувајте апликации"</string>
     <string name="search_hint_share">"Барај"</string>
+    <string name="menu_search_terms">Уреди клучни зборови за пребарување</string>
+    <string name="search_terms_title">Клучни зборови за %1$s</string>
+    <string name="search_terms_hint">Додај клучен збор</string>
+    <string name="search_terms_add">Додај</string>
+    <string name="search_terms_close">Затвори</string>
+    <string name="search_terms_remove">Отстрани</string>
     <string name="share_text_title">Споделете текст</string>
     <string name="share_text_message">Изберете до 3 апликации што ќе се прикажуваат до полето за пребарување. Допрете една за да го споделите внесениот текст.</string>
     <string name="share_text_move_up">Помести нагоре</string>

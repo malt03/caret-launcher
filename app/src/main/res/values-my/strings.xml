@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"ရှာဖွေမှု အက်ပ်များ"</string>
     <string name="search_hint_share">"ရှာဖွေရန်"</string>
+    <string name="menu_search_terms">ရှာဖွေရေး အဓိကစကားလုံးများ တည်းဖြတ်ရန်</string>
+    <string name="search_terms_title">%1$s အတွက် ရှာဖွေရေး အဓိကစကားလုံးများ</string>
+    <string name="search_terms_hint">အဓိကစကားလုံး ထည့်ရန်</string>
+    <string name="search_terms_add">ထည့်ရန်</string>
+    <string name="search_terms_close">ပိတ်ရန်</string>
+    <string name="search_terms_remove">ဖယ်ရှားရန်</string>
     <string name="share_text_title">စာသားမျှဝေရန်</string>
     <string name="share_text_message">ရှာဖွေမှုအကွက်ဘေးတွင် ပြရန် အက်ပ် ၃ ခုအထိ ရွေးပါ။ ရိုက်ထားသောစာသားကို မျှဝေရန် တစ်ခုကို တို့ပါ။</string>
     <string name="share_text_move_up">အပေါ်သို့ ရွှေ့ရန်</string>

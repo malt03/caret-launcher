@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Otsige rakendusi"</string>
     <string name="search_hint_share">"Otsing"</string>
+    <string name="menu_search_terms">Muuda otsingu märksõnu</string>
+    <string name="search_terms_title">Rakenduse %1$s märksõnad</string>
+    <string name="search_terms_hint">Lisa märksõna</string>
+    <string name="search_terms_add">Lisa</string>
+    <string name="search_terms_close">Sulge</string>
+    <string name="search_terms_remove">Eemalda</string>
     <string name="share_text_title">Jaga teksti</string>
     <string name="share_text_message">Valige kuni 3 rakendust, mida otsinguvälja kõrval kuvada. Sisestatud teksti jagamiseks puudutage ühte neist.</string>
     <string name="share_text_move_up">Teisalda üles</string>

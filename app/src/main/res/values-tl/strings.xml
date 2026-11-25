@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Maghanap ng mga app"</string>
     <string name="search_hint_share">"Maghanap"</string>
+    <string name="menu_search_terms">I-edit ang mga keyword sa paghahanap</string>
+    <string name="search_terms_title">Mga keyword sa paghahanap para sa %1$s</string>
+    <string name="search_terms_hint">Magdagdag ng keyword</string>
+    <string name="search_terms_add">Idagdag</string>
+    <string name="search_terms_close">Isara</string>
+    <string name="search_terms_remove">Alisin</string>
     <string name="share_text_title">Ibahagi ang text</string>
     <string name="share_text_message">Pumili ng hanggang 3 app na ipapakita sa tabi ng field ng paghahanap. I-tap ang isa para ibahagi ang text na na-type mo.</string>
     <string name="share_text_move_up">Ilipat pataas</string>

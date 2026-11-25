@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Tətbiqləri axtarın"</string>
     <string name="search_hint_share">"Axtarış"</string>
+    <string name="menu_search_terms">Axtarış açar sözlərini redaktə edin</string>
+    <string name="search_terms_title">%1$s üçün axtarış açar sözləri</string>
+    <string name="search_terms_hint">Açar söz əlavə edin</string>
+    <string name="search_terms_add">Əlavə edin</string>
+    <string name="search_terms_close">Bağlayın</string>
+    <string name="search_terms_remove">Silin</string>
     <string name="share_text_title">Mətni paylaşın</string>
     <string name="share_text_message">Axtarış sahəsinin yanında göstərmək üçün 3 tətbiqədək seçin. Yazdığınız mətni paylaşmaq üçün birinə toxunun.</string>
     <string name="share_text_move_up">Yuxarı köçürün</string>

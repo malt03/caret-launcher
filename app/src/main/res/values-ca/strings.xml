@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Cerca aplicacions"</string>
     <string name="search_hint_share">"Cerca"</string>
+    <string name="menu_search_terms">Edita les paraules clau</string>
+    <string name="search_terms_title">Paraules clau de %1$s</string>
+    <string name="search_terms_hint">Afegeix una paraula clau</string>
+    <string name="search_terms_add">Afegeix</string>
+    <string name="search_terms_close">Tanca</string>
+    <string name="search_terms_remove">Suprimeix</string>
     <string name="share_text_title">Comparteix el text</string>
     <string name="share_text_message">Tria fins a 3 aplicacions per mostrar al costat del camp de cerca. Toca\'n una per compartir el text que has escrit.</string>
     <string name="share_text_move_up">Mou cap amunt</string>

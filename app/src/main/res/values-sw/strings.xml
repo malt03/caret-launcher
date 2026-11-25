@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Tafuta programu"</string>
     <string name="search_hint_share">"Tafuta"</string>
+    <string name="menu_search_terms">Badilisha maneno muhimu ya utafutaji</string>
+    <string name="search_terms_title">Maneno muhimu ya utafutaji ya %1$s</string>
+    <string name="search_terms_hint">Ongeza neno muhimu</string>
+    <string name="search_terms_add">Ongeza</string>
+    <string name="search_terms_close">Funga</string>
+    <string name="search_terms_remove">Ondoa</string>
     <string name="share_text_title">Shiriki maandishi</string>
     <string name="share_text_message">Chagua hadi programu 3 za kuonyesha karibu na sehemu ya kutafuta. Gusa mojawapo ili ushiriki maandishi uliyoandika.</string>
     <string name="share_text_move_up">Sogeza juu</string>

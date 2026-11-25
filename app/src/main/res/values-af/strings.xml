@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Deursoek programme"</string>
     <string name="search_hint_share">"Soek"</string>
+    <string name="menu_search_terms">Wysig soeksleutelwoorde</string>
+    <string name="search_terms_title">Soeksleutelwoorde vir %1$s</string>
+    <string name="search_terms_hint">Voeg \'n sleutelwoord by</string>
+    <string name="search_terms_add">Voeg by</string>
+    <string name="search_terms_close">Maak toe</string>
+    <string name="search_terms_remove">Verwyder</string>
     <string name="share_text_title">Deel teks</string>
     <string name="share_text_message">Kies tot 3 programme om langs die soekveld te wys. Tik op een om die teks wat jy getik het, te deel.</string>
     <string name="share_text_move_up">Skuif op</string>

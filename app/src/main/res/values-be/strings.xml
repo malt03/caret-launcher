@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Пошук праграм"</string>
     <string name="search_hint_share">"Шукаць"</string>
+    <string name="menu_search_terms">Змяніць ключавыя словы</string>
+    <string name="search_terms_title">Ключавыя словы для %1$s</string>
+    <string name="search_terms_hint">Дадаць ключавое слова</string>
+    <string name="search_terms_add">Дадаць</string>
+    <string name="search_terms_close">Закрыць</string>
+    <string name="search_terms_remove">Выдаліць</string>
     <string name="share_text_title">Абагуліць тэкст</string>
     <string name="share_text_message">Выберыце да 3 праграм, якія будуць паказвацца побач з полем пошуку. Націсніце на адну, каб абагуліць уведзены тэкст.</string>
     <string name="share_text_move_up">Перамясціць уверх</string>

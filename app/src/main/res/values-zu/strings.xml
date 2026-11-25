@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Sesha izinhlelo zokusebenza"</string>
     <string name="search_hint_share">"Sesha"</string>
+    <string name="menu_search_terms">Hlela amagama angukhiye okusesha</string>
+    <string name="search_terms_title">Amagama angukhiye okusesha e-%1$s</string>
+    <string name="search_terms_hint">Engeza igama elingukhiye</string>
+    <string name="search_terms_add">Engeza</string>
+    <string name="search_terms_close">Vala</string>
+    <string name="search_terms_remove">Susa</string>
     <string name="share_text_title">Yabelana ngombhalo</string>
     <string name="share_text_message">Khetha kufika ezinhlelweni zokusebenza ezi-3 ezizoboniswa eduze kwenkambu yokusesha. Thepha eyodwa ukuze wabelane ngombhalo owubhalile.</string>
     <string name="share_text_move_up">Hambisa phezulu</string>

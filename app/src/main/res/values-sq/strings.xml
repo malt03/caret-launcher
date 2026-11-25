@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Kërko për aplikacione"</string>
     <string name="search_hint_share">"Kërko"</string>
+    <string name="menu_search_terms">Modifiko fjalët kyçe të kërkimit</string>
+    <string name="search_terms_title">Fjalët kyçe për %1$s</string>
+    <string name="search_terms_hint">Shto një fjalë kyçe</string>
+    <string name="search_terms_add">Shto</string>
+    <string name="search_terms_close">Mbyll</string>
+    <string name="search_terms_remove">Hiq</string>
     <string name="share_text_title">Ndaj tekstin</string>
     <string name="share_text_message">Zgjidh deri në 3 aplikacione për t\'u shfaqur pranë fushës së kërkimit. Trokit te njëri për të ndarë tekstin që shkrove.</string>
     <string name="share_text_move_up">Zhvendos lart</string>

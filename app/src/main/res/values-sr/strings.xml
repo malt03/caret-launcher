@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Претражите апликације"</string>
     <string name="search_hint_share">"Претражи"</string>
+    <string name="menu_search_terms">Измени кључне речи за претрагу</string>
+    <string name="search_terms_title">Кључне речи за %1$s</string>
+    <string name="search_terms_hint">Додај кључну реч</string>
+    <string name="search_terms_add">Додај</string>
+    <string name="search_terms_close">Затвори</string>
+    <string name="search_terms_remove">Уклони</string>
     <string name="share_text_title">Дели текст</string>
     <string name="share_text_message">Изаберите до 3 апликације које ће се приказивати поред поља за претрагу. Додирните једну да бисте делили текст који сте унели.</string>
     <string name="share_text_move_up">Помери нагоре</string>

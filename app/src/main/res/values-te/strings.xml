@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"యాప్‌ల కోసం సెర్చ్ చేయండి"</string>
     <string name="search_hint_share">"సెర్చ్"</string>
+    <string name="menu_search_terms">సెర్చ్ కీవర్డ్‌లను ఎడిట్ చేయండి</string>
+    <string name="search_terms_title">%1$s కోసం సెర్చ్ కీవర్డ్‌లు</string>
+    <string name="search_terms_hint">కీవర్డ్‌ను జోడించండి</string>
+    <string name="search_terms_add">జోడించండి</string>
+    <string name="search_terms_close">మూసివేయండి</string>
+    <string name="search_terms_remove">తీసివేయండి</string>
     <string name="share_text_title">టెక్స్ట్‌ను షేర్ చేయండి</string>
     <string name="share_text_message">సెర్చ్ ఫీల్డ్ పక్కన చూపడానికి గరిష్ఠంగా 3 యాప్‌లను ఎంచుకోండి. టైప్ చేసిన టెక్స్ట్‌ను షేర్ చేయడానికి ఒకదానిని ట్యాప్ చేయండి.</string>
     <string name="share_text_move_up">పైకి తరలించండి</string>

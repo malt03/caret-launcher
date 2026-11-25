@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Paieškos programos"</string>
     <string name="search_hint_share">"Ieškoti"</string>
+    <string name="menu_search_terms">Redaguoti paieškos raktažodžius</string>
+    <string name="search_terms_title">%1$s paieškos raktažodžiai</string>
+    <string name="search_terms_hint">Pridėti raktažodį</string>
+    <string name="search_terms_add">Pridėti</string>
+    <string name="search_terms_close">Uždaryti</string>
+    <string name="search_terms_remove">Pašalinti</string>
     <string name="share_text_title">Bendrinti tekstą</string>
     <string name="share_text_message">Pasirinkite iki 3 programų, kurios bus rodomos šalia paieškos lauko. Palieskite vieną, kad bendrintumėte įvestą tekstą.</string>
     <string name="share_text_move_up">Perkelti aukštyn</string>

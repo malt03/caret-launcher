@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Leita í forritum"</string>
     <string name="search_hint_share">"Leita"</string>
+    <string name="menu_search_terms">Breyta leitarorðum</string>
+    <string name="search_terms_title">Leitarorð fyrir %1$s</string>
+    <string name="search_terms_hint">Bæta við leitarorði</string>
+    <string name="search_terms_add">Bæta við</string>
+    <string name="search_terms_close">Loka</string>
+    <string name="search_terms_remove">Fjarlægja</string>
     <string name="share_text_title">Deila texta</string>
     <string name="share_text_message">Veldu allt að 3 forrit til að sýna við hliðina á leitarreitnum. Ýttu á eitt til að deila textanum sem þú slóst inn.</string>
     <string name="share_text_move_up">Færa upp</string>

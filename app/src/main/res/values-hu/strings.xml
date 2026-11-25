@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Alkalmazások keresése"</string>
     <string name="search_hint_share">"Keresés"</string>
+    <string name="menu_search_terms">Keresési kulcsszavak szerkesztése</string>
+    <string name="search_terms_title">%1$s keresési kulcsszavai</string>
+    <string name="search_terms_hint">Kulcsszó hozzáadása</string>
+    <string name="search_terms_add">Hozzáadás</string>
+    <string name="search_terms_close">Bezárás</string>
+    <string name="search_terms_remove">Eltávolítás</string>
     <string name="share_text_title">Szöveg megosztása</string>
     <string name="share_text_message">Válasszon legfeljebb 3 alkalmazást, amelyek a keresőmező mellett jelennek meg. Koppintson az egyikre a beírt szöveg megosztásához.</string>
     <string name="share_text_move_up">Mozgatás felfelé</string>

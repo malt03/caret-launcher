@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Caută aplicații"</string>
     <string name="search_hint_share">"Caută"</string>
+    <string name="menu_search_terms">Editează cuvintele cheie</string>
+    <string name="search_terms_title">Cuvinte cheie pentru %1$s</string>
+    <string name="search_terms_hint">Adaugă un cuvânt cheie</string>
+    <string name="search_terms_add">Adaugă</string>
+    <string name="search_terms_close">Închide</string>
+    <string name="search_terms_remove">Elimină</string>
     <string name="share_text_title">Distribuie textul</string>
     <string name="share_text_message">Alege până la 3 aplicații care să apară lângă câmpul de căutare. Atinge una pentru a distribui textul introdus.</string>
     <string name="share_text_move_up">Mută în sus</string>

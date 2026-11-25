@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Търсене в приложенията"</string>
     <string name="search_hint_share">"Търсене"</string>
+    <string name="menu_search_terms">Редактиране на ключовите думи</string>
+    <string name="search_terms_title">Ключови думи за %1$s</string>
+    <string name="search_terms_hint">Добавяне на ключова дума</string>
+    <string name="search_terms_add">Добавяне</string>
+    <string name="search_terms_close">Затваряне</string>
+    <string name="search_terms_remove">Премахване</string>
     <string name="share_text_title">Споделяне на текст</string>
     <string name="share_text_message">Изберете до 3 приложения, които да се показват до полето за търсене. Докоснете някое, за да споделите въведения текст.</string>
     <string name="share_text_move_up">Преместване нагоре</string>

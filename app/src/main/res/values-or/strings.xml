@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"ଆପ ସର୍ଚ୍ଚ କରନ୍ତୁ"</string>
     <string name="search_hint_share">"ସନ୍ଧାନ କରନ୍ତୁ"</string>
+    <string name="menu_search_terms">ସନ୍ଧାନ କୀୱାର୍ଡଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ</string>
+    <string name="search_terms_title">%1$s ପାଇଁ ସନ୍ଧାନ କୀୱାର୍ଡଗୁଡ଼ିକ</string>
+    <string name="search_terms_hint">ଏକ କୀୱାର୍ଡ ଯୋଗ କରନ୍ତୁ</string>
+    <string name="search_terms_add">ଯୋଗ କରନ୍ତୁ</string>
+    <string name="search_terms_close">ବନ୍ଦ କରନ୍ତୁ</string>
+    <string name="search_terms_remove">କାଢ଼ି ଦିଅନ୍ତୁ</string>
     <string name="share_text_title">ଟେକ୍ସଟ ସେୟାର କରନ୍ତୁ</string>
     <string name="share_text_message">ସନ୍ଧାନ ଫିଲ୍ଡ ପାଖରେ ଦେଖାଇବା ପାଇଁ 3ଟି ପର୍ଯ୍ୟନ୍ତ ଆପ ବାଛନ୍ତୁ। ଆପଣ ଟାଇପ କରିଥିବା ଟେକ୍ସଟ ସେୟାର କରିବାକୁ ଗୋଟିଏରେ ଟାପ କରନ୍ତୁ।</string>
     <string name="share_text_move_up">ଉପରକୁ ମୁଭ କରନ୍ତୁ</string>

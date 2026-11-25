@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"Ilovalarni qidirish"</string>
     <string name="search_hint_share">"Qidirish"</string>
+    <string name="menu_search_terms">Qidiruv kalit soʻzlarini tahrirlash</string>
+    <string name="search_terms_title">%1$s uchun kalit soʻzlar</string>
+    <string name="search_terms_hint">Kalit soʻz qoʻshish</string>
+    <string name="search_terms_add">Qoʻshish</string>
+    <string name="search_terms_close">Yopish</string>
+    <string name="search_terms_remove">Olib tashlash</string>
     <string name="share_text_title">Matnni ulashish</string>
     <string name="share_text_message">Qidiruv maydoni yonida chiqadigan 3 tagacha ilovani tanlang. Kiritilgan matnni ulashish uchun birortasini bosing.</string>
     <string name="share_text_move_up">Tepaga surish</string>

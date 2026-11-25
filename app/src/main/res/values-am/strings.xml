@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"መተግበሪያዎችን ፈልግ"</string>
     <string name="search_hint_share">"ፈልግ"</string>
+    <string name="menu_search_terms">የፍለጋ ቁልፍ ቃላትን አርትዕ</string>
+    <string name="search_terms_title">የ%1$s የፍለጋ ቁልፍ ቃላት</string>
+    <string name="search_terms_hint">ቁልፍ ቃል ያክሉ</string>
+    <string name="search_terms_add">አክል</string>
+    <string name="search_terms_close">ዝጋ</string>
+    <string name="search_terms_remove">አስወግድ</string>
     <string name="share_text_title">ጽሑፍ አጋራ</string>
     <string name="share_text_message">ከፍለጋ መስኩ አጠገብ የሚታዩ እስከ 3 መተግበሪያዎችን ይምረጡ። የተየቡትን ጽሑፍ ለማጋራት አንዱን መታ ያድርጉ።</string>
     <string name="share_text_move_up">ወደ ላይ ውሰድ</string>

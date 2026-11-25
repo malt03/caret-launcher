@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"ஆப்ஸில் தேடுக"</string>
     <string name="search_hint_share">"தேடு"</string>
+    <string name="menu_search_terms">தேடல் முக்கியச் சொற்களைத் திருத்து</string>
+    <string name="search_terms_title">%1$s க்கான தேடல் முக்கியச் சொற்கள்</string>
+    <string name="search_terms_hint">முக்கியச் சொல்லைச் சேர்</string>
+    <string name="search_terms_add">சேர்</string>
+    <string name="search_terms_close">மூடு</string>
+    <string name="search_terms_remove">அகற்று</string>
     <string name="share_text_title">உரையைப் பகிர்</string>
     <string name="share_text_message">தேடல் புலத்திற்கு அருகில் காட்ட 3 ஆப்ஸ் வரை தேர்வுசெய்யுங்கள். டைப் செய்த உரையைப் பகிர ஏதேனும் ஒன்றைத் தட்டுங்கள்.</string>
     <string name="share_text_move_up">மேலே நகர்த்து</string>

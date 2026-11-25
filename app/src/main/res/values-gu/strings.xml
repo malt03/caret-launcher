@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"ઍપ શોધો"</string>
     <string name="search_hint_share">"શોધો"</string>
+    <string name="menu_search_terms">શોધ કીવર્ડમાં ફેરફાર કરો</string>
+    <string name="search_terms_title">%1$s માટે શોધ કીવર્ડ</string>
+    <string name="search_terms_hint">કીવર્ડ ઉમેરો</string>
+    <string name="search_terms_add">ઉમેરો</string>
+    <string name="search_terms_close">બંધ કરો</string>
+    <string name="search_terms_remove">કાઢી નાખો</string>
     <string name="share_text_title">ટેક્સ્ટ શેર કરો</string>
     <string name="share_text_message">શોધ ફીલ્ડની બાજુમાં બતાવવા માટે 3 જેટલી ઍપ પસંદ કરો. તમે લખેલી ટેક્સ્ટ શેર કરવા માટે કોઈ એક પર ટૅપ કરો.</string>
     <string name="share_text_move_up">ઉપર ખસેડો</string>

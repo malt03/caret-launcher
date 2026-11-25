@@ -7,6 +7,12 @@
 <resources>
     <string name="search_hint">"অ্যাপ খুঁজুন"</string>
     <string name="search_hint_share">"সার্চ"</string>
+    <string name="menu_search_terms">সার্চ কীওয়ার্ড এডিট করুন</string>
+    <string name="search_terms_title">%1$s-এর সার্চ কীওয়ার্ড</string>
+    <string name="search_terms_hint">কীওয়ার্ড যোগ করুন</string>
+    <string name="search_terms_add">যোগ করুন</string>
+    <string name="search_terms_close">বন্ধ করুন</string>
+    <string name="search_terms_remove">সরান</string>
     <string name="share_text_title">টেক্সট শেয়ার করুন</string>
     <string name="share_text_message">সার্চ ফিল্ডের পাশে দেখানোর জন্য সর্বাধিক ৩টি অ্যাপ বেছে নিন। টাইপ করা টেক্সট শেয়ার করতে একটিতে ট্যাপ করুন।</string>
     <string name="share_text_move_up">উপরে সরান</string>
