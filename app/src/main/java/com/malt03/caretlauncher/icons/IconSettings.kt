@@ -22,7 +22,7 @@ class IconSettings(context: Context) {
     }
 
     var isThemed: Boolean
-        get() = prefs.getBoolean(KEY_THEMED, true)
+        get() = prefs.getBoolean(KEY_THEMED, false)
         set(value) = prefs.edit().putBoolean(KEY_THEMED, value).apply()
 
     /** The selected shape, or the first one (circle) when nothing valid is stored. */
