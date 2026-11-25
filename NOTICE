@@ -4,5 +4,4 @@ Copyright 2026 Koji Murata
 Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 Caret Launcher includes code from the Android Open Source Project and bundles
-libraries. Their notices are in third_party/NOTICE, which the app's NOTICE
-carries after this one.
+libraries. The app's NOTICE carries their notices after this one.
