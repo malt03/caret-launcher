@@ -263,6 +263,8 @@ class LauncherActivity :
         }
 
         app.appRepository.addListener(appsListener)
+        // Launcher.onCreate: the model loads once the views are set up; a loaded one binds now.
+        home.startLoading()
         // Launcher.onCreate
         rotationHelper.initialize()
         // Launcher.onCreate: the widget picker's add (WidgetPickerAddItemListener) waits for it.

@@ -276,9 +276,15 @@ class HomeController(
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(WorkspaceTouchListener(launcher, scrollView))
 
-        // Launcher.onCreate: LauncherModel.addCallbacksAndLoad. CaretLauncher: a new grid (the
-        // activity was created again for it) loads the model again, which migrates the items
-        // (Launcher.onIdpChanged).
+    }
+
+    /**
+     * Launcher.onCreate: LauncherModel.addCallbacksAndLoad, after the activity's views are set up
+     * (Launcher.setupViews). A loaded model binds right away, so the activity calls this once it
+     * holds this controller. CaretLauncher: a new grid (the activity was created again for it)
+     * loads the model again, which migrates the items (Launcher.onIdpChanged).
+     */
+    fun startLoading() {
         // ItemInstallQueue: the queue adds its items while the home screen is resumed.
         ItemInstallQueue.INSTANCE[context].setIconUISurface(launcher)
         ItemInstallQueue.INSTANCE[context].pauseModelPush(ItemInstallQueue.FLAG_ACTIVITY_PAUSED)
