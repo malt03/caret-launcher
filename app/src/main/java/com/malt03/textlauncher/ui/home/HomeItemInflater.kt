@@ -9,8 +9,9 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.touch.ItemClickHandler
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
-import com.malt03.textlauncher.data.AppItemInfo
-import com.malt03.textlauncher.data.WidgetItemInfo
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
+import com.malt03.textlauncher.data.isApp
+import com.malt03.textlauncher.data.isAvailable
 import com.malt03.textlauncher.data.isDeepShortcut
 
 /**
@@ -25,11 +26,11 @@ internal class HomeItemInflater(private val home: HomeController) {
     /**
      * BubbleTextView.verifyHighRes: an available app whose item has a lesser icon than the home
      * screen's (DESKTOP_ICON_FLAG) gets it looked up (IconCache.getTitleAndIcon), then [onLoaded]
-     * is called. The loader binds the items with their icons, and an app shortcut's icon is loaded
-     * with the shortcut ([HomeLoader]), so its item already has it.
+     * is called. LoaderTask binds the items with their icons, and an app shortcut's icon is loaded
+     * with the shortcut (WorkspaceItemProcessor), so its item already has it.
      */
     private fun loadIcon(info: WorkspaceItemInfo, onLoaded: () -> Unit) {
-        if (info !is AppItemInfo || !info.isAvailable) return
+        if (!info.isApp || !info.isAvailable) return
         if (!info.bitmap.matchingLookupFlag.isVisuallyLessThan(DESKTOP_ICON_FLAG)) return
         app.iconLoader.getTitleAndIcon(info, DESKTOP_ICON_FLAG, onLoaded)
     }
@@ -45,19 +46,19 @@ internal class HomeItemInflater(private val home: HomeController) {
 
     /** ItemInflater.inflateItem: the item's view, or null for an item that cannot be shown. */
     fun inflateItem(item: ItemInfo): View? = when {
-        item is AppItemInfo -> createItemView(item)
+        item is WorkspaceItemInfo && item.isApp -> createItemView(item)
         item is WorkspaceItemInfo && item.isDeepShortcut -> createItemView(item)
         item is FolderInfo -> createFolderView(item)
-        item is WidgetItemInfo -> createWidgetView(item)
+        item is LauncherAppWidgetInfo -> createWidgetView(item)
         else -> null
     }
 
     /**
      * WidgetInflater.inflateAppWidget and ItemInflater.prepareAppWidget: the widget's view from
-     * the host. A widget whose provider is gone has no view (the loader deletes it). As in
+     * the host. A widget whose provider is gone has no view (LoaderTask deletes it). As in
      * Launcher3, Workspace.addInScreen sets the long-click listener of the page's items.
      */
-    private fun createWidgetView(info: WidgetItemInfo): View? {
+    private fun createWidgetView(info: LauncherAppWidgetInfo): View? {
         val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
         // WorkspaceItemProcessor: the widget's features (LauncherAppWidgetInfo.isReconfigurable).
         info.updateWidgetFeatures(LauncherAppWidgetProviderInfo.fromProviderInfo(context, providerInfo))

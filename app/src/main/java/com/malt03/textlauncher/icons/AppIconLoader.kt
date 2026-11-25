@@ -68,11 +68,10 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         iconPool,
     ).also { LauncherAppState.getInstance(context).setIconCache(it) }
 
-    private val changeListeners = mutableListOf<(Set<String>?) -> Unit>()
+    private val changeListeners = mutableListOf<() -> Unit>()
 
     /** Bumped when the icons are made again; results looked up for an older one are dropped. */
     private var generation = 0
-    private var isCacheUpdated = false
 
     init {
         settings.addListener(::onSettingsChanged)
@@ -90,37 +89,11 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
     }
 
     /**
-     * Called on the main thread when icons have to be rebound: the icons of the packages given
-     * (LauncherModel.onPackageIconsUpdated), or every icon (null: the icon theme or shape changed,
-     * ModelInitializer.refreshAndReloadLauncher).
+     * Called on the main thread when every icon has to be made again: the icon theme or shape
+     * changed (ModelInitializer.refreshAndReloadLauncher).
      */
-    fun addChangeListener(listener: (Set<String>?) -> Unit) {
+    fun addChangeListener(listener: () -> Unit) {
         changeListeners += listener
-    }
-
-    fun removeChangeListener(listener: (Set<String>?) -> Unit) {
-        changeListeners -= listener
-    }
-
-    /**
-     * IconCache.getTitleAndIcon for the home screen's apps among [items] (WorkspaceItemProcessor,
-     * PackageUpdatedTask and CacheDataUpdatedTask, with [lookupFlag] DESKTOP_ICON_FLAG): the icon
-     * and title of the item's activity from the cache, which asks for the activity when it does not
-     * have it. Calls [onLoaded] on the main thread once every item has them. Launcher3 binds the
-     * home screen with its icons already looked up; the folder preview sizes itself from them.
-     */
-    fun getTitlesAndIcons(items: Collection<WorkspaceItemInfo>, lookupFlag: CacheLookupFlag, onLoaded: () -> Unit) {
-        var remaining = items.size
-        if (remaining == 0) {
-            onLoaded()
-            return
-        }
-        for (info in items) {
-            getTitleAndIcon(info, lookupFlag) {
-                remaining--
-                if (remaining == 0) onLoaded()
-            }
-        }
     }
 
     /** [getTitlesAndIcons] for one item. */
@@ -148,103 +121,6 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
         }
     }
 
-    /**
-     * IconCache.getShortcutIcon for an app shortcut on the home screen: the shortcut's icon, badged
-     * with its app's icon. When the shortcut has no icon, [info]'s icon is kept (the one saved with
-     * the home screen). Calls [onLoaded] on the main thread with the icon for [info].
-     */
-    fun loadShortcut(info: WorkspaceItemInfo, shortcut: ShortcutInfo, onLoaded: (BitmapInfo) -> Unit) {
-        val oldIcon = info.bitmap
-        val requestedGeneration = generation
-        iconCache.workerHandler.post {
-            // TextLauncher: looked up into a copy, since the item belongs to the main thread.
-            val result = WorkspaceItemInfo().apply { bitmap = oldIcon }
-            iconCache.getShortcutIcon(result, shortcut)
-            val bitmap = result.bitmap
-            mainHandler.post {
-                if (requestedGeneration == generation) onLoaded(bitmap)
-            }
-        }
-    }
-
-    /**
-     * IconCache.getTitleAndIcon for an app that is present but not available (WorkspaceItemProcessor
-     * keeps it with FLAG_DISABLED_NOT_AVAILABLE): no activity to look up, so the icon and title saved
-     * in the cache, else the package's (withUsePackageIcon). Calls [onLoaded] on the main thread.
-     */
-    fun loadUnavailable(component: ComponentName, user: UserHandle, onLoaded: (BitmapInfo, CharSequence?) -> Unit) {
-        val requestedGeneration = generation
-        iconCache.workerHandler.post {
-            val info = AppInfo().apply {
-                this.user = user
-                componentName = component
-                intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(component)
-            }
-            iconCache.getTitleAndIcon(info, DESKTOP_ICON_FLAG.withUsePackageIcon()) { null }
-            val bitmap = info.bitmap
-            val title = info.title
-            mainHandler.post {
-                if (requestedGeneration == generation) onLoaded(bitmap, title)
-            }
-        }
-    }
-
-    /**
-     * IconCache.getDefaultIcon: the icon of an item whose own icon is not known, such as an app
-     * shortcut that could not be looked up. Calls [onLoaded] on the main thread.
-     */
-    fun loadDefault(onLoaded: (BitmapInfo) -> Unit) {
-        val requestedGeneration = generation
-        iconCache.workerHandler.post {
-            val bitmap = iconCache.getDefaultIcon(Process.myUserHandle())
-            mainHandler.post {
-                if (requestedGeneration == generation) onLoaded(bitmap)
-            }
-        }
-    }
-
-    /**
-     * LoaderTask.loadAllSurfacesOrdered: once per process after the first binding, brings the
-     * cache up to date with the installed apps (LoaderTask.loadAllApps's activities), the
-     * [homeShortcuts] and every other shortcut, and drops the entries of what is gone. Icons that
-     * changed are rebound.
-     */
-    fun updateIconCacheOnce(homeShortcuts: Collection<ShortcutInfo>) {
-        if (isCacheUpdated) return
-        isCacheUpdated = true
-        val user = Process.myUserHandle()
-        iconCache.workerHandler.post {
-            val activities = context.getSystemService(LauncherApps::class.java).getActivityList(null, user)
-            val updateHandler = iconCache.getUpdateHandler()
-            updateHandler.updateIcons(activities, LauncherActivityCachingLogic, ::onPackageIconsUpdated)
-            updateHandler.updateIcons(
-                CacheableShortcutInfo.convertShortcutsToCacheableShortcuts(homeShortcuts.toList(), activities),
-                CacheableShortcutCachingLogic,
-                ::onPackageIconsUpdated,
-            )
-            // loadDeepShortcuts
-            val allDeepShortcuts =
-                if (context.getSystemService(LauncherApps::class.java).hasShortcutHostPermission()) {
-                    ShortcutRequest(context, user).query(ShortcutRequest.ALL)
-                } else {
-                    emptyList()
-                }
-            updateHandler.updateIcons(
-                CacheableShortcutInfo.convertShortcutsToCacheableShortcuts(allDeepShortcuts, activities),
-                CacheableShortcutCachingLogic,
-            ) { _, _ -> }
-            updateHandler.finish()
-        }
-    }
-
-    /** LauncherModel.onPackageIconsUpdated: called on the cache's thread. */
-    private fun onPackageIconsUpdated(packages: HashSet<String>, user: UserHandle) {
-        val updated = HashSet(packages)
-        mainHandler.post {
-            changeListeners.toList().forEach { it(updated) }
-        }
-    }
-
     private fun onSettingsChanged() {
         val themed = settings.isThemed
         val themeChanged = themed != isThemed
@@ -258,7 +134,7 @@ class AppIconLoader(private val context: Context, private val settings: IconSett
             iconPool.clear()
             iconCache.updateIconParams(iconDpi, iconSize)
         }
-        changeListeners.toList().forEach { it(null) }
+        changeListeners.toList().forEach { it() }
     }
 
     /** ThemeManager.createIconShape: the shape path (a 100x100 SVG path) scaled to the icon size. */

@@ -26,11 +26,13 @@ import com.android.launcher3.icons.IconCache;
 
 /**
  * Stand-in for Launcher3's LauncherAppState. Only the icon cache (icons for folders, the long-press
- * menu and the widget picker) and the InvariantDeviceProfile (widget spans and the widget picker).
+ * menu and the widget picker), the InvariantDeviceProfile (widget spans and the widget picker) and
+ * the model.
  */
 public class LauncherAppState {
     private static final LauncherAppState INSTANCE = new LauncherAppState();
     private IconCache mIconCache;
+    private LauncherModel mModel;
     private final InvariantDeviceProfile mInvariantDeviceProfile = new InvariantDeviceProfile();
 
     public static InvariantDeviceProfile getIDP(Context context) {
@@ -49,17 +51,17 @@ public class LauncherAppState {
         return mIconCache;
     }
 
-    /**
-     * TextLauncher: the home screen's model (the created Launcher's), as the app has no
-     * LauncherModel of its own.
-     */
     public LauncherModel getModel() {
-        Launcher launcher = Launcher.ACTIVITY_TRACKER.getCreatedContext();
-        return launcher != null ? launcher.getModel() : (si, info) -> { };
+        return mModel;
     }
 
     /** TextLauncher: the app makes the icon cache (Dagger in Launcher3) and sets it here. */
     public void setIconCache(IconCache iconCache) {
         mIconCache = iconCache;
+    }
+
+    /** TextLauncher: the app makes the model (Dagger in Launcher3) and sets it here. */
+    public void setModel(LauncherModel model) {
+        mModel = model;
     }
 }

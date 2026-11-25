@@ -88,6 +88,7 @@ import com.android.launcher3.views.ClipPathView;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -1467,6 +1468,21 @@ public abstract class Folder extends AbstractFloatingView implements ClipPathVie
             onDragOver(mDragObject);
         }
     }
+
+    // Compares item position based on rank and position giving priority to the rank.
+    public static final Comparator<ItemInfo> ITEM_POS_COMPARATOR = new Comparator<ItemInfo>() {
+
+        @Override
+        public int compare(ItemInfo lhs, ItemInfo rhs) {
+            if (lhs.rank != rhs.rank) {
+                return lhs.rank - rhs.rank;
+            } else if (lhs.cellY != rhs.cellY) {
+                return lhs.cellY - rhs.cellY;
+            } else {
+                return lhs.cellX - rhs.cellX;
+            }
+        }
+    };
 
     /** Executes the task while suppressing the content update for the folder */
     private void executeWithContentUpdateSuppressed(Runnable task) {

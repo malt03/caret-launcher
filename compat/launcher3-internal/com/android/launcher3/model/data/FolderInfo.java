@@ -59,6 +59,16 @@ public class FolderInfo extends ItemInfo {
         return getContents().stream().anyMatch(matcher);
     }
 
+    /**
+     * Adds a app or shortcut to the contents ArrayList without animation.
+     */
+    public void add(@NonNull ItemInfo item) {
+        if (!willAcceptItemType(item.itemType)) {
+            throw new RuntimeException("tried to add an illegal type into a folder");
+        }
+        getContents().add(item);
+    }
+
     public List<ItemInfo> getContents() {
         return mContents;
     }

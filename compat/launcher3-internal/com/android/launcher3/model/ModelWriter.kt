@@ -23,7 +23,12 @@ import android.appwidget.AppWidgetHost
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
+import com.android.launcher3.LauncherModel
 import com.android.launcher3.LauncherSettings.Favorites
+import com.android.launcher3.Utilities
+import com.android.launcher3.celllayout.CellPosMapper
+import com.android.launcher3.config.FeatureFlags
+import com.android.launcher3.model.BgDataModel.Callbacks
 import com.android.launcher3.model.BgDataModel.ModificationSource
 import com.android.launcher3.model.IModelWriter.ChangeLog
 import com.android.launcher3.model.data.FolderInfo
@@ -31,37 +36,42 @@ import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.provider.LauncherDbUtils.itemIdMatch
+import com.android.launcher3.ui.LauncherUiStateNotifier
 import com.android.launcher3.util.ContentWriter
 import com.android.launcher3.util.Executors
 import java.util.concurrent.Executor
+import java.util.function.Consumer
 import java.util.function.Predicate
 
 /**
- * Stand-in for Launcher3's ModelWriter (android-17.0.0_r1). TextLauncher: the home model is kept
- * on the main thread, so each change updates the in-memory model ([bgDataModel]) right away, on the
- * calling thread, and sends its database writes to the model thread in order (the values are taken
- * there with ContentWriter.getValues, which flattens the icons). There is one home screen, so no
- * cell position mapper (one page, no hotseat), no UI state notifier and no write suspension.
+ * Stand-in for Launcher3's ModelWriter (android-17.0.0_r1), made from ModelWriter.kt; changes are
+ * marked with "TextLauncher:". The folders are FolderInfo (no CollectionInfo) and the widget host
+ * is the platform AppWidgetHost (no LauncherWidgetHolder).
  */
 open class ModelWriter(
     private val context: Context,
-    private val modelDbController: ModelDbController,
+    private val model: LauncherModel,
     private val bgDataModel: BgDataModel,
+    private val cellPosMapper: CellPosMapper,
     private val modificationSource: ModificationSource,
+    private val launcherStateNotifier: LauncherUiStateNotifier,
+    private val owner: Callbacks?,
     protected val modelExecutor: Executor = Executors.MODEL_EXECUTOR,
 ) : IModelWriter {
 
-    open fun createTransactionContext(outChangeLog: ChangeLog): TransactionContext =
-        TransactionContextImpl(outChangeLog, modificationSource, context, bgDataModel)
+    private interface QueuedTransaction {
+        fun execute()
+    }
 
-    /**
-     * TextLauncher: the database writes of a transaction, which run on the model thread once the
-     * in-memory model was changed on the calling thread.
-     */
-    private val pendingWrites = mutableListOf<() -> Unit>()
+    private var isSuspended = false
+    private val transactionQueue = mutableListOf<QueuedTransaction>()
+
+    open fun createTransactionContext(outChangeLog: ChangeLog): TransactionContext =
+        TransactionContextImpl(outChangeLog, model, modificationSource, context, bgDataModel)
 
     open inner class TransactionContextImpl(
         private val outChangeLog: ChangeLog,
+        private val model: LauncherModel,
         private val modificationSource: ModificationSource,
         private val context: Context,
         private val bgDataModel: BgDataModel,
@@ -74,7 +84,7 @@ open class ModelWriter(
         override fun addItemsToDatabase(items: List<ItemInfo>) {
             items.forEach {
                 if (it.id == ItemInfo.NO_ID) {
-                    it.id = modelDbController.generateNewItemId()
+                    it.id = model.modelDbController.generateNewItemId()
                 }
             }
             outChangeLog.itemsAdded.addAll(items)
@@ -83,7 +93,7 @@ open class ModelWriter(
                 val writer = ContentWriter(context)
                 item.onAddToDatabase(writer)
                 writer.put(Favorites._ID, item.id)
-                pendingWrites += { modelDbController.insert(writer.getValues(context)) }
+                model.modelDbController.insert(writer.getValues(context))
             }
             synchronized(bgDataModel) {
                 for (item in items) {
@@ -117,8 +127,7 @@ open class ModelWriter(
                 }
 
             items.zip(contentValues).forEach { (item, value) ->
-                val id = item.id
-                pendingWrites += { modelDbController.update(value, itemIdMatch(id), null) }
+                model.modelDbController.update(value, itemIdMatch(item.id), null)
             }
             bgDataModel.updateItems(items, modificationSource)
         }
@@ -139,8 +148,7 @@ open class ModelWriter(
             outChangeLog.itemsModified.add(item)
             val writer = ContentWriter(context)
             item.onAddToDatabase(writer)
-            val id = item.id
-            pendingWrites += { modelDbController.update(writer.getValues(context), itemIdMatch(id), null) }
+            model.modelDbController.update(writer.getValues(context), itemIdMatch(item.id), null)
             bgDataModel.updateItems(listOf(item), modificationSource)
         }
 
@@ -163,19 +171,16 @@ open class ModelWriter(
             )
             outChangeLog.itemsRemoved.addAll(items)
             for (item in items) {
-                val id = item.id
-                pendingWrites += { modelDbController.delete(itemIdMatch(id), null) }
+                model.modelDbController.delete(itemIdMatch(item.id), null)
             }
             bgDataModel.removeItems(context, items, modificationSource)
         }
 
         override fun deleteCollectionAndContentsFromDatabase(info: FolderInfo) {
             outChangeLog.itemsRemoved.add(info)
-            val id = info.id
-            pendingWrites += {
-                modelDbController.delete(Favorites.CONTAINER + "=" + id, null)
-                modelDbController.delete(Favorites._ID + "=" + id, null)
-            }
+            model.modelDbController.delete(Favorites.CONTAINER + "=" + info.id, null)
+            model.modelDbController.delete(Favorites._ID + "=" + info.id, null)
+            // TextLauncher: FolderInfo's contents (CollectionInfo.getContents).
             val itemsToDelete = info.getContents() + info
             bgDataModel.removeItems(context, itemsToDelete, modificationSource)
         }
@@ -186,7 +191,7 @@ open class ModelWriter(
             reason: String?,
         ) {
             outChangeLog.itemsRemoved.add(info)
-            // TextLauncher: no custom widgets.
+            // TextLauncher: no custom widgets (isCustomWidget).
             if (holder != null && info.isWidgetIdAllocated) {
                 holder.deleteAppWidgetId(info.appWidgetId)
             }
@@ -194,7 +199,7 @@ open class ModelWriter(
         }
 
         override fun deleteAllItems() {
-            pendingWrites += { modelDbController.createEmptyDB() }
+            model.modelDbController.createEmptyDB()
             bgDataModel.clear()
         }
     }
@@ -203,33 +208,70 @@ open class ModelWriter(
         onComplete: ((success: Boolean, result: T?) -> Unit)?,
         block: (TransactionContext) -> T,
     ) {
-        // TextLauncher: the block changes the in-memory model here; its database writes run in
-        // one transaction on the model thread.
-        val outChangeLog = ChangeLog()
-        val result = block(createTransactionContext(outChangeLog))
-        val writes = takePendingWrites()
+        if (isSuspended) {
+            transactionQueue.add(
+                object : QueuedTransaction {
+                    override fun execute() {
+                        scheduleTransaction(onComplete, block)
+                    }
+                }
+            )
+            return
+        }
+
+        // TODO(b/457449059): Should this be a submit() instead?
         modelExecutor.execute {
             var success = false
+            var result: T? = null
+            val outChangeLog = ChangeLog()
             try {
-                modelDbController.newTransaction().use { t ->
-                    writes.forEach { it() }
+                model.modelDbController.newTransaction().use { t ->
+                    result = block(createTransactionContext(outChangeLog))
                     t.commit()
                     success = true
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Transaction failed", e)
             }
+
+            if (success) {
+                launcherStateNotifier.notifyModelChanged(outChangeLog, this.owner)
+            }
             onComplete?.invoke(success, result)
         }
     }
 
+    override fun suspendWrites() {
+        isSuspended = true
+    }
+
+    override fun resumeWrites(
+        pendingTransaction: Consumer<TransactionContext>?,
+        discardPending: Boolean,
+    ) {
+        isSuspended = false
+
+        if (pendingTransaction != null) {
+            scheduleTransaction(null) { pendingTransaction.accept(it) }
+        }
+
+        val queue = transactionQueue.toList()
+        transactionQueue.clear()
+
+        if (!discardPending) {
+            queue.forEach { it.execute() }
+        }
+    }
+
+    override fun getNotifier(): LauncherUiStateNotifier = launcherStateNotifier
+
     /** Updates the location properties of the item */
     fun updateItemModel(item: ItemInfo, container: Int, screenId: Int, cellX: Int, cellY: Int) {
-        // TextLauncher: no cell position mapper (one page, no hotseat).
+        val modelPos = cellPosMapper.mapPresenterToModel(cellX, cellY, screenId, container)
         item.container = container
-        item.cellX = cellX
-        item.cellY = cellY
-        item.screenId = screenId
+        item.cellX = modelPos.cellX
+        item.cellY = modelPos.cellY
+        item.screenId = modelPos.screenId
     }
 
     /**
@@ -245,7 +287,7 @@ open class ModelWriter(
     ) {
         updateItemModel(item, container, screenId, cellX, cellY)
         if (item.id == ItemInfo.NO_ID) {
-            item.id = modelDbController.generateNewItemId()
+            item.id = model.modelDbController.generateNewItemId()
             execute { it.addItemToDatabase(item) }
         } else {
             execute { it.moveItemInDatabase(item, container, screenId, cellX, cellY) }
@@ -253,12 +295,16 @@ open class ModelWriter(
     }
 
     private fun execute(block: (TransactionContext) -> Unit) {
-        // TextLauncher: enableTransactionalModelWriter is off at android-17.0.0_r1, so each
-        // change is written on its own; the in-memory model changes here, on the calling thread.
-        val changeLog = ChangeLog()
-        block(createTransactionContext(changeLog))
-        val writes = takePendingWrites()
-        modelExecutor.execute { writes.forEach { it() } }
+        // TextLauncher: Flags.enableTransactionalModelWriter is disabled in the release config.
+        if (isSuspended) {
+            scheduleTransaction(block = block)
+        } else {
+            modelExecutor.execute {
+                val changeLog = ChangeLog()
+                block(createTransactionContext(changeLog))
+                launcherStateNotifier.notifyModelChanged(changeLog, this.owner)
+            }
+        }
     }
 
     private fun checkItemInfoLocked(
@@ -269,8 +315,12 @@ open class ModelWriter(
         val modelItem = bgDataModel.itemsIdMap[itemId]
         if (modelItem != null && item !== modelItem) {
             // check all the data is consistent
-            // TextLauncher: no debug device or Studio build checks.
-            if (modelItem is WorkspaceItemInfo && item is WorkspaceItemInfo) {
+            if (
+                !Utilities.IS_DEBUG_DEVICE &&
+                    !FeatureFlags.IS_STUDIO_BUILD &&
+                    modelItem is WorkspaceItemInfo &&
+                    item is WorkspaceItemInfo
+            ) {
                 if (
                     modelItem.title.toString() == item.title.toString() &&
                         modelItem.getIntent().filterEquals(item.getIntent()) &&
@@ -372,7 +422,7 @@ open class ModelWriter(
     ) {
         updateItemModel(item, container, screenId, cellX, cellY)
         if (item.id == ItemInfo.NO_ID) {
-            item.id = modelDbController.generateNewItemId()
+            item.id = model.modelDbController.generateNewItemId()
         }
         execute { it.addItemToDatabase(item) }
     }
@@ -385,7 +435,7 @@ open class ModelWriter(
     override fun addItemsToDatabase(items: List<ItemInfo>) {
         items.forEach {
             if (it.id == ItemInfo.NO_ID) {
-                it.id = modelDbController.generateNewItemId()
+                it.id = model.modelDbController.generateNewItemId()
             }
         }
         execute { it.addItemsToDatabase(items) }
@@ -440,12 +490,30 @@ open class ModelWriter(
         execute { it.deleteWidgetInfo(info, holder, reason) }
     }
 
-    // TextLauncher: members TextLauncher adds.
+    private abstract inner class ModelTask : Runnable {
+        private val loadId = bgDataModel.lastLoadId
 
-    private fun takePendingWrites(): List<() -> Unit> {
-        val writes = pendingWrites.toList()
-        pendingWrites.clear()
-        return writes
+        override fun run() {
+            if (loadId != model.lastLoadId) {
+                Log.d(TAG, "Model changed before the task could execute")
+                return
+            }
+            runImpl()
+        }
+
+        fun executeOnModelThread() {
+            modelExecutor.execute(this)
+        }
+
+        abstract fun runImpl()
+    }
+
+    private fun newModelTask(r: Runnable): ModelTask {
+        return object : ModelTask() {
+            override fun runImpl() {
+                r.run()
+            }
+        }
     }
 
     companion object {

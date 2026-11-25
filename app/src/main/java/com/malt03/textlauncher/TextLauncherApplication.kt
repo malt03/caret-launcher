@@ -4,19 +4,24 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.pm.LauncherApps
 import com.android.launcher3.InvariantDeviceProfile
+import com.android.launcher3.LauncherAppState
+import com.android.launcher3.LauncherModel
+import com.android.launcher3.model.AllAppsList
+import com.android.launcher3.model.BgDataModel
+import com.android.launcher3.model.LoaderTask
+import com.android.launcher3.model.ModelDbController
 import com.android.launcher3.notification.NotificationListener
 import com.android.launcher3.util.Executors.MAIN_EXECUTOR
 import com.android.launcher3.util.SettingsCache
 import com.android.launcher3.util.SettingsCache.NOTIFICATION_BADGING_URI
 import com.malt03.textlauncher.data.AppRepository
-import com.malt03.textlauncher.data.HomeModel
+import com.malt03.textlauncher.data.LauncherAppFilter
 import com.malt03.textlauncher.data.LauncherDatabase
-import com.malt03.textlauncher.data.ModelLauncherCallbacks
 import com.malt03.textlauncher.data.SearchStore
-import com.malt03.textlauncher.data.ShortcutRepository
 import com.malt03.textlauncher.icons.AppIconLoader
 import com.malt03.textlauncher.icons.IconSettings
 import com.malt03.textlauncher.ui.home.HomeGridInitializer
+import com.malt03.textlauncher.ui.home.HomeLoaderHooks
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -30,9 +35,8 @@ class TextLauncherApplication : Application() {
         private set
     lateinit var appRepository: AppRepository
         private set
-    lateinit var homeModel: HomeModel
-        private set
-    lateinit var shortcutRepository: ShortcutRepository
+    /** Launcher3's LauncherModel: the home screen's items and the all apps list. */
+    lateinit var model: LauncherModel
         private set
     lateinit var iconSettings: IconSettings
         private set
@@ -46,13 +50,28 @@ class TextLauncherApplication : Application() {
         ioExecutor.execute { searchStore.loadBlocking() }
         iconSettings = IconSettings(this)
         iconLoader = AppIconLoader(this, iconSettings)
-        appRepository = AppRepository(this, iconLoader)
-        shortcutRepository = ShortcutRepository(this)
-        // LauncherModel: one LauncherApps callback for the app list and the shortcuts.
-        getSystemService(LauncherApps::class.java).registerCallback(
-            ModelLauncherCallbacks(appRepository, shortcutRepository), android.os.Handler(mainLooper),
+        appRepository = AppRepository()
+        // LauncherModel (Dagger in Launcher3): the all apps list leaves the launcher itself out,
+        // and the favorites table is in the app's database.
+        val iconCache = iconLoader.iconCache
+        val allAppsList = AllAppsList(iconCache, LauncherAppFilter(this))
+        val bgDataModel = BgDataModel()
+        val hooks = HomeLoaderHooks(this)
+        model = LauncherModel(
+            this, iconCache, allAppsList, bgDataModel,
+            { name, binder ->
+                LoaderTask(
+                    this, LauncherAppState.getIDP(this), model, iconCache, allAppsList, bgDataModel,
+                    name, binder, hooks,
+                )
+            },
+            ModelDbController(this, database),
         )
-        homeModel = HomeModel(this, database, shortcutRepository, iconLoader.iconCache)
+        LauncherAppState.getInstance(this).setModel(model)
+        // ModelInitializer: the LauncherApps callback, and the icons made again when the icon
+        // settings change (refreshAndReloadLauncher).
+        getSystemService(LauncherApps::class.java).registerCallback(model.newModelCallbacks())
+        iconLoader.addChangeListener { model.forceReload("icon settings") }
         // InvariantDeviceProfile: the grid from the device, until the home screen sets its own.
         InvariantDeviceProfile.setGridInitializer(HomeGridInitializer)
 

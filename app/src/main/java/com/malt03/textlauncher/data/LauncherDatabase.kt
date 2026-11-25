@@ -199,3 +199,23 @@ class LauncherDatabase(private val context: Context, name: String? = NAME) :
         private const val V2_TYPE_SHORTCUT = 3
     }
 }
+
+/**
+ * The key of an app shortcut in version 2's home_items table: Launcher3's ShortcutKey (package and
+ * shortcut id) plus the user, as [AppKey]s are.
+ */
+private data class HomeShortcutKey(val packageName: String, val id: String, val userSerial: Long) {
+    companion object {
+        private const val PREFIX = "shortcut:"
+
+        fun parse(key: String): HomeShortcutKey? {
+            if (!key.startsWith(PREFIX)) return null
+            val body = key.removePrefix(PREFIX)
+            val serial = body.substringAfterLast('#').toLongOrNull() ?: return null
+            val packageAndId = body.substringBeforeLast('#')
+            val slash = packageAndId.indexOf('/')
+            if (slash <= 0) return null
+            return HomeShortcutKey(packageAndId.substring(0, slash), packageAndId.substring(slash + 1), serial)
+        }
+    }
+}

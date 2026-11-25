@@ -292,8 +292,10 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         return mStatsLogManager;
     }
 
-    /** TextLauncher: the app's home model (LauncherModel). */
-    public abstract LauncherModel getModel();
+    /** TextLauncher: the app's LauncherModel (LauncherAppState.getModel). */
+    public LauncherModel getModel() {
+        return LauncherAppState.getInstance(asContext()).getModel();
+    }
 
     /** TextLauncher: the home model's writer (ActivityContext.getModelWriter). */
     @Override
@@ -523,11 +525,6 @@ public abstract class Launcher implements StatefulContainer<LauncherState> {
         return new LauncherAccessibilityDelegate(this);
     }
 
-    /**
-     * TextLauncher: AppInfo.makeWorkspaceItem, for an app of the all apps list added to the home
-     * screen: the home screen's own item for the app (AppInfo is not a WorkspaceItemFactory here).
-     */
-    public abstract WorkspaceItemInfo makeWorkspaceItem(AppInfo appInfo);
 
     /** Activity.getRootView: the home activity's root view, which holds the popups. */
     public abstract View getRootView();

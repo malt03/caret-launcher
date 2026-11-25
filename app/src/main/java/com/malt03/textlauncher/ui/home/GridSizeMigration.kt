@@ -6,8 +6,8 @@ import android.util.Log
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.util.CellAndSpan
 import com.android.launcher3.util.GridOccupancy
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.widget.WidgetManagerHelper
-import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 
 /**
@@ -41,6 +41,17 @@ internal object GridSizeMigration {
         }
         // TextLauncher: a size that does not parse counts as none, rather than crashing.
         return gridSizeString.split(",")[0].toIntOrNull() ?: -1
+    }
+
+    /**
+     * TextLauncher: whether [grid] is not the grid the items were placed in, so the model is to be
+     * loaded again (InvariantDeviceProfile.onConfigChanged and Launcher.onIdpChanged), which
+     * migrates them.
+     */
+    fun needsMigration(context: Context, grid: GridSpec): Boolean {
+        val src = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE)
+            .getString(KEY_WORKSPACE_SIZE, null)
+        return src != null && src != "${grid.columns},${grid.rows}"
     }
 
     /**
@@ -96,7 +107,7 @@ internal object GridSizeMigration {
     private fun loadAllEntries(context: Context, items: List<ItemInfo>) {
         val widgetManagerHelper = WidgetManagerHelper(context)
         for (entry in items) {
-            if (entry !is WidgetItemInfo) continue
+            if (entry !is LauncherAppWidgetInfo) continue
             val cn = entry.providerName
             val spans: Point? = widgetManagerHelper.getLauncherAppWidgetInfo(entry.appWidgetId, cn)?.minSpans
             if (spans != null) {

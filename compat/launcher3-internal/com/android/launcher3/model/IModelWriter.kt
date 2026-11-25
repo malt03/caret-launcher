@@ -23,14 +23,11 @@ import android.appwidget.AppWidgetHost
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.LauncherAppWidgetInfo
+import com.android.launcher3.ui.LauncherUiStateNotifier
+import java.util.function.Consumer
 import java.util.function.Predicate
 
-/**
- * Interface for handling model updates.
- *
- * TextLauncher: no write suspension and no UI state notifier (one home screen); folders are
- * FolderInfo (no CollectionInfo), and the widget holder is the home screen's AppWidgetHost.
- */
+/** Interface for handling model updates. */
 interface IModelWriter {
 
     /**
@@ -40,6 +37,8 @@ interface IModelWriter {
      * @property itemsModified A set of [ItemInfo] objects representing items modified in the model.
      * @property itemsRemoved A list of [ItemInfo] objects representing items removed from the
      *   model.
+     *
+     * TODO(b/457449059): Integrate with HomeScreenRepository changelog in the future.
      */
     data class ChangeLog(
         val itemsAdded: MutableList<ItemInfo> = mutableListOf(),
@@ -51,11 +50,21 @@ interface IModelWriter {
      * Schedules a block of code to be executed within a single database transaction on the
      * background model thread. This is the ONLY public way to mutate the model.
      *
-     * TextLauncher: the in-memory model is changed on the calling (main) thread, where the block
-     * runs; its database writes run in one transaction on the model thread.
+     * This method is strictly for persisting model changes and does not handle UI state. It
+     * executes immediately. Clients wishing to support buffering (e.g. for "undo" logic or batched
+     * updates) should implement "Client-Side Buffering":
+     * 1. Update the UI state immediately.
+     * 2. Retain the necessary data in memory.
+     * 3. If the operation is confirmed (or the "undo" window expires), call this method to
+     *    permanently commit the change to the database.
+     * 4. If the operation is cancelled, revert the UI state using the retained data. No database
+     *    transaction is needed.
      *
-     * @param onComplete An optional lambda that will be executed after the transaction has
-     *   completed, indicating success or failure and the result of the block.
+     * @param T The type of the result returned by the [block]. This result will be passed back to
+     *   the onComplete callback, allowing the transaction block to communicate state or data back
+     *   to the caller.
+     * @param onComplete An optional lambda that will be executed on the UI thread after the
+     *   transaction has completed, indicating success or failure and the result of the block.
      * @param block The block of code to execute within the transaction, receiving a
      *   [TransactionContext] handle for performing mutations.
      */
@@ -63,6 +72,36 @@ interface IModelWriter {
         onComplete: ((success: Boolean, result: T?) -> Unit)? = null,
         block: (TransactionContext) -> T,
     )
+
+    /**
+     * Suspends any new database writes.
+     *
+     * While suspended, any calls to [scheduleTransaction] will be queued and executed only after
+     * [resumeWrites] is called.
+     */
+    fun suspendWrites()
+
+    /**
+     * Resumes database writes.
+     *
+     * @param pendingTransaction An optional transaction to execute immediately before processing
+     *   the queued transactions. This is typically the "commit" operation of an undoable action.
+     * @param discardPending If true, any transactions that were queued while suspended will be
+     *   discarded instead of executed.
+     */
+    fun resumeWrites(
+        pendingTransaction: Consumer<TransactionContext>? = null,
+        discardPending: Boolean = false,
+    )
+
+    /**
+     * Returns the [LauncherUiStateNotifier] used by the model to notify the UI of changes.
+     *
+     * This is used to notify the UI of changes that do not require a database transaction, such as
+     * optimistic updates or UI state synchronization.
+     */
+    @Deprecated("Temporary interface for ui notification")
+    fun getNotifier(): LauncherUiStateNotifier
 
     // The following methods are deprecated and will be removed once all clients are migrated
     // to the new transactional API. They are kept for now to ensure a safe, incremental rollout.
@@ -100,30 +139,72 @@ interface IModelWriter {
 
     fun deleteItemsFromDatabase(items: List<ItemInfo>, reason: String?)
 
+    // TextLauncher: FolderInfo in place of CollectionInfo.
     fun deleteCollectionAndContentsFromDatabase(info: FolderInfo)
 
     fun deleteWidgetInfo(
         info: LauncherAppWidgetInfo,
+        // TextLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
         holder: AppWidgetHost?,
         reason: String?,
     )
 }
 
 /**
- * A handle for performing model mutations within a transaction.
+ * A handle provided exclusively to the lambda block of a [scheduleTransaction] call.
  *
- * All methods on this interface are executed synchronously within the transaction's thread.
+ * This interface defines the contract for all mutation methods that can be performed within a
+ * managed database transaction. By providing this handle, we ensure that mutations can only occur
+ * within a transactional context, promoting data consistency and preventing direct,
+ * non-transactional database writes.
  */
 interface TransactionContext {
 
+    /**
+     * Adds an item to the database.
+     *
+     * @param item The [ItemInfo] to add.
+     */
     fun addItemToDatabase(item: ItemInfo)
 
+    /**
+     * Adds multiple items to the database.
+     *
+     * @param items The list of [ItemInfo] to add.
+     */
     fun addItemsToDatabase(items: List<ItemInfo>)
 
+    /**
+     * Moves an item in the database to a new container, screen, and cell coordinates.
+     *
+     * @param item The [ItemInfo] to move.
+     * @param container The new container ID.
+     * @param screenId The new screen ID.
+     * @param cellX The new X-coordinate.
+     * @param cellY The new Y-coordinate.
+     */
     fun moveItemInDatabase(item: ItemInfo, container: Int, screenId: Int, cellX: Int, cellY: Int)
 
+    /**
+     * Moves multiple items in the database to a new container and screen.
+     *
+     * @param items The list of [ItemInfo] to move.
+     * @param container The new container ID.
+     * @param screen The new screen ID.
+     */
     fun moveItemsInDatabase(items: List<ItemInfo>, container: Int, screen: Int)
 
+    /**
+     * Modifies an item in the database, including its position, size, and container.
+     *
+     * @param item The [ItemInfo] to modify.
+     * @param container The new container ID.
+     * @param screenId The new screen ID.
+     * @param cellX The new X-coordinate.
+     * @param cellY The new Y-coordinate.
+     * @param spanX The new span in X-direction.
+     * @param spanY The new span in Y-direction.
+     */
     fun modifyItemInDatabase(
         item: ItemInfo,
         container: Int,
@@ -134,22 +215,60 @@ interface TransactionContext {
         spanY: Int,
     )
 
+    /**
+     * Updates an existing item in the database.
+     *
+     * @param item The [ItemInfo] to update.
+     */
     fun updateItemInDatabase(item: ItemInfo)
 
+    /**
+     * Deletes a specific item from the database.
+     *
+     * @param item The [ItemInfo] to delete.
+     * @param reason An optional string indicating the reason for deletion.
+     */
     fun deleteItemFromDatabase(item: ItemInfo, reason: String?) =
         deleteItemsFromDatabase(listOf(item), reason)
 
+    /**
+     * Deletes items from the database that match a given predicate.
+     *
+     * @param matcher A [Predicate] to filter items for deletion.
+     * @param reason An optional string indicating the reason for deletion.
+     */
     fun deleteItemsFromDatabase(matcher: Predicate<ItemInfo?>, reason: String?)
 
+    /**
+     * Deletes multiple items from the database.
+     *
+     * @param items The list of [ItemInfo] to delete.
+     * @param reason An optional string indicating the reason for deletion.
+     */
     fun deleteItemsFromDatabase(items: List<ItemInfo>, reason: String?)
 
+    /**
+     * Deletes a collection (e.g., a folder) and all its contents from the database.
+     *
+     * @param info The [CollectionInfo] representing the collection to delete.
+     */
+    // TextLauncher: FolderInfo in place of CollectionInfo.
     fun deleteCollectionAndContentsFromDatabase(info: FolderInfo)
 
+    /**
+     * Deletes a widget info and its associated widget ID.
+     *
+     * @param info The [LauncherAppWidgetInfo] to delete.
+     * @param holder An optional [LauncherWidgetHolder] to delete the app widget ID.
+     * @param reason An optional string indicating the reason for deletion.
+     */
     fun deleteWidgetInfo(
         info: LauncherAppWidgetInfo,
+        // TextLauncher: the platform AppWidgetHost in place of LauncherWidgetHolder.
         holder: AppWidgetHost?,
         reason: String?,
     )
 
+    /** Deletes all items from the database. */
     fun deleteAllItems()
 }

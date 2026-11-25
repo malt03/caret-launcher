@@ -38,6 +38,7 @@ import com.android.launcher3.AppFilter;
 import com.android.launcher3.compat.AlphabeticIndexCompat;
 import com.android.launcher3.icons.IconCache;
 import com.android.launcher3.model.data.AppInfo;
+import com.android.launcher3.model.data.AppsListData;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.FlagOp;
 
@@ -80,6 +81,15 @@ public class AllAppsList {
     private AlphabeticIndexCompat mIndex;
 
     /**
+     * @see AppsListData#FLAG_HAS_SHORTCUT_PERMISSION
+     * @see AppsListData#FLAG_QUIET_MODE_ENABLED
+     * @see AppsListData#FLAG_QUIET_MODE_CHANGE_PERMISSION
+     * @see AppsListData#FLAG_WORK_PROFILE_QUIET_MODE_ENABLED
+     * @see AppsListData#FLAG_PRIVATE_PROFILE_QUIET_MODE_ENABLED
+     */
+    private int mFlags;
+
+    /**
      * Boring constructor.
      */
     public AllAppsList(@NonNull IconCache iconCache,
@@ -97,6 +107,30 @@ public class AllAppsList {
         mDataChanged = false;
         // TextLauncher: no apps list repository to dispatch the change to.
         return result;
+    }
+
+    /**
+     * Helper to checking {@link AppsListData#FLAG_HAS_SHORTCUT_PERMISSION}
+     */
+    public boolean hasShortcutHostPermission() {
+        return (mFlags & AppsListData.FLAG_HAS_SHORTCUT_PERMISSION) != 0;
+    }
+
+    /**
+     * Sets or clears the provided flag
+     */
+    public void setFlags(int flagMask, boolean enabled) {
+        if (enabled) {
+            mFlags |= flagMask;
+        } else {
+            mFlags &= ~flagMask;
+        }
+        mDataChanged = true;
+    }
+
+    /** Returns an immutable representation of the current data */
+    public AppsListData getImmutableData() {
+        return new AppsListData(copyData(), mFlags);
     }
 
     /**

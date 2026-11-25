@@ -113,11 +113,11 @@ public class ItemLongClickListener {
             }
         });
 
-        // TextLauncher: the home screen's own item for the app (AppInfo.makeWorkspaceItem, which
-        // Launcher3's ItemInflater calls on the drop), and the all apps list is not a drag source
-        // here (getAppsView); nothing is done when the drop completes.
+        // TextLauncher: the item for the app (AppInfo.makeWorkspaceItem, which Launcher3's
+        // ItemInflater calls on the drop), and the all apps list is not a drag source here
+        // (getAppsView); nothing is done when the drop completes.
         ItemInfo info = v.getTag() instanceof AppInfo app
-                ? launcher.makeWorkspaceItem(app) : (ItemInfo) v.getTag();
+                ? app.makeWorkspaceItem(launcher.asContext()) : (ItemInfo) v.getTag();
         launcher.getWorkspace().beginDragShared(v, null, (target, d, success) -> { }, info,
                 new DragPreviewProvider(v), new DragOptions());
         return false;

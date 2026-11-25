@@ -23,6 +23,7 @@ package com.android.launcher3.model.data;
 import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_ALL_APPS;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.LauncherActivityInfo;
 import android.os.UserHandle;
@@ -39,11 +40,11 @@ import java.util.Comparator;
  * Represents an app in AllAppsView.
  *
  * <p>Stand-in for Launcher3's AppInfo (android-17.0.0_r1), made from AppInfo.java by deleting what
- * TextLauncher does not have (copies, workspace items, the user cache, quiet mode, archived apps,
+ * TextLauncher does not have (copies, the user cache, quiet mode, archived apps,
  * install progress, automation and App Lock); changes are marked with "TextLauncher:".
  */
 @SuppressWarnings("NewApi")
-// TextLauncher: not a WorkspaceItemFactory (makeWorkspaceItem is not used).
+// TextLauncher: not a WorkspaceItemFactory.
 public class AppInfo extends ItemInfoWithIcon {
 
     public static final AppInfo[] EMPTY_ARRAY = new AppInfo[0];
@@ -93,6 +94,13 @@ public class AppInfo extends ItemInfoWithIcon {
 
         uid = info.getApplicationInfo().uid;
         updateRuntimeFlagsForActivityTarget(this, info);
+    }
+
+    public WorkspaceItemInfo makeWorkspaceItem(Context context) {
+        WorkspaceItemInfo workspaceItemInfo = new WorkspaceItemInfo(this);
+
+        // TextLauncher: no install sessions (FLAG_INSTALL_SESSION_ACTIVE) or automation.
+        return workspaceItemInfo;
     }
 
     /**

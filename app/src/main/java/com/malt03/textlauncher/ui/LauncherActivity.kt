@@ -28,7 +28,8 @@ import androidx.core.view.WindowCompat
 import com.malt03.textlauncher.TextLauncherApplication
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.ItemInfo
-import com.malt03.textlauncher.data.AppItemInfo
+import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.malt03.textlauncher.data.homeKey
 import com.malt03.textlauncher.data.AppKey
 import com.malt03.textlauncher.search.Normalizer
 import com.android.launcher3.Launcher
@@ -103,11 +104,6 @@ class LauncherActivity :
 
     /** ModelCallbacks.bindAllApplications */
     private val appsListener: (Array<AppInfo>) -> Unit = { allApps.setApps(it) }
-    private val iconsListener: (Set<String>?) -> Unit = { packages ->
-        // LauncherModel.onPackageIconsUpdated (CacheDataUpdatedTask), or a reload for the theme.
-        // The app list's AppInfos come again with their icons (AppRepository).
-        if (packages == null) home.rebuild() else home.onPackageIconsUpdated(packages)
-    }
 
     /**
      * The all apps list's AppInfos changed (the apps or their icons): the search results, which
@@ -251,7 +247,6 @@ class LauncherActivity :
         }
 
         app.appRepository.addListener(appsListener)
-        app.iconLoader.addChangeListener(iconsListener)
         // Launcher.onCreate
         rotationHelper.initialize()
         // Launcher.onCreate: the widget picker's add (WidgetPickerAddItemListener) waits for it.
@@ -271,7 +266,6 @@ class LauncherActivity :
     override fun onDestroy() {
         rotationHelper.destroy()
         app.appRepository.removeListener(appsListener)
-        app.iconLoader.removeChangeListener(iconsListener)
         appsStore.removeUpdateListener(appsStoreListener)
         home.destroy()
         super.onDestroy()
@@ -596,8 +590,8 @@ class LauncherActivity :
     }
 
     /** docs/spec.md 4: the long-press menu's "Edit search terms". */
-    override fun editSearchTerms(item: AppItemInfo) {
-        SearchTermsDialog.show(this, item.homeKey, item.title, app.searchStore) {
+    override fun editSearchTerms(item: WorkspaceItemInfo) {
+        SearchTermsDialog.show(this, item.homeKey(this), item.title, app.searchStore) {
             refreshResults()
             focusSearch()
         }

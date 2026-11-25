@@ -41,4 +41,12 @@ public final class FileLog {
     public static void e(String tag, String msg) {
         Log.e(tag, msg);
     }
+
+    public static void w(String tag, String msg, Exception e) {
+        Log.w(tag, msg, e);
+    }
+
+    public static void w(String tag, String msg) {
+        Log.w(tag, msg);
+    }
 }

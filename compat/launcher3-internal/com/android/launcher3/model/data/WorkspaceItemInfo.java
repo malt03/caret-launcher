@@ -75,6 +75,13 @@ public class WorkspaceItemInfo extends ItemInfoWithIcon {
         personKeys = info.personKeys.clone();
     }
 
+    /** TODO: Remove this.  It's only called by ApplicationInfo.makeWorkspaceItem. */
+    public WorkspaceItemInfo(AppInfo info) {
+        super(info);
+        title = Utilities.trim(info.title);
+        intent = new Intent(info.getIntent());
+    }
+
     /**
      * Creates a {@link WorkspaceItemInfo} from a {@link ShortcutInfo}.
      */

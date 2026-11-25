@@ -439,10 +439,10 @@ public class LauncherAccessibilityDelegate extends BaseAccessibilityDelegate<Lau
 
         // TextLauncher: if-else in place of the switch's type patterns, which need Java 21.
         Runnable itemBindLogic = () -> {
-            // TextLauncher: AppInfo is not a WorkspaceItemFactory; the home screen makes its item
-            // for the app (AppInfo.makeWorkspaceItem). No automation.
+            // TextLauncher: AppInfo is not a WorkspaceItemFactory (AppInfo.makeWorkspaceItem).
+            // No automation.
             if (item instanceof AppInfo appInfo) {
-                WorkspaceItemInfo info = mContext.makeWorkspaceItem(appInfo);
+                WorkspaceItemInfo info = appInfo.makeWorkspaceItem(mContext.asContext());
                 mContext.getModelWriter().addItemToDatabase(info,
                         LauncherSettings.Favorites.CONTAINER_DESKTOP,
                         screenId, coordinates[0], coordinates[1]);

@@ -119,4 +119,19 @@ public final class Flags {
     public static boolean orientationFriendlyDesktopGridSpec() {
         return false;
     }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean simplifiedLauncherModelBinding() {
+        return false;
+    }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean bindModelUsingRepository() {
+        return false;
+    }
+
+    /** Not set in bp4a / cp1a: declaration default (disabled). */
+    public static boolean modelRepository() {
+        return false;
+    }
 }

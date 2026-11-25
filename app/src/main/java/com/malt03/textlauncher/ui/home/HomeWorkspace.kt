@@ -5,8 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import com.android.launcher3.DropTarget.DragObject
 import com.android.launcher3.Workspace
-import com.android.launcher3.model.data.ItemInfo
-import java.util.function.Predicate
 
 /**
  * The home screen's Workspace: Launcher3's Workspace (the derived copy in compat) with what
@@ -30,13 +28,6 @@ class HomeWorkspace internal constructor(
         pivotX = width / 2f
         pivotY = home.launcher.deviceProfile.cellLayoutHeight / 2f
     }
-
-    /**
-     * Workspace.persistRemoveItemsByMatcher. TextLauncher: the home screen removes the items from
-     * its model and binds it again.
-     */
-    override fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>, reason: String?) =
-        home.persistRemoveItemsByMatcher(matcher)
 
     // ---- auto scroll (TextLauncher) ----
 

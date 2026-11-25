@@ -165,6 +165,16 @@ public class UserCache {
         public boolean isUserQuiet(UserHandle user) {
             return mUserManager.isQuietModeEnabled(user);
         }
+
+        /** UserManagerState.getUser: the user of a serial number (LoaderCursor). */
+        public UserHandle getUser(long serialNo) {
+            return mUserManager.getUserForSerialNumber(serialNo);
+        }
+
+        /** UserManagerState.isUserUnlocked */
+        public boolean isUserUnlocked(UserHandle user) {
+            return mUserManager.isUserUnlocked(user);
+        }
     }
 
     /**

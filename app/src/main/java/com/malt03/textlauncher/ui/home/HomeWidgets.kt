@@ -15,12 +15,12 @@ import android.widget.Toast
 import com.android.launcher3.LauncherSettings
 import com.android.launcher3.R
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.pm.PinRequestHelper
 import com.android.launcher3.widget.LauncherAppWidgetHostView
 import com.android.launcher3.widget.PendingAddShortcutInfo
 import com.android.launcher3.widget.PendingAddWidgetInfo
 import com.android.launcher3.widget.WidgetManagerHelper
-import com.malt03.textlauncher.data.WidgetItemInfo
 
 /**
  * LauncherWidgetHolder and LauncherAppWidgetHost: the home screen's widget host, which makes the
@@ -100,6 +100,16 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
     /** Launcher.setWaitingForResult */
     private fun setWaitingForResult(args: PendingRequestArgs?) {
         pendingRequestArgs = args
+        updatePendingWidgetIds()
+    }
+
+    /** TextLauncher: [pendingWidgetIds] for the flow and the result waiting for the load. */
+    private fun updatePendingWidgetIds() {
+        val ids = mutableSetOf<Int>()
+        pendingRequestArgs?.widgetId?.takeIf { it >= 0 }?.let { ids += it }
+        pendingActivityResult?.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+            ?.takeIf { it >= 0 }?.let { ids += it }
+        pendingWidgetIds = ids
     }
 
     /** Launcher.restoreState for the add flow. */
@@ -110,6 +120,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         }
         pendingActivityResult = savedState.getBundle(RUNTIME_STATE_PENDING_ACTIVITY_RESULT)
             ?.let(ActivityResultInfo::fromBundle)
+        updatePendingWidgetIds()
     }
 
     /** Launcher.onSaveInstanceState for the add flow. */
@@ -232,24 +243,20 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
             handleActivityResult(requestCode, resultCode, data)
         } else {
             pendingActivityResult = ActivityResultInfo(requestCode, resultCode, data)
+            updatePendingWidgetIds()
         }
         return true
     }
 
-    /** Called once the home screen is loaded. */
+    /**
+     * Called once the home screen is loaded. LoaderTask removes the ghost widgets
+     * ([HomeLoaderHooks], which keeps [pendingWidgetIds]).
+     */
     fun onLoaded() {
-        // LoaderTask.sanitizeWidgetsShortcutsAndPackages: remove any ghost widgets, e.g. those the
-        // grid migration or checkItemPlacement left out. TextLauncher: the home screen loads with
-        // each activity rather than once per process, so the ids of an add flow in progress, and
-        // of its result waiting for the load, are not ghosts.
-        val validWidgets = home.model.allItems().filterIsInstance<WidgetItemInfo>().map { it.appWidgetId }.toMutableSet()
-        pendingRequestArgs?.widgetId?.takeIf { it >= 0 }?.let { validWidgets += it }
-        pendingActivityResult?.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
-            ?.takeIf { it >= 0 }?.let { validWidgets += it }
-        home.widgetHost.removeGhostWidgets(validWidgets)
         // Launcher.processActivityResult
         pendingActivityResult?.let {
             pendingActivityResult = null
+            updatePendingWidgetIds()
             handleActivityResult(it.requestCode, it.resultCode, it.data)
         }
     }
@@ -344,7 +351,7 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
      * add a page).
      */
     private fun completeAddAppWidget(appWidgetId: Int, itemInfo: ItemInfo, appWidgetInfo: AppWidgetProviderInfo) {
-        val launcherInfo = WidgetItemInfo(appWidgetId, appWidgetInfo.provider)
+        val launcherInfo = LauncherAppWidgetInfo(appWidgetId, appWidgetInfo.provider)
         launcherInfo.spanX = itemInfo.spanX
         launcherInfo.spanY = itemInfo.spanY
         launcherInfo.minSpanX = itemInfo.minSpanX
@@ -361,18 +368,25 @@ internal class HomeWidgetAddFlow(private val home: HomeController) {
         }
     }
 
-    private companion object {
-        const val TAG = "Launcher"
+    companion object {
+        /**
+         * TextLauncher: the widget ids of the add flow in progress and of its result waiting for
+         * the load, which are not ghosts (HomeLoaderHooks.removeGhostWidgets). Main thread only.
+         */
+        var pendingWidgetIds: Set<Int> = emptySet()
+            private set
+
+        private const val TAG = "Launcher"
 
         /** LauncherConstants.ActivityCodes */
-        const val REQUEST_CREATE_SHORTCUT = 1
-        const val REQUEST_CREATE_APPWIDGET = 5
-        const val REQUEST_BIND_APPWIDGET = 11
-        const val REQUEST_RECONFIGURE_APPWIDGET = 13
+        private const val REQUEST_CREATE_SHORTCUT = 1
+        private const val REQUEST_CREATE_APPWIDGET = 5
+        private const val REQUEST_BIND_APPWIDGET = 11
+        private const val REQUEST_RECONFIGURE_APPWIDGET = 13
 
         /** LauncherConstants.SavedInstanceKeys */
-        const val RUNTIME_STATE_PENDING_REQUEST_ARGS = "launcher.request_args"
-        const val RUNTIME_STATE_PENDING_ACTIVITY_RESULT = "launcher.activity_result"
+        private const val RUNTIME_STATE_PENDING_REQUEST_ARGS = "launcher.request_args"
+        private const val RUNTIME_STATE_PENDING_ACTIVITY_RESULT = "launcher.activity_result"
     }
 
     /**

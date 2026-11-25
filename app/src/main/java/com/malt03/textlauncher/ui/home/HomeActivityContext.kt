@@ -35,7 +35,8 @@ import com.android.launcher3.util.LauncherBindableItemsContainer
 import com.android.launcher3.util.RunnableList
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
-import com.malt03.textlauncher.data.AppItemInfo
+import com.malt03.textlauncher.data.isApp
+import com.malt03.textlauncher.data.isAvailable
 import com.malt03.textlauncher.data.isDeepShortcut
 import com.android.launcher3.CellLayout
 import com.android.launcher3.DropTargetBar
@@ -57,8 +58,7 @@ import com.android.launcher3.states.StateAnimationConfig
  * model the long-press menu's shortcut rows use.
  */
 internal class HomeActivityContext(private val home: HomeController) :
-    Launcher(home.root.overlay, home.root.hotseat, home.root.scrim),
-    LauncherModel {
+    Launcher(home.root.overlay, home.root.hotseat, home.root.scrim) {
     private val context = home.context
     private val gridSpec = home.gridSpec
 
@@ -93,7 +93,7 @@ internal class HomeActivityContext(private val home: HomeController) :
      */
     override fun startActivitySafely(v: View, intent: Intent, item: ItemInfo?): RunnableList? {
         when {
-            item is AppItemInfo -> if (item.isAvailable) home.host.launch(item, v)
+            item is WorkspaceItemInfo && item.isApp -> if (item.isAvailable) home.host.launch(item, v)
             item is AppInfo -> home.host.launch(item, v)
             item != null && item.isDeepShortcut -> {
                 val key = ShortcutKey.fromItemInfo(item)
@@ -131,28 +131,12 @@ internal class HomeActivityContext(private val home: HomeController) :
 
     override fun startWidgetReconfigure(view: LauncherAppWidgetHostView) = home.widgetAddFlow.startReconfigure(view)
 
-    override fun getModel(): LauncherModel = this
-
-    /**
-     * LauncherModel.updateAndBindWorkspaceItem for DeepShortcutView.getFinalInfo: the shortcut's
-     * title, and its icon badged with its app's icon (IconCache.getShortcutIcon), saved and bound.
-     */
-    override fun updateAndBindWorkspaceItem(si: WorkspaceItemInfo, info: ShortcutInfo) {
-        si.updateFromDeepShortcutInfo(info, context)
-        home.app.iconLoader.loadShortcut(si, info) { bitmap ->
-            si.bitmap = bitmap
-            // bindUpdatedWorkspaceItems: written and bound.
-            home.model.writer.updateItemInDatabase(si)
-            home.bindItemsUpdated(setOf(si))
-        }
-    }
-
     /** The widget's spans on the home grid, for the resize frame (LauncherAppWidgetProviderInfo). */
     override fun getLauncherAppWidgetInfo(info: AppWidgetProviderInfo?): LauncherAppWidgetProviderInfo? =
         info?.let { LauncherAppWidgetProviderInfo.fromProviderInfo(context, it) }
 
-    /** LauncherModel.getWriter: the home model's writer. */
-    override fun getModelWriter(): IModelWriter = home.model.writer
+    /** Launcher.getModelWriter: the home screen's writer (LauncherModel.getWriter). */
+    override fun getModelWriter(): IModelWriter = home.modelWriter
 
     override fun getAppWidgetHolder(): AppWidgetHost = home.widgetHost
 
@@ -227,10 +211,6 @@ internal class HomeActivityContext(private val home: HomeController) :
     /** Launcher.addPendingItem: a widget or shortcut dropped from the widget picker. */
     override fun addPendingItem(info: PendingAddItemInfo, container: Int, screenId: Int, cell: IntArray?, spanX: Int, spanY: Int) =
         home.addPendingItem(info, container, cell, spanX, spanY)
-
-    /** AppInfo.makeWorkspaceItem: the home screen's item for an app of the all apps list. */
-    override fun makeWorkspaceItem(appInfo: AppInfo): WorkspaceItemInfo =
-        AppItemInfo(appInfo, UserCache.INSTANCE.get(context).getSerialNumberForUser(appInfo.user))
 }
 
 /**

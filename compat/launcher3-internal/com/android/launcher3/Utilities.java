@@ -50,6 +50,10 @@ import androidx.annotation.NonNull;
 import java.util.Objects;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import com.android.launcher3.util.IntArray;
+import java.util.Locale;
+import java.lang.reflect.Method;
+import android.text.TextUtils;
 
 /**
  * Various utilities shared amongst the Launcher's classes.
@@ -74,6 +78,37 @@ public final class Utilities {
 
     @ChecksSdkIntAtLeast(api = VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "U")
     public static final boolean ATLEAST_U = Build.VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE;
+
+    /**
+     * Indicates if the device has a debug build. Should only be used to store additional info or
+     * add extra logging and not for changing the app behavior.
+     * @deprecated Use {@link BuildConfig#IS_DEBUG_DEVICE} directly
+     */
+    @Deprecated
+    // TextLauncher: false, as for a user build (BuildConfig.IS_DEBUG_DEVICE).
+    public static final boolean IS_DEBUG_DEVICE = false;
+
+    public static String createDbSelectionQuery(String columnName, IntArray values) {
+        return String.format(Locale.ENGLISH, "%s IN (%s)", columnName, values.toConcatString());
+    }
+
+    public static boolean isBootCompleted() {
+        return "1".equals(getSystemProperty("sys.boot_completed", "1"));
+    }
+
+    public static String getSystemProperty(String property, String defaultValue) {
+        try {
+            Class clazz = Class.forName("android.os.SystemProperties");
+            Method getter = clazz.getDeclaredMethod("get", String.class);
+            String value = (String) getter.invoke(null, property);
+            if (!TextUtils.isEmpty(value)) {
+                return value;
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Unable to read system properties");
+        }
+        return defaultValue;
+    }
 
     /**
      * Returns true if theme is dark.

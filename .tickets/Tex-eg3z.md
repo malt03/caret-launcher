@@ -1,6 +1,6 @@
 ---
 id: Tex-eg3z
-status: open
+status: closed
 deps: [Tex-ttho]
 links: []
 created: 2026-11-24T13:35:59Z
@@ -21,3 +21,9 @@ data/HomeModel.kt の loadBlocking と ui/home/HomeLoader.kt（455 行）の大�
 
 リスク（大事）: 上流の読み込みは解決できないアイテムを DB から消す（LoaderCursor.markDeleted／commitDeleted、WorkspaceItemProcessor.kt:331-335 の「固定したショートカットが見つからない」など）。初回は favorites の表を控えておくか、消さずに記録だけにする。規模: 大。⑦-2 の後。
 
+
+## Notes
+
+**2026-11-25T00:10:55Z**
+
+2026-11-25: Tex-ttho と一緒に移した（そちらのノートを参照）。初回は favorites を favorites_backup_textlauncher に写してから上流の読み込みを行う

@@ -36,8 +36,13 @@ import com.android.launcher3.dragndrop.DragOptions
 import com.android.launcher3.folder.Folder
 import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
+import com.android.launcher3.model.BgDataModel
+import com.android.launcher3.model.IModelWriter
+import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
+import com.android.launcher3.model.data.LauncherAppWidgetInfo
+import com.android.launcher3.model.data.WorkspaceData
 import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.popup.PopupContainer
 import com.android.launcher3.states.RotationHelper
@@ -45,10 +50,9 @@ import com.android.launcher3.touch.WorkspaceTouchListener
 import com.android.launcher3.util.Themes
 import com.android.launcher3.views.ActivityContext
 import com.android.launcher3.widget.LauncherAppWidgetHostView
+import com.android.launcher3.util.PackageUserKey
 import com.android.launcher3.widget.util.WidgetSizeHandler.Companion.updateSizeRanges
 import com.malt03.textlauncher.TextLauncherApplication
-import com.malt03.textlauncher.data.AppItemInfo
-import com.malt03.textlauncher.data.WidgetItemInfo
 import com.malt03.textlauncher.ui.GridSpec
 import com.malt03.textlauncher.ui.LauncherRootLayout
 import com.android.launcher3.dragndrop.LauncherDragController
@@ -61,7 +65,8 @@ import com.malt03.textlauncher.ui.statehandlers.DepthController
  * The parts are named after their Launcher3 counterparts:
  *
  * - [HomeActivityContext]: Launcher itself (the stand-in), the ActivityContext of the copied code
- * - [HomeLoader]: LoaderTask, PackageUpdatedTask and ShortcutsChangedTask
+ * - [modelCallbacks]: ModelCallbacks, the BgDataModel.Callbacks Launcher3's LauncherModel binds
+ *   the model with (the model is loaded and changed on the model thread, as in Launcher3)
  * - [HomeItemInflater]: ItemInflater and ItemClickHandler
  * - [HomeSystemShortcuts]: Launcher.getSupportedShortcuts, the options of the long-press menu
  * - Workspace (WorkspaceStateTransitionAnimation): the SPRING_LOADED state while dragging
@@ -93,7 +98,7 @@ class HomeController(
         /** An app shortcut (ItemClickHandler.onClickAppShortcut). */
         fun startShortcut(packageName: String, id: String, view: View, user: UserHandle)
         /** The long-press menu's "Edit search terms" (docs/spec.md 4). */
-        fun editSearchTerms(app: AppItemInfo)
+        fun editSearchTerms(app: WorkspaceItemInfo)
         /**
          * docs/spec.md 5.4: the home screen is edited, with the keyboard down (the
          * SPRING_LOADED state, or a widget's resize frame in NORMAL), or not any more.
@@ -115,7 +120,7 @@ class HomeController(
     }
 
     internal val context = root.context
-    internal val model = app.homeModel
+    internal val model = app.model
     internal val gridSpec = GridSpec.from(context)
 
     /** The home screen's page in its vertical scroll container (docs/spec.md 5.1). */
@@ -176,16 +181,53 @@ class HomeController(
 
     internal val itemInflater = HomeItemInflater(this)
     internal val systemShortcuts = HomeSystemShortcuts(this)
-    private val loader = HomeLoader(this)
+
+    /**
+     * ModelCallbacks: binds the model that LauncherModel loads and changes on the model thread to
+     * the views.
+     */
+    private val modelCallbacks = object : BgDataModel.Callbacks {
+        override fun bindCompleteModel(itemIdMap: WorkspaceData, isBindingSync: Boolean) {
+            bindItems(itemIdMap.filter { it.container == LauncherSettings.Favorites.CONTAINER_DESKTOP })
+            isWorkspaceLoading = false
+            if (!isLoaded) {
+                isLoaded = true
+                widgetAddFlow.onLoaded()
+            }
+        }
+
+        override fun bindItemsAdded(items: List<ItemInfo>) {
+            // TextLauncher: the items on the home page; there is one page and no hotseat.
+            for (item in items) {
+                if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) addInScreen(item)
+            }
+        }
+
+        override fun bindItemsUpdated(updates: Set<ItemInfo>) = this@HomeController.bindItemsUpdated(updates)
+
+        override fun bindWorkspaceComponentsRemoved(matcher: Predicate<ItemInfo?>) =
+            this@HomeController.bindWorkspaceComponentsRemoved { matcher.test(it) }
+
+        override fun bindAllApplications(
+            apps: Array<AppInfo>,
+            flags: Int,
+            packageUserKeytoUidMap: Map<PackageUserKey, Int>,
+        ) = app.appRepository.bindAllApplications(apps)
+    }
+
+    /** LauncherModel.getWriter: the home screen's writer (Launcher.getModelWriter). */
+    internal val modelWriter: IModelWriter by lazy { model.getWriter(true, launcher, modelCallbacks) }
 
     /** Whether the home screen was loaded and bound once. */
-    internal val isLoaded: Boolean get() = loader.isLoaded
+    internal var isLoaded: Boolean = false
+        private set
 
     /**
      * ModelCallbacks.getWorkspaceLoading: from the start of a load or rebind until its items are
      * bound. No drag starts meanwhile (Launcher.isDraggingEnabled).
      */
-    internal val isWorkspaceLoading: Boolean get() = loader.isWorkspaceLoading
+    internal var isWorkspaceLoading: Boolean = true
+        private set
 
     /** Folder's LauncherDelegate: what the folder asks of the workspace and the model. */
     internal val launcherDelegate = object : LauncherDelegate(launcher) {
@@ -228,7 +270,11 @@ class HomeController(
         // Launcher.setupViews: the workspace's touch listener, for the long press on empty space.
         scrollView.setOnTouchListener(WorkspaceTouchListener(launcher, scrollView))
 
-        loader.start()
+        // Launcher.onCreate: LauncherModel.addCallbacksAndLoad. TextLauncher: a new grid (the
+        // activity was created again for it) loads the model again, which migrates the items
+        // (Launcher.onIdpChanged).
+        model.addCallbacksAndLoad(modelCallbacks)
+        if (GridSizeMigration.needsMigration(context, gridSpec)) model.forceReload("grid changed")
     }
 
     /**
@@ -244,7 +290,8 @@ class HomeController(
     }
 
     fun destroy() {
-        loader.destroy()
+        // Launcher.onDestroy: LauncherModel.removeCallbacks
+        model.removeCallbacks(modelCallbacks)
         // ActivityContext.closeOnDestroy: PopupDataProvider stops listening for notification dots.
         launcher.activityComponent.popupDataProvider.close()
     }
@@ -254,9 +301,6 @@ class HomeController(
      * returns true. Returns that view.
      */
     internal fun mapOverItems(op: LauncherBindableItemsContainer.ItemOperator): View? = cellLayout.mapOverItems(op)
-
-    /** Re-creates every view, e.g. after the icon theme changed. */
-    fun rebuild() = loader.rebuild()
 
     /**
      * Launcher.onResume: the resumed callbacks (BaseActivity.EVENT_RESUMED), such as the uninstall
@@ -372,7 +416,7 @@ class HomeController(
         val folderInfo = FolderInfo()
 
         // Update the model
-        model.writer.addItemToDatabase(folderInfo, container, screenId, cellX, cellY)
+        modelWriter.addItemToDatabase(folderInfo, container, screenId, cellX, cellY)
 
         // Create the view
         val newFolder = itemInflater.inflateItem(folderInfo) as FolderIconView
@@ -381,11 +425,6 @@ class HomeController(
         val parent = workspace.getParentCellLayoutForView(newFolder)
         parent.shortcutsAndWidgets.measureChild(newFolder)
         return newFolder
-    }
-
-    /** Workspace.persistRemoveItemsByMatcher: the items leave the model, which is bound again. */
-    internal fun persistRemoveItemsByMatcher(matcher: Predicate<ItemInfo>) {
-        if (loader.removeItems(matcher::test)) loader.rebuild()
     }
 
     /**
@@ -437,7 +476,7 @@ class HomeController(
             Toast.makeText(context, com.android.launcher3.R.string.out_of_space, Toast.LENGTH_SHORT).show()
             return false
         }
-        model.writer.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellXY[0], cellXY[1])
+        modelWriter.addItemToDatabase(info, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cellXY[0], cellXY[1])
         launcher.inflateAndBindItemWithAnimation(info)
         return true
     }
@@ -450,7 +489,7 @@ class HomeController(
      * .findSpaceOnWorkspace); returns false when there is no room, where Launcher3 would add a
      * page.
      */
-    internal fun addWidget(item: WidgetItemInfo, cellX: Int, cellY: Int): Boolean {
+    internal fun addWidget(item: LauncherAppWidgetInfo, cellX: Int, cellY: Int): Boolean {
         host.showHome()
         val cell = intArrayOf(cellX, cellY)
         if (!cellLayout.occupied.isRegionVacant(cellX, cellY, item.spanX, item.spanY) &&
@@ -458,7 +497,7 @@ class HomeController(
         ) {
             return false
         }
-        model.writer.addItemToDatabase(item, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
+        modelWriter.addItemToDatabase(item, LauncherSettings.Favorites.CONTAINER_DESKTOP, 0, cell[0], cell[1])
         val view = addInScreen(item)
         if (view is AppWidgetHostView) {
             view.updateSizeRanges(item.spanX, item.spanY)
@@ -571,13 +610,16 @@ class HomeController(
      * items that [matcher] matches leave the grid and the folders.
      */
     internal fun bindWorkspaceComponentsRemoved(matcher: Predicate<ItemInfo>) {
+        // TextLauncher: a drag of an affected item is cancelled first, so that an item dragged
+        // out of a folder goes back before the folder's views change (Tex-a8os).
+        cancelDragIfAffected(matcher)
         workspace.removeItemsByMatcher(matcher, true)
         dragController.onAppsRemoved(matcher)
         PopupContainer.dismissInvalidPopup(launcher)
     }
 
     /**
-     * DragController.onAppsRemoved, before the model changes (TextLauncher): a drag of an item that
+     * DragController.onAppsRemoved, before the views change (TextLauncher): a drag of an item that
      * [matcher] matches, or out of a folder whose contents it matches, is cancelled first, so that
      * the dragged item goes back where it came from while it is still in the model (Tex-a8os).
      */
@@ -593,9 +635,6 @@ class HomeController(
         }
     }
 
-    /** LauncherModel.onPackageIconsUpdated: CacheDataUpdatedTask for the home items. */
-    fun onPackageIconsUpdated(packages: Set<String>) = loader.onPackageIconsUpdated(packages)
-
     // ---- model changes ----
 
     /**
@@ -605,14 +644,15 @@ class HomeController(
      */
     private fun replaceFolderWithFinalItem(folderView: FolderIconView): Boolean {
         // TextLauncher: the folder may report again after it was already replaced, or after the
-        // model dropped it (Tex-a8os).
-        if (folderView.parent == null || !model.contains(folderView.folderInfo)) return true
+        // model dropped it and its view left the home screen (Tex-a8os).
+        if (folderView.parent == null) return true
         // Add the last remaining child to the workspace in place of the folder
         val onCompleteRunnable = Runnable {
             val info = folderView.folderInfo
             val itemCount = info.contents.size
-            // TextLauncher: unless the model dropped the folder during the animation (Tex-a8os).
-            if (itemCount <= 1 && model.contains(info)) {
+            // TextLauncher: unless the model dropped the folder during the animation, and its view
+            // left the home screen (Tex-a8os).
+            if (itemCount <= 1 && folderView.parent != null) {
                 var newIcon: View? = null
                 var finalItem: ItemInfo? = null
                 if (itemCount == 1) {
@@ -620,7 +660,7 @@ class HomeController(
                     // folder
                     finalItem = info.contents.removeAt(0)
                     newIcon = itemInflater.inflateItem(finalItem)
-                    model.writer.addOrMoveItemInDatabase(finalItem, info.container, info.screenId, info.cellX, info.cellY)
+                    modelWriter.addOrMoveItemInDatabase(finalItem, info.container, info.screenId, info.cellX, info.cellY)
                 }
 
                 // Remove the folder
