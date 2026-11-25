@@ -24,6 +24,7 @@ import android.os.UserHandle
 import android.util.Log
 import com.android.launcher3.LauncherModel.ModelUpdateTask
 import com.android.launcher3.model.BgDataModel
+import com.android.launcher3.model.ItemInstallQueue
 import com.android.launcher3.model.ModelTaskController
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE
 import com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED
@@ -34,8 +35,7 @@ import com.android.launcher3.util.ItemInfoMatcher
  * Factory for creating model tasks to handle various package events
  *
  * Stand-in for Launcher3's PackageTaskFactory (android-17.0.0_r1), made from PackageTaskFactory.kt
- * by deleting the shortcuts with a web UI and the install queue (Tex-iuyb); changes are marked with
- * "TextLauncher:".
+ * by deleting the shortcuts with a web UI; changes are marked with "TextLauncher:".
  */
 object PackageTaskFactory {
     private const val TAG = "PackageUpdateTaskFactory"
@@ -57,7 +57,8 @@ object PackageTaskFactory {
                 matcher,
                 "removed because the corresponding package is removed. removedPackages=$packages",
             )
-            // TextLauncher: no install queue (Tex-iuyb).
+            // Remove any queued items from the install queue
+            ItemInstallQueue.INSTANCE[taskController.context].removeFromInstallQueue(packages, user)
         }
 
     /** Task to handle apps being temporarily unavailable */

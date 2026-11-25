@@ -93,6 +93,14 @@ public class BaseDragLayer<T> extends InsettableFrameLayout {
         mControllers = controllers;
     }
 
+    public void recreateControllers() {
+        if (mControllers != null) {
+            for (TouchController controller : mControllers) {
+                controller.onTouchControllerDestroyed();
+            }
+        }
+    }
+
     /**
      * Same as {@link #isEventOverView(View, MotionEvent, View)} where evView == this drag layer.
      */

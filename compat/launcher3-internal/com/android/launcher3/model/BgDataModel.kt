@@ -166,8 +166,9 @@ class BgDataModel {
                     },
                 )
             }
-        // TextLauncher: the install queue's shortcuts from the app (ItemInstallQueue).
-        allWorkspaceItems.addAll(pendingShortcuts(user))
+        allWorkspaceItems.addAll(
+            ItemInstallQueue.INSTANCE[context].getPendingShortcuts(user).toList()
+        )
         // Map of packageName to shortcutIds that are currently in our model
         val modelMap =
             allWorkspaceItems
@@ -291,14 +292,6 @@ class BgDataModel {
 
         data object ModelTask : ModificationSource()
     }
-
-    // TextLauncher: members TextLauncher adds.
-
-    /**
-     * ItemInstallQueue.getPendingShortcuts: the shortcuts waiting to be added to the home screen,
-     * which stay pinned. Set by the app.
-     */
-    var pendingShortcuts: (UserHandle) -> Collection<ShortcutKey> = { emptyList() }
 
     companion object {
         private const val TAG = "BgDataModel"

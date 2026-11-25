@@ -83,4 +83,5 @@
     <string name="move_to_position" msgid="6750008980455459790">"გადატანა <xliff:g id="NUMBER">%1$s</xliff:g> პოზიციაზე"</string>
     <string name="unnamed_folder" msgid="2420192029474044442">"უსახელო საქაღალდე"</string>
     <string name="workspace_scroll_format" msgid="8458889198184077399">"მთავარი ეკრანი %1$d, %2$d-დან"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"<xliff:g id="WIDGET_NAME">%1$s</xliff:g> ვიჯეტი დამატებულია მთავარ ეკრანზე"</string>
 </resources>

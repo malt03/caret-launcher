@@ -83,4 +83,5 @@
     <string name="move_to_position" msgid="6750008980455459790">"Pārvietot uz <xliff:g id="NUMBER">%1$s</xliff:g>. pozīciju"</string>
     <string name="unnamed_folder" msgid="2420192029474044442">"Mape bez nosaukuma"</string>
     <string name="workspace_scroll_format" msgid="8458889198184077399">"Sākuma ekrāns: %1$d no %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"Logrīks “<xliff:g id="WIDGET_NAME">%1$s</xliff:g>” ir pievienots sākuma ekrānam"</string>
 </resources>

@@ -1,6 +1,6 @@
 ---
 id: Tex-iuyb
-status: open
+status: closed
 deps: [Tex-q3gh]
 links: [Tex-4cve, Tex-op7u]
 created: 2026-11-23T06:16:03Z
@@ -28,3 +28,7 @@ tags: [home, launcher3]
 **2026-11-24T12:20:53Z**
 
 2026-11-24 訂正: 上の「上流の AddItemActivity は View 版」は android-16 の話だった。android-17.0.0_r1 の AddItemActivity.kt は add_item_confirmation_activity_compose（SimpleDragLayer だけ）を出し、WidgetPickerComposeWrapper.showWidgetsForPinRequest で widgetpicker モジュールの PinAppWidgetCatalog（移植済みの third_party/launcher3/modules/widgetpicker/.../ui/pin）を表示する。見た目の判断は要らず、上流どおり移植すればよい。互換の WidgetPickerComposeWrapper は showWidgetsForPinRequest を削っている（44 行目）ので、そこを戻すところから
+
+**2026-11-25T00:23:03Z**
+
+2026-11-25: 後半も移した。derived: AddItemActivity.kt（ロギングなし、AppWidgetHost（id 1024）でバインドの許可を開く）、PinItemDragListener、ItemInstallQueue（Dagger とスナックバーなし、アプリが作る）、WorkspaceItemSerializer（インストールのセッションなし）、WorkspaceItemSpaceFinder・AddWorkspaceItemsTask（ページが1つ、いっぱいなら置かない）。path=: WidgetPickerComposeWrapper(Impl)（差がピン留めの部分だけだったので上流のまま）、PinWidgetFlowHandler、PersistedItemArray、ListStore、WorkspaceItemCoordinates、add_item_confirmation_activity_compose.xml。LauncherModel・PackageTaskFactory・BgDataModel のキューの呼び出しを上流に戻し、ホームは読み込みのあとと onResume でキューを流す。マニフェストに CONFIRM_PIN_SHORTCUT・CONFIRM_PIN_APPWIDGET の Activity を足した。エミュレータでは確かめていない（許可ダイアログが開いたままだったため）

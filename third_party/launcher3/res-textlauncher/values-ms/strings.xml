@@ -83,4 +83,5 @@
     <string name="move_to_position" msgid="6750008980455459790">"Alihkan ke kedudukan <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
     <string name="unnamed_folder" msgid="2420192029474044442">"Folder tidak bernama"</string>
     <string name="workspace_scroll_format" msgid="8458889198184077399">"Skrin Laman Utama %1$d daripada %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"Widget <xliff:g id="WIDGET_NAME">%1$s</xliff:g> ditambahkan pada skrin utama"</string>
 </resources>

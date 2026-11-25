@@ -83,4 +83,5 @@
     <string name="move_to_position" msgid="6750008980455459790">"ផ្លាស់ទីទៅទីតាំង <xliff:g id="NUMBER">%1$s</xliff:g>"</string>
     <string name="unnamed_folder" msgid="2420192029474044442">"ថត​ដែលគ្មាន​ឈ្មោះ"</string>
     <string name="workspace_scroll_format" msgid="8458889198184077399">"អេក្រង់​ដើម %1$d នៃ %2$d"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"បានបញ្ចូល​ធាតុក្រាហ្វិក <xliff:g id="WIDGET_NAME">%1$s</xliff:g> ទៅ​អេក្រង់ដើម"</string>
 </resources>

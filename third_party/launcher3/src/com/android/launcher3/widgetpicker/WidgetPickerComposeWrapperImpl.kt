@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-/*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
- * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
- */
-
 package com.android.launcher3.widgetpicker
 
 import android.app.Activity
 import android.app.Activity.RESULT_OK
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.LauncherApps.PinItemRequest
+import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -42,7 +41,10 @@ import com.android.launcher3.Utilities.shouldReduceWorkspaceBlurUsage
 import com.android.launcher3.concurrent.annotations.BackgroundContext
 import com.android.launcher3.dagger.ApplicationContext
 import com.android.launcher3.dagger.LauncherAppSingleton
+import com.android.launcher3.dragndrop.PinItemAddHandler
+import com.android.launcher3.dragndrop.PinItemDragListener
 import com.android.launcher3.util.ApiWrapper
+import com.android.launcher3.util.PackageUserKey
 import com.android.launcher3.util.WindowBlurState
 import com.android.launcher3.widgetpicker.WidgetPickerConfig.Companion.EXTRA_IS_PENDING_WIDGET_DRAG
 import com.android.launcher3.widgetpicker.data.repository.WidgetAppIconsRepository
@@ -57,6 +59,8 @@ import com.android.launcher3.widgetpicker.shared.model.HostConstraint
 import com.android.launcher3.widgetpicker.shared.model.SheetStyle
 import com.android.launcher3.widgetpicker.shared.model.WidgetAppId
 import com.android.launcher3.widgetpicker.shared.model.WidgetHostInfo
+import com.android.launcher3.widgetpicker.shared.model.WidgetId
+import com.android.launcher3.widgetpicker.shared.model.WidgetPreview
 import com.android.launcher3.widgetpicker.shared.model.isAppWidget
 import com.android.launcher3.widgetpicker.theme.LauncherWidgetPickerTheme
 import com.android.launcher3.widgetpicker.ui.WidgetInteractionInfo
@@ -73,10 +77,6 @@ import kotlinx.coroutines.launch
  * [WidgetPickerActivity] when compose is available and widget picker refactor flags are on.
  *
  * Sets up the bindings necessary for widget picker component.
- *
- * <p>Stand-in for Launcher3's WidgetPickerComposeWrapperImpl (android-17.0.0_r1), made from
- * WidgetPickerComposeWrapperImpl.kt by deleting what TextLauncher does not use (pin requests);
- * changes are marked with "TextLauncher:".
  */
 class WidgetPickerComposeWrapperImpl
 @Inject
@@ -135,16 +135,75 @@ constructor(
         }
     }
 
+    override fun showWidgetsForPinRequest(
+        activity: BaseActivity,
+        targetApp: PackageUserKey,
+        pinItemRequest: PinItemRequest,
+        widgetPickerConfig: WidgetPickerConfig,
+        pinItemAddHandler: PinItemAddHandler,
+    ) {
+        val widgetPickerComponent = newWidgetPickerComponent(widgetPickerConfig)
+        val pinAppWidgetCatalog = widgetPickerComponent.getPinAppWidgetCatalog()
+
+        val widgetAppId =
+            WidgetAppId(
+                packageName = targetApp.mPackageName,
+                userHandle = targetApp.mUser,
+                category = targetApp.mWidgetCategory,
+            )
+
+        setupComposeView(
+            activity = activity,
+            widgetPickerConfig = widgetPickerConfig,
+            pinItemRequest = pinItemRequest,
+            pinItemAddHandler = pinItemAddHandler,
+        ) { eventListeners, uiEventsReporter ->
+            pinAppWidgetCatalog.Content(
+                widgetAppId = widgetAppId,
+                eventListeners = eventListeners,
+                cuiReporter = uiEventsReporter,
+                previewOverridesProvider = {
+                    if (pinItemRequest.requestType == PinItemRequest.REQUEST_TYPE_APPWIDGET) {
+                        val extras: Bundle? = pinItemRequest.extras
+                        val previewExtra =
+                            extras?.getParcelable(
+                                AppWidgetManager.EXTRA_APPWIDGET_PREVIEW,
+                                RemoteViews::class.java,
+                            )
+                        if (previewExtra != null) {
+                            val context = activity.asContext()
+                            val widgetInfo =
+                                checkNotNull(pinItemRequest.getAppWidgetProviderInfo(context))
+                            val widgetId =
+                                WidgetId(
+                                    componentName = widgetInfo.provider,
+                                    userHandle = widgetInfo.profile,
+                                )
+                            val preview = WidgetPreview.RemoteViewsWidgetPreview(previewExtra)
+
+                            return@Content mapOf(widgetId to preview)
+                        }
+                    }
+                    emptyMap()
+                },
+            )
+        }
+    }
+
     private fun setupComposeView(
         activity: BaseActivity,
         widgetPickerConfig: WidgetPickerConfig,
         widgetAppId: WidgetAppId? = null,
+        pinItemRequest: PinItemRequest? = null,
+        pinItemAddHandler: PinItemAddHandler? = null,
         content: @Composable (WidgetPickerEventListeners, LauncherWidgetPickerCuiReporter) -> Unit,
     ) {
         val callbacks =
             activity.buildEventListeners(
                 widgetPickerConfig = widgetPickerConfig,
                 apiWrapper = apiWrapper,
+                pinItemRequest = pinItemRequest,
+                pinItemAddHandler = pinItemAddHandler,
             )
         val uiEventsReporter = LauncherWidgetPickerCuiReporter(activity.statsLogManager)
 
@@ -174,8 +233,7 @@ constructor(
                 }
 
                 DisposableEffect(view) {
-                    // TextLauncher: no pin requests (PinItemRequest).
-                    scope.launch { initializeRepositories(widgetAppId) }
+                    scope.launch { initializeRepositories(widgetAppId, pinItemRequest) }
 
                     onDispose { cleanUpRepositories() }
                 }
@@ -217,14 +275,15 @@ constructor(
 
     private fun initializeRepositories(
         widgetAppId: WidgetAppId? = null,
+        pinItemRequest: PinItemRequest? = null,
     ) {
-        // TextLauncher: no pin requests (PinItemRequest).
-        val loadAllData = widgetAppId == null
+        val loadAllData = widgetAppId == null && pinItemRequest == null
 
         widgetsRepository.initialize(
             options =
                 when {
                     widgetAppId != null -> InitializationOptions.SingleAppWidgets(widgetAppId)
+                    pinItemRequest != null -> InitializationOptions.PinWidget(pinItemRequest)
                     else -> InitializationOptions.AllWidgets
                 }
         )
@@ -278,6 +337,8 @@ constructor(
         private fun Activity.buildEventListeners(
             widgetPickerConfig: WidgetPickerConfig,
             apiWrapper: ApiWrapper,
+            pinItemRequest: PinItemRequest?,
+            pinItemAddHandler: PinItemAddHandler?,
         ) =
             object : WidgetPickerEventListeners {
                 override fun onSheetProgress(progress: Float) {
@@ -292,11 +353,19 @@ constructor(
                 }
 
                 override fun onWidgetInteraction(widgetInteractionInfo: WidgetInteractionInfo) {
-                    // TextLauncher: no pin requests, so no add button handler and no pin branch.
-                    if (widgetPickerConfig.isForHomeScreen) {
+                    if (
+                        pinItemRequest != null &&
+                            widgetInteractionInfo is WidgetInteractionInfo.WidgetAddInfo
+                    ) {
+                        pinItemAddHandler?.onAddItemClicked()
+                        return
+                    }
+
+                    if (widgetPickerConfig.isForHomeScreen || pinItemRequest != null) {
                         handleWidgetInteractionForHomeScreen(
                             widgetInteractionInfo,
                             apiWrapper,
+                            pinItemRequest,
                         )
                     } else {
                         handleWidgetInteractionForExternalHost(widgetInteractionInfo)
@@ -318,19 +387,29 @@ constructor(
         private fun Activity.handleWidgetInteractionForHomeScreen(
             interactionInfo: WidgetInteractionInfo,
             apiWrapper: ApiWrapper,
+            pinItemRequest: PinItemRequest?,
         ) {
             val interactionListener =
                 when (interactionInfo) {
-                    // TextLauncher: no pin requests (PinItemDragListener).
                     is WidgetInteractionInfo.WidgetDragInfo ->
-                        WidgetPickerDragItemListener(
-                            container = interactionInfo.source.toContainer(),
-                            mimeType = interactionInfo.mimeType,
-                            widgetInfo = interactionInfo.widgetInfo,
-                            widgetPreview = interactionInfo.previewInfo,
-                            previewRect = interactionInfo.bounds,
-                            previewWidth = interactionInfo.widthPx,
-                        )
+                        if (pinItemRequest != null) {
+                            PinItemDragListener(
+                                pinItemRequest,
+                                /*previewRect=*/ interactionInfo.bounds,
+                                /*previewBitmapWidth=*/ interactionInfo.widthPx,
+                                /*previewViewWidth=*/ interactionInfo.widthPx,
+                                /*mimeType=*/ interactionInfo.mimeType,
+                            )
+                        } else {
+                            WidgetPickerDragItemListener(
+                                container = interactionInfo.source.toContainer(),
+                                mimeType = interactionInfo.mimeType,
+                                widgetInfo = interactionInfo.widgetInfo,
+                                widgetPreview = interactionInfo.previewInfo,
+                                previewRect = interactionInfo.bounds,
+                                previewWidth = interactionInfo.widthPx,
+                            )
+                        }
 
                     is WidgetInteractionInfo.WidgetAddInfo ->
                         WidgetPickerAddItemListener(

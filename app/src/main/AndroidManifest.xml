@@ -66,6 +66,19 @@
                 android:value="${applicationId}.grid_control" />
         </activity>
 
+        <!-- Launcher3's AndroidManifest-common.xml: the confirmation of the shortcuts and widgets
+             other apps pin to the home screen (LauncherApps.PinItemRequest). -->
+        <activity android:name="com.android.launcher3.dragndrop.AddItemActivity"
+            android:theme="@style/AddItemActivityTheme"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.pm.action.CONFIRM_PIN_SHORTCUT" />
+                <action android:name="android.content.pm.action.CONFIRM_PIN_APPWIDGET" />
+            </intent-filter>
+        </activity>
+
         <!-- Launcher3's AndroidManifest.xml: the widget picker (docs/spec.md 5.2). -->
         <activity android:name="com.android.launcher3.widgetpicker.WidgetPickerActivity"
             android:theme="@style/WidgetPickerActivityTheme"

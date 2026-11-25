@@ -38,6 +38,7 @@ import com.android.launcher3.folder.LauncherDelegate
 import com.android.launcher3.graphics.DragPreviewProvider
 import com.android.launcher3.model.BgDataModel
 import com.android.launcher3.model.IModelWriter
+import com.android.launcher3.model.ItemInstallQueue
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.FolderInfo
 import com.android.launcher3.model.data.ItemInfo
@@ -189,6 +190,8 @@ class HomeController(
         override fun bindCompleteModel(itemIdMap: WorkspaceData, isBindingSync: Boolean) {
             bindItems(itemIdMap.filter { it.container == LauncherSettings.Favorites.CONTAINER_DESKTOP })
             isWorkspaceLoading = false
+            // ModelCallbacks.finishBindingItems: the install queue may add its items.
+            ItemInstallQueue.INSTANCE[context].resumeModelPush(ItemInstallQueue.FLAG_LOADER_RUNNING)
             if (!isLoaded) {
                 isLoaded = true
                 // Launcher.finishBindingItems: Launcher.processActivityResult
@@ -197,10 +200,11 @@ class HomeController(
         }
 
         override fun bindItemsAdded(items: List<ItemInfo>) {
+            // ModelCallbacks.bindItemsAdded: Launcher.bindItems with the bounce animation.
             // TextLauncher: the items on the home page; there is one page and no hotseat.
-            for (item in items) {
-                if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) addInScreen(item)
-            }
+            val views = items.filter { it.container == LauncherSettings.Favorites.CONTAINER_DESKTOP }
+                .mapNotNull { item -> itemInflater.inflateItem(item)?.let { android.util.Pair(item, it) } }
+            if (views.isNotEmpty()) launcher.bindInflatedItems(views, android.animation.AnimatorSet())
         }
 
         override fun bindItemsUpdated(updates: Set<ItemInfo>) = this@HomeController.bindItemsUpdated(updates)
@@ -273,6 +277,9 @@ class HomeController(
         // Launcher.onCreate: LauncherModel.addCallbacksAndLoad. TextLauncher: a new grid (the
         // activity was created again for it) loads the model again, which migrates the items
         // (Launcher.onIdpChanged).
+        // ItemInstallQueue: the queue adds its items while the home screen is resumed.
+        ItemInstallQueue.INSTANCE[context].setIconUISurface(launcher)
+        ItemInstallQueue.INSTANCE[context].pauseModelPush(ItemInstallQueue.FLAG_ACTIVITY_PAUSED)
         model.addCallbacksAndLoad(modelCallbacks)
         if (GridSizeMigration.needsMigration(context, gridSpec)) model.forceReload("grid changed")
     }
@@ -309,6 +316,8 @@ class HomeController(
     fun onResume() {
         isResumed = true
         launcher.onResumed()
+        // Launcher.onDeferredResumed: process any items that were added while Launcher was away.
+        ItemInstallQueue.INSTANCE[context].resumeModelPush(ItemInstallQueue.FLAG_ACTIVITY_PAUSED)
         runOnResume?.let {
             runOnResume = null
             it()
@@ -321,6 +330,8 @@ class HomeController(
      */
     fun onPause() {
         isResumed = false
+        // Launcher.onPause
+        ItemInstallQueue.INSTANCE[context].pauseModelPush(ItemInstallQueue.FLAG_ACTIVITY_PAUSED)
         dragController.cancelDrag()
     }
 

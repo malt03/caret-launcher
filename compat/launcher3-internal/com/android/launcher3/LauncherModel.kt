@@ -31,6 +31,7 @@ import com.android.launcher3.model.BaseLauncherBinder
 import com.android.launcher3.model.BgDataModel
 import com.android.launcher3.model.BgDataModel.ModificationSource.UISurface
 import com.android.launcher3.model.IModelWriter
+import com.android.launcher3.model.ItemInstallQueue
 import com.android.launcher3.model.LoaderTask
 import com.android.launcher3.model.LoaderTask.LoaderTaskFactory
 import com.android.launcher3.model.ModelDbController
@@ -51,8 +52,7 @@ import java.util.concurrent.CompletionStage
  * Launcher.
  *
  * Stand-in for Launcher3's LauncherModel (android-17.0.0_r1), made from LauncherModel.kt by deleting
- * Dagger, the model delegate and initializer, the install queue (Tex-iuyb), the widgets model and
- * the dump; changes are marked with "TextLauncher:". The app makes the one LauncherModel
+ * Dagger, the model delegate and initializer, the widgets model and the dump; changes are marked with "TextLauncher:". The app makes the one LauncherModel
  * (LauncherAppState.getModel) with its LoaderTask factory.
  */
 class LauncherModel(
@@ -64,7 +64,10 @@ class LauncherModel(
     val modelDbController: ModelDbController,
 ) {
 
-    // TextLauncher: no Dagger; the model makes its task controller, binders and writers.
+    // TextLauncher: no Dagger; the model makes its task controller, binders and writers, and the
+    // app the install queue.
+    private val installQueue: ItemInstallQueue
+        get() = ItemInstallQueue.INSTANCE[context]
     private val modelWriterFactory = ModelWriterFactoryImpl(context, mBgDataModel, { this })
     private val taskControllerProvider = {
         ModelTaskController(context, iconCache, mBgDataModel, mBgAllAppsList, this, modelWriterFactory)
@@ -181,7 +184,8 @@ class LauncherModel(
         newCallbacks: Array<BgDataModel.Callbacks>,
     ): CompletableFuture<Unit> {
         if (mModelDestroyed) return CompletableFuture.completedFuture(Unit)
-        // TextLauncher: no install queue (Tex-iuyb).
+        // Enable queue before starting loader. It will get disabled in Launcher#finishBindingItems
+        installQueue.pauseModelPush(ItemInstallQueue.FLAG_LOADER_RUNNING)
         synchronized(mLock) {
             // If there is already one running, tell it to stop.
             val oldTask = mLoaderTask
@@ -200,7 +204,10 @@ class LauncherModel(
                 // For now, continue posting the binding of AllApps as there are other
                 // issues that arise from that.
                 launcherBinder.bindAllApps()
-                // TextLauncher: no widgets model (bindWidgets) or install queue.
+                // TextLauncher: no widgets model (bindWidgets).
+
+                if (Flags.simplifiedLauncherModelBinding())
+                    installQueue.resumeModelPush(ItemInstallQueue.FLAG_LOADER_RUNNING)
                 return CompletableFuture.completedFuture(Unit)
             } else {
                 val task = loaderFactory.newLoaderTask(callerName, launcherBinder)
@@ -250,7 +257,8 @@ class LauncherModel(
                     mIsCommitted = true
                 }
             }
-            // TextLauncher: no install queue.
+            if (Flags.simplifiedLauncherModelBinding())
+                installQueue.resumeModelPush(ItemInstallQueue.FLAG_LOADER_RUNNING)
         }
 
         override fun close() {

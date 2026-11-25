@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * Modified for TextLauncher: a stand-in that keeps only what TextLauncher uses.
- * See docs/launcher3-porting.md and third_party/launcher3/UPSTREAM.md.
- */
-
 package com.android.launcher3.widgetpicker
 
+import android.content.pm.LauncherApps.PinItemRequest
 import android.os.UserHandle
 import com.android.launcher3.BaseActivity
+import com.android.launcher3.dragndrop.PinItemAddHandler
+import com.android.launcher3.util.PackageUserKey
 import javax.inject.Inject
 
 /**
@@ -41,7 +39,14 @@ interface WidgetPickerComposeWrapper {
         widgetPickerConfig: WidgetPickerConfig,
     )
 
-    // TextLauncher: no showWidgetsForPinRequest; apps cannot pin widgets yet (AddItemActivity).
+    /** Show the catalog of widgets / shortcuts requested in [pinItemRequest]. */
+    fun showWidgetsForPinRequest(
+        activity: BaseActivity,
+        targetApp: PackageUserKey,
+        pinItemRequest: PinItemRequest,
+        widgetPickerConfig: WidgetPickerConfig,
+        pinItemAddHandler: PinItemAddHandler,
+    )
 }
 
 /**
@@ -62,4 +67,13 @@ class NoOpWidgetPickerComposeWrapper @Inject constructor() : WidgetPickerCompose
         error("Widget picker with compose is not supported")
     }
 
+    override fun showWidgetsForPinRequest(
+        activity: BaseActivity,
+        targetApp: PackageUserKey,
+        pinItemRequest: PinItemRequest,
+        widgetPickerConfig: WidgetPickerConfig,
+        pinItemAddHandler: PinItemAddHandler,
+    ) {
+        error("Widget picker with compose is not supported")
+    }
 }

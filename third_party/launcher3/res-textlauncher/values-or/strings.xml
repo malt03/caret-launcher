@@ -83,4 +83,5 @@
     <string name="move_to_position" msgid="6750008980455459790">"<xliff:g id="NUMBER">%1$s</xliff:g> ସ୍ଥିତିକୁ ନିଅନ୍ତୁ"</string>
     <string name="unnamed_folder" msgid="2420192029474044442">"ବେନାମୀ ଫୋଲ୍ଡର"</string>
     <string name="workspace_scroll_format" msgid="8458889198184077399">"%2$dରୁ %1$d ହୋମ ସ୍କ୍ରିନ"</string>
+    <string name="added_to_home_screen_accessibility_text" msgid="4451545765448884415">"<xliff:g id="WIDGET_NAME">%1$s</xliff:g>ର ୱିଜେଟ ହୋମ ସ୍କ୍ରିନରେ ଯୋଡ଼ାଗଲା"</string>
 </resources>

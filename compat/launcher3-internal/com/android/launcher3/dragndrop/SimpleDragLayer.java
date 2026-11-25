@@ -23,6 +23,7 @@ package com.android.launcher3.dragndrop;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import com.android.launcher3.util.TouchController;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.BaseDragLayer;
 
@@ -36,6 +37,9 @@ public class SimpleDragLayer<T extends Context & ActivityContext> extends BaseDr
         super(context, attrs);
     }
 
+    @Override
     public void recreateControllers() {
+        super.recreateControllers();
+        mControllers = new TouchController[] {};
     }
 }

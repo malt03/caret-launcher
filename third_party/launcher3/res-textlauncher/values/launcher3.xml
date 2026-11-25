@@ -734,4 +734,14 @@
     <!-- values/config.xml: the signers LauncherCustomizationProvider accepts (the app's
          provider/CustomizationProvider.kt and the GRID_CONTROL permission in its manifest) -->
     <string-array name="grid_control_known_signers" translatable="false" />
+    <!-- The pin request sheet (dragndrop/AddItemActivity.kt): values/styles.xml.
+         TextLauncher: without widgetsTheme, which only the View widget picker reads. -->
+    <style name="AddItemActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <!-- Add the dim background here, rather than in the activity layout as the window slides
+             in from the bottom, and we don't want the scrim to slide. -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
 </resources>

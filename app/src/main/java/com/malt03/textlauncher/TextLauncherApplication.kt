@@ -8,8 +8,11 @@ import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherModel
 import com.android.launcher3.model.AllAppsList
 import com.android.launcher3.model.BgDataModel
+import com.android.launcher3.model.ItemInstallQueue
 import com.android.launcher3.model.LoaderTask
 import com.android.launcher3.model.ModelDbController
+import com.android.launcher3.model.WorkspaceItemSerializer
+import com.android.launcher3.model.WorkspaceItemSpaceFinder
 import com.android.launcher3.notification.NotificationListener
 import com.android.launcher3.util.Executors.MAIN_EXECUTOR
 import com.android.launcher3.util.SettingsCache
@@ -68,6 +71,17 @@ class TextLauncherApplication : Application() {
             ModelDbController(this, database),
         )
         LauncherAppState.getInstance(this).setModel(model)
+        // ItemInstallQueue: the items other apps pin (AddItemActivity), added once the home screen
+        // is loaded and resumed.
+        val idp = LauncherAppState.getIDP(this)
+        ItemInstallQueue.INSTANCE.set(
+            ItemInstallQueue(
+                this,
+                { WorkspaceItemSpaceFinder(bgDataModel, idp, model) },
+                WorkspaceItemSerializer(this, iconCache, idp),
+                { model },
+            ),
+        )
         // ModelInitializer: the LauncherApps callback, and the icons made again when the icon
         // settings change (refreshAndReloadLauncher).
         getSystemService(LauncherApps::class.java).registerCallback(model.newModelCallbacks())

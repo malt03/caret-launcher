@@ -93,4 +93,5 @@
     <string name="move_to_position">Move to position <xliff:g id="number" example="1">%1$s</xliff:g></string>
     <string name="unnamed_folder">Unnamed folder</string>
     <string name="workspace_scroll_format">Home screen %1$d of %2$d</string>
+    <string name="added_to_home_screen_accessibility_text"><xliff:g id="widget_name" example="Calendar month view">%1$s</xliff:g> widget added to home screen</string>
 </resources>

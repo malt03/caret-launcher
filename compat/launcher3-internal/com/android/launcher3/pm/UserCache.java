@@ -130,6 +130,11 @@ public class UserCache {
         return mUserManager.getSerialNumberForUser(user);
     }
 
+    /** @see UserManager#getUserForSerialNumber */
+    public UserHandle getUserForSerialNumber(long serialNumber) {
+        return mUserManager.getUserForSerialNumber(serialNumber);
+    }
+
     /** @see UserManager#getUserProfiles */
     public List<UserHandle> getUserProfiles() {
         return mUserManager.getUserProfiles();
