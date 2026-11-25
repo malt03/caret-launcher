@@ -123,6 +123,10 @@ def values_tree(res_root):
     for d in glob.glob(os.path.join(res_root, 'values*')):
         q = os.path.basename(d)[len('values'):].lstrip('-')
         for f in glob.glob(os.path.join(d, '*.xml')):
+            # overlayable.xml (IntentResolver's) names the values that overlays may change, with
+            # empty <item>s that are not values.
+            if os.path.basename(f) == 'overlayable.xml':
+                continue
             for k, v in parse_values(f).items():
                 tree.setdefault(q, {})[k] = v
     return tree

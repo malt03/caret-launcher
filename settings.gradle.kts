@@ -35,6 +35,9 @@ include(":msdllib")
 include(":widgetpicker")
 project(":widgetpicker").projectDir = file("third_party/launcher3/modules/widgetpicker")
 project(":msdllib").projectDir = file("third_party/systemui/msdllib")
+// The share sheet's grid item and stacked app dialog (docs/spec.md 2.7)
+include(":intentresolver")
+project(":intentresolver").projectDir = file("third_party/intentresolver")
 
 // Stand-ins for the parts of AOSP the copied code depends on
 include(":launcher3-compat")

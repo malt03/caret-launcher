@@ -118,6 +118,7 @@ class ShareTextDialog(
         val handle = ImageView(context)
         val icon = ImageView(context)
         val label = TextView(context)
+        val subLabel = TextView(context)
         val remove = ImageButton(context)
     }
 
@@ -152,7 +153,19 @@ class ShareTextDialog(
                 setTextColor(context.getColor(L3R.color.materialColorOnSurface))
                 maxLines = 2
             }
-            row.addView(holder.label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            // The share sheet's sublabel (the activity's label when it differs from the app's).
+            holder.subLabel.apply {
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(context.getColor(L3R.color.materialColorOnSurfaceVariant))
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+            }
+            val labels = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(holder.label)
+                addView(holder.subLabel)
+            }
+            row.addView(labels, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             holder.remove.apply {
                 // Launcher3's remove icon, as SearchTermsDialog's.
                 setImageResource(L3R.drawable.ic_remove_no_shadow)
@@ -172,8 +185,10 @@ class ShareTextDialog(
             val target = targets[position]
             holder.icon.setImageDrawable(target.icon)
             holder.label.text = target.label
+            holder.subLabel.text = target.subLabel
+            holder.subLabel.visibility = if (target.subLabel == null) View.GONE else View.VISIBLE
             holder.remove.contentDescription =
-                "${context.getString(R.string.search_terms_remove)} ${target.label}"
+                "${context.getString(R.string.search_terms_remove)} ${target.description}"
             // The drag is not reachable with TalkBack; the rows can be moved with actions instead.
             replaceAction(holder, R.id.share_text_move_up, R.string.share_text_move_up, position > 0) {
                 move(holder.bindingAdapterPosition, holder.bindingAdapterPosition - 1)

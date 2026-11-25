@@ -16,6 +16,7 @@ Android ユーザーにとって、ランチャーの基本の手触りは AOSP 
 |---|---|
 | `platform/packages/apps/Launcher3` | タグ `android-17.0.0_r1` |
 | `platform/frameworks/libs/systemui`（`iconloaderlib` など） | タグ `android-17.0.0_r1` |
+| `platform/packages/modules/IntentResolver`（共有シート） | タグ `android-17.0.0_r1` |
 
 - main ブランチは使わない。main には未公開の機能がフラグの裏に入っており、リリース版の挙動と一致しないためである
 - 新しいリリースのタグが出たら、[更新の手順](#更新の手順) で追従する
@@ -77,6 +78,17 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 | 全アプリ一覧の開閉の閾値 | MSDL `SWIPE_THRESHOLD_INDICATOR`（`AllAppsTransitionController`） |
 | スクロールバーで見出しが変わったとき | `performHapticFeedback(CLOCK_TICK)`（`RecyclerViewFastScroller`） |
 
+### IntentResolver から持ってくるもの
+
+「テキスト共有」の「追加」の一覧（docs/spec.md 2.7）を、Android の共有シート（`packages/modules/IntentResolver` の `ChooserActivity`）と同じ見た目と決まりにする。共有シートそのものは、選んだアプリを起動する作りで、Hilt・Kotlin の flow・システム API に深く依存しているので取り込まない。記録は `third_party/intentresolver/UPSTREAM.md`。
+
+| 部品 | 取り込み方 | ファイル |
+|---|---|---|
+| グリッドのセル | コピー | `java/res/layout/chooser_grid_item_hover.xml`、`widget/ChooserTargetItemView.kt`（フォーカス枠）、`widget/BadgeTextView.kt`（▼ の印）、`chooser_group_background.xml`・`ic_chooser_group_arrow.xml`。使う値（属性・寸法・色）は `res-textlauncher/` に抜き出す |
+| 名前とアイコンの決め方 | 削ってコピー | `TargetPresentationGetter.java`（`derived=`。アイコンのビットマップを作る `SimpleIconFactory` はフレームワークの内部のリソースを使うので削り、Drawable のまま返す） |
+| まとめたアプリの選択 | 削ってコピー、書き写す | `chooser_dialog.xml`・`chooser_dialog_item.xml`（`derived=`。フレームワークの非公開の id をモジュールの id に）。`ChooserStackedAppDialogFragment` と `ChooserTargetActionsDialogFragment` の中身は、Fragment の代わりにフレームワークの `Dialog` でアプリの `ShareTargetPicker` に書き写す（`ref=`） |
+| まとめ方、ラベルの付け方、並び順 | 書き写す | `ChooserListAdapter` の `groupingBy` と `bindGroupIndicator`、`ResolverListAdapter.ViewHolder.bindLabel`、`DisplayResolveInfoAzInfoComparator` をアプリの `ShareTargetPicker` と `ShareTargetStore` に（`ref=`） |
+
 ### 参考にするもの
 
 コードは取り込まない。ただし、仕組みの組み立て方や、閾値・バネの強さなどの値は Launcher3 に合わせる。
@@ -94,7 +106,7 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 
 - 検索フィールド、常時キーボード、戻る操作の扱い
 - 検索（正規化、照合、並び順、学習）
-- テキスト共有（検索フィールドの共有ボタンと、それを選ぶダイアログ、共有を受けるアプリの一覧。docs/spec.md 2.7）。一覧の並びは Launcher3 の `LabelComparator`
+- テキスト共有（検索フィールドの共有ボタンと、それを選ぶダイアログ。docs/spec.md 2.7）。共有を受けるアプリの一覧は、下の「IntentResolver から持ってくるもの」の部品を組み立てる
 - 全アプリ一覧（開閉とそのジェスチャーは上の削ったコピー）
 - 縦スクロールするホームの入れ物（中のセルの並び替えは Launcher3 のロジックを使う）
 - データの保存
@@ -117,6 +129,7 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 - 取り込んだコードは `third_party/` に置き、自前のコードと混ぜない
   - `third_party/launcher3/`：Launcher3 から持ってきたファイル
   - `third_party/systemui/`：`frameworks/libs/systemui` から持ってきたファイル（`iconloaderlib` など）
+  - `third_party/intentresolver/`：`packages/modules/IntentResolver`（共有シート）から持ってきたファイル。モジュール `:intentresolver`
   - 中のパス構成とパッケージ名は、元のリポジトリと同じにする。差分を 1:1 で比べられるようにするためである
 - 各ディレクトリに `UPSTREAM.md` を置き、取り込んだファイルごとに次を記録する
   - 元のリポジトリとパス
@@ -126,6 +139,7 @@ Launcher3 に合わせる。`msdllib` を使うものは、Launcher3 と同じ�
 - 互換層（代わりのクラス）は `compat/` に置き、どこから使われるかで分ける
   - `compat/launcher3/`：`third_party/systemui/`（`iconloaderlib`）からも使うもの。今は `Flags` と `UserType` だけ。`iconloaderlib` は `:launcher3` より下のモジュールなので、別モジュール `:launcher3-compat` にする
   - `compat/launcher3-internal/`：それ以外のすべて。`third_party/launcher3/` と同じ `:launcher3` モジュールに含めてビルドする。コピーしたクラスやリソース（`R`）を使えるようにするためである
+  - `compat/intentresolver/`：`third_party/intentresolver/` の削ったコピー（`TargetPresentationGetter` とダイアログのレイアウト）。`:intentresolver` モジュールに含めてビルドする
 
 ## 手を入れるときのルール
 

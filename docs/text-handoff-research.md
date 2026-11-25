@@ -208,6 +208,6 @@ Pixel Launcher の検索は Google の非公開の実装で、AOSP にはない�
 - 渡し方は共有（`ACTION_SEND` の `text/plain`）だけにする。Web 検索も、検索アプリやブラウザに共有すれば足りるので、`ACTION_WEB_SEARCH` のセル（案A・案B の「Web で検索」、Tex-uk3u）は作らない
 - 検索結果のグリッドには混ぜない。選んだアプリ（3つまで）のアイコンを、検索フィールドの右端にボタンとして並べる
 - 選ぶ入口は、設定画面ではなく、空いている領域の長押しメニューの「テキスト共有」（Launcher3 の「ホームの設定」の位置）。ダイアログで、並べ替え（ハンドルのドラッグ）と外す（×）ができる
-- アプリの一覧は、はじめ OS のアプリ選択画面（`ACTION_PICK_ACTIVITY`。Pixel 6a・エミュレータとも `com.android.settings/.ActivityPicker`）に任せたが、見た目が古いままなので、同じ見た目のダイアログで自前で出すことにした（`queryIntentActivities`）。共有シートと「アプリケーションを選択」の画面は、選んだアプリを起動してしまい、選ぶだけには使えない
+- アプリの一覧は、はじめ OS のアプリ選択画面（`ACTION_PICK_ACTIVITY`。Pixel 6a・エミュレータとも `com.android.settings/.ActivityPicker`）に任せたが、見た目が古いままなので、Android の共有シート（AOSP の IntentResolver）の部品（グリッドのセル、名前の決め方、アプリのまとめ方）を取り込んで、共有シートと同じグリッドで出すことにした（`queryIntentActivities`）。共有シートと「アプリケーションを選択」の画面は、選んだアプリを起動してしまい、選ぶだけには使えない
 - アイコンとラベルは、そのアプリが共有の受け口に付けたもの（`ResolveInfo`）。`<queries>` に `SEND` の `text/plain` を足した
 

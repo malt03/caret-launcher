@@ -1,11 +1,14 @@
 package com.malt03.textlauncher.data
 
+import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
-import com.android.launcher3.util.LabelComparator
+import com.android.intentresolver.TargetPresentationGetter
+import java.text.Collator
 
 /**
  * The apps the typed text is shared with (docs/spec.md 2.7): up to [MAX] activities that take
@@ -71,34 +74,57 @@ class ShareTargetStore(private val context: Context) {
 
         /**
          * Every activity that takes the text, as the share sheet lists them (without the launcher
-         * itself), sorted by label like the all apps list (LabelComparator). Slow: not on the main
-         * thread.
+         * itself), sorted by label like the share sheet (ChooserListAdapter's
+         * DisplayResolveInfoAzInfoComparator: the locale's collator). Slow: not on the main thread.
          */
         fun available(context: Context): List<ShareTarget> {
-            val pm = context.packageManager
-            val comparator = LabelComparator()
-            return pm.queryIntentActivities(sendIntent(), PackageManager.MATCH_DEFAULT_ONLY)
+            val factory = presentationFactory(context)
+            val collator = Collator.getInstance(context.resources.configuration.locales[0])
+            return context.packageManager.queryIntentActivities(sendIntent(), PackageManager.MATCH_DEFAULT_ONLY)
                 .filter { it.activityInfo.exported && it.activityInfo.packageName != context.packageName }
-                .map { info ->
-                    val activity = info.activityInfo
-                    ShareTarget(ComponentName(activity.packageName, activity.name), info.loadLabel(pm), info.loadIcon(pm))
-                }
+                .map { target(factory, it) }
                 .distinctBy { it.component }
-                .sortedWith { a, b -> comparator.compare(a.label.toString(), b.label.toString()) }
+                .sortedWith { a, b -> collator.compare(a.label, b.label) }
         }
 
         /** [component] as a target, or null when it no longer takes the text. */
         fun resolve(context: Context, component: ComponentName): ShareTarget? {
-            // Asked as [available] asks, so that a target resolves exactly when the list has it, with
-            // the label and icon of its intent filter.
-            val pm = context.packageManager
-            val info = pm.queryIntentActivities(sendIntent().setPackage(component.packageName), PackageManager.MATCH_DEFAULT_ONLY)
+            // Asked as [available] asks, so that a target resolves exactly when the list has it.
+            val info = context.packageManager
+                .queryIntentActivities(sendIntent().setPackage(component.packageName), PackageManager.MATCH_DEFAULT_ONLY)
                 .firstOrNull { it.activityInfo.name == component.className && it.activityInfo.exported }
                 ?: return null
-            return ShareTarget(component, info.loadLabel(pm), info.loadIcon(pm))
+            return target(presentationFactory(context), info)
+        }
+
+        /** The share sheet's labels and icons (ChooserTargetActionsDialogFragment's factory). */
+        private fun presentationFactory(context: Context) = TargetPresentationGetter.Factory(
+            context.packageManager,
+            context.getSystemService(ActivityManager::class.java).launcherLargeIconDensity,
+        )
+
+        private fun target(factory: TargetPresentationGetter.Factory, info: ResolveInfo): ShareTarget {
+            val getter = factory.makePresentationGetter(info)
+            val label = getter.label
+            // ResolverListAdapter.ViewHolder.bindLabel: the sublabel is not shown when it is the label.
+            val subLabel = getter.subLabel?.takeUnless { it.isEmpty() || it == label }
+            val activity = info.activityInfo
+            return ShareTarget(ComponentName(activity.packageName, activity.name), label, subLabel, getter.icon)
         }
     }
 }
 
-/** An activity the typed text is shared with, as the system shows it in the share sheet. */
-class ShareTarget(val component: ComponentName, val label: CharSequence, val icon: Drawable)
+/**
+ * An activity the typed text is shared with, as the share sheet shows it (TargetPresentationGetter):
+ * the app's label and icon, with the activity's label as [subLabel] when it differs. Apps that may
+ * substitute them (SUBSTITUTE_SHARE_TARGET_APP_NAME_AND_ICON) show the activity's instead.
+ */
+class ShareTarget(
+    val component: ComponentName,
+    val label: String,
+    val subLabel: String?,
+    val icon: Drawable,
+) {
+    /** The label and sublabel, for a description that tells the targets of one app apart. */
+    val description: String get() = listOfNotNull(label, subLabel).joinToString(" ")
+}

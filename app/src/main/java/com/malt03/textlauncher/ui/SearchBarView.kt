@@ -123,8 +123,8 @@ class SearchBarView(context: Context) : FrameLayout(context) {
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 setPadding(padding, padding, padding, padding)
                 setBackgroundResource(ripple)
-                contentDescription = target.label
-                tooltipText = target.label
+                contentDescription = target.description
+                tooltipText = target.description
                 setOnClickListener { onShare?.invoke(target, it) }
             }, LinearLayout.LayoutParams(size, size))
         }

@@ -18,7 +18,7 @@ tags: [search]
 - 当初の案（検索結果のグリッドに「◯◯に聞く」のセルを足す、PROCESS_TEXT も使う）から変えた。グリッドはアプリだけにし、渡し方は共有だけにする
 - 選ぶ入口は、空いている領域の長押しメニューの「テキスト共有」（Launcher3 の「ホームの設定」の位置。`Launcher.getShareTextOption` でアプリが作る）。設定画面は作らない
 - ダイアログ（`ShareTextDialog`、フレームワークの AlertDialog と RecyclerView）で、ハンドルのドラッグ（ItemTouchHelper）で並べ替え、× で外す。TalkBack は「上に移動」「下に移動」の操作
-- 「追加」は共有を受けるアプリの一覧（`ShareTargetPicker`。queryIntentActivities をアプリ名順）。3つで押せなくなる。はじめは OS の ACTION_PICK_ACTIVITY を使ったが、見た目が古いので置き換えた
+- 「追加」は共有を受けるアプリを、共有シートと同じグリッドで出す（`ShareTargetPicker`。IntentResolver の部品を third_party/intentresolver に取り込んだ）。3つで押せなくなる。はじめは OS の ACTION_PICK_ACTIVITY を使ったが、見た目が古いので置き換えた
 - アイコンとラベルは ResolveInfo のもの（共有シートと同じ）。<queries> に SEND text/plain
 - 保存は SharedPreferences（`ShareTargetStore`）
 
