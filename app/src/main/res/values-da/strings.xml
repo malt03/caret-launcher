@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Søg efter apps"</string>
     <string name="search_hint_share">"Søg"</string>
-    <string name="menu_search_terms">Rediger søgeord</string>
+    <string name="menu_search_terms">Søgeord</string>
+    <string name="menu_search_terms_short">Søgeord</string>
     <string name="search_terms_title">Søgeord for %1$s</string>
     <string name="search_terms_hint">Tilføj søgeord</string>
     <string name="search_terms_add">Tilføj</string>

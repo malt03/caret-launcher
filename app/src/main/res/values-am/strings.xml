@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"መተግበሪያዎችን ፈልግ"</string>
     <string name="search_hint_share">"ፈልግ"</string>
-    <string name="menu_search_terms">የፍለጋ ቁልፍ ቃላትን አርትዕ</string>
+    <string name="menu_search_terms">የፍለጋ ቁልፍ ቃላት</string>
+    <string name="menu_search_terms_short">ቁልፍ ቃላት</string>
     <string name="search_terms_title">የ%1$s የፍለጋ ቁልፍ ቃላት</string>
     <string name="search_terms_hint">ቁልፍ ቃል ያክሉ</string>
     <string name="search_terms_add">አክል</string>

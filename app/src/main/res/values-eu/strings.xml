@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Bilatu aplikazioetan"</string>
     <string name="search_hint_share">"Bilatu"</string>
-    <string name="menu_search_terms">Editatu bilaketa-gako-hitzak</string>
+    <string name="menu_search_terms">Bilaketa-gako-hitzak</string>
+    <string name="menu_search_terms_short">Gako-hitzak</string>
     <string name="search_terms_title">%1$s aplikazioaren gako-hitzak</string>
     <string name="search_terms_hint">Gehitu gako-hitz bat</string>
     <string name="search_terms_add">Gehitu</string>

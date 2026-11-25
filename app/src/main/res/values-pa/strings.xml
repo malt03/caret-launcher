@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ਐਪਾਂ ਖੋਜੋ"</string>
     <string name="search_hint_share">"ਖੋਜੋ"</string>
-    <string name="menu_search_terms">ਖੋਜ ਕੀਵਰਡਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</string>
+    <string name="menu_search_terms">ਖੋਜ ਕੀਵਰਡ</string>
+    <string name="menu_search_terms_short">ਕੀਵਰਡ</string>
     <string name="search_terms_title">%1$s ਲਈ ਖੋਜ ਕੀਵਰਡ</string>
     <string name="search_terms_hint">ਕੀਵਰਡ ਸ਼ਾਮਲ ਕਰੋ</string>
     <string name="search_terms_add">ਸ਼ਾਮਲ ਕਰੋ</string>

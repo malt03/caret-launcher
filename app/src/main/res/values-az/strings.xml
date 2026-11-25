@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Tətbiqləri axtarın"</string>
     <string name="search_hint_share">"Axtarış"</string>
-    <string name="menu_search_terms">Axtarış açar sözlərini redaktə edin</string>
+    <string name="menu_search_terms">Axtarış açar sözləri</string>
+    <string name="menu_search_terms_short">Açar sözlər</string>
     <string name="search_terms_title">%1$s üçün axtarış açar sözləri</string>
     <string name="search_terms_hint">Açar söz əlavə edin</string>
     <string name="search_terms_add">Əlavə edin</string>

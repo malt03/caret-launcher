@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Rechercher dans les applis"</string>
     <string name="search_hint_share">"Rechercher"</string>
-    <string name="menu_search_terms">Modifier les mots-clés</string>
+    <string name="menu_search_terms">Mots-clés de recherche</string>
+    <string name="menu_search_terms_short">Mots-clés</string>
     <string name="search_terms_title">Mots-clés pour %1$s</string>
     <string name="search_terms_hint">Ajouter un mot-clé</string>
     <string name="search_terms_add">Ajouter</string>

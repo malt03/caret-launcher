@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Telusuri aplikasi"</string>
     <string name="search_hint_share">"Telusuri"</string>
-    <string name="menu_search_terms">Edit kata kunci</string>
+    <string name="menu_search_terms">Kata kunci penelusuran</string>
+    <string name="menu_search_terms_short">Kata kunci</string>
     <string name="search_terms_title">Kata kunci untuk %1$s</string>
     <string name="search_terms_hint">Tambahkan kata kunci</string>
     <string name="search_terms_add">Tambahkan</string>

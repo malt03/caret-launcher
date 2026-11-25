@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"অ্যাপ খুঁজুন"</string>
     <string name="search_hint_share">"সার্চ"</string>
-    <string name="menu_search_terms">সার্চ কীওয়ার্ড এডিট করুন</string>
+    <string name="menu_search_terms">সার্চ কীওয়ার্ড</string>
+    <string name="menu_search_terms_short">কীওয়ার্ড</string>
     <string name="search_terms_title">%1$s-এর সার্চ কীওয়ার্ড</string>
     <string name="search_terms_hint">কীওয়ার্ড যোগ করুন</string>
     <string name="search_terms_add">যোগ করুন</string>

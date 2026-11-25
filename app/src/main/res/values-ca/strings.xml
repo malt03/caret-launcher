@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Cerca aplicacions"</string>
     <string name="search_hint_share">"Cerca"</string>
-    <string name="menu_search_terms">Edita les paraules clau</string>
+    <string name="menu_search_terms">Paraules clau de cerca</string>
+    <string name="menu_search_terms_short">Paraules clau</string>
     <string name="search_terms_title">Paraules clau de %1$s</string>
     <string name="search_terms_hint">Afegeix una paraula clau</string>
     <string name="search_terms_add">Afegeix</string>

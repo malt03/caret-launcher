@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ရှာဖွေမှု အက်ပ်များ"</string>
     <string name="search_hint_share">"ရှာဖွေရန်"</string>
-    <string name="menu_search_terms">ရှာဖွေရေး အဓိကစကားလုံးများ တည်းဖြတ်ရန်</string>
+    <string name="menu_search_terms">ရှာဖွေရေး အဓိကစကားလုံးများ</string>
+    <string name="menu_search_terms_short">အဓိကစကားလုံးများ</string>
     <string name="search_terms_title">%1$s အတွက် ရှာဖွေရေး အဓိကစကားလုံးများ</string>
     <string name="search_terms_hint">အဓိကစကားလုံး ထည့်ရန်</string>
     <string name="search_terms_add">ထည့်ရန်</string>

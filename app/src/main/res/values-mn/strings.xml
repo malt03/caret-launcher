@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Апп хайх"</string>
     <string name="search_hint_share">"Хайх"</string>
-    <string name="menu_search_terms">Хайлтын түлхүүр үгсийг засах</string>
+    <string name="menu_search_terms">Хайлтын түлхүүр үгс</string>
+    <string name="menu_search_terms_short">Түлхүүр үгс</string>
     <string name="search_terms_title">%1$s-н хайлтын түлхүүр үгс</string>
     <string name="search_terms_hint">Түлхүүр үг нэмэх</string>
     <string name="search_terms_add">Нэмэх</string>

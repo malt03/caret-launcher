@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"חיפוש אפליקציות"</string>
     <string name="search_hint_share">"חיפוש"</string>
-    <string name="menu_search_terms">עריכת מילות חיפוש</string>
+    <string name="menu_search_terms">מילות חיפוש</string>
+    <string name="menu_search_terms_short">מילות חיפוש</string>
     <string name="search_terms_title">מילות חיפוש עבור %1$s</string>
     <string name="search_terms_hint">הוספת מילה</string>
     <string name="search_terms_add">הוספה</string>

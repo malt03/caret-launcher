@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"యాప్‌ల కోసం సెర్చ్ చేయండి"</string>
     <string name="search_hint_share">"సెర్చ్"</string>
-    <string name="menu_search_terms">సెర్చ్ కీవర్డ్‌లను ఎడిట్ చేయండి</string>
+    <string name="menu_search_terms">సెర్చ్ కీవర్డ్‌లు</string>
+    <string name="menu_search_terms_short">కీవర్డ్‌లు</string>
     <string name="search_terms_title">%1$s కోసం సెర్చ్ కీవర్డ్‌లు</string>
     <string name="search_terms_hint">కీవర్డ్‌ను జోడించండి</string>
     <string name="search_terms_add">జోడించండి</string>

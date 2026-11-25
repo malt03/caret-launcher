@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Որոնել հավելվածներ"</string>
     <string name="search_hint_share">"Գտնել"</string>
-    <string name="menu_search_terms">Փոփոխել որոնման բանալի բառերը</string>
+    <string name="menu_search_terms">Որոնման բանալի բառեր</string>
+    <string name="menu_search_terms_short">Բանալի բառեր</string>
     <string name="search_terms_title">%1$s հավելվածի բանալի բառերը</string>
     <string name="search_terms_hint">Ավելացնել բանալի բառ</string>
     <string name="search_terms_add">Ավելացնել</string>

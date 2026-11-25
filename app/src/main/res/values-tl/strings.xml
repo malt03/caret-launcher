@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Maghanap ng mga app"</string>
     <string name="search_hint_share">"Maghanap"</string>
-    <string name="menu_search_terms">I-edit ang mga keyword sa paghahanap</string>
+    <string name="menu_search_terms">Mga keyword sa paghahanap</string>
+    <string name="menu_search_terms_short">Mga keyword</string>
     <string name="search_terms_title">Mga keyword sa paghahanap para sa %1$s</string>
     <string name="search_terms_hint">Magdagdag ng keyword</string>
     <string name="search_terms_add">Magdagdag</string>

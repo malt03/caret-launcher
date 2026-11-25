@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Αναζήτηση εφαρμογών"</string>
     <string name="search_hint_share">"Αναζήτηση"</string>
-    <string name="menu_search_terms">Επεξεργασία λέξεων αναζήτησης</string>
+    <string name="menu_search_terms">Λέξεις αναζήτησης</string>
+    <string name="menu_search_terms_short">Λέξεις αναζήτησης</string>
     <string name="search_terms_title">Λέξεις αναζήτησης για %1$s</string>
     <string name="search_terms_hint">Προσθήκη λέξης</string>
     <string name="search_terms_add">Προσθήκη</string>

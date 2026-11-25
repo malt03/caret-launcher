@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Paieškos programos"</string>
     <string name="search_hint_share">"Ieškoti"</string>
-    <string name="menu_search_terms">Redaguoti paieškos raktažodžius</string>
+    <string name="menu_search_terms">Paieškos raktažodžiai</string>
+    <string name="menu_search_terms_short">Raktažodžiai</string>
     <string name="search_terms_title">%1$s paieškos raktažodžiai</string>
     <string name="search_terms_hint">Pridėti raktažodį</string>
     <string name="search_terms_add">Pridėti</string>

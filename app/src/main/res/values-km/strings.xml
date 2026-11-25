@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ស្វែងរក​កម្មវិធី"</string>
     <string name="search_hint_share">"ស្វែងរក"</string>
-    <string name="menu_search_terms">កែពាក្យគន្លឹះស្វែងរក</string>
+    <string name="menu_search_terms">ពាក្យគន្លឹះស្វែងរក</string>
+    <string name="menu_search_terms_short">ពាក្យគន្លឹះ</string>
     <string name="search_terms_title">ពាក្យគន្លឹះស្វែងរកសម្រាប់ %1$s</string>
     <string name="search_terms_hint">បញ្ចូលពាក្យគន្លឹះ</string>
     <string name="search_terms_add">បញ្ចូល</string>

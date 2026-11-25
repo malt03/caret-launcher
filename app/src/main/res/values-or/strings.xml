@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ଆପ ସର୍ଚ୍ଚ କରନ୍ତୁ"</string>
     <string name="search_hint_share">"ସନ୍ଧାନ କରନ୍ତୁ"</string>
-    <string name="menu_search_terms">ସନ୍ଧାନ କୀୱାର୍ଡଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ</string>
+    <string name="menu_search_terms">ସନ୍ଧାନ କୀୱାର୍ଡଗୁଡ଼ିକ</string>
+    <string name="menu_search_terms_short">କୀୱାର୍ଡଗୁଡ଼ିକ</string>
     <string name="search_terms_title">%1$s ପାଇଁ ସନ୍ଧାନ କୀୱାର୍ଡଗୁଡ଼ିକ</string>
     <string name="search_terms_hint">ଏକ କୀୱାର୍ଡ ଯୋଗ କରନ୍ତୁ</string>
     <string name="search_terms_add">ଯୋଗ କରନ୍ତୁ</string>

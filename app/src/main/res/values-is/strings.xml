@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Leita í forritum"</string>
     <string name="search_hint_share">"Leita"</string>
-    <string name="menu_search_terms">Breyta leitarorðum</string>
+    <string name="menu_search_terms">Leitarorð</string>
+    <string name="menu_search_terms_short">Leitarorð</string>
     <string name="search_terms_title">Leitarorð fyrir %1$s</string>
     <string name="search_terms_hint">Bæta við leitarorði</string>
     <string name="search_terms_add">Bæta við</string>

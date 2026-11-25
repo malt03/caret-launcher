@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Hľadať aplikácie"</string>
     <string name="search_hint_share">"Vyhľadať"</string>
-    <string name="menu_search_terms">Upraviť kľúčové slová vyhľadávania</string>
+    <string name="menu_search_terms">Kľúčové slová vyhľadávania</string>
+    <string name="menu_search_terms_short">Kľúčové slová</string>
     <string name="search_terms_title">Kľúčové slová pre %1$s</string>
     <string name="search_terms_hint">Pridať kľúčové slovo</string>
     <string name="search_terms_add">Pridať</string>

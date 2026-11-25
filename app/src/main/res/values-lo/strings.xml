@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ຊອກຫາແອັບ"</string>
     <string name="search_hint_share">"ຊອກຫາ"</string>
-    <string name="menu_search_terms">ແກ້ໄຂຄໍາສໍາຄັນການຊອກຫາ</string>
+    <string name="menu_search_terms">ຄໍາສໍາຄັນການຊອກຫາ</string>
+    <string name="menu_search_terms_short">ຄໍາສໍາຄັນ</string>
     <string name="search_terms_title">ຄໍາສໍາຄັນການຊອກຫາສໍາລັບ %1$s</string>
     <string name="search_terms_hint">ເພີ່ມຄໍາສໍາຄັນ</string>
     <string name="search_terms_add">ເພີ່ມ</string>

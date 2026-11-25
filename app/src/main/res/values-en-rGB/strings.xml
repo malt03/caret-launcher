@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Search apps"</string>
     <string name="search_hint_share">"Search"</string>
-    <string name="menu_search_terms">Edit search keywords</string>
+    <string name="menu_search_terms">Search keywords</string>
+    <string name="menu_search_terms_short">Keywords</string>
     <string name="search_terms_title">Search keywords for %1$s</string>
     <string name="search_terms_hint">Add a keyword</string>
     <string name="search_terms_add">Add</string>

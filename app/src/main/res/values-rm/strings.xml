@@ -6,7 +6,8 @@
 <resources>
     <string name="search_hint">Tschertgar apps</string>
     <string name="search_hint_share">Tschertgar</string>
-    <string name="menu_search_terms">Modifitgar ils chavazzins da retschertga</string>
+    <string name="menu_search_terms">Chavazzins da retschertga</string>
+    <string name="menu_search_terms_short">Chavazzins</string>
     <string name="search_terms_title">Chavazzins da retschertga per %1$s</string>
     <string name="search_terms_hint">Agiuntar in chavazzin</string>
     <string name="search_terms_add">Agiuntar</string>

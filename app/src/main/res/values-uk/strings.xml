@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Пошук додатків"</string>
     <string name="search_hint_share">"Шукати"</string>
-    <string name="menu_search_terms">Змінити ключові слова</string>
+    <string name="menu_search_terms">Ключові слова для пошуку</string>
+    <string name="menu_search_terms_short">Ключові слова</string>
     <string name="search_terms_title">Ключові слова для %1$s</string>
     <string name="search_terms_hint">Додати ключове слово</string>
     <string name="search_terms_add">Додати</string>

@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"搜尋應用程式"</string>
     <string name="search_hint_share">"搜尋"</string>
-    <string name="menu_search_terms">編輯搜尋關鍵字</string>
+    <string name="menu_search_terms">搜尋關鍵字</string>
+    <string name="menu_search_terms_short">關鍵字</string>
     <string name="search_terms_title">%1$s 的搜尋關鍵字</string>
     <string name="search_terms_hint">新增關鍵字</string>
     <string name="search_terms_add">新增</string>

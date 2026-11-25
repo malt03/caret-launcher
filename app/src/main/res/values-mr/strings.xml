@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"अ‍ॅप्स शोधा"</string>
     <string name="search_hint_share">"शोधा"</string>
-    <string name="menu_search_terms">शोध कीवर्ड संपादित करा</string>
+    <string name="menu_search_terms">शोध कीवर्ड</string>
+    <string name="menu_search_terms_short">कीवर्ड</string>
     <string name="search_terms_title">%1$s साठी शोध कीवर्ड</string>
     <string name="search_terms_hint">कीवर्ड जोडा</string>
     <string name="search_terms_add">जोडा</string>

@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Қолданбаларды іздеу"</string>
     <string name="search_hint_share">"Іздеу"</string>
-    <string name="menu_search_terms">Іздеу кілт сөздерін өзгерту</string>
+    <string name="menu_search_terms">Іздеу кілт сөздері</string>
+    <string name="menu_search_terms_short">Кілт сөздер</string>
     <string name="search_terms_title">%1$s үшін кілт сөздер</string>
     <string name="search_terms_hint">Кілт сөз қосу</string>
     <string name="search_terms_add">Қосу</string>

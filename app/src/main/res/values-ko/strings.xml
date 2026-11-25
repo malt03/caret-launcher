@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"앱 검색"</string>
     <string name="search_hint_share">"검색"</string>
-    <string name="menu_search_terms">검색어 편집</string>
+    <string name="menu_search_terms">검색어</string>
+    <string name="menu_search_terms_short">검색어</string>
     <string name="search_terms_title">%1$s 검색어</string>
     <string name="search_terms_hint">검색어 추가</string>
     <string name="search_terms_add">추가</string>

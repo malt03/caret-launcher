@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Otsige rakendusi"</string>
     <string name="search_hint_share">"Otsing"</string>
-    <string name="menu_search_terms">Muuda otsingu märksõnu</string>
+    <string name="menu_search_terms">Otsingu märksõnad</string>
+    <string name="menu_search_terms_short">Märksõnad</string>
     <string name="search_terms_title">Rakenduse %1$s märksõnad</string>
     <string name="search_terms_hint">Lisa märksõna</string>
     <string name="search_terms_add">Lisa</string>

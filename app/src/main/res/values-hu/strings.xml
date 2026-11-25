@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Alkalmazások keresése"</string>
     <string name="search_hint_share">"Keresés"</string>
-    <string name="menu_search_terms">Keresési kulcsszavak szerkesztése</string>
+    <string name="menu_search_terms">Keresési kulcsszavak</string>
+    <string name="menu_search_terms_short">Kulcsszavak</string>
     <string name="search_terms_title">%1$s keresési kulcsszavai</string>
     <string name="search_terms_hint">Kulcsszó hozzáadása</string>
     <string name="search_terms_add">Hozzáadás</string>

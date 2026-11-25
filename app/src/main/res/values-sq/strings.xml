@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Kërko për aplikacione"</string>
     <string name="search_hint_share">"Kërko"</string>
-    <string name="menu_search_terms">Modifiko fjalët kyçe të kërkimit</string>
+    <string name="menu_search_terms">Fjalët kyçe të kërkimit</string>
+    <string name="menu_search_terms_short">Fjalë kyçe</string>
     <string name="search_terms_title">Fjalët kyçe për %1$s</string>
     <string name="search_terms_hint">Shto një fjalë kyçe</string>
     <string name="search_terms_add">Shto</string>

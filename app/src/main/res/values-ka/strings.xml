@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"აპების ძიება"</string>
     <string name="search_hint_share">"ძიება"</string>
-    <string name="menu_search_terms">საძიებო საკვანძო სიტყვების რედაქტირება</string>
+    <string name="menu_search_terms">საძიებო საკვანძო სიტყვები</string>
+    <string name="menu_search_terms_short">საკვანძო სიტყვები</string>
     <string name="search_terms_title">%1$s-ის საკვანძო სიტყვები</string>
     <string name="search_terms_hint">საკვანძო სიტყვის დამატება</string>
     <string name="search_terms_add">დამატება</string>

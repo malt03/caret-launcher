@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ઍપ શોધો"</string>
     <string name="search_hint_share">"શોધો"</string>
-    <string name="menu_search_terms">શોધ કીવર્ડમાં ફેરફાર કરો</string>
+    <string name="menu_search_terms">શોધ કીવર્ડ</string>
+    <string name="menu_search_terms_short">કીવર્ડ</string>
     <string name="search_terms_title">%1$s માટે શોધ કીવર્ડ</string>
     <string name="search_terms_hint">કીવર્ડ ઉમેરો</string>
     <string name="search_terms_add">ઉમેરો</string>

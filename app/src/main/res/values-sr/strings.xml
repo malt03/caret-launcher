@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Претражите апликације"</string>
     <string name="search_hint_share">"Претражи"</string>
-    <string name="menu_search_terms">Измени кључне речи за претрагу</string>
+    <string name="menu_search_terms">Кључне речи за претрагу</string>
+    <string name="menu_search_terms_short">Кључне речи</string>
     <string name="search_terms_title">Кључне речи за %1$s</string>
     <string name="search_terms_hint">Додај кључну реч</string>
     <string name="search_terms_add">Додај</string>

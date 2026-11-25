@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Deursoek programme"</string>
     <string name="search_hint_share">"Soek"</string>
-    <string name="menu_search_terms">Wysig soeksleutelwoorde</string>
+    <string name="menu_search_terms">Soeksleutelwoorde</string>
+    <string name="menu_search_terms_short">Sleutelwoorde</string>
     <string name="search_terms_title">Soeksleutelwoorde vir %1$s</string>
     <string name="search_terms_hint">Voeg \'n sleutelwoord by</string>
     <string name="search_terms_add">Voeg by</string>

@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ஆப்ஸில் தேடுக"</string>
     <string name="search_hint_share">"தேடு"</string>
-    <string name="menu_search_terms">தேடல் முக்கியச் சொற்களைத் திருத்து</string>
+    <string name="menu_search_terms">தேடல் முக்கியச் சொற்கள்</string>
+    <string name="menu_search_terms_short">முக்கியச் சொற்கள்</string>
     <string name="search_terms_title">%1$s க்கான தேடல் முக்கியச் சொற்கள்</string>
     <string name="search_terms_hint">முக்கியச் சொல்லைச் சேர்</string>
     <string name="search_terms_add">சேர்</string>

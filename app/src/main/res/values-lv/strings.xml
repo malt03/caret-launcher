@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Meklēt lietotnes"</string>
     <string name="search_hint_share">"Meklēt"</string>
-    <string name="menu_search_terms">Rediģēt meklēšanas atslēgvārdus</string>
+    <string name="menu_search_terms">Meklēšanas atslēgvārdi</string>
+    <string name="menu_search_terms_short">Atslēgvārdi</string>
     <string name="search_terms_title">%1$s meklēšanas atslēgvārdi</string>
     <string name="search_terms_hint">Pievienot atslēgvārdu</string>
     <string name="search_terms_add">Pievienot</string>

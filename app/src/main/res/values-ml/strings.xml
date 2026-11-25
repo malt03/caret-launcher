@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ആപ്പുകൾ തിരയുക"</string>
     <string name="search_hint_share">"തിരയുക"</string>
-    <string name="menu_search_terms">തിരയൽ കീവേഡുകൾ എഡിറ്റ് ചെയ്യുക</string>
+    <string name="menu_search_terms">തിരയൽ കീവേഡുകൾ</string>
+    <string name="menu_search_terms_short">കീവേഡുകൾ</string>
     <string name="search_terms_title">%1$s എന്നതിനുള്ള തിരയൽ കീവേഡുകൾ</string>
     <string name="search_terms_hint">കീവേഡ് ചേർക്കുക</string>
     <string name="search_terms_add">ചേർക്കുക</string>

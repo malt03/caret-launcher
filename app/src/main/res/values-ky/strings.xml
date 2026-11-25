@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Колдонмолорду издөө"</string>
     <string name="search_hint_share">"Издөө"</string>
-    <string name="menu_search_terms">Издөө ачкыч сөздөрүн түзөтүү</string>
+    <string name="menu_search_terms">Издөө ачкыч сөздөрү</string>
+    <string name="menu_search_terms_short">Ачкыч сөздөр</string>
     <string name="search_terms_title">%1$s үчүн ачкыч сөздөр</string>
     <string name="search_terms_hint">Ачкыч сөз кошуу</string>
     <string name="search_terms_add">Кошуу</string>

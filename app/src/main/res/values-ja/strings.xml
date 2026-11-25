@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"アプリを検索"</string>
     <string name="search_hint_share">"検索"</string>
-    <string name="menu_search_terms">検索文字列を編集</string>
+    <string name="menu_search_terms">検索文字列</string>
+    <string name="menu_search_terms_short">キーワード</string>
     <string name="search_terms_title">%1$s の検索文字列</string>
     <string name="search_terms_hint">検索文字列を追加（例: かめら）</string>
     <string name="search_terms_add">追加</string>

@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Apps zoeken"</string>
     <string name="search_hint_share">"Zoeken"</string>
-    <string name="menu_search_terms">Zoekwoorden bewerken</string>
+    <string name="menu_search_terms">Zoekwoorden</string>
+    <string name="menu_search_terms_short">Zoekwoorden</string>
     <string name="search_terms_title">Zoekwoorden voor %1$s</string>
     <string name="search_terms_hint">Zoekwoord toevoegen</string>
     <string name="search_terms_add">Toevoegen</string>

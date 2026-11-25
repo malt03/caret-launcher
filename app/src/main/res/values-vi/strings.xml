@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Tìm kiếm ứng dụng"</string>
     <string name="search_hint_share">"Tìm kiếm"</string>
-    <string name="menu_search_terms">Chỉnh sửa từ khóa tìm kiếm</string>
+    <string name="menu_search_terms">Từ khóa tìm kiếm</string>
+    <string name="menu_search_terms_short">Từ khóa</string>
     <string name="search_terms_title">Từ khóa tìm kiếm cho %1$s</string>
     <string name="search_terms_hint">Thêm từ khóa</string>
     <string name="search_terms_add">Thêm</string>

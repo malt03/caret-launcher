@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"යෙදුම් සොයන්න"</string>
     <string name="search_hint_share">"සොයන්න"</string>
-    <string name="menu_search_terms">සෙවුම් මූල පද සංස්කරණය කරන්න</string>
+    <string name="menu_search_terms">සෙවුම් මූල පද</string>
+    <string name="menu_search_terms_short">මූල පද</string>
     <string name="search_terms_title">%1$s සඳහා සෙවුම් මූල පද</string>
     <string name="search_terms_hint">මූල පදයක් එක් කරන්න</string>
     <string name="search_terms_add">එක් කරන්න</string>

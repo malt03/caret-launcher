@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Uygulamalarda ara"</string>
     <string name="search_hint_share">"Ara"</string>
-    <string name="menu_search_terms">Arama kelimelerini düzenle</string>
+    <string name="menu_search_terms">Arama kelimeleri</string>
+    <string name="menu_search_terms_short">Arama kelimeleri</string>
     <string name="search_terms_title">%1$s için arama kelimeleri</string>
     <string name="search_terms_hint">Kelime ekle</string>
     <string name="search_terms_add">Ekle</string>

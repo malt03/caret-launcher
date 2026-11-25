@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Apps finden"</string>
     <string name="search_hint_share">"Suchen"</string>
-    <string name="menu_search_terms">Suchbegriffe bearbeiten</string>
+    <string name="menu_search_terms">Suchbegriffe</string>
+    <string name="menu_search_terms_short">Suchbegriffe</string>
     <string name="search_terms_title">Suchbegriffe für %1$s</string>
     <string name="search_terms_hint">Suchbegriff hinzufügen</string>
     <string name="search_terms_add">Hinzufügen</string>

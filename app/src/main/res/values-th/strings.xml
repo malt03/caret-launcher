@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"ค้นหาแอป"</string>
     <string name="search_hint_share">"ค้นหา"</string>
-    <string name="menu_search_terms">แก้ไขคำค้นหา</string>
+    <string name="menu_search_terms">คำค้นหา</string>
+    <string name="menu_search_terms_short">คำค้นหา</string>
     <string name="search_terms_title">คำค้นหาสำหรับ %1$s</string>
     <string name="search_terms_hint">เพิ่มคำค้นหา</string>
     <string name="search_terms_add">เพิ่ม</string>

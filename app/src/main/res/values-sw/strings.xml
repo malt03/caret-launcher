@@ -7,7 +7,8 @@
 <resources>
     <string name="search_hint">"Tafuta programu"</string>
     <string name="search_hint_share">"Tafuta"</string>
-    <string name="menu_search_terms">Badilisha maneno muhimu ya utafutaji</string>
+    <string name="menu_search_terms">Maneno muhimu ya utafutaji</string>
+    <string name="menu_search_terms_short">Maneno muhimu</string>
     <string name="search_terms_title">Maneno muhimu ya utafutaji ya %1$s</string>
     <string name="search_terms_hint">Ongeza neno muhimu</string>
     <string name="search_terms_add">Ongeza</string>
