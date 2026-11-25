@@ -56,3 +56,61 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 }
+/**
+ * The Apache License 2.0 terms (section 4): the APK carries the license and the NOTICE, in
+ * assets/licenses/. The NOTICE is third_party/NOTICE with the libraries the variant bundles
+ * listed after it (all under the Apache License 2.0; check the license of a library before
+ * adding it).
+ */
+abstract class LicenseAssetsTask : DefaultTask() {
+    @get:InputFile
+    abstract val license: RegularFileProperty
+
+    @get:InputFile
+    abstract val notice: RegularFileProperty
+
+    @get:Input
+    abstract val libraries: ListProperty<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun write() {
+        val dir = outputDir.get().dir("licenses").asFile
+        dir.deleteRecursively()
+        dir.mkdirs()
+        license.get().asFile.copyTo(dir.resolve("LICENSE"))
+        dir.resolve("NOTICE").writeText(
+            notice.get().asFile.readText().trimEnd() + "\n\n" +
+                "-------------------------------------------------------------------------------\n\n" +
+                "Libraries bundled in the app:\n\n" +
+                libraries.get().joinToString("\n") { "  $it" } + "\n",
+        )
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val task = tasks.register<LicenseAssetsTask>("${variant.name}LicenseAssets") {
+            license.set(rootProject.file("third_party/LICENSE"))
+            notice.set(rootProject.file("third_party/NOTICE"))
+            libraries.set(
+                variant.runtimeConfiguration.incoming.resolutionResult.rootComponent.map { root ->
+                    val seen = mutableSetOf<org.gradle.api.artifacts.result.ResolvedComponentResult>()
+                    fun visit(component: org.gradle.api.artifacts.result.ResolvedComponentResult) {
+                        if (!seen.add(component)) return
+                        component.dependencies
+                            .filterIsInstance<org.gradle.api.artifacts.result.ResolvedDependencyResult>()
+                            .forEach { visit(it.selected) }
+                    }
+                    visit(root)
+                    seen.mapNotNull { it.id as? org.gradle.api.artifacts.component.ModuleComponentIdentifier }
+                        .map { "${it.group}:${it.module}:${it.version}" }
+                        .sorted()
+                },
+            )
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(task, LicenseAssetsTask::outputDir)
+    }
+}
