@@ -1,5 +1,6 @@
 package com.malt03.textlauncher.ui.home
 
+import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetManager
 import android.view.View
 import com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG
@@ -62,7 +63,16 @@ internal class HomeItemInflater(private val home: HomeController) {
         val providerInfo = AppWidgetManager.getInstance(context).getAppWidgetInfo(info.appWidgetId) ?: return null
         // WorkspaceItemProcessor: the widget's features (LauncherAppWidgetInfo.isReconfigurable).
         info.updateWidgetFeatures(LauncherAppWidgetProviderInfo.fromProviderInfo(context, providerInfo))
-        return home.widgetHost.createView(context, info.appWidgetId, providerInfo)
+        val view = home.widgetHost.createView(context, info.appWidgetId, providerInfo)
+        prepareAppWidget(view, info)
+        return view
+    }
+
+    /** ItemInflater.prepareAppWidget: Workspace.addInScreen reads the item from the view's tag. */
+    private fun prepareAppWidget(hostView: AppWidgetHostView, item: LauncherAppWidgetInfo) {
+        hostView.tag = item
+        hostView.isFocusable = true
+        hostView.onFocusChangeListener = scrollView.focusIndicatorHelper
     }
 
     private fun createItemView(info: WorkspaceItemInfo): AppIconView =
