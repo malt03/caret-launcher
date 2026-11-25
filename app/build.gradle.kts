@@ -2,6 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+/**
+ * The app's version: "major.minor.patch". The version code is worked out from it
+ * (major * 1,000,000 + minor * 1,000 + patch, so 1.0.0 is 1000000), so that raising the name
+ * raises the code. The minor and patch numbers stay below 1,000.
+ */
+val appVersionName = "1.0.0"
+val appVersionCode = appVersionName.split(".").map(String::toInt).let { (major, minor, patch) ->
+    require(minor < 1_000 && patch < 1_000) { "minor and patch must be below 1000: $appVersionName" }
+    major * 1_000_000 + minor * 1_000 + patch
+}
+
 android {
     namespace = "com.malt03.textlauncher"
     compileSdk {
@@ -12,8 +23,8 @@ android {
         applicationId = "com.malt03.caretlauncher"
         minSdk = 37
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
