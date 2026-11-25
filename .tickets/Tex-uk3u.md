@@ -19,6 +19,7 @@ tags: [search]
 - アイコンとラベル: resolveActivity(ACTION_WEB_SEARCH, MATCH_DEFAULT_ONLY) で既定のアプリが分かればそのアイコン。既定がなく選択画面（ResolverActivity）が返るなら虫眼鏡のアイコンで、選択画面をそのまま出す
 - manifest の <queries> に WEB_SEARCH を足す
 - タップと Enter はアプリの起動と同じく、起動したアプリが画面を覆ってから入力をクリアする（1.2）。長押しのメニューとドラッグはしない
+- 行き先の変え方を用意する。WEB_SEARCH の既定は選択画面の「常時」でしか決まらず、設定アプリに専用の項目はない。既定のブラウザ（Chrome など）を「常時」にすると、そのアプリ情報に「デフォルトで開く」が出ず、設定アプリからは消せない（Pixel 6a で確認。adb の `cmd package clear-package-preferred-activities` でしか戻せなかった）。セルの長押しで行き先を案内するか、Tex-9hi3 と同じ仕組みでランチャー自身が行き先を選べるようにするかを決める
 
 ## Acceptance Criteria
 
