@@ -17,4 +17,5 @@
     <string name="share_text_message">Elige hasta 3 apps para mostrarlas junto al campo de búsqueda. Presiona una para compartir el texto que escribiste.</string>
     <string name="share_text_move_up">Mover hacia arriba</string>
     <string name="share_text_move_down">Mover hacia abajo</string>
+    <string name="licenses">Licencias</string>
 </resources>

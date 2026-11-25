@@ -17,4 +17,5 @@
     <string name="share_text_message">Kies maximaal 3 apps om naast het zoekveld te tonen. Tik op een app om de getypte tekst te delen.</string>
     <string name="share_text_move_up">Omhoog verplaatsen</string>
     <string name="share_text_move_down">Omlaag verplaatsen</string>
+    <string name="licenses">Licenties</string>
 </resources>

@@ -17,4 +17,5 @@
     <string name="share_text_message">اختَر ما يصل إلى 3 تطبيقات لعرضها بجانب حقل البحث. انقر على أحدها لمشاركة النص الذي كتبته.</string>
     <string name="share_text_move_up">نقل لأعلى</string>
     <string name="share_text_move_down">نقل لأسفل</string>
+    <string name="licenses">التراخيص</string>
 </resources>

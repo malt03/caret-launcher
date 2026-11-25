@@ -17,4 +17,5 @@
     <string name="share_text_message">Vælg op til 3 apps, der skal vises ved siden af søgefeltet. Tryk på én for at dele den tekst, du har skrevet.</string>
     <string name="share_text_move_up">Flyt op</string>
     <string name="share_text_move_down">Flyt ned</string>
+    <string name="licenses">Licenser</string>
 </resources>

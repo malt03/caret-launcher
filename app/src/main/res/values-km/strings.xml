@@ -11,4 +11,5 @@
     <string name="share_text_message">ជ្រើសរើសកម្មវិធីរហូតដល់ 3 ដើម្បីបង្ហាញនៅជាប់កន្លែងស្វែងរក។ ចុចលើកម្មវិធីណាមួយ ដើម្បីចែករំលែកអត្ថបទដែលអ្នកបានវាយ។</string>
     <string name="share_text_move_up">ផ្លាស់ទីឡើងលើ</string>
     <string name="share_text_move_down">ផ្លាស់ទីចុះក្រោម</string>
+    <string name="licenses">អាជ្ញាប័ណ្ណ</string>
 </resources>

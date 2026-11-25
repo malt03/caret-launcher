@@ -11,4 +11,5 @@
     <string name="share_text_message">ከፍለጋ መስኩ አጠገብ የሚታዩ እስከ 3 መተግበሪያዎችን ይምረጡ። የተየቡትን ጽሑፍ ለማጋራት አንዱን መታ ያድርጉ።</string>
     <string name="share_text_move_up">ወደ ላይ ውሰድ</string>
     <string name="share_text_move_down">ወደ ታች ውሰድ</string>
+    <string name="licenses">ፈቃዶች</string>
 </resources>

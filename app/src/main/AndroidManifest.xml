@@ -98,17 +98,21 @@
             </intent-filter>
         </activity>
 
-        <!-- The licenses (docs/spec.md 8), opened from the system's App info as the app's
-             settings, since the launcher has no settings screen. -->
-        <activity android:name=".ui.LicensesActivity"
+        <!-- The app's settings, which the system's App info opens (docs/spec.md 8): only the
+             licenses, since the launcher has no settings screen of its own. -->
+        <activity android:name=".ui.AppSettingsActivity"
             android:label="@string/app_name"
-            android:theme="@style/LicensesTheme"
+            android:theme="@style/SettingsTheme"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.LicensesActivity"
+            android:label="@string/licenses"
+            android:theme="@style/SettingsTheme"
+            android:exported="false" />
 
         <!-- Launcher3's AndroidManifest-common.xml: the notification dots (docs/spec.md 7.5). -->
         <service

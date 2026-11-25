@@ -11,4 +11,5 @@
     <string name="share_text_message">აირჩიეთ 3-მდე აპი, რომლებიც ძიების ველის გვერდით გამოჩნდება. შეეხეთ ერთ-ერთს აკრეფილი ტექსტის გასაზიარებლად.</string>
     <string name="share_text_move_up">ზემოთ გადატანა</string>
     <string name="share_text_move_down">ქვემოთ გადატანა</string>
+    <string name="licenses">ლიცენზიები</string>
 </resources>

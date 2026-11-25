@@ -11,4 +11,5 @@
     <string name="share_text_message">Válasszon legfeljebb 3 alkalmazást, amelyek a keresőmező mellett jelennek meg. Koppintson az egyikre a beírt szöveg megosztásához.</string>
     <string name="share_text_move_up">Mozgatás felfelé</string>
     <string name="share_text_move_down">Mozgatás lefelé</string>
+    <string name="licenses">Licencek</string>
 </resources>

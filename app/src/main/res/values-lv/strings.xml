@@ -11,4 +11,5 @@
     <string name="share_text_message">Izvēlieties līdz 3 lietotnēm, ko rādīt blakus meklēšanas laukam. Pieskarieties kādai, lai kopīgotu ievadīto tekstu.</string>
     <string name="share_text_move_up">Pārvietot augšup</string>
     <string name="share_text_move_down">Pārvietot lejup</string>
+    <string name="licenses">Licences</string>
 </resources>

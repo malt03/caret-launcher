@@ -17,4 +17,5 @@
     <string name="share_text_message">เลือกแอปได้สูงสุด 3 แอปเพื่อแสดงข้างช่องค้นหา แตะแอปใดแอปหนึ่งเพื่อแชร์ข้อความที่พิมพ์</string>
     <string name="share_text_move_up">ย้ายขึ้น</string>
     <string name="share_text_move_down">ย้ายลง</string>
+    <string name="licenses">ใบอนุญาต</string>
 </resources>

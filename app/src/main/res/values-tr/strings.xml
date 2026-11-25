@@ -17,4 +17,5 @@
     <string name="share_text_message">Arama alanının yanında gösterilecek en fazla 3 uygulama seçin. Yazdığınız metni paylaşmak için birine dokunun.</string>
     <string name="share_text_move_up">Yukarı taşı</string>
     <string name="share_text_move_down">Aşağı taşı</string>
+    <string name="licenses">Lisanslar</string>
 </resources>

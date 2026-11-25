@@ -17,4 +17,5 @@
     <string name="share_text_message">最多可选择 3 个应用显示在搜索框旁边。点按其中一个即可将输入的文字分享给该应用。</string>
     <string name="share_text_move_up">上移</string>
     <string name="share_text_move_down">下移</string>
+    <string name="licenses">许可</string>
 </resources>

@@ -11,4 +11,5 @@
     <string name="share_text_message">खोज फिल्डको छेउमा देखाउन बढीमा ३ वटा एप छान्नुहोस्। आफूले टाइप गरेको टेक्स्ट सेयर गर्न कुनै एउटामा ट्याप गर्नुहोस्।</string>
     <string name="share_text_move_up">माथि सार्नुहोस्</string>
     <string name="share_text_move_down">तल सार्नुहोस्</string>
+    <string name="licenses">इजाजतपत्रहरू</string>
 </resources>

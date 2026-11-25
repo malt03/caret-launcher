@@ -11,4 +11,5 @@
     <string name="share_text_message">Odaberite do 3 aplikacije koje će se prikazivati pored polja za pretraživanje. Dodirnite jednu da podijelite tekst koji ste upisali.</string>
     <string name="share_text_move_up">Pomjeri gore</string>
     <string name="share_text_move_down">Pomjeri dolje</string>
+    <string name="licenses">Licence</string>
 </resources>

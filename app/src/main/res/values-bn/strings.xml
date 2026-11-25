@@ -11,4 +11,5 @@
     <string name="share_text_message">সার্চ ফিল্ডের পাশে দেখানোর জন্য সর্বাধিক ৩টি অ্যাপ বেছে নিন। টাইপ করা টেক্সট শেয়ার করতে একটিতে ট্যাপ করুন।</string>
     <string name="share_text_move_up">উপরে সরান</string>
     <string name="share_text_move_down">নিচে সরান</string>
+    <string name="licenses">লাইসেন্স</string>
 </resources>

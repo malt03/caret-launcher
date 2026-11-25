@@ -17,4 +17,5 @@
     <string name="share_text_message">खोज फ़ील्ड के बगल में दिखाने के लिए ज़्यादा से ज़्यादा 3 ऐप्लिकेशन चुनें. लिखा गया टेक्स्ट शेयर करने के लिए किसी एक पर टैप करें.</string>
     <string name="share_text_move_up">ऊपर ले जाएं</string>
     <string name="share_text_move_down">नीचे ले जाएं</string>
+    <string name="licenses">लाइसेंस</string>
 </resources>

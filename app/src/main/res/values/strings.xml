@@ -18,4 +18,6 @@
     <string name="share_text_message">Choose up to 3 apps to show next to the search field. Tap one to share the text you typed.</string>
     <string name="share_text_move_up">Move up</string>
     <string name="share_text_move_down">Move down</string>
+    <!-- The licenses (docs/spec.md 8): the row of the app's settings screen and the title of its page. -->
+    <string name="licenses">Licenses</string>
 </resources>

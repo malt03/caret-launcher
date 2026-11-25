@@ -11,4 +11,5 @@
     <string name="share_text_message">ເລືອກແອັບໄດ້ສູງສຸດ 3 ແອັບເພື່ອສະແດງຢູ່ຂ້າງຊ່ອງຊອກຫາ. ແຕະໃສ່ແອັບໃດໜຶ່ງເພື່ອແບ່ງປັນຂໍ້ຄວາມທີ່ທ່ານພິມ.</string>
     <string name="share_text_move_up">ຍ້າຍຂຶ້ນ</string>
     <string name="share_text_move_down">ຍ້າຍລົງ</string>
+    <string name="licenses">ໃບອະນຸຍາດ</string>
 </resources>

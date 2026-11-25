@@ -66,8 +66,9 @@
     <style name="AppTheme.Dark.DarkText" parent="AppTheme.DarkText">
         <item name="android:colorControlHighlight">#19212121</item>
     </style>
-    <!-- LicensesActivity: the system's theme without the action bar (the page has its own heading). -->
-    <style name="LicensesTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
+    <!-- The app's settings pages (SettingsPage.kt): the system's theme without the action bar, as
+         the pages draw their own back button and title. -->
+    <style name="SettingsTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>

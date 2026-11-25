@@ -11,4 +11,5 @@
     <string name="share_text_message">Valige kuni 3 rakendust, mida otsinguvälja kõrval kuvada. Sisestatud teksti jagamiseks puudutage ühte neist.</string>
     <string name="share_text_move_up">Teisalda üles</string>
     <string name="share_text_move_down">Teisalda alla</string>
+    <string name="licenses">Litsentsid</string>
 </resources>

@@ -17,4 +17,5 @@
     <string name="share_text_message">Valitse enintään 3 sovellusta näkymään hakukentän vieressä. Jaa kirjoittamasi teksti napauttamalla yhtä niistä.</string>
     <string name="share_text_move_up">Siirrä ylös</string>
     <string name="share_text_move_down">Siirrä alas</string>
+    <string name="licenses">Lisenssit</string>
 </resources>

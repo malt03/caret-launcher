@@ -11,4 +11,5 @@
     <string name="share_text_message">Издөө талаасынын жанында көрсөтүлө турган 3 колдонмого чейин тандаңыз. Терилген текстти бөлүшүү үчүн бирөөнү таптаңыз.</string>
     <string name="share_text_move_up">Жогору жылдыруу</string>
     <string name="share_text_move_down">Төмөн жылдыруу</string>
+    <string name="licenses">Лицензиялар</string>
 </resources>
