@@ -1,6 +1,6 @@
 ---
 id: Tex-ojza
-status: open
+status: closed
 deps: [Tex-00l4]
 links: []
 created: 2026-11-24T13:35:59Z
@@ -20,3 +20,9 @@ ui/allapps/AllAppsSwipeController.kt（383 行、上流 147+456 行）をなく�
 
 リスク: 手触り（docs/spec.md 6.2）が今と同じになるか。実機で比べる必要がある。規模: 中〜大。④ の後。
 
+
+## Notes
+
+**2026-11-25T00:14:27Z**
+
+2026-11-25: 移した（fork で作業、ブランチは本体がマージ）。derived=: touch/AbstractStateChangeTouchController.java、touch/AllAppsSwipeController.java、allapps/AllAppsTransitionController.java。path=: util/FlingBlockCheck.java。LauncherAnimUtils に newCancelListener・blockedFlingDurationFactor・TABLET_BOTTOM_SHEET_SUCCESS_TRANSITION_PROGRESS、Interpolators に INSTANT・FINAL_FRAME を足した。進み具合は上流の向き（0 が一覧）にし、アプリの ui/allapps/AllAppsTransitionHost が Host としてフィールドとシートを置く。StateManager の互換クラスから setCurrentUserControlledAnimation(Runnable)・hasUserControlledSwipe を消し、onUserControlledTransitionStart/End だけ残した。印: フィールドの位置からの進み具合、48dp の溜めと追いつき、dispatchOnStart を溜めを越えたとき（開くとき）か離したときまで遅らせる、戻るときは成功のリスナーだけに取り消しを伝える（dispatchOnCancel だとコントローラーが止まる）。Pixel9ProFold の閉じた画面で開く・溜めで戻る・越えて戻す・閉じる・メニュー・戻るを確かめた。動いている最中に触る操作と手触りは未確認

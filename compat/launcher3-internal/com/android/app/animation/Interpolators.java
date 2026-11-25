@@ -58,6 +58,13 @@ public class Interpolators {
     public static final Interpolator DECELERATE_2 = new DecelerateInterpolator(2);
     public static final Interpolator DECELERATE_QUINT = new DecelerateInterpolator(2.5f);
 
+    public static final Interpolator INSTANT = t -> 1;
+    /**
+     * All values of t map to 0 until t == 1. This is primarily useful for setting view visibility,
+     * which should only happen at the very end of the animation (when it's already hidden).
+     */
+    public static final Interpolator FINAL_FRAME = t -> t < 1 ? 0 : 1;
+
     public static final Interpolator SCROLL = new Interpolator() {
         @Override
         public float getInterpolation(float t) {

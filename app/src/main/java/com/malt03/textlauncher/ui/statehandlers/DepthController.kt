@@ -132,13 +132,11 @@ class DepthController(
 
     /**
      * LauncherDepthController.blurWorkspaceDepthTargets: whether the state blurs the home screen
-     * with the wallpaper (the all apps list's states do; edit mode does not). TextLauncher: a swipe
-     * of the all apps list moves the depth itself, and blurs it too.
+     * with the wallpaper (the all apps list's states do; edit mode does not).
      */
     private fun shouldBlurWorkspace(): Boolean {
         val launcher = Launcher.getLauncher(activity)
         val stateManager = launcher.stateManager
-        if (stateManager.hasUserControlledSwipe()) return true
         val targetState = stateManager.targetState ?: stateManager.state
         // Only blur workspace if the current state wants to blur based on the target state.
         return stateManager.currentStableState.shouldBlurWorkspace(launcher, targetState)

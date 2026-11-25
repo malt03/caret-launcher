@@ -20,6 +20,9 @@
 
 package com.android.launcher3;
 
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.util.FloatProperty;
 import android.util.Property;
 import android.view.View;
@@ -41,6 +44,7 @@ public class LauncherAnimUtils {
 
     // Progress after which the transition is assumed to be a success
     public static final float SUCCESS_TRANSITION_PROGRESS = 0.5f;
+    public static final float TABLET_BOTTOM_SHEET_SUCCESS_TRANSITION_PROGRESS = 0.3f;
 
     public static final FloatProperty<View> SCALE_PROPERTY = getScaleProperty();
 
@@ -109,6 +113,11 @@ public class LauncherAnimUtils {
     public static final int SCALE_INDEX_WORKSPACE_STATE = 2;
     public static final int SCALE_INDEX_FOLDER_ANIM = 5;
 
+    /** Increase the duration if we prevented the fling, as we are going against a high velocity. */
+    public static int blockedFlingDurationFactor(float velocity) {
+        return (int) Utilities.boundToRange(Math.abs(velocity) / 2, 2f, 6f);
+    }
+
     public static final FloatProperty<View> VIEW_TRANSLATE_X = convert(View.TRANSLATION_X);
     public static final FloatProperty<View> VIEW_TRANSLATE_Y = convert(View.TRANSLATION_Y);
     public static final FloatProperty<View> VIEW_TRANSLATE_Z = convert(View.TRANSLATION_Z);
@@ -139,6 +148,36 @@ public class LauncherAnimUtils {
             @Override
             public Float get(View view) {
                 return property.get(view);
+            }
+        };
+    }
+
+    /**
+     * Utility method to create an {@link AnimatorListener} which executes a callback on animation
+     * cancel. Once the cancel has been dispatched, this listener will no longer be called.
+     */
+    public static AnimatorListener newSingleUseCancelListener(Runnable callback) {
+        return newCancelListener(callback, true);
+    }
+
+    /**
+     * Utility method to create an {@link AnimatorListener} which executes a callback on animation
+     * cancel.
+     *
+     * @param isSingleUse {@code true} means the callback will be called at most once
+     */
+    public static AnimatorListener newCancelListener(Runnable callback, boolean isSingleUse) {
+        return new AnimatorListenerAdapter() {
+            boolean mDispatched = false;
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                if (!mDispatched) {
+                    if (isSingleUse) {
+                        mDispatched = true;
+                    }
+                    callback.run();
+                }
             }
         };
     }
