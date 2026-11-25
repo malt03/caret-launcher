@@ -221,7 +221,7 @@ androidComponents {
             attributes { attribute(Attribute.of("artifactType", String::class.java), "android-java-res") }
         }.artifacts
         val task = tasks.register<LicenseAssetsTask>("${variant.name}LicenseAssets") {
-            license.set(rootProject.file("third_party/LICENSE"))
+            license.set(rootProject.file("LICENSE"))
             notice.set(rootProject.file("NOTICE"))
             thirdPartyNotice.set(rootProject.file("third_party/NOTICE"))
             this.libraries.set(libraries)

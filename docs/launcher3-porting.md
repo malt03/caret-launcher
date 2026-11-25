@@ -163,7 +163,7 @@ Launcher3 と `frameworks/libs/systemui` は Apache License 2.0 である。
 - 取り込んだファイルのライセンスヘッダーは残す
 - `third_party/` 以下に LICENSE と NOTICE を置く
 - APK にも LICENSE と NOTICE を入れる（`assets/licenses/`。Apache License 2.0 の4節）。ビルドのたびに依存から作り直す（`app/build.gradle.kts` の `LicenseAssetsTask`）。設定の「アプリ情報」のアプリの設定ボタンから開く画面（`LicensesActivity`）で見られる
-  - LICENSE は `third_party/LICENSE`（Apache License 2.0）。NOTICE は最上位の `NOTICE`（TextLauncher 自身）、`third_party/NOTICE`（取り込んだ AOSP のコード。ここだけ手で書く）、その版に入るライブラリの一覧と各 POM（なければ親の POM）が宣言するライセンス、ライブラリの Java リソースにある NOTICE ファイル（今は Jakarta Inject）の順
+  - LICENSE は最上位の `LICENSE`（TextLauncher 自身の Apache License 2.0。取り込んだ AOSP のコードとライブラリも同じライセンス）。NOTICE は最上位の `NOTICE`（TextLauncher 自身）、`third_party/NOTICE`（取り込んだ AOSP のコード。ここだけ手で書く）、その版に入るライブラリの一覧と各 POM（なければ親の POM）が宣言するライセンス、ライブラリの Java リソースにある NOTICE ファイル（今は Jakarta Inject）の順
   - POM のライセンスが Apache License 2.0 でない（または書かれていない）ライブラリが入ると、ビルドが止まる。そのライブラリのライセンスを確かめ、LICENSE と NOTICE に何が要るかを決めてから入れる
 - 書き換えたファイルには、変更したことを示す記載を入れる（Apache License 2.0 の条件）
 - 互換層のクラスのうち、上流に同じ名前のファイルがあるものは、上流のライセンスヘッダーをそのまま付け、その下に「TextLauncher のために変更した」旨のコメントを置く。中身が上流のコードか、名前とシグネチャだけかは問わない
