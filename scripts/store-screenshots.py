@@ -22,8 +22,9 @@ Gemini and Chrome as the share buttons, the store wallpaper, themed icons off, a
 "show recently copied text" suggestion off. A language whose Gboard asks for a layout the first
 time (Japanese) needs that answered once.
 
-Every screen with the search field focused is taken in a frame where its blinking cursor shows,
-and the script fails if the cursor doesn't blink. --screens takes only some screens again (home,
+Every screen with the search field focused is taken in a frame where its blinking cursor and the
+keyboard show, and the script fails if they don't. The status bar is the same in every language:
+9:00 (12-hour) and no notification icons. --screens takes only some screens again (home,
 search, all_apps, search_keywords, share_text, themed_icons, and on a fold home_4x3 and
 home_folded).
 
@@ -215,17 +216,43 @@ class Device:
     def set_locale(self, locale):
         self.shell(f"cmd locale set-device-locale {locale}")
         time.sleep(6)
+        # The tablet's status bar keeps the previous locale's digits (9:00 instead of Arabic's
+        # ٩:٠٠) until its configuration changes otherwise: night mode on and back does it.
+        night = self.shell("cmd uimode night").strip().rsplit(" ", 1)[-1]
+        self.shell(f"cmd uimode night {'no' if night == 'yes' else 'yes'}")
+        time.sleep(3)
+        self.shell(f"cmd uimode night {night}")
+        time.sleep(4)
+        self.demo_clock()  # in the new locale's format
+
+    def demo_clock(self):
+        self.shell("am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0900")
 
     def locale(self):
         return self.shell("cmd locale get-device-locale").strip()
 
     def demo_status_bar(self):
+        """The same status bar in every language: 9:00 (12-hour: 24-hour is 09:00 in some
+        locales), and no notification icons (demo mode leaves them, such as the Safety Center's
+        after a cold boot). Returns what put_status_bar_back takes."""
+        time_12_24 = self.shell("settings get system time_12_24").strip()
+        self.shell("settings put system time_12_24 12")
+        self.shell("cmd statusbar send-disable-flag notification-icons")
         self.shell("settings put global sysui_demo_allowed 1")
-        for cmd in ["enter", "clock -e hhmm 0900", "battery -e level 100 -e plugged false",
+        for cmd in ["enter", "battery -e level 100 -e plugged false",
                     "network -e wifi show -e level 4 -e fully true", "network -e mobile hide",
                     "notifications -e visible false"]:
             command, *extra = cmd.split(" ", 1)
             self.shell(f"am broadcast -a com.android.systemui.demo -e command {command} {extra[0] if extra else ''}")
+        self.demo_clock()
+        return time_12_24
+
+    def put_status_bar_back(self, time_12_24):
+        self.shell("cmd statusbar send-disable-flag none")
+        if time_12_24 == "null":
+            self.shell("settings delete system time_12_24")
+        else:
+            self.shell(f"settings put system time_12_24 {time_12_24}")
 
     def launcher_db(self):
         return self.adb("exec-out", "run-as", PKG, "cat", "databases/launcher.db", binary=True)
@@ -261,24 +288,36 @@ def mean_in(png, box):
     return float(out.stdout)
 
 
+def keyboard_in(png):
+    """Whether the keyboard shows, judged from the screen: its light keys fill the bottom, where
+    the wallpaper is dark without it."""
+    out = subprocess.run(["magick", "png:-", "-gravity", "South", "-crop", "0x200+0+220", "+repage",
+                          "-colorspace", "gray", "-format", "%[fx:mean]", "info:"],
+                         input=png, capture_output=True, check=True)
+    return float(out.stdout) > 0.6
+
+
 def with_cursor(device, box, frames=8, attempts=4):
-    """The frame in which the field's blinking cursor shows (the field is darkest then).
+    """The frame in which the field's blinking cursor shows (the field is darkest then), with the
+    keyboard showing.
 
     The frames have to differ in the field, or no frame has the cursor: the field can lose the
-    focus, and even focused, its cursor sometimes doesn't blink until the field is tapped. Then
-    the field is tapped (at its middle, past the text: the cursor stays at the end) and the frames
-    are taken again."""
+    focus, and even focused, its cursor sometimes doesn't blink until the field is tapped. And the
+    keyboard sometimes hides with the cursor still blinking. Then the field is tapped (at its
+    middle, past the text: the cursor stays at the end) and the frames are taken again."""
     l, t, r, b = box
     for attempt in range(attempts):
         if attempt:
             device.tap((l + r) // 2, (t + b) // 2)
             time.sleep(5)  # past the insertion handle that a tap shows for 4 s
         shots = [device.screencap() for _ in range(frames)]
+        if not keyboard_in(shots[0]):
+            continue
         means = [mean_in(png, box) for png in shots]
         # The difference as a number of fully changed pixels.
         if (max(means) - min(means)) * (r - l) * (b - t) > CURSOR_PIXELS:
             return shots[means.index(min(means))]
-    raise RuntimeError("no blinking cursor in the search field")
+    raise RuntimeError("no blinking cursor in the search field, or no keyboard")
 
 
 def res_string(lang, name):
@@ -543,7 +582,7 @@ def main():
         sys.exit(f"no device locale for: {unknown}")
     original_locale = device.locale()
     original_db = device.launcher_db()
-    device.demo_status_bar()
+    time_12_24 = device.demo_status_bar()
     failed = []
     try:
         for lang in langs if screens - {"themed_icons"} else []:
@@ -572,6 +611,7 @@ def main():
         device.shell(f"am force-stop {PKG}")
         device.put_launcher_db(original_db)
         device.set_locale(original_locale)
+        device.put_status_bar_back(time_12_24)
         device.key("HOME")
     if failed:
         print("failed:", ",".join(failed))
