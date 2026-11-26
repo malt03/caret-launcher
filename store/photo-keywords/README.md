@@ -1,17 +1,17 @@
-# 写真アプリの検索文字列の例（言語別）
+# Photo app search keyword examples (per language)
 
-ストアの掲載情報（詳しい説明）と、言語別のスクリーンショット（検索と検索文字列の画面）で使う、写真アプリ（Google フォト）に登録する検索文字列の例。ファイル名は Google Play の掲載情報の言語コード（`app/src/main/play/listings/` と同じ）。
+Examples of search keywords registered for the photo app (Google Photos), used in the store listing (the full description), the per-language screenshots (the search and search keyword screens) and the feature graphic. The file names are the Google Play listing language codes (the same as in `app/src/main/play/listings/`).
 
 ```json
 {
-  "keywords": ["検索画面で入力する語", "検索文字列の画面に一緒に出す語"],
-  "appName": "その言語に設定した端末での、写真アプリの表示名",
-  "reason": "選んだ理由（その言語で書く。en-US と ja-JP にはない）"
+  "keywords": ["the word typed on the search screen", "a word shown with it on the search keywords screen"],
+  "appName": "the photo app's name on a device set to that language",
+  "reason": "why these were chosen (written in that language; en-US and ja-JP have none)"
 }
 ```
 
-- 日本語は「しゃしん」と「photo」（漢字は直接打てないので読みを登録する、という例として説得力がある）
-- 英語は日本語ほど良い例がなかったので「gallery」（他社の端末のギャラリーアプリの名前）と「fotos」（スペイン語）
-- ほかの言語は、その言語の話者として答えるサブエージェントに、その言語で質問して決めた（2026-11-26）。条件は、その言語に設定した端末でのアプリ名の書き出しではないこと、実際に登録しそうで短いこと、少なくとも一つは標準のキーボードでそのまま打てること
-- 検索はアクセント記号を区別しない処理をしていない（docs/spec.md 2.2）。「galería」「álbum」のように記号の付いた語は、打つときも付ける必要がある
-- `appName` は回答者の認識で、実機では確かめていない（スクリーンショットを撮るときに確かめる）
+- Japanese uses 「しゃしん」 and 「photo」. Kanji cannot be typed directly, so registering the reading makes a convincing example.
+- English had no example as good as Japanese, so it uses "gallery" (the name of the gallery app on other makers' phones) and "fotos" (Spanish).
+- The other languages were decided by asking subagents, in each language, to answer as native speakers of it (2026-11-26). The conditions: the keyword is not the start of the photo app's name on a device set to that language, it is short and something people would really register, and at least one of the two can be typed as is on the standard keyboard.
+- The search does not ignore accents (docs/spec.md 2.2). Words with accents, such as "galería" and "álbum", must be typed with them.
+- `appName` is the label of the Google Photos app (`/product/app/Photos/Photos.apk` on the Pixel_10 emulator, read with `aapt2 dump badging`) for that language, falling back as Android does. Before that check, some languages had a guessed name; with the real label, hi-IN's "photo" is now the start of the app name ("Photos").

@@ -3,6 +3,6 @@
     "hinh",
     "thư viện"
   ],
-  "appName": "Ảnh",
+  "appName": "Photos",
   "reason": "Người Việt (nhất là ở miền Nam) hay gọi ảnh là \"hình\", như \"chụp hình\", \"coi hình\". Nhiều người còn gõ không dấu, nên \"hinh\" là cách họ thật sự sẽ gõ, và nó không trùng với phần đầu của tên \"Ảnh\". \"Thư viện\" là tên ứng dụng xem ảnh trên Samsung và nhiều điện thoại Android khác (giống \"gallery\" trong tiếng Anh), nên người đổi máy sẽ tự nhiên gõ từ này. Lưu ý: tôi khá chắc nhãn trên màn hình chính bản tiếng Việt là \"Ảnh\", nhưng chưa xác minh trên máy thật. Có thể nó hiện là \"Google Photos\". Trường hợp nào thì \"hinh\" và \"thư viện\" cũng không phải phần đầu của tên."
 }
