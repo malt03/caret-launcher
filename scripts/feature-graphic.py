@@ -14,13 +14,15 @@ The texts of a language:
   store screenshots) and "appName" (the photo app's name, found above the field).
 
 The fonts come from Google Fonts: Inter, with the language's Noto Sans for the scripts Inter lacks.
-Arabic and Hebrew mirror the layout. Texts that are too long shrink to fit their line.
+Arabic and Hebrew mirror the layout. Texts that are too long shrink to fit their line, and the script
+warns about each one it shrank (the page reports them), so the output need not be checked by eye for
+that; it fails if a text still overflows at the smallest size.
 
 Usage: scripts/feature-graphic.py [--langs en-US,ja-JP,...] [--out DIR]
   Without --langs, it renders every language that has store/feature-graphic/<lang>.json.
   With --out, it writes DIR/<lang>.png instead (to preview without touching the listings).
 """
-import argparse, html, json, os, shutil, string, subprocess, sys, tempfile
+import argparse, html, json, os, re, shutil, string, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORE = os.path.join(ROOT, "store")
@@ -49,7 +51,8 @@ def page(lang):
     noto = NOTO.get(lang)
     if noto:
         families.append(noto.replace(" ", "+") + ":wght@400;600;700")
-    tagline = "".join(f'<div data-fit="464">{html.escape(line)}</div>' for line in texts["tagline"])
+    tagline = "".join(f'<div data-fit="464" data-part="tagline line {i}">{html.escape(line)}</div>'
+                      for i, line in enumerate(texts["tagline"], 1))
     template = string.Template(open(os.path.join(STORE, "feature-graphic.html"), encoding="utf-8").read())
     return template.substitute(
         lang=HTML_LANG.get(lang, lang),
@@ -63,21 +66,46 @@ def page(lang):
     )
 
 
+def chrome(source, *args):
+    return subprocess.run([CHROME, "--headless", "--hide-scrollbars", "--force-device-scale-factor=1",
+                           f"--window-size={WIDTH},{HEIGHT}", "--virtual-time-budget=10000", *args,
+                           "file://" + source],
+                          check=True, capture_output=True, text=True).stdout
+
+
+def fit_report(source):
+    """What the page's fit() shrank: [{part, text, max, width, from, size, overflow}]."""
+    dom = chrome(source, "--dump-dom")
+    found = re.search(r'data-fit-report="([^"]*)"', dom)
+    if not found:
+        sys.exit("The page did not report its fitting (fonts not loaded?)")
+    return json.loads(html.unescape(found.group(1)))
+
+
 def render(lang, out):
+    """Renders [lang] to [out] and returns the warnings about texts that did not fit."""
     with tempfile.TemporaryDirectory() as work:
         shutil.copy(os.path.join(STORE, "feature-graphic-bg.png"), work)
         source = os.path.join(work, "feature-graphic.html")
         open(source, "w", encoding="utf-8").write(page(lang))
         shot = os.path.join(work, "shot.png")
-        subprocess.run([CHROME, "--headless", "--hide-scrollbars", "--force-device-scale-factor=1",
-                        f"--window-size={WIDTH},{HEIGHT}", "--virtual-time-budget=10000",
-                        f"--screenshot={shot}", "file://" + source],
-                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        chrome(source, f"--screenshot={shot}")
         os.makedirs(os.path.dirname(out), exist_ok=True)
         # Flatten onto the background color: Google Play takes no alpha.
         subprocess.run(["magick", shot, "-background", "#3B4A6B", "-alpha", "remove", "-alpha", "off",
                         "-crop", f"{WIDTH}x{HEIGHT}+0+0", "+repage", "PNG24:" + out], check=True)
+        warnings = []
+        for r in fit_report(source):
+            what = (f"{lang}: the {r['part']} \"{r['text']}\" is {r['width']}px wide, "
+                    f"{r['width'] - r['max']}px over its {r['max']}px")
+            if r["overflow"]:
+                warnings.append((True, f"{what}, and still overflows at {r['size']:g}px"))
+            else:
+                warnings.append((False, f"{what}; shrunk from {r['from']:g}px to {r['size']:g}px"))
     print(f"{lang}: {os.path.relpath(out, ROOT)}")
+    for _, warning in warnings:
+        print("  warning: " + warning, file=sys.stderr)
+    return warnings
 
 
 def main():
@@ -90,10 +118,17 @@ def main():
     missing = [l for l in langs if l not in available]
     if missing:
         sys.exit(f"No texts in store/feature-graphic/ for: {', '.join(missing)}")
+    warnings = []
     for lang in langs:
         out = (os.path.join(args.out, f"{lang}.png") if args.out else
                os.path.join(LISTINGS, lang, "graphics", "feature-graphic", "1.png"))
-        render(lang, out)
+        warnings += render(lang, out)
+    if warnings:
+        print(f"\n{len(warnings)} text(s) did not fit at their size:", file=sys.stderr)
+        for _, warning in warnings:
+            print("  " + warning, file=sys.stderr)
+    if any(overflow for overflow, _ in warnings):
+        sys.exit("Some text overflows even at the smallest size")
 
 
 if __name__ == "__main__":

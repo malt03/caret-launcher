@@ -32,25 +32,34 @@
     <div class="icon">
       <svg width="120" height="120" viewBox="18 18 72 72"><path d="M54,37L54,71M45,35Q54,35 54,41Q54,35 63,35M45,73Q54,73 54,67Q54,73 63,73" fill="none" stroke="#8AB4F8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div class="name" data-fit="464">$name</div>
+    <div class="name" data-fit="464" data-part="name">$name</div>
     <div class="tagline">$tagline</div>
   </div>
   <div class="result">
     <div class="app">
       <svg width="38" height="38" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" fill="#E8EDFB"/><circle cx="9" cy="9.5" r="2" fill="#F4B400"/><path d="M4 18l5-5.5 3.5 3.5 3-3L20 18z" fill="#34A853"/><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="#4285F4" stroke-width="1.6"/></svg>
     </div>
-    <div class="label" data-fit="100">$label</div>
+    <div class="label" data-fit="100" data-part="photo app name">$label</div>
   </div>
-  <div class="field"><span data-fit="285">$typed</span><span class="caret"></span></div>
+  <div class="field"><span data-fit="285" data-part="search field">$typed</span><span class="caret"></span></div>
   <script>
     // Shrinks each [data-fit] text until it is no wider than its data-fit pixels, so a long
-    // translation stays on its line instead of overflowing.
+    // translation stays on its line instead of overflowing. What it shrank goes into
+    // body[data-fit-report] (JSON), which scripts/feature-graphic.py reads to warn.
     function fit() {
+      const report = [];
       for (const el of document.querySelectorAll('[data-fit]')) {
         const max = Number(el.dataset.fit);
-        let size = parseFloat(getComputedStyle(el).fontSize);
+        const width = el.scrollWidth;
+        const from = parseFloat(getComputedStyle(el).fontSize);
+        let size = from;
         while (el.scrollWidth > max && size > 8) el.style.fontSize = (size -= 0.5) + 'px';
+        if (size < from || el.scrollWidth > max) {
+          report.push({ part: el.dataset.part, text: el.textContent, max, width, from, size,
+                        overflow: el.scrollWidth > max });
+        }
       }
+      document.body.dataset.fitReport = JSON.stringify(report);
     }
     document.fonts.ready.then(fit);
   </script>
