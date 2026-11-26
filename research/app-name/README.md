@@ -1,74 +1,74 @@
-# アプリ名を各言語で訳すか
+# Translating the app name
 
-2026-11-26 の調査。端末に出るアプリ名（`app_name`）を、言語ごとに訳すか英語の「Caret Launcher」のままにするかを、各言語の話者に見立てたサブエージェントに聞いた。
+Research done on 2026-11-26. It asks whether the app name shown on the device (`app_name`) should be translated in each language or stay "Caret Launcher" in English. Each language was asked of a subagent playing a native speaker of that language.
 
-## 結論
+## Decision
 
-- 中国語（簡体字、zh-CN）だけ「Caret 桌面」にする（`app/src/main/res/values-zh-rCN/strings.xml`）
-- ほかの言語は「Caret Launcher」のまま
+- Simplified Chinese (zh-CN) gets "Caret 桌面" (`app/src/main/res/values-zh-rCN/strings.xml`).
+- Every other language keeps "Caret Launcher".
 
-## 経緯
+## Background
 
-ストアの掲載情報を33言語に広げたとき（55c35cf）、タイトルを各言語の感覚で決めてもらうつもりだった。ところが、ほぼ全言語が「Caret Launcher」のままになった。原因は依頼の書き方にあった。
+When the store listing grew to 33 more languages (55c35cf), each language was meant to decide its own title. Almost every language kept "Caret Launcher" instead, because of how the request was written:
 
-- 「日本語ではタイトルは Caret Launcher のまま。英語の名前が自然に聞こえるから」という例を先に見せていた
-- 「ブランドが分かるようにすること」という条件を付けていた
-- 後から書いた言語ほど、先に書かれた言語のファイルを前例として見ていた
-- 聞いたのはストアのタイトルだけで、端末のアプリ名は聞いていなかった
+- It first showed the Japanese example: "In Japanese the title stays Caret Launcher, because the English name sounds natural there."
+- It asked that the brand stay recognizable.
+- The languages written later saw the files of the earlier ones and followed them.
+- It asked only about the store title, not about the name on the device.
 
-そこで、前例を見せずに、端末のアプリ名について聞き直した。
+So the question was asked again, about the name on the device, with nothing to follow.
 
-## 聞き方
+## Method
 
-- 1言語に1つのサブエージェント（Claude）を起動し、その言語の話者として、その言語で質問した
-- ほかの言語の結果、日本語の例、ほかのランチャーの名前は見せていない
-- ツールを使わず、ファイルも読まずに、感覚だけで答えてもらった
-- まず自分の言語での名前を1つ作ってもらい（訳す、一部だけ訳す、音を写す、説明を足すなど形は自由）、それと英語のままを比べてもらった。先に案を作らせないと、ブランド名を英語のままにする方へ傾きやすいため
-- 聞いた順番
-  1. 英語圏から文化が離れていそうな言語：th、hi-IN、ar、vi、ko-KR、iw-IL、id。比べる基準として de-DE も入れた
-  2. 中国語の3つ：zh-CN、zh-HK、zh-TW
-  3. 残りの言語。ja-JP も入れた。日本語では「キャレットランチャー」は変だと開発者が感じているので、答えがその感覚と合うかを確かめるため
-- zh-CN だけ、あとから「Caret 桌面」を加えた3つで、どれが一番品質が高く見えるかを聞き足した
+- One subagent (Claude) per language, asked in that language to answer as a native speaker of it.
+- It was not shown the other languages' answers, the Japanese example, or the names of other launchers.
+- It answered from its own sense, without tools and without reading files.
+- It first made one name in its own language, in any form (a translation, a partial translation, a transliteration, an added description), and then compared that name with the English one. Asked to compare first, a model leans toward keeping a brand name in English.
+- The languages were asked in this order:
+  1. Languages that seemed culturally far from English: th, hi-IN, ar, vi, ko-KR, iw-IL and id, with de-DE as a baseline.
+  2. The three Chinese ones: zh-CN, zh-HK and zh-TW.
+  3. The rest, including ja-JP. The developer finds the Japanese transliteration "キャレットランチャー" odd, so the Japanese answer checks whether the answers match a native speaker's sense.
+- zh-CN alone was later asked which of three names, with "Caret 桌面" added, looks the highest quality.
 
-質問の日本語版（各言語にはこれを訳して聞いた）:
+The question, in English (each language got a translation of it):
 
-> あなたは〇〇語を母語とする人です。スマートフォンのアプリにも詳しいです。
+> You are a native speaker of [language], and you know smartphone apps well.
 >
-> 「Caret Launcher」という名前の Android 用ランチャー（ホームアプリ）があります。画面の下にいつもキーボードが出ていて、数文字打つとアプリを検索して開けます。キーボードの上は普通のホーム画面です。
+> There is a launcher (home screen app) for Android called "Caret Launcher". The keyboard is always shown at the bottom of the screen, and typing a few letters finds an app and opens it. Above the keyboard is an ordinary home screen.
 >
-> このアプリの名前を、〇〇語の端末でどう表示するか考えています。アプリ名は、端末の設定の「デフォルトのホームアプリ」の一覧や、アプリ情報、アプリの一覧に出ます。
+> We are deciding how to show this app's name on devices set to [language]. The app name appears in the device settings, in the "Default home app" list, in the app info and in the app list.
 >
-> 1. まず、このアプリの名前を〇〇語にするなら、どんな名前にしますか。あなたが一番自然だと思う形を1つ出してください。訳す、一部だけ訳す、音を写す、説明を足すなど、形は自由です。
-> 2. 次の2つを比べてください。
->    - A：「Caret Launcher」（英語のまま）
->    - B：1で出した名前
+> 1. First, if you gave this app a [language] name, what would it be? Give the one name in the form that seems most natural to you. The form is free: a translation, a partial translation, a transliteration of the sound, or an added description.
+> 2. Compare these two:
+>    - A: "Caret Launcher" (in English, as it is)
+>    - B: the name from question 1
 >
->    比べてほしいのは次の2点です。
->    - 〇〇語を使う人にとって、どちらが自然に感じられますか。
->    - どちらの方が、品質の高いアプリに見えますか。
-> 3. 最終的に、このアプリの名前として A と B のどちらを勧めますか。
+>    Compare two points:
+>    - Which feels more natural to people who use [language]?
+>    - Which makes the app look higher quality?
+> 3. In the end, which do you recommend as this app's name: A or B?
 >
-> 次の形で答えてください。
-> - 1の名前：（名前と文字数）
-> - 自然さ：A／B（理由）
-> - 品質の印象：A／B（理由）
-> - 勧める名前：A／B（理由）
+> Answer in this form:
+> - Name from question 1: (the name and its number of characters)
+> - Naturalness: A/B (reason)
+> - Impression of quality: A/B (reason)
+> - Recommended name: A/B (reason)
 
-各言語の質問と回答の原文は、言語ごとのファイル（[zh-CN.md](zh-CN.md) など）にある。
+Each language's question and answer, as written in that language, are in its own file ([zh-CN.md](zh-CN.md) and so on).
 
-## 結果
+## Results
 
-A は英語のまま、B はその言語で作った名前。
+A is the English name; B is the name made in the language.
 
-| 言語 | B の名前 | 自然さ | 品質の印象 | 勧める名前 |
+| Language | Name B | Naturalness | Quality | Recommended |
 |---|---|---|---|---|
-| zh-CN | 光标桌面 | **B** | A（わずかに） | **B** |
-| zh-TW | Caret 啟動器 | B（わずかに） | A | A |
-| ko-KR | 캐럿 런처 | B（わずかに） | A | A |
-| ja-JP | キャレット ランチャー | B（わずかに） | A | A |
-| ro | Lansator Caret | B（わずかに） | A | A |
-| uk | Лаунчер Caret | B（わずかに） | A | A |
-| hu-HU | Caret Indító | B（わずかに） | A | A |
+| zh-CN | 光标桌面 | **B** | A (slightly) | **B** |
+| zh-TW | Caret 啟動器 | B (slightly) | A | A |
+| ko-KR | 캐럿 런처 | B (slightly) | A | A |
+| ja-JP | キャレット ランチャー | B (slightly) | A | A |
+| ro | Lansator Caret | B (slightly) | A | A |
+| uk | Лаунчер Caret | B (slightly) | A | A |
+| hu-HU | Caret Indító | B (slightly) | A | A |
 | zh-HK | Caret 啟動器 | A | A | A |
 | ru-RU | Каретка Лаунчер | A | A | A |
 | th | แคเร็ต ลอนเชอร์ | A | A | A |
@@ -97,19 +97,19 @@ A は英語のまま、B はその言語で作った名前。
 | cs-CZ | Spouštěč Caret | A | A | A |
 | sk | Spúšťač Caret | A | A | A |
 
-zh-CN の追加の質問（A「Caret Launcher」、B「光标桌面」、C「Caret 桌面」の品質の印象）では、C > A > B だった。
+In zh-CN's follow-up, which compared the impression of quality of A "Caret Launcher", B "光标桌面" and C "Caret 桌面", the order was C > A > B.
 
-## 読み取れたこと
+## Findings
 
-- 品質の印象は、34言語すべてで英語のままの方が上だった。半分だけ訳した名前や音を写した名前は、機械翻訳や安いコピーアプリに見えるという理由がほぼすべての言語で出た
-- 自然さでは7言語が自分の言語の方をわずかに上とした。zh-CN 以外は差が小さいとして、最終的に英語のままを勧めた
-- ja-JP も英語のままを勧め、開発者の感覚と合っていた
-- zh-CN だけが違った。中国大陸ではランチャーを「桌面」と呼ぶのが定着していて（「Nova 桌面」「微软桌面」、設定の「默认桌面」）、「Launcher」という言葉が一般の人にあまり通じないため。ほかの言語では「Launcher」がそのまま通じる言葉になっている
-- 音を写すと、別の言葉に読まれる言語があった。ko-KR、th、hi-IN では宝石や金の「カラット」、iw-IL では「cart」やカート、ru-RU の「каретка」はタイプライターのキャリッジ
-- 「Launcher」の部分だけを訳すとき、北欧・オランダ・ドイツ・ブラジルでは「ホーム画面」にあたる言葉が選ばれた。設定の一覧の見出しと同じ言葉が重なってくどい、という指摘もあった
-- 多くの言語が、何をするアプリかは名前ではなくストアの説明文で伝えるべきだとした
+- In all 34 languages, the English name made the better impression of quality. Nearly every language said a half-translated or transliterated name looks machine-translated or like a cheap copy.
+- Seven languages found their own name slightly more natural. All of them but zh-CN called the difference small and still recommended the English name.
+- ja-JP also recommended the English name, which matches the developer's sense.
+- zh-CN alone differed. In mainland China a launcher is commonly called 桌面 ("Nova 桌面", "微软桌面", and the settings' "默认桌面"), and most people do not know the word "Launcher". In the other languages, "Launcher" is a word people understand as it is.
+- A transliteration reads as another word in some languages: a carat of gold or gems in ko-KR, th and hi-IN, a cart in iw-IL, and a typewriter carriage for the Russian "каретка".
+- Where only "Launcher" was translated, the Nordic languages, Dutch, German and Brazilian Portuguese chose their word for "home screen". Some noted that this repeats the heading of the settings list.
+- Many languages said the store description, not the name, should tell what the app does.
 
-## 注意
+## Caveats
 
-- すべて同じモデルで、本物の話者ではない。こちらから例を出していないのに、ほぼすべての言語が Nova Launcher を例に挙げていた。モデルが持つ知識の癖が共通して出ている可能性があり、全員一致でも独立した34人の意見ほど重くは見られない
-- 意見が割れた言語や大事な言語は、できれば本物の話者に確かめる
+- Every answer came from the same model, not from real native speakers. Without being given any example, almost every language cited Nova Launcher. The answers may share the model's own habits, so a unanimous result weighs less than 34 independent opinions.
+- Where the languages disagree, or where a language matters most, check with a real native speaker if possible.

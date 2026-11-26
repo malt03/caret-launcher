@@ -1,8 +1,8 @@
 # it-IT
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 La tua lingua madre è l'italiano e conosci bene le app per smartphone.
 
@@ -27,7 +27,7 @@ Rispondi in questa forma:
 
 Non usare nessuno strumento e non leggere nessun file; rispondi solo in base alla tua sensazione.
 
-## 回答
+## Answer
 
 - Nome della domanda 1: «Caret Avvio Rapido» (18 caratteri, spazi inclusi). È una traduzione parziale: «Caret» resta come marchio e «Launcher» diventa «Avvio Rapido», che descrive la funzione: si scrive qualche lettera e l'app si apre subito.
 

@@ -1,8 +1,8 @@
 # pl-PL
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Twoim językiem ojczystym jest polski i dobrze znasz aplikacje na smartfony.
 
@@ -27,7 +27,7 @@ Odpowiedz w tej formie:
 
 Nie używaj żadnych narzędzi i nie czytaj żadnych plików; odpowiadaj tylko na podstawie swojego wyczucia.
 
-## 回答
+## Answer
 
 - Nazwa z pytania 1: „Caret – ekran główny” (20 znaków). Zostawiłbym markę „Caret” i zamienił tylko „Launcher” na polski opis tego, czym aplikacja jest. Nie tłumaczę „Caret”, bo „Karetka” to po polsku ambulans, a „Kursor” traci charakter marki.
 

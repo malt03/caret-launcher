@@ -1,8 +1,8 @@
 # tr-TR
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Ana dilin Türkçe ve akıllı telefon uygulamalarını iyi tanıyorsun.
 
@@ -27,7 +27,7 @@ Bu uygulamanın adının, dili Türkçe olarak ayarlanmış cihazlarda nasıl g�
 
 Hiçbir araç kullanma ve hiçbir dosya okuma; yalnızca kendi hissine göre yanıtla.
 
-## 回答
+## Answer
 
 - 1. sorudaki ad: "Caret Başlatıcı" (15 karakter). "Caret" marka adı olduğu için olduğu gibi kalıyor, "Launcher" Türkçeye "Başlatıcı" olarak çevriliyor. Bu kısmi bir çeviri. "Caret" kelimesini "İmleç" diye çevirmek ("İmleç Başlatıcı") marka adını yok ediyor ve kulağa garip geliyor, bu yüzden onu seçmedim.
 

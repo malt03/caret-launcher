@@ -1,8 +1,8 @@
 # id
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Kamu penutur asli bahasa Indonesia dan sangat akrab dengan aplikasi ponsel pintar.
 
@@ -27,7 +27,7 @@ Jawab dengan format berikut:
 
 Jangan gunakan alat apa pun dan jangan membaca file apa pun; jawab hanya berdasarkan rasamu.
 
-## 回答
+## Answer
 
 - Nama di nomor 1: "Peluncur Caret" (14 karakter, termasuk spasi)
 

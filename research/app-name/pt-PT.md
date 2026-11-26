@@ -1,8 +1,8 @@
 # pt-PT
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 A tua língua materna é o português, vives em Portugal e conheces bem as aplicações para telemóvel.
 
@@ -27,7 +27,7 @@ Responde neste formato:
 
 Não uses nenhuma ferramenta nem leias nenhum ficheiro; responde só pela tua intuição.
 
-## 回答
+## Answer
 
 - Nome da pergunta 1: «Iniciador Caret» (15 caracteres). «Iniciador» é o termo que algumas traduções em português usam para «launcher». Mantive «Caret» porque é o nome próprio. Uma tradução completa, como «Iniciador Cursor», perderia a marca.
 - Naturalidade: A. Os portugueses estão muito habituados a nomes de aplicações em inglês, como «Nova Launcher», «Pixel Launcher» ou «Microsoft Launcher». «Launcher» é a palavra que se ouve de facto, e «iniciador» soa a tradução de máquina ou a termo técnico de menu. Além disso, «Caret» não é uma palavra portuguesa. Juntar uma palavra portuguesa a uma inglesa dá um híbrido estranho, e nem assim o nome fica compreensível.

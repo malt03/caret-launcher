@@ -1,8 +1,8 @@
 # cs-CZ
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Jsi rodilý mluvčí češtiny a v aplikacích pro chytré telefony se dobře vyznáš.
 
@@ -27,7 +27,7 @@ Odpověz v této podobě:
 
 Nepoužívej žádné nástroje a nečti žádné soubory; odpověz jen podle svého citu.
 
-## 回答
+## Answer
 
 - Název z otázky 1: „Spouštěč Caret“ (14 znaků). „Spouštěč“ je česká obdoba slova „launcher“, „Caret“ zůstává jako vlastní jméno.
 - Přirozenost: A. Čeští uživatelé Androidu slovo „launcher“ běžně znají a používají, třeba u Nova Launcher, Niagara Launcher nebo Microsoft Launcher. Překlad „spouštěč“ je sice správná čeština, ale u launcherů se skoro nepoužívá. Působí spíš jako slovo z Windows (spouštěč úloh) nebo jako strojový překlad. V seznamu „Výchozí aplikace domovské obrazovky“ i v seznamu aplikací stojí vedle sebe většinou anglické názvy, takže anglický název mezi ně zapadne lépe.

@@ -1,8 +1,8 @@
 # vi
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Bạn là người bản ngữ tiếng Việt và rất quen thuộc với các ứng dụng trên điện thoại thông minh.
 
@@ -27,7 +27,7 @@ Hãy trả lời theo dạng sau:
 
 Đừng dùng công cụ nào và đừng đọc tệp nào; chỉ trả lời theo cảm nhận của bạn.
 
-## 回答
+## Answer
 
 - Tên ở câu 1: "Trình khởi chạy Caret" (21 ký tự, tính cả dấu cách). Tôi giữ "Caret" như tên riêng và chỉ dịch "Launcher". "Trình khởi chạy" là cách dịch hay gặp trong giao diện tiếng Việt.
 

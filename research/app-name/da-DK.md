@@ -1,8 +1,8 @@
 # da-DK
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Du har dansk som modersmål og kender godt til apps på smartphones.
 
@@ -27,7 +27,7 @@ Svar i denne form:
 
 Brug ingen værktøjer, og læs ingen filer; svar kun ud fra din fornemmelse.
 
-## 回答
+## Answer
 
 - Navn fra spørgsmål 1: "Caret Startskærm" (16 tegn). Det er en delvis oversættelse: "Caret" beholdes som varemærke, og "Launcher" bliver til det danske ord, som Android selv bruger ("Standardapp til startskærm").
 

@@ -1,8 +1,8 @@
 # de-DE
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Deine Muttersprache ist Deutsch, und du kennst dich mit Smartphone-Apps gut aus.
 
@@ -27,7 +27,7 @@ Antworte in dieser Form:
 
 Verwende keine Werkzeuge und lies keine Dateien; antworte nur nach deinem Gefühl.
 
-## 回答
+## Answer
 
 - Name aus Frage 1: „Caret Startbildschirm“ (21 Zeichen inkl. Leerzeichen). Ich habe nur „Launcher“ übersetzt. „Caret“ bleibt, weil es ein Eigenname ist und es keine griffige deutsche Entsprechung gibt („Schreibmarke“ wäre korrekt, klingt aber nach Textverarbeitung aus den 90ern).
 

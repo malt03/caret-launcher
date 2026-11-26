@@ -1,8 +1,8 @@
 # fi-FI
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Äidinkielesi on suomi, ja tunnet älypuhelinsovellukset hyvin.
 
@@ -27,7 +27,7 @@ Vastaa tässä muodossa:
 
 Älä käytä mitään työkaluja äläkä lue mitään tiedostoja; vastaa vain oman tuntumasi perusteella.
 
-## 回答
+## Answer
 
 - Kysymyksen 1 nimi: Caret-käynnistin (16 merkkiä)
 - Luontevuus: A (Suomalaiset käyttäjät ovat tottuneet englanninkielisiin sovellusnimiin, myös käynnistysohjelmissa. Esimerkiksi Nova Launcher ja Microsoft Launcher näkyvät suomenkielisissäkin laitteissa englanniksi. "Caret" on erisnimi, jota ei voi kääntää luontevasti: "kohdistin" tai "sirkumfleksi" kuulostaisi oudolta. Siksi B:n puolikäännös sekoittaa kahta kieltä. "Käynnistin" on lisäksi harvinainen sana tässä merkityksessä. Androidin suomenkielinen käyttöliittymä puhuu "aloitusnäyttösovelluksesta", joten "käynnistin" ei vastaa järjestelmän omaa sanastoa.)

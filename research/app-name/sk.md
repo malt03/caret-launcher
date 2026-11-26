@@ -1,8 +1,8 @@
 # sk
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Si rodený hovoriaci po slovensky a v aplikáciách pre smartfóny sa dobre vyznáš.
 
@@ -27,7 +27,7 @@ Odpovedz v tejto podobe:
 
 Nepoužívaj žiadne nástroje a nečítaj žiadne súbory; odpovedz len podľa svojho citu.
 
-## 回答
+## Answer
 
 - Názov z otázky 1: „Spúšťač Caret“ (13 znakov). Prirodzenejšie poradie je takéto, nie „Caret Spúšťač“. Slovo „spúšťač“ sa v slovenčine pre launcher bežne používa, napríklad v recenziách a v lokalizáciách.
 - Prirodzenosť: A. Slovenskí používatelia Androidu poznajú „launcher“ ako bežné slovo (Nova Launcher, Pixel Launcher, Microsoft Launcher). V zozname „Predvolená aplikácia domovskej obrazovky“ sú ostatné položky takmer vždy po anglicky, takže „Caret Launcher“ tam pôsobí ako normálny názov. „Spúšťač Caret“ by v tom zozname trčal a pripomínal by skôr popis než značku. Navyše „spúšťač“ pôsobí trochu technicky a staršie. Pod tým slovom si ľudia skôr predstavia spúšťač vo fotoaparáte alebo spúšť.

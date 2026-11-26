@@ -1,8 +1,8 @@
 # sv-SE
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Du har svenska som modersmål och kan mycket om appar i smartphones.
 
@@ -27,7 +27,7 @@ Svara i den här formen:
 
 Använd inga verktyg och läs inga filer; svara bara utifrån din känsla.
 
-## 回答
+## Answer
 
 - Namn från fråga 1: "Caret Startskärm" (16 tecken). Jag behåller "Caret" och översätter bara "Launcher". Det finns inget bra svenskt ord för "caret" ("markör" eller "insättningspunkt" låter tekniskt och saknar varumärkeskänsla). "Startskärm" är det ord som svenska Android själv använder, till exempel i "Standardapp för startskärm".
 

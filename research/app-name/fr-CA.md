@@ -1,8 +1,8 @@
 # fr-CA
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Ta langue maternelle est le français, tu vis au Québec et tu connais bien les applis pour cellulaire.
 
@@ -27,7 +27,7 @@ Réponds sous cette forme :
 
 N'utilise aucun outil et ne lis aucun fichier ; réponds seulement selon ton ressenti.
 
-## 回答
+## Answer
 
 - Nom de la question 1 : « Lanceur Caret » (13 caractères, espace compris). J'ai gardé « Caret » comme marque et traduit seulement le mot générique, dans l'ordre normal en français (le nom commun d'abord). « Lanceur d'applications » est le terme courant en français pour « launcher ».
 

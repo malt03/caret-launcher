@@ -1,8 +1,8 @@
 # ro
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Limba ta maternă este româna și cunoști bine aplicațiile pentru smartphone.
 
@@ -27,7 +27,7 @@ Răspunde în această formă:
 
 Nu folosi niciun instrument și nu citi niciun fișier; răspunde doar după intuiția ta.
 
-## 回答
+## Answer
 
 - Numele de la întrebarea 1: „Lansator Caret” (14 caractere). Am păstrat „Caret” ca nume propriu și am tradus doar „Launcher” prin „Lansator”, termenul pe care îl folosește Android în română. Ordinea este cea firească în română, cu substantivul înaintea numelui propriu.
 - Naturalețe: B, dar doar puțin. „Lansator” e cuvântul pe care utilizatorul îl vede deja în setări, iar ordinea cuvintelor sună românește. Totuși, „Caret Launcher” nu sună străin: vorbitorii de română sunt obișnuiți cu nume de aplicații în engleză, precum Nova Launcher, Niagara Launcher sau Microsoft Launcher. „Caret” nu spune nimic utilizatorului obișnuit în niciuna dintre variante.

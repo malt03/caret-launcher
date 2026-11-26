@@ -1,8 +1,8 @@
 # nl-NL
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Je moedertaal is Nederlands en je kent smartphone-apps goed.
 
@@ -27,7 +27,7 @@ Antwoord in deze vorm:
 
 Gebruik geen tools en lees geen bestanden; antwoord alleen op je gevoel.
 
-## 回答
+## Answer
 
 - Naam uit vraag 1: "Caret Startscherm" (17 tekens, spatie meegeteld). "Startscherm" is het woord dat Android in het Nederlands zelf gebruikt, zoals in "Standaard startscherm-app". "Caret" laat ik staan, want dat is de merknaam en er bestaat geen gangbaar Nederlands woord voor.
 

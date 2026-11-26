@@ -1,8 +1,8 @@
 # pt-BR
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Sua língua materna é o português, você mora no Brasil e conhece bem apps de celular.
 
@@ -27,7 +27,7 @@ Responda neste formato:
 
 Não use nenhuma ferramenta nem leia nenhum arquivo; responda só pela sua intuição.
 
-## 回答
+## Answer
 
 - Nome da pergunta 1: "Caret Tela Inicial" (18 caracteres)
 

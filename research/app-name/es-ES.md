@@ -1,8 +1,8 @@
 # es-ES
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Tu lengua materna es el español, vives en España y conoces bien las apps para móviles.
 
@@ -27,7 +27,7 @@ Responde con este formato:
 
 No uses ninguna herramienta ni leas ningún archivo; responde solo según tu intuición.
 
-## 回答
+## Answer
 
 - Nombre de la pregunta 1: «Lanzador Caret» (14 caracteres). He mantenido «Caret» como marca y he traducido «Launcher» por «lanzador», que es la traducción que se ve a veces en España. Lo he puesto delante, como pide el orden natural del español.
 

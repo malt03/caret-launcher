@@ -1,8 +1,8 @@
 # no-NO
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Du har norsk som morsmål og kjenner godt til apper på smarttelefoner.
 
@@ -27,7 +27,7 @@ Svar i denne formen:
 
 Ikke bruk noen verktøy, og ikke les noen filer; svar bare ut fra magefølelsen din.
 
-## 回答
+## Answer
 
 - Navn fra spørsmål 1: «Caret startskjerm» (17 tegn)
 - Naturlighet: A (Nordmenn er svært vant til engelske appnavn, og launchere heter nesten alltid noe på engelsk, for eksempel Nova Launcher og Niagara Launcher. «Caret» er uansett et engelsk ord som få nordmenn kjenner (på norsk heter det «skrivemarkør»). Derfor blir B en blanding av engelsk og norsk som minner litt om maskinoversettelse. B forklarer riktignok hva appen er, og passer inn i listen «Standard startskjerm-app». Likevel føles «Caret Launcher» som et ekte produktnavn, mens «Caret startskjerm» føles mer som en beskrivelse.)

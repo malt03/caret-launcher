@@ -1,8 +1,8 @@
 # hu-HU
 
-質問も回答も、その言語の原文のまま。
+The question and the answer, as written in the language.
 
-## 質問
+## Question
 
 Anyanyelved a magyar, és jól ismered az okostelefonos alkalmazásokat.
 
@@ -27,7 +27,7 @@ Ebben a formában válaszolj:
 
 Ne használj semmilyen eszközt, és ne olvass el semmilyen fájlt; csak az érzésed alapján válaszolj.
 
-## 回答
+## Answer
 
 - Az 1. kérdés neve: „Caret Indító” (12 karakter, szóközzel együtt). A „Caret” márkanév marad, a „Launcher” helyére a magyarul is használt „indító” kerül (vö. „alkalmazásindító”). Szóba jött a „Caret Kezdőképernyő” (19 karakter) is. Ez pontosabb, mert a magyar Android is a „kezdőképernyő-alkalmazás” kifejezést használja, de hosszú, és a listákban könnyen levágódik.
 
