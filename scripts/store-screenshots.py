@@ -22,7 +22,12 @@ Gemini and Chrome as the share buttons, the store wallpaper, themed icons off, a
 "show recently copied text" suggestion off. A language whose Gboard asks for a layout the first
 time (Japanese) needs that answered once.
 
-Usage: scripts/store-screenshots.py --serial emulator-5556 --device phone|tablet|fold [--langs de-DE,fr-FR]
+Every screen with the search field focused is taken in a frame where its blinking cursor shows,
+and the script fails if the cursor doesn't blink. --screens takes only some screens again (home,
+search, all_apps, search_keywords, share_text, themed_icons, and on a fold home_4x3 and
+home_folded).
+
+Usage: scripts/store-screenshots.py --serial emulator-5556 --device phone|tablet|fold [--langs de-DE,fr-FR] [--screens home,search]
 """
 import argparse
 import base64
@@ -85,6 +90,11 @@ PROFILES = {
     },
 }
 FOLD_DIR = os.path.join(ROOT, "store/screenshots/fold")
+# The screens --screens takes: the names' keys, and the foldable's two extra home screens.
+SCREENS = list(PHONE_NAMES) + ["home_4x3", "home_folded"]
+# A blinking cursor changes the field by about 50 (tablet) to 75 (phone) fully changed pixels;
+# without it, the frames are the same.
+CURSOR_PIXELS = 20
 
 # Google Play's listing language -> the device locale.
 # (Android names Chinese by script, and has no es-419 or plain ar among its device locales.)
@@ -251,10 +261,24 @@ def mean_in(png, box):
     return float(out.stdout)
 
 
-def with_cursor(device, box, frames=6):
-    """The frame in which the field's blinking cursor shows (the field is darkest then)."""
-    shots = [device.screencap() for _ in range(frames)]
-    return min(shots, key=lambda png: mean_in(png, box))
+def with_cursor(device, box, frames=8, attempts=4):
+    """The frame in which the field's blinking cursor shows (the field is darkest then).
+
+    The frames have to differ in the field, or no frame has the cursor: the field can lose the
+    focus, and even focused, its cursor sometimes doesn't blink until the field is tapped. Then
+    the field is tapped (at its middle, past the text: the cursor stays at the end) and the frames
+    are taken again."""
+    l, t, r, b = box
+    for attempt in range(attempts):
+        if attempt:
+            device.tap((l + r) // 2, (t + b) // 2)
+            time.sleep(5)  # past the insertion handle that a tap shows for 4 s
+        shots = [device.screencap() for _ in range(frames)]
+        means = [mean_in(png, box) for png in shots]
+        # The difference as a number of fully changed pixels.
+        if (max(means) - min(means)) * (r - l) * (b - t) > CURSOR_PIXELS:
+            return shots[means.index(min(means))]
+    raise RuntimeError("no blinking cursor in the search field")
 
 
 def res_string(lang, name):
@@ -324,13 +348,26 @@ def out_dir(profile, lang):
     return FOLD_DIR if lang == "en-US" else os.path.join(FOLD_DIR, lang)
 
 
-def shoot_language(device, profile, lang, out):
+def shoot_language(device, profile, lang, out, screens):
+    """Takes [screens] but themed_icons (taken in a pass of its own)."""
     keywords = json.load(open(os.path.join(KEYWORDS, f"{lang}.json"), encoding="utf-8"))["keywords"]
     device.set_locale(DEVICE_LOCALE.get(lang, lang))
     set_photo_keywords(device, keywords)
     field = settled_home(device, profile, keywords[0])
-    save(device, profile, with_cursor(device, field), out, "home")
+    if "home" in screens:
+        save(device, profile, with_cursor(device, field), out, "home")
+    if screens & {"search", "all_apps", "search_keywords"}:  # they need the photo app's name
+        shoot_photos(device, profile, lang, out, screens, keywords, field)
+    if "share_text" in screens:
+        shoot_share_text(device, profile, lang, out)
+    if "home_4x3" in screens:
+        shoot_wide_home(device, profile, out)
+    if "home_folded" in screens:
+        shoot_folded_home(device, profile, out)
 
+
+def shoot_photos(device, profile, lang, out, screens, keywords, field):
+    """search, all_apps and search_keywords, which find the photo app."""
     device.set_search_text(keywords[0])
     # The photo app's name, as the only result shows it (the name in this locale).
     photos = []
@@ -341,9 +378,13 @@ def shoot_language(device, profile, lang, out):
     if not photos:
         raise RuntimeError(f"{lang}: {keywords[0]} found no app")
     time.sleep(1)
-    save(device, profile, with_cursor(device, field), out, "search")
+    if "search" in screens:
+        save(device, profile, with_cursor(device, field), out, "search")
+    if not screens & {"all_apps", "search_keywords"}:
+        home(device)
+        return
 
-    if profile["names"]["all_apps"]:
+    if profile["names"]["all_apps"]:  # search_keywords long-presses the app in all apps
         cx, cy = (field[0] + field[2]) // 2, (field[1] + field[3]) // 2
         for attempt in range(3):  # the swipe sometimes doesn't open all apps on a slow emulator
             home(device)
@@ -355,22 +396,26 @@ def shoot_language(device, profile, lang, out):
                 if attempt == 2:
                     raise
         time.sleep(2)
-        save(device, profile, device.screencap(), out, "all_apps")
+        if "all_apps" in screens:
+            save(device, profile, device.screencap(), out, "all_apps")
     else:  # all apps is always on screen
         home(device)
         time.sleep(2)
 
-    device.long_press(*device.find({photos[0]}))
-    time.sleep(1.5)
-    device.tap(*device.find({res_string(lang, "menu_search_terms"), res_string(lang, "menu_search_terms_short")}))
-    time.sleep(3)
-    save(device, profile, device.screencap(), out, "search_keywords")
-    device.key("BACK")
-    time.sleep(1)
+    if "search_keywords" in screens:
+        device.long_press(*device.find({photos[0]}))
+        time.sleep(1.5)
+        device.tap(*device.find({res_string(lang, "menu_search_terms"), res_string(lang, "menu_search_terms_short")}))
+        time.sleep(3)
+        save(device, profile, device.screencap(), out, "search_keywords")
+        device.key("BACK")
+        time.sleep(1)
     device.key("BACK")
     home(device)
     time.sleep(2)
 
+
+def shoot_share_text(device, profile, lang, out):
     device.long_press(*profile["empty_home"])
     time.sleep(1.5)
     device.tap(*device.find({res_string(lang, "share_text_title")}))
@@ -378,9 +423,6 @@ def shoot_language(device, profile, lang, out):
     save(device, profile, device.screencap(), out, "share_text")
     device.key("BACK")
     home(device)
-    if "wide_size" in profile:
-        shoot_wide_home(device, profile, out)
-        shoot_folded_home(device, profile, out)
 
 
 def favorites(db_bytes):
@@ -444,20 +486,10 @@ def shoot_folded_home(device, profile, out):
             device.put_launcher_db(open(f.name, "rb").read())
         field = home(device, 8)
         time.sleep(2)
-        # The outer screen's field needs a tap to take the focus (the keyboard can show without
-        # it), and even focused, its cursor sometimes doesn't blink until it is tapped again.
-        for attempt in range(4):
-            device.tap((field[0] + field[2]) // 2, (field[1] + field[3]) // 2)
-            time.sleep(3)
-            if not re.search(r'class="android.widget.EditText"[^>]*focused="true"', device.ui_xml()):
-                continue
-            shots = [device.screencap() for _ in range(8)]
-            means = [mean_in(png, field) for png in shots]
-            if max(means) - min(means) > 0.0003:  # the cursor blinks
-                break
-        else:
-            raise RuntimeError("no cursor in the folded screen's field")
-        png24(shots[means.index(min(means))], os.path.join(out, "07_home_folded_10x16.png"))
+        # The outer screen's field needs a tap to take the focus (the keyboard can show without it).
+        device.tap((field[0] + field[2]) // 2, (field[1] + field[3]) // 2)
+        time.sleep(3)
+        png24(with_cursor(device, field), os.path.join(out, "07_home_folded_10x16.png"))
     finally:
         device.shell("wm size reset")
         time.sleep(3)
@@ -494,10 +526,14 @@ def main():
     p.add_argument("--serial", required=True)
     p.add_argument("--device", required=True, choices=PROFILES)
     p.add_argument("--langs", help="comma-separated listing languages (default: all but en-US)")
-    p.add_argument("--no-themed", action="store_true", help="skip 06_themed_icons")
+    p.add_argument("--screens", help="comma-separated screens to take again (default: all): " + ", ".join(SCREENS))
     args = p.parse_args()
 
     profile = PROFILES[args.device]
+    names = {s for s, n in profile["names"].items() if n} | ({"home_4x3", "home_folded"} if "wide_size" in profile else set())
+    screens = set(args.screens.split(",")) if args.screens else names
+    if screens - names:
+        sys.exit(f"no such screen on a {args.device}: {sorted(screens - names)}")
     langs = args.langs.split(",") if args.langs else sorted(
         d for d in os.listdir(LISTINGS) if d != "en-US" and os.path.exists(os.path.join(KEYWORDS, f"{d}.json")))
     device = Device(args.serial)
@@ -510,16 +546,16 @@ def main():
     device.demo_status_bar()
     failed = []
     try:
-        for lang in langs:
-            print(f"{lang}: screens 1-5", flush=True)
+        for lang in langs if screens - {"themed_icons"} else []:
+            print(f"{lang}: {', '.join(s for s in SCREENS if s in screens and s != 'themed_icons')}", flush=True)
             try:
-                shoot_language(device, profile, lang, out_dir(profile, lang))
+                shoot_language(device, profile, lang, out_dir(profile, lang), screens)
             except Exception as e:  # keep going; the language is reported at the end
                 failed.append(lang)
                 print(f"{lang}: FAILED {e}", flush=True)
                 device.key("BACK")
                 device.key("HOME")
-        if not args.no_themed:
+        if "themed_icons" in screens:
             device.set_locale("en-US")
             set_themed_icons(device, profile, True)
             try:
