@@ -1,1 +1,1 @@
-Caret Launcher
+Caret Launcher - 입력해서 앱을 여는 런처
