@@ -2,7 +2,7 @@
 
 ## コンセプト
 
-常にキーボードが表示されている、テキスト入力中心の Android ホームアプリ（ランチャー）。アプリ名は Caret Launcher（入力位置を示す記号「キャレット」から）、applicationId は `com.malt03.caretlauncher`。この仕様書とソースでは CaretLauncher と書く。
+常にキーボードが表示されている、テキスト入力中心の Android ホームアプリ（ランチャー）。アプリ名は Caret Launcher（入力位置を示す記号「キャレット」から。中国語（簡体字）の端末だけ「Caret 桌面」。[research/app-name](../research/app-name/README.md)）、applicationId は `com.malt03.caretlauncher`。この仕様書とソースでは CaretLauncher と書く。
 
 - ホーム画面では常に検索フィールドにフォーカスが当たり、キーボードが表示されている
 - 入力した文字でアプリをインクリメンタルサーチし、Enter で即起動する

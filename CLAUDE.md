@@ -6,6 +6,7 @@
 
 - 仕様: [docs/spec.md](docs/spec.md)
 - Launcher3 からの取り込み方針: [docs/launcher3-porting.md](docs/launcher3-porting.md)
+- 調査記録: `research/<題目>/`（README.md に経緯・方法・結果・結論。サブエージェントとのやり取りの原文もそこに置く）
 - タスク: `tk` で管理（`.tickets/`）
 
 ## 進め方

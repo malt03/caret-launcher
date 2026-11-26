@@ -5,6 +5,7 @@
   app_info_drop_target_label.
 -->
 <resources>
+    <string name="app_name">Caret 桌面</string>
     <string name="search_hint">"搜索应用"</string>
     <string name="search_hint_share">"搜索"</string>
     <string name="menu_search_terms">搜索关键词</string>

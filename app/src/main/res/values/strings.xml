@@ -4,8 +4,10 @@
   res/values*/strings.xml (android-17.0.0_r1): all_apps_search_bar_hint, abandoned_search,
   app_info_drop_target_label.
 -->
-<resources>
-    <string name="app_name" translatable="false">Caret Launcher</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Kept in English in every language but zh-CN, where launchers are called 桌面
+         (research/app-name/README.md). -->
+    <string name="app_name" tools:ignore="MissingTranslation">Caret Launcher</string>
     <string name="search_hint">Search apps</string>
     <string name="search_hint_share">Search</string>
     <string name="menu_search_terms">Search keywords</string>
