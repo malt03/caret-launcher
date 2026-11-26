@@ -5,6 +5,8 @@
 # It asks for the Google Play service account's key (a JSON file kept outside the repository) and
 # hands its contents to this one Gradle build in ANDROID_PUBLISHER_CREDENTIALS, which the plugin
 # reads. The build runs without the Gradle daemon and the configuration cache, which would keep it.
+# It reruns the tasks: otherwise Gradle skips the files it sent last time, even when Google Play
+# refused to commit that edit. Play keeps the images it already has with the same contents.
 #
 # Usage: scripts/publish-listing.sh
 set -euo pipefail
@@ -19,4 +21,4 @@ fi
 
 export JAVA_HOME="${JAVA_HOME:-/Applications/Android Studio.app/Contents/jbr/Contents/Home}"
 ANDROID_PUBLISHER_CREDENTIALS="$(cat "$key_file")" \
-  ./gradlew --no-daemon --no-configuration-cache :app:publishListing
+  ./gradlew --no-daemon --no-configuration-cache :app:publishListing --rerun-tasks
