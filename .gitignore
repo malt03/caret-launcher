@@ -20,3 +20,5 @@ local.properties
 # the default language's (en-US) are kept.
 /app/src/main/play/listings/*/graphics/
 !/app/src/main/play/listings/en-US/graphics/
+# The foldable's (Play Console takes them by hand): only en-US's, in store/screenshots/fold/.
+/store/screenshots/fold/*/
