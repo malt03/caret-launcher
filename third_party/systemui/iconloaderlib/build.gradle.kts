@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.android.launcher3.icons"
-    compileSdk { version = release(37) }
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
     defaultConfig { minSdk = 37 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

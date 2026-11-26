@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.malt03.caretlauncher.storetools"
     compileSdk {
-        version = release(37)
+        version = release(37) { minorApiLevel = 2 }
     }
     defaultConfig {
         applicationId = "com.malt03.caretlauncher.storetools"

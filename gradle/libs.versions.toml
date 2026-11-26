@@ -16,7 +16,7 @@ constraintlayout = "2.2.2"
 fragment = "1.9.1"
 # The Kotlin that AGP builds with (its built-in Kotlin support), for the Compose compiler plugin.
 kotlin = "2.4.21"
-compose = "1.12.1"
+compose = "1.13.0"
 composeMaterial3 = "1.5.0"
 composeMaterialIcons = "1.7.8"
 # KSP for the Kotlin that AGP builds with, and Dagger with KSP support, for the widget picker.

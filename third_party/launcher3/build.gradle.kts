@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.android.launcher3"
-    compileSdk { version = release(37) }
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
     defaultConfig { minSdk = 37 }
     buildFeatures { compose = true }
     compileOptions {

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.malt03.caretlauncher.compat.launcher3"
-    compileSdk { version = release(37) }
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
     defaultConfig { minSdk = 37 }
     sourceSets {
         named("main") { kotlin.setSrcDirs(listOf("src/main/java")) }
