@@ -1,29 +1,29 @@
 [versions]
-agp = "9.5.1"
-coreKtx = "1.13.1"
+agp = "9.5.3"
+coreKtx = "1.19.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycle = "2.10.0"
-savedstate = "1.4.0"
-recyclerview = "1.3.2"
-dynamicanimation = "1.0.0"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycle = "2.11.1"
+savedstate = "1.5.0"
+recyclerview = "1.4.0"
+dynamicanimation = "1.1.0"
 graphicsShapes = "1.1.0"
-annotation = "1.7.1"
-constraintlayout = "2.2.1"
+annotation = "1.11.0"
+constraintlayout = "2.2.2"
 # Only to raise the fragment that constraintlayout brings through appcompat 1.2.0 (1.1.0, which
 # Google Play reports as outdated).
 fragment = "1.9.1"
 # The Kotlin that AGP builds with (its built-in Kotlin support), for the Compose compiler plugin.
-kotlin = "2.2.10"
-compose = "1.11.4"
+kotlin = "2.4.21"
+compose = "1.12.1"
 composeMaterial3 = "1.5.0"
 composeMaterialIcons = "1.7.8"
 # KSP for the Kotlin that AGP builds with, and Dagger with KSP support, for the widget picker.
-ksp = "2.3.4"
-dagger = "2.57.2"
-activityCompose = "1.10.1"
-window = "1.4.0"
+ksp = "2.3.14"
+dagger = "2.60.1"
+activityCompose = "1.13.0"
+window = "1.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
