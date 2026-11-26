@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lint skips everything under this directory: code copied from upstream (AOSP), or written to
+     stand in for it in upstream's shape, whose warnings are upstream's. Lint reads this file for
+     every file below it. -->
+<lint>
+    <issue id="all" severity="ignore" />
+</lint>
