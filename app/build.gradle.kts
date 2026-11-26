@@ -1,4 +1,14 @@
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.FileContent
+import com.google.api.client.http.HttpRequestInitializer
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.androidpublisher.AndroidPublisher
+import com.google.api.services.androidpublisher.AndroidPublisherScopes
+import com.google.auth.http.HttpCredentialsAdapter
+import com.google.auth.oauth2.GoogleCredentials
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -296,3 +306,101 @@ androidComponents {
         variant.sources.assets?.addGeneratedSourceDirectory(task, LicenseAssetsTask::outputDir)
     }
 }
+
+/**
+ * Uploads the release App Bundle (made by scripts/build-release.sh) to Google Play without putting
+ * it on a track: it goes into the app bundle explorer, and a release in Play Console adds it from
+ * the library. The bundle's native libraries go up with it as its native debug symbols (a zip of
+ * <abi>/<lib>.so). The only one, AndroidX's graphics-path, comes stripped, so AGP's
+ * ndk.debugSymbolLevel finds no symbols to put in the bundle, and Play Console warns that the
+ * bundle has native code without them. Both go up in one edit, which is committed only when both
+ * uploads succeed.
+ *
+ * It reads the service account key from ANDROID_PUBLISHER_CREDENTIALS, which scripts/release.sh
+ * asks for. It does not build the bundle: the signed one is built by scripts/build-release.sh,
+ * which this build (without the upload key) could not repeat.
+ */
+@UntrackedTask(because = "It uploads to Google Play.")
+abstract class UploadBundleTask : DefaultTask() {
+    @get:InputFile
+    abstract val bundle: RegularFileProperty
+
+    @get:InputDirectory
+    abstract val nativeLibs: DirectoryProperty
+
+    @get:Input
+    abstract val applicationId: Property<String>
+
+    @get:Input
+    abstract val versionCode: Property<Int>
+
+    @get:OutputFile
+    abstract val symbols: RegularFileProperty
+
+    @TaskAction
+    fun upload() {
+        val key = System.getenv("ANDROID_PUBLISHER_CREDENTIALS")?.takeIf(String::isNotEmpty)
+            ?: throw GradleException("Upload with scripts/release.sh, which asks for the service account key.")
+        val app = applicationId.get()
+        val code = versionCode.get()
+        writeSymbols()
+
+        val credentials = HttpCredentialsAdapter(
+            GoogleCredentials.fromStream(key.byteInputStream()).createScoped(AndroidPublisherScopes.ANDROIDPUBLISHER),
+        )
+        val timeouts = HttpRequestInitializer { request ->
+            credentials.initialize(request)
+            request.connectTimeout = 300_000
+            request.readTimeout = 300_000
+        }
+        val edits = AndroidPublisher.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), timeouts)
+            .setApplicationName("caret-launcher-release")
+            .build()
+            .edits()
+        val edit = edits.insert(app, null).execute().id
+        try {
+            if (edits.bundles().list(app, edit).execute().bundles.orEmpty().any { it.versionCode == code }) {
+                throw GradleException("Version code $code is already on Google Play: raise appVersionName in app/build.gradle.kts.")
+            }
+            logger.lifecycle("Uploading ${bundle.get().asFile.name} (version code $code)")
+            val uploaded = edits.bundles().upload(app, edit, FileContent("application/octet-stream", bundle.get().asFile)).execute()
+            if (uploaded.versionCode != code) {
+                throw GradleException(
+                    "The bundle has version code ${uploaded.versionCode}, not $code: build it again with scripts/build-release.sh.",
+                )
+            }
+            logger.lifecycle("Uploading the native debug symbols")
+            edits.deobfuscationfiles()
+                .upload(app, edit, code, "nativeCode", FileContent("application/octet-stream", symbols.get().asFile))
+                .execute()
+            edits.commit(app, edit).execute()
+            logger.lifecycle("Uploaded version code $code to the app bundle explorer, on no track.")
+        } catch (e: Exception) {
+            runCatching { edits.delete(app, edit).execute() }
+            throw e
+        }
+    }
+
+    private fun writeSymbols() {
+        val libs = nativeLibs.get().asFile
+        val files = libs.walkTopDown().filter { it.isFile && it.name.endsWith(".so") }.sortedBy { it.path }.toList()
+        if (files.isEmpty()) throw GradleException("No native libraries in $libs: build the release first.")
+        ZipOutputStream(symbols.get().asFile.outputStream()).use { zip ->
+            for (file in files) {
+                zip.putNextEntry(ZipEntry(file.relativeTo(libs).invariantSeparatorsPath))
+                file.inputStream().use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
+        }
+    }
+}
+
+tasks.register<UploadBundleTask>("uploadReleaseBundle") {
+    description = "Uploads the release App Bundle and its native debug symbols to Google Play, on no track."
+    bundle.set(layout.buildDirectory.file("outputs/bundle/release/app-release.aab"))
+    nativeLibs.set(layout.buildDirectory.dir("intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib"))
+    applicationId.set(android.defaultConfig.applicationId)
+    versionCode.set(appVersionCode)
+    symbols.set(layout.buildDirectory.file("outputs/native-debug-symbols/release/native-debug-symbols.zip"))
+}
+
