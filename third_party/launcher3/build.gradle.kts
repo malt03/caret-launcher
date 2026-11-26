@@ -47,4 +47,9 @@ dependencies {
     api(project(":launcher3-compat"))
     api(project(":iconloaderlib"))
     api(project(":msdllib"))
+    constraints {
+        // constraintlayout brings appcompat 1.2.0 and with it fragment 1.1.0, which Google Play
+        // reports as outdated (the app uses neither).
+        implementation(libs.androidx.fragment)
+    }
 }

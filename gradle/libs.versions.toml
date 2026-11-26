@@ -11,6 +11,9 @@ dynamicanimation = "1.0.0"
 graphicsShapes = "1.1.0"
 annotation = "1.7.1"
 constraintlayout = "2.2.1"
+# Only to raise the fragment that constraintlayout brings through appcompat 1.2.0 (1.1.0, which
+# Google Play reports as outdated).
+fragment = "1.9.1"
 # The Kotlin that AGP builds with (its built-in Kotlin support), for the Compose compiler plugin.
 kotlin = "2.2.10"
 compose = "1.11.4"
@@ -35,6 +38,7 @@ androidx-core = { group = "androidx.core", name = "core", version.ref = "coreKtx
 androidx-graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphicsShapes" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
