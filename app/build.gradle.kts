@@ -316,9 +316,9 @@ androidComponents {
  * bundle has native code without them. Both go up in one edit, which is committed only when both
  * uploads succeed.
  *
- * It reads the service account key from ANDROID_PUBLISHER_CREDENTIALS, which scripts/release.sh
- * asks for. It does not build the bundle: the signed one is built by scripts/build-release.sh,
- * which this build (without the upload key) could not repeat.
+ * It reads the service account key from ANDROID_PUBLISHER_CREDENTIALS, which
+ * scripts/build-and-upload-bundle.sh asks for. It does not build the bundle: the signed one is
+ * built by scripts/build-release.sh, which this build (without the upload key) could not repeat.
  */
 @UntrackedTask(because = "It uploads to Google Play.")
 abstract class UploadBundleTask : DefaultTask() {
@@ -340,7 +340,7 @@ abstract class UploadBundleTask : DefaultTask() {
     @TaskAction
     fun upload() {
         val key = System.getenv("ANDROID_PUBLISHER_CREDENTIALS")?.takeIf(String::isNotEmpty)
-            ?: throw GradleException("Upload with scripts/release.sh, which asks for the service account key.")
+            ?: throw GradleException("Upload with scripts/build-and-upload-bundle.sh, which asks for the service account key.")
         val app = applicationId.get()
         val code = versionCode.get()
         writeSymbols()

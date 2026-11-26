@@ -9,7 +9,7 @@
 # build only, in ANDROID_PUBLISHER_CREDENTIALS, without the Gradle daemon and the configuration cache,
 # which would keep it.
 #
-# Usage: scripts/release.sh
+# Usage: scripts/build-and-upload-bundle.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
