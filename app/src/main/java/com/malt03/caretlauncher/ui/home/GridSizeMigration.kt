@@ -3,6 +3,7 @@ package com.malt03.caretlauncher.ui.home
 import android.content.Context
 import android.graphics.Point
 import android.util.Log
+import androidx.core.content.edit
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.util.CellAndSpan
 import com.android.launcher3.util.GridOccupancy
@@ -73,7 +74,7 @@ internal object GridSizeMigration {
             migrateGrid(context, srcSize[0], srcSize[1], grid.columns, grid.rows, items)
         }
         // Save current configuration, so that the migration does not run again.
-        prefs.edit().putString(KEY_WORKSPACE_SIZE, dest).apply()
+        prefs.edit { putString(KEY_WORKSPACE_SIZE, dest) }
         return leftOut
     }
 

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
+import androidx.core.content.edit
 import com.android.intentresolver.TargetPresentationGetter
 import java.text.Collator
 
@@ -59,7 +60,7 @@ class ShareTargetStore(private val context: Context) {
 
     private fun save(newComponents: List<ComponentName>) {
         components = newComponents
-        prefs.edit().putString(KEY, newComponents.joinToString("\n") { it.flattenToString() }).apply()
+        prefs.edit { putString(KEY, newComponents.joinToString("\n") { it.flattenToString() }) }
         listeners.toList().forEach { it() }
     }
 

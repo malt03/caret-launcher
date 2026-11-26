@@ -1,5 +1,6 @@
 package com.malt03.caretlauncher.ui.home
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -13,6 +14,7 @@ import com.android.launcher3.Workspace
  *
  * [context] gives the home screen's Launcher (LauncherContextWrapper), which Workspace looks up.
  */
+@SuppressLint("ViewConstructor") // made only in code, with the home screen's controller
 class HomeWorkspace internal constructor(
     context: Context,
     private val home: HomeController,

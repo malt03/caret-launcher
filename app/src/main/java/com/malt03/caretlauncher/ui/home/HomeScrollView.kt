@@ -133,4 +133,10 @@ class HomeScrollView(context: Context, val grid: GridSpec) : NestedScrollView(co
 
     /** ui/NoPressDelay.kt: the icons show their pressed state at once. */
     override fun shouldDelayChildPressedState(): Boolean = false
+
+    /**
+     * The home screen sets WorkspaceTouchListener as this view's touch listener (the long press on
+     * empty space, as Launcher.setupViews does); a click goes through View's handling as usual.
+     */
+    override fun performClick(): Boolean = super.performClick()
 }

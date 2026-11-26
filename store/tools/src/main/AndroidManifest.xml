@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:label="Caret Launcher store tools" android:hasCode="true" />
+<!-- A helper only for scripts/store-screenshots.py, never shown in the launcher, so it has no icon. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application android:label="Caret Launcher store tools" android:hasCode="true"
+        tools:ignore="MissingApplicationIcon" />
     <instrumentation
         android:name=".SetSearchText"
         android:targetPackage="com.malt03.caretlauncher.storetools" />

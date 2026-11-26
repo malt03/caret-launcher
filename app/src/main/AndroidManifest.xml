@@ -37,6 +37,7 @@
     <application
         android:name=".CaretLauncherApplication"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -50,7 +51,6 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:resumeWhilePausing="true"
-            android:screenOrientation="unspecified"
             android:stateNotNeeded="true"
             android:taskAffinity=""
             android:windowSoftInputMode="stateAlwaysVisible|adjustResize">
@@ -99,7 +99,6 @@
         <!-- The app's settings, which the system's App info opens (docs/spec.md 8): only the
              licenses, since the launcher has no settings screen of its own. -->
         <activity android:name=".ui.AppSettingsActivity"
-            android:label="@string/app_name"
             android:theme="@style/SettingsTheme"
             android:exported="true">
             <intent-filter>
@@ -129,10 +128,13 @@
              - android.permission.BIND_WALLPAPER
              - ${applicationId}.permission.GRID_CONTROL
          -->
+        <!-- Exported for the system ("Wallpaper & style"); the manifest can require only one
+             permission, so the code checks for either, as Launcher3 does. -->
         <provider
             android:name=".provider.CustomizationProvider"
             android:authorities="${applicationId}.grid_control"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
     </application>
 
 </manifest>

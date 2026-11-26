@@ -1,5 +1,6 @@
 package com.malt03.caretlauncher.ui.home
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetHostView
 import android.content.Intent
 import android.graphics.Rect
@@ -283,7 +284,10 @@ class HomeController(
      * (Launcher.setupViews). A loaded model binds right away, so the activity calls this once it
      * holds this controller. CaretLauncher: a new grid (the activity was created again for it)
      * loads the model again, which migrates the items (Launcher.onIdpChanged).
+     * LauncherModel.forceReload is marked @VisibleForTesting upstream, where ModelInitializer calls
+     * it as well (refreshAndReloadLauncher).
      */
+    @SuppressLint("VisibleForTests")
     fun startLoading() {
         // ItemInstallQueue: the queue adds its items while the home screen is resumed.
         ItemInstallQueue.INSTANCE[context].setIconUISurface(launcher)
@@ -384,7 +388,11 @@ class HomeController(
 
     val isDragging: Boolean get() = dragController.isDragging
 
-    /** Whether a drag from another window (the widget picker) is in progress (DragDriver). */
+    /**
+     * Whether a drag from another window (the widget picker) is in progress (DragDriver).
+     * DragController.mOptions is marked @VisibleForTesting upstream.
+     */
+    @get:SuppressLint("VisibleForTests")
     val isSystemDragInProgress: Boolean
         get() = dragController.isDragging && dragController.mOptions?.simulatedDndStartPoint != null
 
@@ -414,7 +422,12 @@ class HomeController(
 
     // ---- views ----
 
-    /** Launcher.bindItems: the views of the home model's items, from scratch. */
+    /**
+     * Launcher.bindItems: the views of the home model's items, from scratch. The floating views to
+     * close are TYPE_ALL without TYPE_REBIND_SAFE, as upstream passes them: a combination of types
+     * that @FloatingViewType does not list, so lint takes it for a wrong constant.
+     */
+    @SuppressLint("WrongConstant")
     internal fun bindItems(items: List<ItemInfo>) {
         // ModelCallbacks.startBinding: the floating views (but the rebind-safe ones) close and the
         // drag is cancelled, as the views they belong to are going away.
@@ -563,7 +576,9 @@ class HomeController(
      * DragController.onAppsRemoved, before the views change (CaretLauncher): a drag of an item that
      * [matcher] matches, or out of a folder whose contents it matches, is cancelled first, so that
      * the dragged item goes back where it came from while it is still in the model (Tex-a8os).
+     * DragController.mDragObject is @VisibleForTesting upstream, where onAppsRemoved reads it.
      */
+    @SuppressLint("VisibleForTests")
     internal fun cancelDragIfAffected(matcher: Predicate<ItemInfo>) {
         val dragObject = dragController.mDragObject ?: return
         if (!dragController.isDragging) return

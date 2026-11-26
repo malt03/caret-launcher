@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.android.launcher3.allapps.AllAppsGridAdapter
 import com.android.launcher3.allapps.AlphabeticalAppsList
@@ -94,7 +95,7 @@ class SearchResults(
         view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, bottom)
     }
 
-    val isShown: Boolean get() = view.visibility == View.VISIBLE
+    val isShown: Boolean get() = view.isVisible
 
     /** The result Enter launches (AllAppsSearchBarController.onEditorAction), and its view. */
     val topResult: AppInfo?

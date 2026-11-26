@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +13,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -114,7 +115,7 @@ object ShareTargetPicker {
                     bindLabel(text, text2, first.label, if (cell.size == 1) first.subLabel else null)
                     // ChooserListAdapter.bindGroupIndicator
                     text.badgeDrawable =
-                        if (cell.size > 1) context.getDrawable(IR.drawable.chooser_group_background) else null
+                        if (cell.size > 1) ContextCompat.getDrawable(context, IR.drawable.chooser_group_background) else null
                     view.setOnClickListener {
                         if (cell.size == 1) pick(first) else showStacked(context, cell, ::pick)
                     }
@@ -159,7 +160,7 @@ object ShareTargetPicker {
         // Inflated with a parent's layout params, so that the dialog keeps the layout's width.
         val v = LayoutInflater.from(context).inflate(IR.layout.chooser_dialog, FrameLayout(context), false)
         // Make the background transparent to show dialog rounding
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         val first = targets.first()
         v.findViewById<TextView>(android.R.id.title).text = first.label
         v.findViewById<ImageView>(android.R.id.icon).setImageDrawable(first.icon)

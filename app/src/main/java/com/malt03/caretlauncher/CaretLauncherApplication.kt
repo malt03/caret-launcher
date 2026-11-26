@@ -1,5 +1,6 @@
 package com.malt03.caretlauncher
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
 import android.content.pm.LauncherApps
@@ -61,6 +62,9 @@ class CaretLauncherApplication : Application() {
         GridCustomizationsProxy(this, HomeCustomizations(iconSettings))
     }
 
+    // LauncherModel.forceReload is marked @VisibleForTesting upstream, where ModelInitializer calls
+    // it as well (refreshAndReloadLauncher).
+    @SuppressLint("VisibleForTests")
     override fun onCreate() {
         super.onCreate()
         database = LauncherDatabase(this)

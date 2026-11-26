@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- docs/spec.md 7.1, 7.2: show the wallpaper and follow the system dynamic colors. -->
     <!-- Launcher3 BaseLauncherTheme (res/values-v30/styles.xml): the framework's theme, no AppCompat. -->
     <style name="Theme.CaretLauncher" parent="@android:style/Theme.DeviceDefault.DayNight">
@@ -52,8 +52,10 @@
         <item name="workspaceSurfaceColor">@color/workspace_surface_color</item>
         <item name="bottomSheetDragHandleColor">@color/materialColorOutlineVariant</item>
     </style>
-    <style name="AppTheme.DarkMainColor" parent="AppTheme" />
-    <style name="AppTheme.DarkText" parent="AppTheme">
+    <!-- The variants below are picked by Themes.getActivityThemeRes in the launcher3 module (from the
+         wallpaper's colors), which lint does not see from this module. -->
+    <style name="AppTheme.DarkMainColor" parent="AppTheme" tools:ignore="UnusedResources" />
+    <style name="AppTheme.DarkText" parent="AppTheme" tools:ignore="UnusedResources">
         <item name="workspaceTextColor">@color/workspace_text_color_dark</item>
         <item name="workspaceShadowColor">@android:color/transparent</item>
         <item name="isWorkspaceDarkText">true</item>
@@ -61,9 +63,9 @@
         <item name="dropTargetHoverTextColor">@color/drop_target_hover_text_color_dark</item>
         <item name="dropTargetHoverButtonColor">@color/drop_target_hover_button_color_dark</item>
     </style>
-    <style name="AppTheme.Dark" parent="AppTheme" />
-    <style name="AppTheme.Dark.DarkMainColor" parent="AppTheme.Dark" />
-    <style name="AppTheme.Dark.DarkText" parent="AppTheme.DarkText">
+    <style name="AppTheme.Dark" parent="AppTheme" tools:ignore="UnusedResources" />
+    <style name="AppTheme.Dark.DarkMainColor" parent="AppTheme.Dark" tools:ignore="UnusedResources" />
+    <style name="AppTheme.Dark.DarkText" parent="AppTheme.DarkText" tools:ignore="UnusedResources">
         <item name="android:colorControlHighlight">#19212121</item>
     </style>
     <!-- The app's settings pages (SettingsPage.kt): the system's theme without the action bar, as

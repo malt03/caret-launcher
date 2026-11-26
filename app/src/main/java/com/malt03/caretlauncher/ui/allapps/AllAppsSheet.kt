@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
@@ -98,7 +99,7 @@ class AllAppsSheet(context: Context, private val isPanel: Boolean = false) : Fra
         if (point[1] < 0f) return false
         if (point[1] < handleAreaHeight) return true
         val results = searchResults
-        if (results != null && results.visibility == VISIBLE) {
+        if (results != null && results.isVisible) {
             // FastScrollRecyclerView.shouldContainerScroll: the search results have no scrollbar.
             return results.computeVerticalScrollOffset() == 0
         }

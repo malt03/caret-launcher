@@ -259,6 +259,9 @@ class LauncherRootLayout(context: Context) : FrameLayout(context) {
     // Here the drag layer ([overlay]) is over the home screen instead, so the rest is left out
     // here, and the overlay keeps only the open view (BaseDragLayer.addChildrenForAccessibility).
 
+    // TYPE_ACCESSIBLE is a combination of types that @FloatingViewType does not list, so lint takes
+    // it for a wrong constant (upstream passes it the same way).
+    @get:SuppressLint("WrongConstant")
     private val isAccessibleFloatingViewOpen: Boolean
         get() = ActivityContext.lookupContextNoThrow(context)?.let {
             AbstractFloatingView.getTopOpenViewWithType(it, AbstractFloatingView.TYPE_ACCESSIBLE) != null

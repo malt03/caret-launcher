@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import com.android.launcher3.CellLayout
 import com.android.launcher3.DeviceProfile
 import com.android.launcher3.InvariantDeviceProfile
@@ -169,7 +170,7 @@ internal class HomePreviewRenderer(
 
     private fun dispatchVisibilityAggregated(view: View, isVisible: Boolean) {
         // Similar to View.dispatchVisibilityAggregated implementation.
-        val thisVisible = view.visibility == View.VISIBLE
+        val thisVisible = view.isVisible
         if (thisVisible || !isVisible) {
             view.onVisibilityAggregated(isVisible)
         }

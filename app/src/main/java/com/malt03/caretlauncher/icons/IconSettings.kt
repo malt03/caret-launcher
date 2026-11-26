@@ -2,6 +2,7 @@ package com.malt03.caretlauncher.icons
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.android.launcher3.shapes.IconShapeModel
 import com.android.launcher3.shapes.ShapesProvider
 
@@ -23,7 +24,7 @@ class IconSettings(context: Context) {
 
     var isThemed: Boolean
         get() = prefs.getBoolean(KEY_THEMED, false)
-        set(value) = prefs.edit().putBoolean(KEY_THEMED, value).apply()
+        set(value) = prefs.edit { putBoolean(KEY_THEMED, value) }
 
     /** The selected shape, or the first one (circle) when nothing valid is stored. */
     val shape: IconShapeModel
@@ -35,7 +36,7 @@ class IconSettings(context: Context) {
     /** Returns false when [key] is not a known shape. */
     fun setShape(key: String): Boolean {
         if (ShapesProvider.iconShapes.none { it.key == key }) return false
-        prefs.edit().putString(KEY_SHAPE, key).apply()
+        prefs.edit { putString(KEY_SHAPE, key) }
         return true
     }
 
