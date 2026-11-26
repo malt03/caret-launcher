@@ -16,15 +16,13 @@ plugins {
 }
 
 /**
- * The app's version: "major.minor.patch". The version code is worked out from it
- * (major * 1,000,000 + minor * 1,000 + patch, so 1.0.0 is 1000000), so that raising the name
- * raises the code. The minor and patch numbers stay below 1,000.
+ * The app's version: the name users see ("major.minor.patch"), and the version code, a build
+ * number of its own that every bundle uploaded to Google Play raises by one, whether or not the
+ * name changes (a bundle may be uploaded again under the same name). The code started out as
+ * 1000000, so it goes on from there.
  */
 val appVersionName = "1.0.0"
-val appVersionCode = appVersionName.split(".").map(String::toInt).let { (major, minor, patch) ->
-    require(minor < 1_000 && patch < 1_000) { "minor and patch must be below 1000: $appVersionName" }
-    major * 1_000_000 + minor * 1_000 + patch
-}
+val appVersionCode = 1000001
 
 /**
  * The release signing key: the upload key of Google Play App Signing, kept outside the repository.
@@ -360,7 +358,7 @@ abstract class UploadBundleTask : DefaultTask() {
         val edit = edits.insert(app, null).execute().id
         try {
             if (edits.bundles().list(app, edit).execute().bundles.orEmpty().any { it.versionCode == code }) {
-                throw GradleException("Version code $code is already on Google Play: raise appVersionName in app/build.gradle.kts.")
+                throw GradleException("Version code $code is already on Google Play: raise appVersionCode in app/build.gradle.kts.")
             }
             logger.lifecycle("Uploading ${bundle.get().asFile.name} (version code $code)")
             val uploaded = edits.bundles().upload(app, edit, FileContent("application/octet-stream", bundle.get().asFile)).execute()
