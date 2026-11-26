@@ -311,8 +311,11 @@ androidComponents {
  * the library. The bundle's native libraries go up with it as its native debug symbols (a zip of
  * <abi>/<lib>.so). The only one, AndroidX's graphics-path, comes stripped, so AGP's
  * ndk.debugSymbolLevel finds no symbols to put in the bundle, and Play Console warns that the
- * bundle has native code without them. Both go up in one edit, which is committed only when both
- * uploads succeed.
+ * bundle has native code without them. The R8 mapping file goes up with it too, taken from the
+ * bundle (BUNDLE-METADATA/.../proguard.map), so that it is the one this bundle was built with:
+ * Play Console says it takes the mapping from a bundle by itself, but it did not for a bundle
+ * uploaded like this (2026-11-27, version code 1000001; see Play Console's ReTrace mapping file).
+ * All three go up in one edit, which is committed only when every upload succeeds.
  *
  * It reads the service account key from ANDROID_PUBLISHER_CREDENTIALS, which
  * scripts/build-and-upload-bundle.sh asks for. It does not build the bundle: the signed one is
@@ -335,6 +338,9 @@ abstract class UploadBundleTask : DefaultTask() {
     @get:OutputFile
     abstract val symbols: RegularFileProperty
 
+    @get:OutputFile
+    abstract val mapping: RegularFileProperty
+
     @TaskAction
     fun upload() {
         val key = System.getenv("ANDROID_PUBLISHER_CREDENTIALS")?.takeIf(String::isNotEmpty)
@@ -342,6 +348,7 @@ abstract class UploadBundleTask : DefaultTask() {
         val app = applicationId.get()
         val code = versionCode.get()
         writeSymbols()
+        writeMapping()
 
         val credentials = HttpCredentialsAdapter(
             GoogleCredentials.fromStream(key.byteInputStream()).createScoped(AndroidPublisherScopes.ANDROIDPUBLISHER),
@@ -371,11 +378,23 @@ abstract class UploadBundleTask : DefaultTask() {
             edits.deobfuscationfiles()
                 .upload(app, edit, code, "nativeCode", FileContent("application/octet-stream", symbols.get().asFile))
                 .execute()
+            logger.lifecycle("Uploading the R8 mapping file")
+            edits.deobfuscationfiles()
+                .upload(app, edit, code, "proguard", FileContent("application/octet-stream", mapping.get().asFile))
+                .execute()
             edits.commit(app, edit).execute()
             logger.lifecycle("Uploaded version code $code to the app bundle explorer, on no track.")
         } catch (e: Exception) {
             runCatching { edits.delete(app, edit).execute() }
             throw e
+        }
+    }
+
+    private fun writeMapping() {
+        ZipFile(bundle.get().asFile).use { aab ->
+            val entry = aab.getEntry("BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map")
+                ?: throw GradleException("The bundle has no R8 mapping file: is R8 on for the release build?")
+            aab.getInputStream(entry).use { input -> mapping.get().asFile.outputStream().use { input.copyTo(it) } }
         }
     }
 
@@ -394,11 +413,12 @@ abstract class UploadBundleTask : DefaultTask() {
 }
 
 tasks.register<UploadBundleTask>("uploadReleaseBundle") {
-    description = "Uploads the release App Bundle and its native debug symbols to Google Play, on no track."
+    description = "Uploads the release App Bundle, its native debug symbols and its R8 mapping to Google Play, on no track."
     bundle.set(layout.buildDirectory.file("outputs/bundle/release/app-release.aab"))
     nativeLibs.set(layout.buildDirectory.dir("intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib"))
     applicationId.set(android.defaultConfig.applicationId)
     versionCode.set(appVersionCode)
     symbols.set(layout.buildDirectory.file("outputs/native-debug-symbols/release/native-debug-symbols.zip"))
+    mapping.set(layout.buildDirectory.file("outputs/mapping/release/bundle-mapping.txt"))
 }
 
