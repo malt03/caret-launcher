@@ -4,5 +4,6 @@
     "album"
   ],
   "appName": "Photos",
+  "searchPrefix": "ph",
   "reason": "Sur la plupart des téléphones Android vendus en France (Samsung en tête), l'appli photos d'origine s'appelle « Galerie ». C'est donc le mot qu'un francophone tape d'instinct quand il cherche ses photos. « Album » est le mot courant pour une collection de photos, et il fait partie du vocabulaire de Google Photos lui-même. Les deux mots sont courts, ils se tapent directement sur un clavier AZERTY sans accent, et aucun n'est le début de « Photos »."
 }

@@ -9,9 +9,9 @@ The texts of a language:
 - store/feature-graphic/<lang>.json:
     "tagline": the lines under the app name;
     "name": the app name, when it is not "Caret Launcher" (the language's app_name);
-    "typed": the text in the search field, when it is not the first photo app keyword.
-- store/photo-keywords/<lang>.json: "keywords" (the first is typed in the search field, as in the
-  store screenshots) and "appName" (the photo app's name, found above the field).
+    "typed": the text in the search field, when it is not the photo app's searchPrefix.
+- store/photo-keywords/<lang>.json: "searchPrefix" (the start of the photo app's name, typed in the
+  search field, as on the search screenshot) and "appName" (the photo app's name, found above it).
 
 The fonts come from Google Fonts: Inter, with the language's Noto Sans for the scripts Inter lacks.
 Arabic and Hebrew mirror the layout. Texts that are too long shrink to fit their line, and the script
@@ -62,7 +62,7 @@ def page(lang):
         name=html.escape(texts.get("name", "Caret Launcher")),
         tagline=tagline,
         label=html.escape(photos["appName"]),
-        typed=html.escape(texts.get("typed", photos["keywords"][0])),
+        typed=html.escape(texts.get("typed", photos["searchPrefix"])),
     )
 
 

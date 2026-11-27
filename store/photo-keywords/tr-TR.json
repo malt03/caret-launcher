@@ -4,5 +4,6 @@
     "resim"
   ],
   "appName": "Fotoğraflar",
+  "searchPrefix": "fo",
   "reason": "Türkçe ayarlı telefonda uygulamanın adı \"Fotoğraflar\" olduğundan \"foto\" ve \"fotoğraf\" adın başıyla eşleşir. Bu yüzden ikisi de örnek olarak işe yaramaz. Samsung gibi telefonlardan gelen biri fotoğraflarına \"Galeri\" uygulamasından bakmaya alışıktır, bu yüzden elleri doğrudan \"galeri\" yazar. \"Resim\" de fotoğraf için günlük konuşmada çok kullanılır (\"resimlere bak\", \"resim çek\"). Bir Türk'ün aklına ilk gelen kelimelerden biri budur. İki kelime de kısadır ve özel harf içermediği için standart Türkçe klavyede doğrudan yazılır."
 }

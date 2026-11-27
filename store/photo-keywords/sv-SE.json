@@ -4,5 +4,6 @@
     "galleri"
   ],
   "appName": "Foto",
+  "searchPrefix": "fo",
   "reason": "En svensk säger oftast \"bilder\" när hen menar sina foton (\"kolla mina bilder\"), så det är troligen det första ordet hen skriver. \"Galleri\" är vad fotoappen heter i Samsung och många andra Android-telefoner, så den som har bytt telefon söker gärna på det av gammal vana. Inget av orden är början av \"Foto\". Båda är korta, vardagliga och skrivs direkt med det vanliga svenska tangentbordet."
 }

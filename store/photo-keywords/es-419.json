@@ -4,5 +4,6 @@
     "photos"
   ],
   "appName": "Fotos",
+  "searchPrefix": "fo",
   "reason": "En Latinoamérica la mayoría usa celulares Samsung, Motorola o Xiaomi, donde la app de imágenes se llama «Galería», así que mucha gente busca sus fotos con esa palabra, aunque use Google Fotos. «photos» es el nombre en inglés que se ve en la Play Store y en internet, y se escribe directo con el teclado estándar, sin acentos. Las dos son cortas y reales, y ninguna es el comienzo de «Fotos», que la búsqueda ya encuentra sola. Nota: en la práctica mucha gente escribiría «galeria» sin acento. Si la búsqueda no ignora los acentos, conviene poner esa forma en el ejemplo."
 }

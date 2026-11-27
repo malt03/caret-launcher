@@ -3,8 +3,10 @@
 
 For every language it sets the device locale, writes the language's photo app keywords
 (store/photo-keywords/<lang>.json) into the launcher's search keywords, and takes the screens of
-the English set (themed icons are switched on once, in English, for a second pass). At the end the
-device's locale, the launcher's search keywords and the icon style are put back.
+the English set (themed icons are switched on once, in English, for a second pass). The search
+screen types the start of the photo app's name (searchPrefix), the search keywords screen shows the
+keywords. At the end the device's locale, the launcher's search keywords and the icon style are put
+back.
 
 - phone, tablet: 01_home, 02_search, 03_all_apps, 04_search_keywords, 05_share_text and
   06_themed_icons, in app/src/main/play/listings/<lang>/graphics/<phone-screenshots|
@@ -389,14 +391,15 @@ def out_dir(profile, lang):
 
 def shoot_language(device, profile, lang, out, screens):
     """Takes [screens] but themed_icons (taken in a pass of its own)."""
-    keywords = json.load(open(os.path.join(KEYWORDS, f"{lang}.json"), encoding="utf-8"))["keywords"]
+    photo = json.load(open(os.path.join(KEYWORDS, f"{lang}.json"), encoding="utf-8"))
+    keywords = photo["keywords"]
     device.set_locale(DEVICE_LOCALE.get(lang, lang))
     set_photo_keywords(device, keywords)
     field = settled_home(device, profile, keywords[0])
     if "home" in screens:
         save(device, profile, with_cursor(device, field), out, "home")
     if screens & {"search", "all_apps", "search_keywords"}:  # they need the photo app's name
-        shoot_photos(device, profile, lang, out, screens, keywords, field)
+        shoot_photos(device, profile, lang, out, screens, photo, field)
     if "share_text" in screens:
         shoot_share_text(device, profile, lang, out)
     if "home_4x3" in screens:
@@ -405,17 +408,19 @@ def shoot_language(device, profile, lang, out, screens):
         shoot_folded_home(device, profile, out)
 
 
-def shoot_photos(device, profile, lang, out, screens, keywords, field):
-    """search, all_apps and search_keywords, which find the photo app."""
-    device.set_search_text(keywords[0])
-    # The photo app's name, as the only result shows it (the name in this locale).
-    photos = []
-    deadline = time.time() + 20
-    while not photos and time.time() < deadline:
+def shoot_photos(device, profile, lang, out, screens, photo, field):
+    """search, all_apps and search_keywords, which find the photo app. The search types the start
+    of the photo app's name (searchPrefix), so that the screenshot shows plainly that typing a few
+    letters finds an app; other apps it matches show too."""
+    name = photo["appName"]
+    device.set_search_text(photo["searchPrefix"])
+    found, deadline = False, time.time() + 20
+    while not found and time.time() < deadline:
         time.sleep(2)
-        photos = [t for t, b, cls in device.nodes() if t and cls != "android.widget.EditText" and b[3] <= field[1]]
-    if not photos:
-        raise RuntimeError(f"{lang}: {keywords[0]} found no app")
+        found = any(t == name and b[3] <= field[1] for t, b, cls in device.nodes())
+    if not found:
+        raise RuntimeError(f"{lang}: {photo['searchPrefix']} did not find {name}")
+    photos = [name]
     time.sleep(1)
     if "search" in screens:
         save(device, profile, with_cursor(device, field), out, "search")

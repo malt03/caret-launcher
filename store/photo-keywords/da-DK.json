@@ -4,5 +4,6 @@
     "galleri"
   ],
   "appName": "Fotos",
+  "searchPrefix": "fo",
   "reason": "På en dansk telefon hedder appen \"Fotos\", så \"fo…\" finder den allerede. I hverdagen siger danskere dog oftest \"billeder\" (\"send mig billederne\"). Det er det første ord, mange ville skrive, når de leder efter deres fotos. \"Galleri\" er navnet på foto-appen på Samsung og mange andre Android-telefoner på dansk, så det er netop det ord, man har i fingrene, når man skifter telefon. Begge ord er korte og ægte danske, og de skrives direkte på det almindelige danske tastatur uden æ, ø eller å."
 }

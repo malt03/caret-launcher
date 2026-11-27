@@ -4,5 +4,6 @@
     "galleri"
   ],
   "appName": "Foto",
+  "searchPrefix": "fo",
   "reason": "«Bilder» er ordet nordmenn faktisk bruker i dagligtale («se på bildene mine»), så når appen heter «Foto», er det det mest naturlige å skrive. «Galleri» er navnet på bildeappen på Samsung-telefoner og mange andre Android-telefoner på norsk, så folk som har byttet telefon, skriver det av gammel vane. Begge ordene er korte, ekte norske ord og kan skrives direkte på det vanlige norske tastaturet, uten æ, ø eller å."
 }

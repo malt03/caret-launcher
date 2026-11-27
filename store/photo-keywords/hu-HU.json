@@ -4,5 +4,6 @@
     "galéria"
   ],
   "appName": "Fotók",
+  "searchPrefix": "fo",
   "reason": "Magyarul a hétköznapi szó a „kép” vagy „képek”. Ha valaki a fotóit keresi, gyakran ezt gépeli be, nem a „fotó” szót. A „galéria” a Samsung és a Xiaomi telefonokon a képnézegető alkalmazás magyar neve, ezért aki ilyen telefonról vált, megszokásból ezt írja be. Mindkét szó a „Fotók” alkalmazásnévtől eltérő betűkkel kezdődik, és az „é” betű miatt mindkettő közvetlenül beírható a szokásos magyar billentyűzeten."
 }

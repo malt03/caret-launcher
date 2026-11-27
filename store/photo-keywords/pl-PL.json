@@ -4,5 +4,6 @@
     "fotki"
   ],
   "appName": "Zdjęcia",
+  "searchPrefix": "zd",
   "reason": "Na polskich telefonach Samsunga i Xiaomi aplikacja ze zdjęciami nazywa się „Galeria”. Dlatego wiele osób szuka jej z przyzwyczajenia właśnie pod tym słowem, tak jak w angielskim przykładzie z „gallery”. „Fotki” to bardzo popularne, potoczne określenie zdjęć („wrzuć fotki”), więc Polak naturalnie by je wpisał. Oba słowa da się wpisać na standardowej polskiej klawiaturze bez znaków diakrytycznych i żadne nie zaczyna się od „zdj”."
 }

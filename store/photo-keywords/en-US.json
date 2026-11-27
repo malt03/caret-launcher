@@ -3,5 +3,6 @@
     "gallery",
     "fotos"
   ],
-  "appName": "Photos"
+  "appName": "Photos",
+  "searchPrefix": "ph"
 }

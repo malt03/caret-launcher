@@ -4,5 +4,6 @@
     "álbum"
   ],
   "appName": "Fotos",
+  "searchPrefix": "fo",
   "reason": "No Brasil, \"galeria\" é a palavra que todo mundo usa para o lugar onde ficam as fotos do celular (\"tá na galeria\"), até porque a Samsung, que lidera o mercado brasileiro, chama o app dela de \"Galeria\". Por isso, quem troca para o Google Fotos procura instintivamente por \"galeria\", e ela se digita direto no teclado padrão, sem acento. \"Álbum\" também é um termo do dia a dia para fotos guardadas (o próprio Google Fotos tem a seção \"Álbuns\"). A pessoa pode digitar com acento ou sem (\"album\"), e os dois são críveis. Nenhuma das duas começa como \"Fotos\", então o exemplo mostra uma vantagem real das palavras-chave."
 }

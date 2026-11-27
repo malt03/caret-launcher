@@ -4,5 +4,6 @@
     "pics"
   ],
   "appName": "Photos",
+  "searchPrefix": "ph",
   "reason": "Sur un téléphone en français canadien, Google Photos s'affiche simplement sous le nom « Photos ». Les deux exemples évitent donc ce début de nom. « Galerie » est le nom que l'application de photos porte en français sur bien des téléphones, comme les Samsung, très répandus au Canada. Quelqu'un qui change d'appareil le tape donc par réflexe. « Pics » reflète l'habitude bilingue : au Québec comme ailleurs au Canada, on dit couramment « envoie-moi les pics ». Les deux mots sont courts, s'écrivent sans accent sur le clavier standard et sonnent comme ce qu'une vraie personne enregistrerait."
 }
